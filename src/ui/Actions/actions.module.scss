@@ -1,0 +1,17 @@
+.label_label {
+  position: relative;
+  margin-bottom: 5px;
+
+  & > label {
+    display: inline !important;
+  }
+}
+
+.generate_button {
+  cursor: pointer;
+  border: none;
+  background: transparent none;
+  padding: 0;
+  color: currentcolor;
+  text-decoration: underline;
+}

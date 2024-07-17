@@ -1,0 +1,16 @@
+.error_message {
+  align-items: center;
+  display: flex;
+  width: 100%;
+}
+
+.pill {
+  margin-right: 10px;
+}
+
+.error_message_text {
+  flex-shrink: 0;
+  line-height: 1;
+  margin-right: 10px;
+  white-space: nowrap;
+}
