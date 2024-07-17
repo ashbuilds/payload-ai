@@ -1,8 +1,12 @@
 import { ElevenLabsClient } from 'elevenlabs'
 
-export const getAllVoices = () => {
+let voicesState = null;
+export const getAllVoices = async () => {
   const elevenLabs = new ElevenLabsClient()
-  return elevenLabs.voices.getAll({
-    timeoutInSeconds: 10000,
-  })
+  if (!voicesState) {
+    voicesState = await elevenLabs.voices.getAll({
+      timeoutInSeconds: 10000,
+    })
+  }
+  return voicesState
 }

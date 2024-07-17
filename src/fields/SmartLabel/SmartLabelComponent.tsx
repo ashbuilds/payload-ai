@@ -9,6 +9,7 @@ import {
   useField,
   useFieldProps,
   useLocale,
+  FieldLabel
 } from '@payloadcms/ui'
 import React, { useCallback, useEffect } from 'react'
 
@@ -28,7 +29,12 @@ export const SmartLabelComponent: React.FC<{
     schemaPath: pathFromProps,
   } = props
 
-  // console.log('SmartLabelComponent props:', props)
+  const form = useForm()
+  if(!form.fields) { // Render default label if label is not used inside any form
+    return (<FieldLabel
+      {...props}
+    />)
+  }
 
   const { instructions, noticeMessage, setMessage } = useInstructions({
     path: pathFromProps,

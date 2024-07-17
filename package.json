@@ -1,5 +1,5 @@
 {
-  "name": "@ashbuilds/payload-ai-plugin",
+  "name": "@ashbuilds/payload-ai",
   "version": "1.0.0",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-plugins/issues",
@@ -22,6 +22,7 @@
   "scripts": {
     "build": "pnpm copyfiles && pnpm build:types && pnpm build:swc",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "build:dev": "pnpm build --watch",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
@@ -35,24 +36,25 @@
     "@langchain/core": "^0.2.15",
     "@langchain/openai": "^0.2.1",
     "ai": "^3.2.16",
+    "dot-object": "^2.1.5",
     "elevenlabs": "^0.8.2",
     "handlebars": "4.7.8",
     "langchain": "^0.2.9",
     "openai": "^4.47.1",
-    "zod": "^3.23.8",
-    "dot-object": "^2.1.5"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@swc/cli": "0.3.12",
     "@types/dot-object": "2.1.6",
     "@types/react": "npm:types-react@19.0.0-beta.2",
     "@types/react-dom": "npm:types-react-dom@19.0.0-beta.2",
+    "chokidar": "^3.6.0",
     "copyfiles": "2.4.1",
     "payload": "3.0.0-beta.65",
+    "prettier": "3.3.2",
     "react": "19.0.0-rc-f994737d14-20240522",
     "react-dom": "19.0.0-rc-f994737d14-20240522",
-    "typescript": "^5.4.5",
-    "prettier": "3.3.2"
+    "typescript": "^5.4.5"
   },
   "peerDependencies": {
     "@payloadcms/next": "3.0.0-beta.65",

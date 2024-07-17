@@ -29,7 +29,7 @@ export const useDotFields = (): DotFields => {
 
     const data = getData()
     const siblingData = getSiblingData(path)
-    console.log('siblingData: ', siblingData)
+    // console.log('siblingData: ', siblingData)
     const dataDot = dot.dot(data)
     const siblingDataDot = dot.dot(siblingData)
 

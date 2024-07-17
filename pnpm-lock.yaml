@@ -54,7 +54,7 @@ dependencies:
 devDependencies:
   '@swc/cli':
     specifier: 0.3.12
-    version: 0.3.12(@swc/core@1.6.13)
+    version: 0.3.12(@swc/core@1.6.13)(chokidar@3.6.0)
   '@types/dot-object':
     specifier: 2.1.6
     version: 2.1.6
@@ -64,12 +64,18 @@ devDependencies:
   '@types/react-dom':
     specifier: npm:types-react-dom@19.0.0-beta.2
     version: /types-react-dom@19.0.0-beta.2
+  chokidar:
+    specifier: ^3.6.0
+    version: 3.6.0
   copyfiles:
     specifier: 2.4.1
     version: 2.4.1
   payload:
     specifier: 3.0.0-beta.65
     version: 3.0.0-beta.65(@swc/core@1.6.13)(@swc/types@0.1.9)(graphql@16.9.0)(typescript@5.5.3)
+  prettier:
+    specifier: 3.3.2
+    version: 3.3.2
   react:
     specifier: 19.0.0-rc-f994737d14-20240522
     version: 19.0.0-rc-f994737d14-20240522
@@ -1028,8 +1034,8 @@ packages:
   /@lexical/react@0.16.1(react-dom@19.0.0-rc-f994737d14-20240522)(react@19.0.0-rc-f994737d14-20240522)(yjs@13.6.18):
     resolution: {integrity: sha512-SsGgLt9iKfrrMRy9lFb6ROVPUYOgv6b+mCn9Al+TLqs/gBReDBi3msA7m526nrtBUKYUnjHdQ1QXIJzuKgOxcg==}
     peerDependencies:
-      react: '>=17.x'
-      react-dom: '>=17.x'
+      react: ^19.0.0-rc-f994737d14-20240522
+      react-dom: ^19.0.0-rc-f994737d14-20240522
     dependencies:
       '@lexical/clipboard': 0.16.1
       '@lexical/code': 0.16.1
@@ -1432,7 +1438,7 @@ packages:
       source-map-support: 0.5.21
       tslib: 2.6.3
 
-  /@swc/cli@0.3.12(@swc/core@1.6.13):
+  /@swc/cli@0.3.12(@swc/core@1.6.13)(chokidar@3.6.0):
     resolution: {integrity: sha512-h7bvxT+4+UDrLWJLFHt6V+vNAcUNii2G4aGSSotKz1ECEk4MyEh5CWxmeSscwuz5K3i+4DWTgm4+4EyMCQKn+g==}
     engines: {node: '>= 16.14.0'}
     hasBin: true
@@ -1446,6 +1452,7 @@ packages:
       '@mole-inc/bin-wrapper': 8.0.1
       '@swc/core': 1.6.13
       '@swc/counter': 0.1.3
+      chokidar: 3.6.0
       commander: 8.3.0
       fast-glob: 3.3.2
       minimatch: 9.0.5
@@ -1873,7 +1880,6 @@ packages:
     dependencies:
       normalize-path: 3.0.0
       picomatch: 2.3.1
-    dev: false
 
   /arch@2.2.0:
     resolution: {integrity: sha512-Of/R0wqp83cgHozfIYLbBMnej79U/SVGOOyuB3VVFv1NRM/PSFMK12x9KVtiYzJqmnU5WR2qp0Z5rHb7sWGnFQ==}
@@ -1950,7 +1956,6 @@ packages:
   /binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
-    dev: false
 
   /binary-search@1.3.6:
     resolution: {integrity: sha512-nbE1WxOTTrUWIfsfZ4aHGYu5DOuNkbxGokjV6Z2kxfJK3uaAb8zNK1muzOeipoLHZjInT4Br88BHpzevc681xA==}
@@ -2076,7 +2081,6 @@ packages:
       readdirp: 3.6.0
     optionalDependencies:
       fsevents: 2.3.3
-    dev: false
 
   /ci-info@4.0.0:
     resolution: {integrity: sha512-TdHqgGf9odd8SXNuxtUBVx8Nv+qZOejE6qyqiy5NtbYYQOeFa6zmHkxlPzmaLxWWHsU6nJmB7AETdVPi+2NBUg==}
@@ -2735,7 +2739,6 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /function-bind@1.1.2:
@@ -3011,7 +3014,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       binary-extensions: 2.3.0
-    dev: false
 
   /is-buffer@1.1.6:
     resolution: {integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==}
@@ -3734,7 +3736,6 @@ packages:
   /normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
-    dev: false
 
   /normalize-url@6.1.0:
     resolution: {integrity: sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A==}
@@ -4058,6 +4059,12 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
+  /prettier@3.3.2:
+    resolution: {integrity: sha512-rAVeHYMcv8ATV5d508CFdn+8/pHPpXeIid1DdrPwXnaAdH7cqjVbpJaT5eq4yRAFU/lsbwYwSF/n5iNrdJHPQA==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
+
   /prismjs@1.29.0:
     resolution: {integrity: sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==}
     engines: {node: '>=6'}
@@ -4310,7 +4317,6 @@ packages:
     engines: {node: '>=8.10.0'}
     dependencies:
       picomatch: 2.3.1
-    dev: false
 
   /real-require@0.2.0:
     resolution: {integrity: sha512-57frrGM/OCTLqLOAh0mhVA9VBMHd+9U7Zb2THMGdBUoZVOtGbJzjxsYGDJ3A9AYYCP4hn6y1TVbaOfzWtm5GFg==}
