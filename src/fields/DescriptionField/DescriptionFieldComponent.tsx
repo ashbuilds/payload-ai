@@ -1,8 +1,9 @@
 'use client'
 
-import React from 'react'
+import type { FieldDescriptionProps } from 'payload'
+
 import { useFieldProps } from '@payloadcms/ui'
-import { FieldDescriptionProps } from 'payload'
+import React from 'react'
 
 import { useInstructions } from '../../providers/InstructionsProvider/index.js'
 import { Actions } from '../../ui/Actions/Actions.js'
@@ -18,8 +19,8 @@ export const DescriptionFieldComponent: React.FC<FieldDescriptionProps> = (props
 
   return (
     <Actions
-      instructionId={instructionId}
       descriptionProps={props}
+      instructionId={instructionId}
       onClickGenerate={generate[type]}
     />
   )

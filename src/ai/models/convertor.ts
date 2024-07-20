@@ -71,16 +71,16 @@
 // }
 
 interface LexicalNode {
-  type: string
   [key: string]: any
+  type: string
 }
 
 interface MarkdownBlock {
-  type: 'paragraph' | 'heading' | 'list' | 'code' | 'blockquote'
   content: string
-  level?: number
   items?: string[]
   language?: string
+  level?: number
+  type: 'blockquote' | 'code' | 'heading' | 'list' | 'paragraph'
 }
 
 export interface MarkdownDocument {
@@ -126,28 +126,28 @@ function convertParagraph(block: MarkdownBlock): LexicalNode {
 function convertHeading(block: MarkdownBlock): LexicalNode {
   return {
     type: 'heading',
-    tag: `h${block.level}`,
     children: convertInlineContent(block.content),
+    tag: `h${block.level}`,
   }
 }
 
 function convertList(block: MarkdownBlock): LexicalNode {
   return {
     type: 'list',
-    listType: 'bullet', // Assuming all lists are unordered for simplicity
     children:
       block.items?.map((item) => ({
         type: 'listitem',
         children: convertInlineContent(item),
       })) || [],
+    listType: 'bullet', // Assuming all lists are unordered for simplicity
   }
 }
 
 function convertCode(block: MarkdownBlock): LexicalNode {
   return {
     type: 'code',
-    language: block.language || '',
     children: [{ type: 'text', text: block.content }],
+    language: block.language || '',
   }
 }
 
@@ -165,14 +165,14 @@ function convertInlineContent(content: string): LexicalNode[] {
     if (part.startsWith('**') && part.endsWith('**')) {
       return {
         type: 'text',
-        text: part.slice(2, -2),
         format: 1, // Assuming 1 represents bold in Lexical
+        text: part.slice(2, -2),
       }
     } else if (part.startsWith('*') && part.endsWith('*')) {
       return {
         type: 'text',
-        text: part.slice(1, -1),
         format: 2, // Assuming 2 represents italic in Lexical
+        text: part.slice(1, -1),
       }
     } else {
       return { type: 'text', text: part }

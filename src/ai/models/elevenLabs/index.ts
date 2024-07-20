@@ -1,8 +1,9 @@
 import type { File } from 'payload'
 
+import type { GenerationConfig } from '../../../types.js'
+
 import { PromptTextareaField } from '../../../fields/PromptTextareaField/TextareaField.js'
 import { SelectField } from '../../../fields/SelectField/SelectField.js'
-import type { GenerationConfig } from '../../../types.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateVoice } from './generateVoice.js'
 import { getAllVoices } from './voices.js'
@@ -12,9 +13,9 @@ import { getAllVoices } from './voices.js'
 const { voices = [] } = {
   voices: [
     {
-      voice_id: 'en-US-Wavenet-A',
       name: 'en-US-Wavenet-A',
       language_code: 'en-US',
+      voice_id: 'en-US-Wavenet-A',
     },
   ],
 } // await getAllVoices()

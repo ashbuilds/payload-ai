@@ -1,8 +1,10 @@
-import Handlebars from 'handlebars'
 import type { PayloadRequest } from 'payload'
 
-import { GenerationModels } from '../ai/models/index.js'
+import Handlebars from 'handlebars'
+
 import type { Endpoints, Instructions } from '../types.js'
+
+import { GenerationModels } from '../ai/models/index.js'
 
 const replacePlaceholders = (prompt: string, values: object) => {
   return Handlebars.compile(prompt)(values)
@@ -20,10 +22,11 @@ export const endpoints: Endpoints = {
       let instructions = { 'model-id': '', prompt: '' }
 
       if (instructionId) {
-        instructions = (await req.payload.findByID({
+        // @ts-expect-error
+        instructions = await req.payload.findByID({
           id: instructionId,
           collection: 'instructions',
-        })) as Instructions
+        })
       }
 
       console.log('Instructions', instructions)
@@ -69,10 +72,11 @@ export const endpoints: Endpoints = {
       let instructions = { 'model-id': '', prompt: '' }
 
       if (instructionId) {
-        instructions = (await req.payload.findByID({
+        // @ts-expect-error
+        instructions = await req.payload.findByID({
           id: instructionId,
           collection: 'instructions',
-        })) as Instructions
+        })
       }
 
       console.log('Instructions', instructions)

@@ -1,8 +1,9 @@
-import { useCallback } from 'react'
 import { useDocumentInfo, useField, useFieldProps, useLocale } from '@payloadcms/ui'
+import { useCallback } from 'react'
+
+import type { GenerateTextarea } from '../types.js'
 
 import { useInstructions } from '../providers/InstructionsProvider/index.js'
-import type { GenerateTextarea } from '../types.js'
 import { useDotFields } from './useDotFields.js'
 
 export const useGenerate = () => {
@@ -73,7 +74,7 @@ export const useGenerate = () => {
         doc: fields,
         locale: localFromContext?.code,
         options: {
-          instructionId: instructionId,
+          instructionId,
           uploadCollectionSlug: relationTo,
         },
       } satisfies Parameters<GenerateTextarea>[0]),
@@ -99,9 +100,9 @@ export const useGenerate = () => {
   }, [getDotFields, docInfo, localFromContext?.code, instructionId, relationTo, setValue])
 
   return {
-    textarea: generateText,
-    text: generateText,
     richText: generateText,
+    text: generateText,
+    textarea: generateText,
     upload: generateUpload,
   }
 }

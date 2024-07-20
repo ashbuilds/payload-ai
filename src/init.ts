@@ -10,11 +10,11 @@ export const init = async (payload, fieldSchemaPaths) => {
     const entry = await payload.find({
       collection: 'instructions',
       where: {
-        'schema-path': {
-          equals: path,
-        },
         'field-type': {
           equals: fieldType,
+        },
+        'schema-path': {
+          equals: path,
         },
       },
     })
@@ -23,8 +23,8 @@ export const init = async (payload, fieldSchemaPaths) => {
       const instructions = await payload.create({
         collection: 'instructions',
         data: {
-          'schema-path': path,
           'field-type': fieldType,
+          'schema-path': path,
         },
       })
       fieldInstructionsMap[path] = instructions.id

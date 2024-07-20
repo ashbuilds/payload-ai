@@ -1,13 +1,9 @@
 'use client'
 
+import type { TextareaFieldProps } from '@payloadcms/ui'
+
+import { TextareaField as InputField, useField, useFieldProps, useForm } from '@payloadcms/ui'
 import React, { useContext, useEffect, useRef } from 'react'
-import {
-  TextareaField as InputField,
-  TextareaFieldProps,
-  useField,
-  useFieldProps,
-  useForm,
-} from '@payloadcms/ui'
 
 import { PromptContext } from '../../providers/Prompt/index.js'
 import { Floatype } from '../../ui/Floatype/Floatype.js'
@@ -15,11 +11,12 @@ import { Floatype } from '../../ui/Floatype/Floatype.js'
 export const PromptTextareaField = (props: TextareaFieldProps) => {
   const { name, path: pathFromProps } = props
   const { path: pathFromContext } = useFieldProps()
+
   const { path, setValue } = useField<string>({
     path: pathFromContext || pathFromProps || name,
   })
   const formInfo = useForm()
-  const { formRef, setModified } = formInfo
+  const { formRef } = formInfo
   const fieldsInfo = useContext(PromptContext)
   const elementRef = useRef<any>(null)
 

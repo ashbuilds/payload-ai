@@ -1,5 +1,6 @@
-import OpenAI from 'openai'
 import type { SpeechCreateParams } from 'openai/resources/audio/speech'
+
+import OpenAI from 'openai'
 
 type OpenAITextToSpeechOptions = Exclude<SpeechCreateParams, 'input'>
 

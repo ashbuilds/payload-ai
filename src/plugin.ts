@@ -1,12 +1,14 @@
 import type { Config } from 'payload'
+
 import { deepMerge } from 'payload/shared'
+
+import type { PluginConfig } from './types.js'
 
 import { Instructions } from './collections/Instructions.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
 import { InstructionsProvider } from './providers/InstructionsProvider/InstructionsProvider.js'
 import { translations } from './translations/index.js'
-import type { PluginConfig } from './types.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
 const payloadAiPlugin =
@@ -26,7 +28,7 @@ const payloadAiPlugin =
       ...incomingConfig,
       collections: collections.map((collection) => {
         if (collectionSlugs.indexOf(collection.slug) > -1) {
-          const { updatedCollectionConfig, schemaPathMap } = updateFieldsConfig(collection)
+          const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(collection)
           collectionsFieldPathMap = {
             ...collectionsFieldPathMap,
             ...schemaPathMap,
@@ -37,30 +39,30 @@ const payloadAiPlugin =
         return collection
       }),
       endpoints: [...(incomingConfig.endpoints ?? []), endpoints.textarea, endpoints.upload],
+      globals: [
+        ...incomingConfig.globals,
+        {
+          slug: 'ai-plugin__instructions_map',
+          access: {
+            read: () => true,
+          },
+          admin: {
+            hidden: true,
+          },
+          fields: [
+            {
+              name: 'map',
+              type: 'json',
+            },
+          ],
+        },
+      ],
       i18n: {
         ...incomingConfig.i18n,
         translations: {
           ...deepMerge(translations, incomingConfig.i18n?.translations),
         },
       },
-      globals: [
-        ...incomingConfig.globals,
-        {
-          slug: 'ai-plugin__instructions_map',
-          fields: [
-            {
-              type: 'json',
-              name: 'map',
-            },
-          ],
-          admin: {
-            hidden: true,
-          },
-          access: {
-            read: () => true,
-          },
-        },
-      ],
     }
 
     updatedConfig.onInit = async (payload) => {

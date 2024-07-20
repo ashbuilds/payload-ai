@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
 import { useFieldProps, useForm } from '@payloadcms/ui'
 import dot from 'dot-object'
+import { useCallback, useEffect, useState } from 'react'
 
 import { arraysHaveSameStrings } from './arraysHaveSameStrings.js'
 

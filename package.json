@@ -27,7 +27,7 @@
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
     "lint": "eslint src",
-    "lint:fix": "eslint --fix",
+    "lint:fix": "eslint --fix src",
     "prepublishOnly": "pnpm clean && pnpm build"
   },
   "dependencies": {
@@ -44,6 +44,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.1.1",
     "@swc/cli": "0.3.12",
     "@types/dot-object": "2.1.6",
     "@types/react": "npm:types-react@19.0.0-beta.2",
@@ -55,14 +56,21 @@
     "copyfiles": "2.4.1",
     "eslint": "^9.7.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-import-x": "^3.0.1",
+    "eslint-plugin-jsx-a11y": "^6.9.0",
     "eslint-plugin-perfectionist": "^2.11.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-regexp": "^2.6.0",
+    "globals": "^15.8.0",
     "payload": "3.0.0-beta.65",
     "prettier": "^3.3.3",
     "react": "19.0.0-rc-f994737d14-20240522",
     "react-dom": "19.0.0-rc-f994737d14-20240522",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^7.16.1"
   },
   "peerDependencies": {
     "@payloadcms/next": "3.0.0-beta.65",

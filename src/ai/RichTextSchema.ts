@@ -11,24 +11,24 @@ const BaseNode = z.object({
 
 const TextNode = BaseNode.extend({
   type: z.literal('text'),
-  text: z.string(),
   format: z.number().optional(),
+  text: z.string(),
 })
 
 const LinkNode = BaseNode.extend({
+  id: z.string(),
   type: z.literal('link'),
   fields: z.object({
-    url: z.string(),
-    newTab: z.boolean(),
     linkType: z.string(),
+    newTab: z.boolean(),
+    url: z.string(),
   }),
-  id: z.string(),
 })
 
 const ListItemNode = BaseNode.extend({
   type: z.literal('listitem'),
-  value: z.number(),
   checked: z.boolean().optional(),
+  value: z.number(),
 })
 
 const ListNode = BaseNode.extend({

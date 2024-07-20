@@ -51,4 +51,4 @@ export type SerializedElementNode<T extends SerializedLexicalNode = SerializedLe
 export type SerializedRootNode<T extends SerializedLexicalNode = SerializedLexicalNode> =
   SerializedElementNode<T>
 
-export type ElementFormatType = 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+export type ElementFormatType = '' | 'center' | 'end' | 'justify' | 'left' | 'right' | 'start'

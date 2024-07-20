@@ -22,29 +22,18 @@ const modelOptions = GenerationModels.map((model) => {
 export const Instructions: CollectionConfig = {
   slug: 'instructions',
   access: {
-    read: () => true,
     create: () => true,
+    read: () => true,
     update: () => true,
-  },
-  hooks: {
-    beforeChange: [
-      (req) => {
-        // console.log('req: ', req)
-        if (req.data['openai-gpt-object-settings'].layout?.length === 0) {
-          req.data['openai-gpt-object-settings'].layout = ''
-        }
-        return req.data
-      },
-    ],
   },
   fields: [
     {
       name: 'schema-path',
       type: 'text',
-      unique: true,
       admin: {
         readOnly: true,
       },
+      unique: true,
     },
     {
       name: 'field-type',
@@ -105,4 +94,15 @@ export const Instructions: CollectionConfig = {
     },
     ...groupSettings,
   ],
+  hooks: {
+    beforeChange: [
+      (req) => {
+        // console.log('req: ', req)
+        if (req.data['openai-gpt-object-settings'].layout?.length === 0) {
+          req.data['openai-gpt-object-settings'].layout = ''
+        }
+        return req.data
+      },
+    ],
+  },
 }

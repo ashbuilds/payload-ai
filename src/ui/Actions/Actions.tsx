@@ -1,14 +1,13 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
 import { FieldDescription, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
+import React, { useEffect, useState } from 'react'
 
 import { PromptContext } from '../../providers/Prompt/index.js'
 import { useDotFields } from '../../utilities/useDotFields.js'
-
 import styles from './actions.module.scss'
 
-export const Actions = ({ descriptionProps, onClickGenerate, instructionId }) => {
+export const Actions = ({ descriptionProps, instructionId, onClickGenerate }) => {
   const [DocumentDrawer, DocumentDrawerToggler, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: instructionId,
     collectionSlug: 'instructions',

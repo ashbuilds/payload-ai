@@ -3,8 +3,8 @@ import type { CollectionConfig } from 'payload'
 import { DescriptionField } from '../fields/DescriptionField/index.js'
 
 interface UpdateFieldsConfig {
-  updatedCollectionConfig: CollectionConfig
   schemaPathMap: Record<string, string>
+  updatedCollectionConfig: CollectionConfig
 }
 
 export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFieldsConfig => {
@@ -17,7 +17,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
       return field
     }
 
-    if (field.type && ['richText', 'textarea', 'text', 'upload'].includes(field.type)) {
+    if (field.type && ['richText', 'text', 'textarea', 'upload'].includes(field.type)) {
       schemaPathMap = {
         ...schemaPathMap,
         [currentSchemaPath]: field.type,
@@ -75,7 +75,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
   }
 
   return {
-    updatedCollectionConfig,
     schemaPathMap,
+    updatedCollectionConfig,
   }
 }

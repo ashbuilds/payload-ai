@@ -1,9 +1,11 @@
-import { openai } from '@ai-sdk/openai'
-import { generateText } from 'ai'
 import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
+import { openai } from '@ai-sdk/openai'
+import { generateText } from 'ai'
+
 import type { GenerationConfig } from '../../../types.js'
+
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateImage } from './generateImage.js'
 import { generateRichText } from './generateRichText.js'
@@ -197,12 +199,12 @@ export const OpenAIConfig: GenerationConfig = {
           {
             name: 'system',
             type: 'textarea',
-            label: 'System prompt',
             defaultValue: `INSTRUCTIONS:
       You are a highly skilled and professional blog writer,
       renowned for crafting engaging and well-organized articles.
       When given a title, you meticulously create blogs that are not only
       informative and accurate but also captivating and beautifully structured.`,
+            label: 'System prompt',
           },
           {
             /**TODO's:
@@ -212,7 +214,6 @@ export const OpenAIConfig: GenerationConfig = {
              */
             name: 'layout',
             type: 'textarea',
-            label: 'Layout',
             defaultValue: `[paragraph] - A short introduction to the topic.
             [horizontalrule]
             [list] - A section with headings and a paragraph.
@@ -220,6 +221,7 @@ export const OpenAIConfig: GenerationConfig = {
             [paragraph] - A short conclusion.
             [quote] - A quote from a famous person based on the topic.
             `,
+            label: 'Layout',
           },
         ],
         label: 'OpenAI GPT Settings',

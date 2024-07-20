@@ -1,4 +1,5 @@
 import type { GenerationConfig } from '../../../types.js'
+
 import { generateRichText } from './generateRichText.js'
 
 export const AnthropicConfig: GenerationConfig = {
@@ -38,17 +39,16 @@ export const AnthropicConfig: GenerationConfig = {
           {
             name: 'system',
             type: 'textarea',
-            label: 'System prompt',
             defaultValue: `INSTRUCTIONS:
       You are a highly skilled and professional blog writer,
       renowned for crafting engaging and well-organized articles.
       When given a title, you meticulously create blogs that are not only
       informative and accurate but also captivating and beautifully structured.`,
+            label: 'System prompt',
           },
           {
             name: 'layout',
             type: 'textarea',
-            label: 'Layout',
             defaultValue: `[paragraph] - A short introduction to the topic.
             [horizontalrule]
             [list] - A section with headings and a paragraph.
@@ -56,6 +56,7 @@ export const AnthropicConfig: GenerationConfig = {
             [paragraph] - A short conclusion.
             [quote] - A quote from a famous person based on the topic.
             `,
+            label: 'Layout',
           },
         ],
         label: 'Anthropic Claude Settings',
