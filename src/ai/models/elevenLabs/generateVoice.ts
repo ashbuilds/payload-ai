@@ -1,6 +1,5 @@
-import type * as ElevenLabs from 'elevenlabs/api'
-
 import { ElevenLabsClient } from 'elevenlabs'
+import type * as ElevenLabs from 'elevenlabs/api'
 
 type ElevenLabsTextToSpeechOptions = Pick<
   ElevenLabs.TextToSpeechWithTimstampsRequest,
@@ -13,7 +12,7 @@ export const generateVoice = async (text: string, options: ElevenLabsTextToSpeec
   const elevenLabs = new ElevenLabsClient({
     apiKey: process.env.ELEVENLABS_API_KEY,
   })
-  const response = (await elevenLabs.textToSpeech.convertWithTimstamps(options['voice_id'], {
+  const response = (await elevenLabs.textToSpeech.convertWithTimstamps(options.voice_id, {
     ...options,
     text,
   })) as {

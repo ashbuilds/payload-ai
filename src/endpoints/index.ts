@@ -1,10 +1,8 @@
+import Handlebars from 'handlebars'
 import type { PayloadRequest } from 'payload'
 
-import Handlebars from 'handlebars'
-
+import { GenerationModels } from '../ai/models/index.js'
 import type { Endpoints, Instructions } from '../types.js'
-
-import { GenerationModels } from '../ai/models/index.js';
 
 const replacePlaceholders = (prompt: string, values: object) => {
   return Handlebars.compile(prompt)(values)

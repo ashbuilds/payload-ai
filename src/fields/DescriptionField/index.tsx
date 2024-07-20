@@ -1,16 +1,16 @@
 import { withMergedProps } from '@payloadcms/ui/shared'
 
-import { UploadComponent } from './UploadComponent.js';
+import { DescriptionFieldComponent } from './DescriptionFieldComponent.js'
 
-export const AIUpload = (options: any) => {
+export const DescriptionField = (options: any) => {
   const mergedPropsFunc = withMergedProps({
-    Component: UploadComponent,
+    Component: DescriptionFieldComponent,
     sanitizeServerOnlyProps: true,
     toMergeIntoProps: options,
   })
 
   // TODO: Might use this in order to add field entry for Instructions on plugin Init
-  mergedPropsFunc.displayName = 'AITextarea'
+  mergedPropsFunc.displayName = 'DescriptionField'
 
   return mergedPropsFunc
 }

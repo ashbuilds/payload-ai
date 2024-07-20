@@ -1,6 +1,6 @@
 import { ElevenLabsClient } from 'elevenlabs'
 
-let voicesState = null;
+let voicesState = null
 export const getAllVoices = async () => {
   const elevenLabs = new ElevenLabsClient()
   if (!voicesState) {

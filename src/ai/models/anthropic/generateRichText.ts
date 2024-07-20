@@ -1,6 +1,7 @@
-import { generateObject } from 'ai'
-import { DocumentSchema } from '../../RichTextSchema.js'
 import { anthropic } from '@ai-sdk/anthropic'
+import { generateObject } from 'ai'
+
+import { DocumentSchema } from '../../RichTextSchema.js'
 import { exampleOutput } from '../example.js'
 
 export const generateRichText = async (text: string, options: any) => {

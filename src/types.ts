@@ -1,16 +1,14 @@
-import type { DocumentInfoContext, FormFieldBase } from '@payloadcms/ui'
-import type { Endpoint, Field, GroupField } from 'payload'
+import type { DocumentInfoContext } from '@payloadcms/ui'
+import type { Config, Endpoint, Field, GroupField } from 'payload'
 
-import { TextareaField as TextareaFieldType } from 'payload'
-
-export type AIPluginConfig = {
+export interface PluginConfig {
   collections?: string[]
   fields?: Field[]
   globals?: string[]
   interfaceName?: string
 }
 
-export type GenerationModel = {
+export interface GenerationModel {
   fields: string[]
   handler?: (payload: any, options: any) => Promise<any>
   id: string
@@ -20,7 +18,7 @@ export type GenerationModel = {
   supportsPromptOptimization?: boolean
 }
 
-export type GenerationConfig = {
+export interface GenerationConfig {
   models: GenerationModel[]
   provider: string
 }
@@ -33,14 +31,14 @@ export type GenerateTextarea<T = any> = (
   } & DocumentInfoContext,
 ) => Promise<string> | string
 
-export type Instructions = {
+export interface Instructions {
   'collection-slug': string
   id: string
   'model-id': string
   prompt: string
 }
 
-export type Endpoints = {
+export interface Endpoints {
   textarea: Omit<Endpoint, 'root'>
   upload: Omit<Endpoint, 'root'>
 }

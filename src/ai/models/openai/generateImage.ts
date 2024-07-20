@@ -1,6 +1,5 @@
-import type { ImageGenerateParams } from 'openai/resources/images'
-
 import OpenAI from 'openai'
+import type { ImageGenerateParams } from 'openai/resources/images'
 
 export const generateImage = async (
   prompt: string,

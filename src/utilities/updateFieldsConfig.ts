@@ -1,25 +1,47 @@
-import { CollectionConfig } from 'payload';
+import type { CollectionConfig } from 'payload'
 
-type FieldTypes = 'richText' | 'textarea' | 'text' | 'upload';
-type AdminProperty = { [key: string]: any };
+import { DescriptionField } from '../fields/DescriptionField/index.js'
 
-export const updateFieldsConfig = (config: CollectionConfig, adminProperty: AdminProperty): CollectionConfig => {
-  function updateField(field: any): any {
+interface UpdateFieldsConfig {
+  updatedCollectionConfig: CollectionConfig
+  schemaPathMap: Record<string, string>
+}
+
+export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFieldsConfig => {
+  let schemaPathMap = {}
+  function updateField(field: any, parentPath = ''): any {
+    const currentPath = parentPath ? `${parentPath}.${field.name}` : field.name
+    const currentSchemaPath = `${collectionConfig.slug}.${currentPath}`
+
+    if (field.admin?.disabled || field.admin?.readOnly || field.admin?.hidden) {
+      return field
+    }
+
     if (field.type && ['richText', 'textarea', 'text', 'upload'].includes(field.type)) {
+      schemaPathMap = {
+        ...schemaPathMap,
+        [currentSchemaPath]: field.type,
+      }
+
       return {
         ...field,
         admin: {
           ...field.admin,
-          ...adminProperty,
+          components: {
+            ...field.admin?.components,
+            Description: DescriptionField({
+              Description: field.admin?.components?.Description,
+            }),
+          },
         },
-      };
+      }
     }
 
     if (field.fields) {
       return {
         ...field,
-        fields: field.fields.map(updateField),
-      };
+        fields: field.fields.map((subField: any) => updateField(subField, currentPath)),
+      }
     }
 
     if (field.tabs) {
@@ -27,9 +49,9 @@ export const updateFieldsConfig = (config: CollectionConfig, adminProperty: Admi
         ...field,
         tabs: field.tabs.map((tab: any) => ({
           ...tab,
-          fields: tab.fields.map(updateField),
+          fields: tab.fields.map((subField: any) => updateField(subField, currentPath)),
         })),
-      };
+      }
     }
 
     if (field.blocks) {
@@ -37,20 +59,23 @@ export const updateFieldsConfig = (config: CollectionConfig, adminProperty: Admi
         ...field,
         blocks: field.blocks.map((block: any) => ({
           ...block,
-          fields: block.fields.map(updateField),
+          fields: block.fields.map((subField: any) =>
+            updateField(subField, `${currentPath}.${block.slug}`),
+          ),
         })),
-      };
+      }
     }
 
-    return field;
+    return field
+  }
+
+  const updatedCollectionConfig = {
+    ...collectionConfig,
+    fields: collectionConfig.fields.map((field) => updateField(field)),
   }
 
   return {
-    ...config,
-    fields: config.fields.map(updateField),
-  };
+    updatedCollectionConfig,
+    schemaPathMap,
+  }
 }
-
-// Example usage:
-// const updatedConfig = updateFieldsConfig(Posts, { components: { Field: SmartLabel({}) } });
-

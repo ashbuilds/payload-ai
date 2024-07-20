@@ -8,3 +8,5 @@ export const defaults = {
     minLength: 50,
   },
 }
+
+export const PLUGIN_NAME = 'ai-plugin'

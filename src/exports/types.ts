@@ -1,1 +1,2 @@
-export type { AIPluginConfig } from '../types.js'
+export type { payloadAiPlugin } from '../plugin.ts'
+export type { PluginConfig } from '../types.ts'

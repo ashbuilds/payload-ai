@@ -1,18 +1,23 @@
 import type { File } from 'payload'
 
+import { PromptTextareaField } from '../../../fields/PromptTextareaField/TextareaField.js'
+import { SelectField } from '../../../fields/SelectField/SelectField.js'
 import type { GenerationConfig } from '../../../types.js'
-import { PromptTextareaField } from '../../../fields/TextareaField/TextareaField.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
-
 import { generateVoice } from './generateVoice.js'
 import { getAllVoices } from './voices.js'
-import {Select} from "../../../fields/Select/Select.js";
 
 //TODO: Add prompt optimisation for ElevenLabs models
-//TODO: Add ElevenLabs model settings like voice etc.
-// For text to speech, just use prompt from instructions and replace placeholders/template
 
-const {voices = []} = await getAllVoices()
+const { voices = [] } = {
+  voices: [
+    {
+      voice_id: 'en-US-Wavenet-A',
+      name: 'en-US-Wavenet-A',
+      language_code: 'en-US',
+    },
+  ],
+} // await getAllVoices()
 
 const voiceOptions = voices.map((voice) => {
   return {
@@ -57,18 +62,18 @@ export const ElevenLabsConfig: GenerationConfig = {
             type: 'select',
             admin: {
               components: {
-                Field: Select,
+                Field: SelectField,
               },
               custom: {
-                options: voiceOptions
+                options: voiceOptions,
               },
             },
             label: 'Voice',
             options: voiceOptions.map((option) => {
-                return {
-                    label: option.name,
-                    value: option.voice_id,
-                }
+              return {
+                label: option.name,
+                value: option.voice_id,
+              }
             }),
             required: true,
             validate: () => true,

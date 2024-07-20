@@ -3,8 +3,11 @@ import type { PayloadHandler, PayloadRequest } from 'payload'
 
 import { GenerationModels } from './models/index.js'
 
-type ToTextPayload = { options: { locale: string; modelId: string }; text: string }
-type ToImagePayload = {
+interface ToTextPayload {
+  options: { locale: string; modelId: string }
+  text: string
+}
+interface ToImagePayload {
   options: {
     enablePromptOptimization?: boolean
     modelId?: string
@@ -13,7 +16,7 @@ type ToImagePayload = {
   text: string
 }
 
-type GenerateType = {
+interface GenerateType {
   toImage: (args: ToImagePayload) => Promise<{
     result: { alt: string; buffer: Buffer }
   }>
@@ -24,14 +27,14 @@ type GenerateType = {
 
 export const Generate = {
   toImage: async ({ options, text }: ToImagePayload) => {
-    const model = GenerationModels.find((model) => model.id === options.modelId)
+    const model = GenerationModels.find((m) => m.id === options.modelId)
 
     if (!model) {
       throw new Error('Model not found')
     }
 
     try {
-      const model = GenerationModels.find((model) => model.id === options.modelId)
+      const model = GenerationModels.find((m) => m.id === options.modelId)
       const result = await model.handler?.(text, options)
 
       return { result }
@@ -46,7 +49,7 @@ export const Generate = {
     return new Response('chat-complete')
   },
   toText: async ({ options, text }: ToTextPayload) => {
-    const model = GenerationModels.find((model) => model.id === options.modelId)
+    const model = GenerationModels.find((m) => m.id === options.modelId)
 
     if (!model) {
       throw new Error('Model not found')

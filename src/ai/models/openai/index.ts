@@ -1,15 +1,13 @@
+import { openai } from '@ai-sdk/openai'
+import { generateText } from 'ai'
 import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
-import { openai } from '@ai-sdk/openai'
-import { generateText } from 'ai'
-
 import type { GenerationConfig } from '../../../types.js'
-
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateImage } from './generateImage.js'
-import { generateVoice } from './generateVoice.js'
 import { generateRichText } from './generateRichText.js'
+import { generateVoice } from './generateVoice.js'
 
 export const OpenAIConfig: GenerationConfig = {
   models: [
@@ -138,35 +136,25 @@ export const OpenAIConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'alloy',
             label: 'Voice',
-            options: [
-              'alloy',
-              'echo',
-              'fable',
-              'onyx',
-              'nova',
-              'shimmer',
-            ] as SpeechCreateParams['voice'][],
+            options: ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'] as Array<
+              SpeechCreateParams['voice']
+            >,
           },
           {
             name: 'model',
             type: 'select',
             defaultValue: 'tts-1',
             label: 'Model',
-            options: ['tts-1', 'tts-1-hd'] as SpeechCreateParams['model'][],
+            options: ['tts-1', 'tts-1-hd'] as Array<SpeechCreateParams['model']>,
           },
           {
             name: 'response_format',
             type: 'select',
             defaultValue: 'mp3',
             label: 'Response Format',
-            options: [
-              'mp3',
-              'opus',
-              'aac',
-              'flac',
-              'wav',
-              'pcm',
-            ] as SpeechCreateParams['response_format'][],
+            options: ['mp3', 'opus', 'aac', 'flac', 'wav', 'pcm'] as Array<
+              SpeechCreateParams['response_format']
+            >,
           },
           {
             name: 'speed',

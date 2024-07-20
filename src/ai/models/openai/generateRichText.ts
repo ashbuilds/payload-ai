@@ -1,8 +1,8 @@
-import { generateObject } from 'ai'
-import { DocumentSchema } from '../../RichTextSchema.js'
 import { openai } from '@ai-sdk/openai'
+import { generateObject } from 'ai'
 
-import { exampleOutput } from '../example.js';
+import { DocumentSchema } from '../../RichTextSchema.js'
+import { exampleOutput } from '../example.js'
 
 export const generateRichText = async (text: string, options: any) => {
   const result = await generateObject({
@@ -29,7 +29,7 @@ export const generateRichText = async (text: string, options: any) => {
   return result.object
 }
 
-export type SerializedLexicalNode = {
+export interface SerializedLexicalNode {
   type: string
   version: number
 }
@@ -37,7 +37,7 @@ export type SerializedLexicalNode = {
 export type Spread<T1, T2> = Omit<T2, keyof T1> & T1
 export type SerializedElementNode<T extends SerializedLexicalNode = SerializedLexicalNode> = Spread<
   {
-    children: Array<T>
+    children: T[]
 
     direction: 'ltr' | 'rtl' | null
 
