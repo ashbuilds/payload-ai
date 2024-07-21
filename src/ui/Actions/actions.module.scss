@@ -1,10 +1,13 @@
-.label_label {
+.actions {
   position: relative;
-  margin-bottom: 5px;
-
-  & > label {
-    display: inline !important;
-  }
+  margin: 5px 0;
+  display: flex;
+  gap: 10px;
+  border-radius: 3px;
+  padding: 5px;
+  transition: all 0.3s ease;
+  max-height: 100px;
+  opacity: 1;
 }
 
 .generate_button {
@@ -12,6 +15,27 @@
   border: none;
   background: transparent none;
   padding: 0;
-  color: currentcolor;
   text-decoration: underline;
+  color: var(--theme-elevation-800);
+}
+
+.icon {
+  border-right: 1px solid var(--theme-elevation-150);
+  cursor: pointer;
+  display: block;
+  max-width: 30px;
+  padding-right: 8px;
+}
+
+.color_fill{
+  fill: var(--theme-elevation-800);
+}
+
+
+.actions_hidden {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 5px;
+  margin: 0;
+  opacity: 0;
 }
