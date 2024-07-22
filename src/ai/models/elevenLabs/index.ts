@@ -69,6 +69,7 @@ export const ElevenLabsConfig: GenerationConfig = {
                 options: voiceOptions,
               },
             },
+            defaultValue: voiceOptions[0].voice_id,
             label: 'Voice',
             options: voiceOptions.map((option) => {
               return {

@@ -1,12 +1,14 @@
 'use client'
 
 import { FieldDescription, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PromptContext } from '../../providers/Prompt/index.js'
 import { useDotFields } from '../../utilities/useDotFields.js'
+import { useGenerate } from '../../utilities/useGenerate.js'
 import styles from './actions.module.scss'
 import { AiIcon3 } from './icons.js'
+import { useMenu } from './useMenu.js'
 
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
@@ -23,12 +25,13 @@ function findParentWithClass(element, className) {
   return findParentWithClass(element.parentElement, className)
 }
 
-export const Actions = ({ descriptionProps, instructionId, onClickGenerate }) => {
+export const Actions = ({ descriptionProps, instructionId }) => {
   const [DocumentDrawer, DocumentDrawerToggler, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: instructionId,
     collectionSlug: 'instructions',
   })
 
+  const generate = useGenerate()
   const { dotFields } = useDotFields()
   const fieldProps = useFieldProps()
   const { path: pathFromContext, schemaPath } = fieldProps
@@ -55,11 +58,11 @@ export const Actions = ({ descriptionProps, instructionId, onClickGenerate }) =>
     const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
     const inputElement = document.getElementById(fieldId)
 
-    if (!inputElement) {
-      return
-    }
-
+    if (!actionsRef.current) return
     actionsRef.current.setAttribute('for', fieldId)
+
+    if (!inputElement) return
+
     actionsRef.current.classList.add(styles.actions_hidden)
     inputElement.addEventListener('click', (event) => {
       document.querySelectorAll('.ai-plugin-active')?.forEach((element) => {
@@ -73,11 +76,27 @@ export const Actions = ({ descriptionProps, instructionId, onClickGenerate }) =>
     })
   }, [pathFromContext, schemaPath, actionsRef])
 
-  const handleGenerate = (event) => {}
+  useEffect(() => {
+    // const { value } = currentField
+  }, [currentField])
+
+  const { ActiveComponent, Menu } = useMenu({
+    onCompose: () => {
+      console.log('Composing...')
+      // generate()
+    },
+    onProofread: () => {
+      console.log('Proofreading...')
+    },
+    onRephrase: () => {
+      console.log('Rephrasing...')
+    },
+    onSettings: openDrawer,
+  })
 
   return (
     <React.Fragment>
-      <label className={`${styles.actions}`} htmlFor="input" ref={actionsRef}>
+      <label className={`${styles.actions}`} ref={actionsRef}>
         <PromptContext.Provider value={fieldsInfo}>
           <DocumentDrawer
             onSave={() => {
@@ -85,17 +104,8 @@ export const Actions = ({ descriptionProps, instructionId, onClickGenerate }) =>
             }}
           />
         </PromptContext.Provider>
-        <DocumentDrawerToggler className={styles.generate_button}>
-          <AiIcon3 />
-        </DocumentDrawerToggler>
-        <span
-          className={styles.generate_button}
-          onClick={handleGenerate}
-          onKeyDown={handleGenerate}
-          role="presentation"
-        >
-          Generate
-        </span>
+        <Menu button={<AiIcon3 />} />
+        <ActiveComponent />
       </label>
       <div>
         <FieldDescription {...descriptionProps} />

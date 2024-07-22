@@ -7,10 +7,10 @@ import { useInstructions } from '../providers/InstructionsProvider/index.js'
 import { useDotFields } from './useDotFields.js'
 
 export const useGenerate = () => {
-  const { path: pathFromContext, schemaPath } = useFieldProps()
-
+  const { type, path: pathFromContext, schemaPath } = useFieldProps()
   const docInfo = useDocumentInfo()
 
+  //TODO: This should be dynamic, i think it was the part of component props but its not inside useFieldProps
   const relationTo = 'media'
 
   const { setValue } = useField<string>({
@@ -99,10 +99,12 @@ export const useGenerate = () => {
       })
   }, [getDotFields, docInfo, localFromContext?.code, instructionId, relationTo, setValue])
 
-  return {
-    richText: generateText,
-    text: generateText,
-    textarea: generateText,
-    upload: generateUpload,
+  return () => {
+    if (['richText', 'text', 'textarea'].includes(type)) {
+      generateText()
+    }
+    if (type === 'upload') {
+      generateUpload()
+    }
   }
 }
