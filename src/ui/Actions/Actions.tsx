@@ -80,25 +80,50 @@ export const Actions = ({ descriptionProps, instructionId }) => {
   }, [pathFromContext, schemaPath, actionsRef])
 
   const [isProcessing, setIsProcessing] = useState(false)
-  // const onRephrase = useCallback(() => {
-  //   console.log('Rephrasing...', !isProcessing)
-  //   setIsProcessing(!isProcessing)
-  // }, [isProcessing])
 
   const { ActiveComponent, Menu } = useMenu({
     onCompose: async () => {
       console.log('Composing...')
       setIsProcessing(true)
-      await generate().finally(() => {
+      await generate({
+        action: 'Compose',
+      }).finally(() => {
         setIsProcessing(false)
       })
     },
-    onProofread: () => {
+    onProofread: async () => {
       console.log('Proofreading...')
+      setIsProcessing(true)
+      await generate({
+        action: 'Proofread',
+      }).finally(() => {
+        setIsProcessing(false)
+      })
     },
-    onRephrase: () => {
+    onRephrase: async () => {
       console.log('Rephrasing...', !isProcessing)
-      setIsProcessing(!isProcessing)
+      setIsProcessing(true)
+      await generate({
+        action: 'Rephrase',
+      }).finally(() => {
+        setIsProcessing(false)
+      })
+    },
+    onExpand: async () => {
+      setIsProcessing(true)
+      await generate({
+        action: 'Expand',
+      }).finally(() => {
+        setIsProcessing(false)
+      })
+    },
+    onSimplify: async () => {
+      setIsProcessing(true)
+      await generate({
+        action: 'Simplify',
+      }).finally(() => {
+        setIsProcessing(false)
+      })
     },
     onSettings: openDrawer,
   })

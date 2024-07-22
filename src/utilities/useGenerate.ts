@@ -1,14 +1,15 @@
 import { useDocumentInfo, useField, useFieldProps, useLocale } from '@payloadcms/ui'
 import { useCallback } from 'react'
 
-import type { GenerateTextarea } from '../types.js'
+import { GenerateTextarea, MenuItems } from '../types.js'
 
 import { useInstructions } from '../providers/InstructionsProvider/index.js'
 import { useDotFields } from './useDotFields.js'
 
+type Generate = (options: { action: MenuItems }) => Promise<void | Response>
+
 export const useGenerate = () => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
-  const docInfo = useDocumentInfo()
 
   //TODO: This should be dynamic, i think it was the part of component props but its not inside useFieldProps
   const relationTo = 'media'
@@ -24,44 +25,50 @@ export const useGenerate = () => {
   const localFromContext = useLocale()
   const { getDotFields } = useDotFields()
 
-  const generateText = useCallback(async () => {
-    const { fields = {} } = getDotFields()
-    if (!Object.keys(fields).length) {
-      console.log('dotFields is empty')
-      return
-    }
+  const generateText = useCallback<Generate>(
+    async ({ action = 'Compose' }: { action: MenuItems }) => {
+      const { fields = {} } = getDotFields()
+      if (!Object.keys(fields).length) {
+        console.log('dotFields is empty')
+        return
+      }
 
-    return fetch('/api/ai/generate/textarea', {
-      body: JSON.stringify({
-        ...docInfo,
-        doc: fields,
-        locale: localFromContext?.code,
-        options: {
-          instructionId,
+      const options = {
+        instructionId,
+        action,
+      }
+
+      console.log('options:', options)
+      return fetch('/api/ai/generate/textarea', {
+        body: JSON.stringify({
+          doc: fields,
+          locale: localFromContext?.code,
+          options: options,
+        } satisfies Parameters<GenerateTextarea>[0]),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      } satisfies Parameters<GenerateTextarea>[0]),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    })
-      .then(async (generatedResponse) => {
-        if (generatedResponse.ok) {
-          const { result } = await generatedResponse.json()
-          console.log('generatedResult:', result)
-          setValue(result)
-        } else {
-          const { errors = [] } = await generatedResponse.json()
-          const errStr = errors.map((error) => error.message).join(', ')
-          throw new Error(errStr)
-        }
-        return generatedResponse
+        method: 'POST',
       })
-      .catch((error) => {
-        console.error('Error generating image', error)
-      })
-  }, [getDotFields, docInfo, localFromContext?.code, instructionId, setValue])
+        .then(async (generatedResponse) => {
+          if (generatedResponse.ok) {
+            const { result } = await generatedResponse.json()
+            console.log('generatedResult:', result)
+            setValue(result)
+          } else {
+            const { errors = [] } = await generatedResponse.json()
+            const errStr = errors.map((error) => error.message).join(', ')
+            throw new Error(errStr)
+          }
+          return generatedResponse
+        })
+        .catch((error) => {
+          console.error('Error generating image', error)
+        })
+    },
+    [getDotFields, localFromContext?.code, instructionId, setValue],
+  )
 
   const generateUpload = useCallback(async () => {
     const { fields = {} } = getDotFields()
@@ -72,7 +79,6 @@ export const useGenerate = () => {
 
     return fetch('/api/ai/generate/upload', {
       body: JSON.stringify({
-        ...docInfo,
         doc: fields,
         locale: localFromContext?.code,
         options: {
@@ -100,11 +106,11 @@ export const useGenerate = () => {
       .catch((error) => {
         console.error('Error generating image', error)
       })
-  }, [getDotFields, docInfo, localFromContext?.code, instructionId, relationTo, setValue])
+  }, [getDotFields, localFromContext?.code, instructionId, relationTo, setValue])
 
-  return async () => {
+  return async (options?: { action: MenuItems }) => {
     if (['richText', 'text', 'textarea'].includes(type)) {
-      return generateText()
+      return generateText(options)
     }
     if (type === 'upload') {
       return generateUpload()

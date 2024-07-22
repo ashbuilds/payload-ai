@@ -11,13 +11,14 @@ import { generateImage } from './generateImage.js'
 import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
 
+//TODO: Simplify this file by moving the handlers to separate files and remove duplicate code
 export const OpenAIConfig: GenerationConfig = {
   models: [
     {
       id: 'gpt-3.5-turbo',
       name: 'OpenAI GPT-3',
       fields: ['text', 'textarea'],
-      handler: async (prompt: string, options: { locale: string }) => {
+      handler: async (prompt: string, options: { locale: string; system: string }) => {
         const finalPrompt = `Output language code: ${options.locale}
           Prompt: ${prompt}
           Output:
@@ -27,6 +28,30 @@ export const OpenAIConfig: GenerationConfig = {
         const { text } = await generateText({
           model: openai('gpt-3.5-turbo'),
           prompt: finalPrompt,
+          system: options.system,
+        })
+
+        console.log('output text: ', text)
+
+        return text
+      },
+      output: 'text',
+    },
+    {
+      id: 'gpt-4o-mini',
+      name: 'OpenAI GPT-4o Mini',
+      fields: ['text', 'textarea'],
+      handler: async (prompt: string, options: { locale: string; system: string }) => {
+        const finalPrompt = `Output language code: ${options.locale}
+          Prompt: ${prompt}
+          Output:
+          `
+
+        console.log('finalPrompt: ', finalPrompt)
+        const { text } = await generateText({
+          model: openai('gpt-4o-mini'),
+          prompt: finalPrompt,
+          system: options.system,
         })
 
         console.log('output text: ', text)

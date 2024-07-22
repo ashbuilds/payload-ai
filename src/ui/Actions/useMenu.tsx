@@ -1,7 +1,7 @@
 'use client'
 
 import { Popup, useField, useFieldProps } from '@payloadcms/ui'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import styles from './actions.module.scss'
 import {
@@ -14,37 +14,7 @@ import {
   TranslateIcon,
   TuneIcon,
 } from './icons.js'
-
-type MenuItems =
-  | 'Compose'
-  | 'Expand'
-  | 'Proofread'
-  | 'Rephrase'
-  | 'Settings'
-  | 'Simplify'
-  | 'Summarize'
-  | 'Tone'
-  | 'Translate'
-
-type MenuEvents =
-  | 'onCompose'
-  | 'onExpand'
-  | 'onProofread'
-  | 'onRephrase'
-  | 'onSettings'
-  | 'onSimplify'
-  | 'onSummarize'
-  | 'onTone'
-  | 'onTranslate'
-
-type UseMenuProps = {
-  [key in MenuEvents]?: () => void
-}
-
-type BaseItemProps = {
-  hideIcon?: boolean
-  onClick: () => void
-}
+import { BaseItemProps, MenuItems, UseMenuProps } from '../../types.js'
 
 const Item: React.FC<{ children: React.ReactNode; onClick?: () => void }> = (
   { children, onClick } = { children: null, onClick: () => {} },
@@ -127,8 +97,8 @@ export const useMenu = (menuEvents: UseMenuProps) => {
     { name: 'Proofread', component: Proofread, excludedFor: ['upload'] },
     { name: 'Rephrase', component: Rephrase, excludedFor: ['upload'] },
     { name: 'Translate', component: Translate, excludedFor: ['upload'] },
-    { name: 'Expand', component: Expand, excludedFor: ['upload'] },
-    { name: 'Summarize', component: Summarize, excludedFor: ['upload'] },
+    { name: 'Expand', component: Expand, excludedFor: ['upload', 'text'] },
+    { name: 'Summarize', component: Summarize, excludedFor: ['upload', 'text'] },
     // { name: 'Tone', component: Tone },
     { name: 'Simplify', component: Simplify, excludedFor: ['upload'] },
     { name: 'Compose', component: Compose },

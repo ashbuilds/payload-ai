@@ -23,13 +23,11 @@ export interface GenerationConfig {
   provider: string
 }
 
-export type GenerateTextarea<T = any> = (
-  args: {
-    doc: T
-    locale?: string
-    options?: any
-  } & DocumentInfoContext,
-) => Promise<string> | string
+export type GenerateTextarea<T = any> = (args: {
+  doc: T
+  locale?: string
+  options?: any
+}) => Promise<string> | string
 
 export interface Instructions {
   'collection-slug': string
@@ -41,4 +39,35 @@ export interface Instructions {
 export interface Endpoints {
   textarea: Omit<Endpoint, 'root'>
   upload: Omit<Endpoint, 'root'>
+}
+
+export type MenuItems =
+  | 'Compose'
+  | 'Expand'
+  | 'Proofread'
+  | 'Rephrase'
+  | 'Settings'
+  | 'Simplify'
+  | 'Summarize'
+  | 'Tone'
+  | 'Translate'
+
+export type MenuEvents =
+  | 'onCompose'
+  | 'onExpand'
+  | 'onProofread'
+  | 'onRephrase'
+  | 'onSettings'
+  | 'onSimplify'
+  | 'onSummarize'
+  | 'onTone'
+  | 'onTranslate'
+
+export type UseMenuProps = {
+  [key in MenuEvents]?: () => void
+}
+
+export type BaseItemProps = {
+  hideIcon?: boolean
+  onClick: () => void
 }

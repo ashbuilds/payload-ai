@@ -40,6 +40,10 @@
   transition: opacity 0.3s ease;
   opacity: 1;
 
+  & > .icon {
+    width: 20px;
+  }
+
   &:active {
     opacity: 0.5;
   }
