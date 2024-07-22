@@ -23,14 +23,15 @@ export const useGenerate = () => {
 
   const localFromContext = useLocale()
   const { getDotFields } = useDotFields()
-  const generateText = useCallback(() => {
+
+  const generateText = useCallback(async () => {
     const { fields = {} } = getDotFields()
     if (!Object.keys(fields).length) {
       console.log('dotFields is empty')
       return
     }
 
-    fetch('/api/ai/generate/textarea', {
+    return fetch('/api/ai/generate/textarea', {
       body: JSON.stringify({
         ...docInfo,
         doc: fields,
@@ -55,20 +56,21 @@ export const useGenerate = () => {
           const errStr = errors.map((error) => error.message).join(', ')
           throw new Error(errStr)
         }
+        return generatedResponse
       })
       .catch((error) => {
         console.error('Error generating image', error)
       })
   }, [getDotFields, docInfo, localFromContext?.code, instructionId, setValue])
 
-  const generateUpload = useCallback(() => {
+  const generateUpload = useCallback(async () => {
     const { fields = {} } = getDotFields()
     if (!Object.keys(fields).length) {
       console.log('dotFields is empty')
       return
     }
 
-    fetch('/api/ai/generate/upload', {
+    return fetch('/api/ai/generate/upload', {
       body: JSON.stringify({
         ...docInfo,
         doc: fields,
@@ -93,18 +95,19 @@ export const useGenerate = () => {
           const errStr = errors.map((error) => error.message).join(', ')
           throw new Error(errStr)
         }
+        return generatedImageResponse
       })
       .catch((error) => {
         console.error('Error generating image', error)
       })
   }, [getDotFields, docInfo, localFromContext?.code, instructionId, relationTo, setValue])
 
-  return () => {
+  return async () => {
     if (['richText', 'text', 'textarea'].includes(type)) {
-      generateText()
+      return generateText()
     }
     if (type === 'upload') {
-      generateUpload()
+      return generateUpload()
     }
   }
 }

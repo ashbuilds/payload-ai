@@ -7,8 +7,9 @@ import { PromptContext } from '../../providers/Prompt/index.js'
 import { useDotFields } from '../../utilities/useDotFields.js'
 import { useGenerate } from '../../utilities/useGenerate.js'
 import styles from './actions.module.scss'
-import { AiIcon3 } from './icons.js'
+import { AiIcon3, PluginIcon } from './icons.js'
 import { useMenu } from './useMenu.js'
+import LottieAnimation from './LottieAnimation.js'
 
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
@@ -25,6 +26,7 @@ function findParentWithClass(element, className) {
   return findParentWithClass(element.parentElement, className)
 }
 
+//TODO: Add undo/redo to the actions toolbar
 export const Actions = ({ descriptionProps, instructionId }) => {
   const [DocumentDrawer, DocumentDrawerToggler, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: instructionId,
@@ -54,6 +56,7 @@ export const Actions = ({ descriptionProps, instructionId }) => {
   }, [dotFields, currentField, fieldProps])
 
   const actionsRef = useRef(null)
+  // Used to show the actions menu on active field
   useEffect(() => {
     const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
     const inputElement = document.getElementById(fieldId)
@@ -76,20 +79,26 @@ export const Actions = ({ descriptionProps, instructionId }) => {
     })
   }, [pathFromContext, schemaPath, actionsRef])
 
-  useEffect(() => {
-    // const { value } = currentField
-  }, [currentField])
+  const [isProcessing, setIsProcessing] = useState(false)
+  // const onRephrase = useCallback(() => {
+  //   console.log('Rephrasing...', !isProcessing)
+  //   setIsProcessing(!isProcessing)
+  // }, [isProcessing])
 
   const { ActiveComponent, Menu } = useMenu({
-    onCompose: () => {
+    onCompose: async () => {
       console.log('Composing...')
-      // generate()
+      setIsProcessing(true)
+      await generate().finally(() => {
+        setIsProcessing(false)
+      })
     },
     onProofread: () => {
       console.log('Proofreading...')
     },
     onRephrase: () => {
-      console.log('Rephrasing...')
+      console.log('Rephrasing...', !isProcessing)
+      setIsProcessing(!isProcessing)
     },
     onSettings: openDrawer,
   })
@@ -104,8 +113,9 @@ export const Actions = ({ descriptionProps, instructionId }) => {
             }}
           />
         </PromptContext.Provider>
-        <Menu button={<AiIcon3 />} />
-        <ActiveComponent />
+        <Menu button={<PluginIcon isLoading={isProcessing} />} disabled={isProcessing} />
+        <ActiveComponent disabled={isProcessing} />
+        {/*<LottieAnimation />*/}
       </label>
       <div>
         <FieldDescription {...descriptionProps} />

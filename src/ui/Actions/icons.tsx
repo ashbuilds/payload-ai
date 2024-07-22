@@ -1,6 +1,7 @@
 import React from 'react'
 
 import styles from './actions.module.scss'
+import LottieAnimation from './LottieAnimation.js'
 export const AiIcon1 = ({ color = 'white' }) => {
   return (
     <span
@@ -59,9 +60,6 @@ export const AiIcon3 = ({ color = 'white' }) => {
       <svg
         fill="none"
         height="100%"
-        style={{
-          verticalAlign: 'top',
-        }}
         viewBox="0 0 183 183"
         width="100%"
         xmlns="http://www.w3.org/2000/svg"
@@ -76,6 +74,14 @@ export const AiIcon3 = ({ color = 'white' }) => {
           </clipPath>
         </defs>
       </svg>
+    </span>
+  )
+}
+
+export const PluginIcon = ({ color = 'white', isLoading }) => {
+  return (
+    <span className={styles.actions_icon}>
+      <LottieAnimation isLoading={isLoading} />
     </span>
   )
 }

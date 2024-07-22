@@ -171,22 +171,24 @@ export const useMenu = (menuEvents: UseMenuProps) => {
     }
   }
 
+  // const activeComponentHandler = useCallback(() => {
+  //   const handler = menuEvents[`on${activeComponent}`] || (() => {})
+  //   return handler()
+  // }, [menuEvents, activeComponent])
+
   return {
-    ActiveComponent: () => {
+    ActiveComponent: ({ disabled = false }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
-      const handler = menuEvents[`on${activeComponent}`] || (() => {})
-      return <ActiveComponent hideIcon onClick={handler} />
+      return <ActiveComponent hideIcon onClick={menuEvents[`on${activeComponent}`]} />
     },
-    Menu: ({ button }) => (
+    Menu: ({ button, disabled = false }) => (
       <Popup button={button}>
         <div className={styles.menu}>
           {MenuItemsMap.filter(
             (i) => i.name !== activeComponent && !i.excludedFor?.includes(fieldType),
           ).map((i) => {
             const Item = i.component
-            const handler = menuEvents[`on${i.name}`] || (() => {})
-
-            return <Item onClick={handler} />
+            return <Item key={i.name} onClick={menuEvents[`on${i.name}`]} />
           })}
         </div>
       </Popup>
