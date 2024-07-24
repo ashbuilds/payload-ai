@@ -1,0 +1,1 @@
+{"version":3,"file":"useDotFields.d.ts","sourceRoot":"","sources":["../../src/utilities/useDotFields.ts"],"names":[],"mappings":"AAMA,UAAU,SAAS;IACjB,SAAS,EAAE,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,CAAA;IAClC,MAAM,EAAE,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,CAAA;IAC/B,YAAY,EAAE,MAAM,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,CAAA;CAC5C;AAGD,eAAO,MAAM,YAAY,QAAO,SAkD/B,CAAA"}
