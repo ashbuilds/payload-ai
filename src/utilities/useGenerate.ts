@@ -1,20 +1,37 @@
-import { useDocumentInfo, useField, useFieldProps, useLocale } from '@payloadcms/ui'
-import { useCallback } from 'react'
+import {
+  useConfig,
+  useDocumentEvents,
+  useDocumentInfo,
+  useField,
+  useFieldProps,
+  useForm,
+  useLocale,
+} from '@payloadcms/ui'
+import { useCallback, useEffect } from 'react'
 
 import { GenerateTextarea, MenuItems } from '../types.js'
 
 import { useInstructions } from '../providers/InstructionsProvider/index.js'
 import { useDotFields } from './useDotFields.js'
+import { DocumentSchema } from '../ai/RichTextSchema.js'
+
+import { experimental_useObject as useObject, useCompletion } from 'ai/react'
+import { $getRoot, LexicalEditor } from 'lexical'
+import { useMenu } from '../ui/Actions/useMenu.js'
 
 type Generate = (options: { action: MenuItems }) => Promise<void | Response>
 
-export const useGenerate = () => {
+type UseGenerate = {
+  lexicalEditor: LexicalEditor
+}
+
+export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
 
   //TODO: This should be dynamic, i think it was the part of component props but its not inside useFieldProps
   const relationTo = 'media'
 
-  const { setValue } = useField<string>({
+  const { setValue, value, ...restFieldInfo } = useField<string>({
     path: pathFromContext,
   })
 
@@ -25,49 +42,92 @@ export const useGenerate = () => {
   const localFromContext = useLocale()
   const { getDotFields } = useDotFields()
 
-  const generateText = useCallback<Generate>(
+  const { object, submit } = useObject({
+    api: '/api/ai/generate/textarea',
+    schema: DocumentSchema,
+    onError: (error) => {
+      console.error('Error generating object:', error)
+    },
+  })
+
+  const { complete, completion } = useCompletion({
+    api: '/api/ai/generate/textarea',
+    streamMode: 'stream-data',
+    onError: (error) => {
+      console.error('Error generating text:', error)
+    },
+  })
+
+  useEffect(() => {
+    if (!object) return
+
+    requestAnimationFrame(() => {
+      try {
+        const editorState = lexicalEditor.parseEditorState(JSON.stringify(object))
+        if (editorState.isEmpty()) return
+
+        lexicalEditor.update(
+          () => {
+            const root = $getRoot()
+            root.clear() //TODO: this is hack to prevent reconciliation error - find a way
+            lexicalEditor.setEditorState(editorState)
+          },
+          {
+            discrete: true,
+          },
+        )
+      } catch (e) {
+        setValue(object)
+      }
+    })
+  }, [object])
+
+  useEffect(() => {
+    if (!completion) return
+
+    requestAnimationFrame(() => {
+      setValue(completion)
+    })
+  }, [completion])
+
+  const streamObject = useCallback(
     async ({ action = 'Compose' }: { action: MenuItems }) => {
       const { fields = {} } = getDotFields()
-      if (!Object.keys(fields).length) {
-        console.log('dotFields is empty')
-        return
-      }
-
       const options = {
         instructionId,
         action,
       }
 
-      console.log('options:', options)
-      return fetch('/api/ai/generate/textarea', {
-        body: JSON.stringify({
+      console.log('Streaming object with options: ', options)
+
+      submit({
+        doc: fields,
+        locale: localFromContext?.code,
+        options: options,
+      })
+    },
+    [getDotFields, localFromContext?.code, instructionId],
+  )
+
+  const streamText = useCallback(
+    async ({ action = 'Compose' }: { action: MenuItems }) => {
+      const { fields = {} } = getDotFields()
+      const options = {
+        instructionId,
+        action,
+      }
+
+      console.log('Streaming text with options: ', options)
+
+      await complete('', {
+        body: {
           doc: fields,
           locale: localFromContext?.code,
           options: options,
-        } satisfies Parameters<GenerateTextarea>[0]),
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
         },
-        method: 'POST',
       })
-        .then(async (generatedResponse) => {
-          if (generatedResponse.ok) {
-            const { result } = await generatedResponse.json()
-            console.log('generatedResult:', result)
-            setValue(result)
-          } else {
-            const { errors = [] } = await generatedResponse.json()
-            const errStr = errors.map((error) => error.message).join(', ')
-            throw new Error(errStr)
-          }
-          return generatedResponse
-        })
-        .catch((error) => {
-          console.error('Error generating image', error)
-        })
     },
-    [getDotFields, localFromContext?.code, instructionId, setValue],
+    [getDotFields, localFromContext?.code, instructionId],
   )
 
   const generateUpload = useCallback(async () => {
@@ -108,12 +168,32 @@ export const useGenerate = () => {
       })
   }, [getDotFields, localFromContext?.code, instructionId, relationTo, setValue])
 
-  return async (options?: { action: MenuItems }) => {
-    if (['richText', 'text', 'textarea'].includes(type)) {
-      return generateText(options)
-    }
-    if (type === 'upload') {
-      return generateUpload()
-    }
-  }
+  return useCallback(
+    async (options?: { action: MenuItems }) => {
+      if (type === 'richText') {
+        return streamObject(options)
+      }
+
+      if (['text', 'textarea'].includes(type)) {
+        return streamText(options)
+      }
+      if (type === 'upload') {
+        return generateUpload()
+      }
+    },
+    [generateUpload, streamObject, streamText, type],
+  )
+
+  // return async (options?: { action: MenuItems }) => {
+  //   if (type === 'richText') {
+  //     return streamObject(options)
+  //   }
+  //
+  //   if (['text', 'textarea'].includes(type)) {
+  //     return streamText(options)
+  //   }
+  //   if (type === 'upload') {
+  //     return generateUpload()
+  //   }
+  // }
 }

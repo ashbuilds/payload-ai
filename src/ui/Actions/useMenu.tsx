@@ -1,7 +1,8 @@
 'use client'
 
-import { Popup, useField, useFieldProps } from '@payloadcms/ui'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, memo, useMemo } from 'react'
+import { useField, useFieldProps } from '@payloadcms/ui'
+import { LexicalEditor } from 'lexical'
 
 import styles from './actions.module.scss'
 import {
@@ -14,11 +15,9 @@ import {
   TranslateIcon,
   TuneIcon,
 } from './icons.js'
-import { BaseItemProps, MenuItems, UseMenuProps } from '../../types.js'
+import { BaseItemProps, MenuItems, UseMenuEvents } from '../../types.js'
 
-const Item: React.FC<{ children: React.ReactNode; onClick?: () => void }> = (
-  { children, onClick } = { children: null, onClick: () => {} },
-) => (
+const Item: React.FC<BaseItemProps> = memo(({ children, onClick = () => {} }) => (
   <span
     className={styles.generate_button}
     onClick={onClick}
@@ -27,88 +26,60 @@ const Item: React.FC<{ children: React.ReactNode; onClick?: () => void }> = (
   >
     {children}
   </span>
-)
+))
 
-const Proofread = ({ hideIcon, onClick }: BaseItemProps) => (
-  <Item onClick={onClick}>
-    {hideIcon || <SpellCheckIcon size={18} />}
-    Proofread
-  </Item>
-)
+const createMenuItem = (IconComponent, text) =>
+  memo(({ hideIcon, onClick }: BaseItemProps) => (
+    <Item onClick={onClick}>
+      {hideIcon || <IconComponent size={18} />}
+      {text}
+    </Item>
+  ))
 
-const Rephrase = ({ hideIcon, onClick }: BaseItemProps) => (
-  <Item onClick={onClick}>
-    {hideIcon || <EditNoteIcon />}
-    Rephrase
-  </Item>
-)
+const Proofread = createMenuItem(SpellCheckIcon, 'Proofread')
+const Rephrase = createMenuItem(EditNoteIcon, 'Rephrase')
+const Translate = createMenuItem(TranslateIcon, 'Translate')
+const Expand = createMenuItem(DocsAddOnIcon, 'Expand')
+const Summarize = createMenuItem(SummarizeIcon, 'Summarize')
+const Simplify = createMenuItem(SegmentIcon, 'Simplify')
+const Compose = createMenuItem(StylusNoteIcon, 'Compose')
+const Settings = createMenuItem(TuneIcon, 'Settings')
 
-const Translate = ({ hideIcon, onClick }: BaseItemProps) => (
-  <Item onClick={onClick}>
-    {hideIcon || <TranslateIcon size={18} />}
-    Translate
-  </Item>
-)
+const MenuItemsMap = [
+  { name: 'Proofread', component: Proofread, excludedFor: ['upload'] },
+  { name: 'Rephrase', component: Rephrase, excludedFor: ['upload'] },
+  { name: 'Translate', component: Translate, excludedFor: ['upload'] },
+  { name: 'Expand', component: Expand, excludedFor: ['upload', 'text'] },
+  { name: 'Summarize', component: Summarize, excludedFor: ['upload', 'text'] },
+  { name: 'Simplify', component: Simplify, excludedFor: ['upload'] },
+  { name: 'Compose', component: Compose },
+  { name: 'Settings', component: Settings },
+]
 
-const Expand = ({ hideIcon, onClick }: BaseItemProps) => (
-  <Item onClick={onClick}>
-    {hideIcon || <DocsAddOnIcon size={18} />}
-    Expand
-  </Item>
-)
+const getActiveComponent = (ac) => {
+  switch (ac) {
+    case 'Proofread':
+      return Proofread
+    case 'Rephrase':
+      return Rephrase
+    case 'Compose':
+      return Compose
+    default:
+      return Rephrase
+  }
+}
 
-const Summarize = ({ hideIcon, onClick }: BaseItemProps) => (
-  <Item onClick={onClick}>
-    {hideIcon || <SummarizeIcon size={18} />}
-    Summarize
-  </Item>
-)
+type UseMenuProps = {
+  lexicalEditor: LexicalEditor
+}
 
-// const Tone = ({ onClick }) => <Item onClick={onClick}>Tone</Item>
-
-const Simplify = ({ hideIcon, onClick }: BaseItemProps) => (
-  <Item onClick={onClick}>
-    {hideIcon || <SegmentIcon size={18} />}
-    Simplify
-  </Item>
-)
-
-const Compose = ({ hideIcon, onClick }: BaseItemProps) => (
-  <Item onClick={onClick}>
-    {hideIcon || <StylusNoteIcon size={18} />}
-    Compose
-  </Item>
-)
-
-const Settings = ({ hideIcon, onClick }: BaseItemProps) => (
-  <Item onClick={onClick}>
-    {hideIcon || <TuneIcon size={18} />}
-    Settings
-  </Item>
-)
-
-export const useMenu = (menuEvents: UseMenuProps) => {
+export const useMenu = ({ lexicalEditor }: UseMenuProps, menuEvents: UseMenuEvents) => {
   const { type: fieldType, path: pathFromContext } = useFieldProps()
-  const field = useField({
-    path: pathFromContext,
-  })
-
-  const MenuItemsMap = [
-    { name: 'Proofread', component: Proofread, excludedFor: ['upload'] },
-    { name: 'Rephrase', component: Rephrase, excludedFor: ['upload'] },
-    { name: 'Translate', component: Translate, excludedFor: ['upload'] },
-    { name: 'Expand', component: Expand, excludedFor: ['upload', 'text'] },
-    { name: 'Summarize', component: Summarize, excludedFor: ['upload', 'text'] },
-    // { name: 'Tone', component: Tone },
-    { name: 'Simplify', component: Simplify, excludedFor: ['upload'] },
-    { name: 'Compose', component: Compose },
-    { name: 'Settings', component: Settings },
-  ]
-
+  const field = useField({ path: pathFromContext })
   const [activeComponent, setActiveComponent] = useState<MenuItems>('Rephrase')
 
   const { initialValue, value } = field
-  // Suggest the active component based on the current content of the field
+
   useEffect(() => {
     if (!value) {
       setActiveComponent('Compose')
@@ -124,44 +95,44 @@ export const useMenu = (menuEvents: UseMenuProps) => {
       setActiveComponent('Proofread')
     } else {
       setActiveComponent('Rephrase')
-      return
     }
-  }, [initialValue, value, fieldType])
+  }, [initialValue, value, fieldType, lexicalEditor])
 
-  const getActiveComponent = (ac) => {
-    switch (ac) {
-      case 'Proofread':
-        return Proofread
-      case 'Rephrase':
-        return Rephrase
-      case 'Compose':
-        return Compose
-      default:
-        return Rephrase
-    }
-  }
-
-  // const activeComponentHandler = useCallback(() => {
-  //   const handler = menuEvents[`on${activeComponent}`] || (() => {})
-  //   return handler()
-  // }, [menuEvents, activeComponent])
-
-  return {
-    ActiveComponent: ({ disabled = false }) => {
+  const MemoizedActiveComponent = useMemo(() => {
+    return ({ disabled = false }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
       return <ActiveComponent hideIcon onClick={menuEvents[`on${activeComponent}`]} />
-    },
-    Menu: ({ button, disabled = false }) => (
-      <Popup button={button}>
-        <div className={styles.menu}>
-          {MenuItemsMap.filter(
-            (i) => i.name !== activeComponent && !i.excludedFor?.includes(fieldType),
-          ).map((i) => {
-            const Item = i.component
-            return <Item key={i.name} onClick={menuEvents[`on${i.name}`]} />
-          })}
-        </div>
-      </Popup>
-    ),
+    }
+  }, [activeComponent, menuEvents])
+
+  const filteredMenuItems = useMemo(
+    () =>
+      MenuItemsMap.filter((i) => i.name !== activeComponent && !i.excludedFor?.includes(fieldType)),
+    [activeComponent, fieldType],
+  )
+
+  const MemoizedMenu = useMemo(() => {
+    return ({ disabled = false, onClose }) => (
+      <div className={styles.menu}>
+        {filteredMenuItems.map((i) => {
+          const Item = i.component
+          return (
+            <Item
+              key={i.name}
+              onClick={() => {
+                menuEvents[`on${i.name}`]()
+                onClose()
+              }}
+            />
+          )
+        })}
+      </div>
+    )
+  }, [filteredMenuItems, menuEvents])
+
+  // Simply return the object without additional useMemo
+  return {
+    ActiveComponent: MemoizedActiveComponent,
+    Menu: MemoizedMenu,
   }
 }

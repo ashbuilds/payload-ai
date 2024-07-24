@@ -1,7 +1,7 @@
 'use client'
 
-import { FieldDescription, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { PromptContext } from '../../providers/Prompt/index.js'
 import { useDotFields } from '../../utilities/useDotFields.js'
@@ -10,7 +10,9 @@ import styles from './actions.module.scss'
 import { AiIcon3, PluginIcon } from './icons.js'
 import { useMenu } from './useMenu.js'
 import LottieAnimation from './LottieAnimation.js'
-
+// import { LexicalRichTextAdapterProvider } from '@payloadcms/richtext-lexical'
+// import { useEditorConfigContext } from '@payloadcms/richtext-lexical/dist/lexical/config/client/EditorConfigProvider.js'
+import { getNearestEditorFromDOMNode } from 'lexical'
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
   if (!element || element === document.body) {
@@ -33,10 +35,9 @@ export const Actions = ({ descriptionProps, instructionId }) => {
     collectionSlug: 'instructions',
   })
 
-  const generate = useGenerate()
   const { dotFields } = useDotFields()
   const fieldProps = useFieldProps()
-  const { path: pathFromContext, schemaPath } = fieldProps
+  const { path: pathFromContext, schemaPath, type: fieldType } = fieldProps
   const currentField = useField({
     path: pathFromContext,
   })
@@ -55,19 +56,38 @@ export const Actions = ({ descriptionProps, instructionId }) => {
     })
   }, [dotFields, currentField, fieldProps])
 
+  const [input, setInput] = useState(null)
+  const [lexicalEditor, setLexicalEditor] = useState()
   const actionsRef = useRef(null)
-  // Used to show the actions menu on active field
+  // Used to show the actions menu on active input fields
   useEffect(() => {
     const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
-    const inputElement = document.getElementById(fieldId)
+    let inputElement = document.getElementById(fieldId)
 
     if (!actionsRef.current) return
     actionsRef.current.setAttribute('for', fieldId)
 
-    if (!inputElement) return
+    if (!inputElement) {
+      if (fieldType === 'richText') {
+        const editorWrapper = findParentWithClass(actionsRef.current, 'field-type')
+        //TODO: Find a better way get rich-text field instance
+        setTimeout(() => {
+          inputElement = editorWrapper.querySelector('div[contenteditable="true"]')
+          // @ts-expect-error
+          setLexicalEditor(inputElement.__lexicalEditor)
+          setInput(inputElement)
+        }, 0)
+      }
+    } else {
+      setInput(inputElement)
+    }
+  }, [pathFromContext, schemaPath, actionsRef])
+
+  useEffect(() => {
+    if (!input || !actionsRef.current) return
 
     actionsRef.current.classList.add(styles.actions_hidden)
-    inputElement.addEventListener('click', (event) => {
+    input.addEventListener('click', (event) => {
       document.querySelectorAll('.ai-plugin-active')?.forEach((element) => {
         element.querySelector(`.${styles.actions}`).classList.add(styles.actions_hidden)
         element.classList.remove('ai-plugin-active')
@@ -77,56 +97,60 @@ export const Actions = ({ descriptionProps, instructionId }) => {
       const parentWithClass = findParentWithClass(event.target, 'field-type')
       parentWithClass.classList.add('ai-plugin-active')
     })
-  }, [pathFromContext, schemaPath, actionsRef])
+  }, [input, actionsRef])
 
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const { ActiveComponent, Menu } = useMenu({
-    onCompose: async () => {
-      console.log('Composing...')
-      setIsProcessing(true)
-      await generate({
-        action: 'Compose',
-      }).finally(() => {
-        setIsProcessing(false)
-      })
+  const generate = useGenerate({ lexicalEditor })
+  const { ActiveComponent, Menu } = useMenu(
+    { lexicalEditor },
+    {
+      onCompose: async () => {
+        console.log('Composing...')
+        setIsProcessing(true)
+        await generate({
+          action: 'Compose',
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onProofread: async () => {
+        console.log('Proofreading...')
+        setIsProcessing(true)
+        await generate({
+          action: 'Proofread',
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onRephrase: async () => {
+        console.log('Rephrasing...', !isProcessing)
+        setIsProcessing(true)
+        await generate({
+          action: 'Rephrase',
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onExpand: async () => {
+        setIsProcessing(true)
+        await generate({
+          action: 'Expand',
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onSimplify: async () => {
+        setIsProcessing(true)
+        await generate({
+          action: 'Simplify',
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onSettings: openDrawer,
     },
-    onProofread: async () => {
-      console.log('Proofreading...')
-      setIsProcessing(true)
-      await generate({
-        action: 'Proofread',
-      }).finally(() => {
-        setIsProcessing(false)
-      })
-    },
-    onRephrase: async () => {
-      console.log('Rephrasing...', !isProcessing)
-      setIsProcessing(true)
-      await generate({
-        action: 'Rephrase',
-      }).finally(() => {
-        setIsProcessing(false)
-      })
-    },
-    onExpand: async () => {
-      setIsProcessing(true)
-      await generate({
-        action: 'Expand',
-      }).finally(() => {
-        setIsProcessing(false)
-      })
-    },
-    onSimplify: async () => {
-      setIsProcessing(true)
-      await generate({
-        action: 'Simplify',
-      }).finally(() => {
-        setIsProcessing(false)
-      })
-    },
-    onSettings: openDrawer,
-  })
+  )
 
   return (
     <React.Fragment>
@@ -138,9 +162,14 @@ export const Actions = ({ descriptionProps, instructionId }) => {
             }}
           />
         </PromptContext.Provider>
-        <Menu button={<PluginIcon isLoading={isProcessing} />} disabled={isProcessing} />
-        <ActiveComponent disabled={isProcessing} />
-        {/*<LottieAnimation />*/}
+        <Popup
+          button={<PluginIcon isLoading={isProcessing} />}
+          verticalAlign={'bottom'}
+          render={({ close }) => {
+            return <Menu onClose={close} />
+          }}
+        />
+        <ActiveComponent />
       </label>
       <div>
         <FieldDescription {...descriptionProps} />

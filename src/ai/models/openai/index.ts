@@ -2,7 +2,7 @@ import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
 import { openai } from '@ai-sdk/openai'
-import { generateText } from 'ai'
+import { generateText, streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
@@ -15,56 +15,47 @@ import { generateVoice } from './generateVoice.js'
 export const OpenAIConfig: GenerationConfig = {
   models: [
     {
-      id: 'gpt-3.5-turbo',
-      name: 'OpenAI GPT-3',
+      id: 'openai-gpt-text',
+      name: 'OpenAI GPT Text',
       fields: ['text', 'textarea'],
-      handler: async (prompt: string, options: { locale: string; system: string }) => {
+      handler: async (
+        prompt: string,
+        options: { locale: string; system: string; model: string },
+      ) => {
         const finalPrompt = `Output language code: ${options.locale}
           Prompt: ${prompt}
           Output:
           `
 
         console.log('finalPrompt: ', finalPrompt)
-        const { text } = await generateText({
-          model: openai('gpt-3.5-turbo'),
+        const streamTextResult = await streamText({
+          model: openai(options.model),
           prompt: finalPrompt,
           system: options.system,
         })
 
-        console.log('output text: ', text)
-
-        return text
+        return streamTextResult.toAIStreamResponse()
       },
       output: 'text',
-    },
-    {
-      id: 'gpt-4o-mini',
-      name: 'OpenAI GPT-4o Mini',
-      fields: ['text', 'textarea'],
-      handler: async (prompt: string, options: { locale: string; system: string }) => {
-        const finalPrompt = `Output language code: ${options.locale}
-          Prompt: ${prompt}
-          Output:
-          `
-
-        console.log('finalPrompt: ', finalPrompt)
-        const { text } = await generateText({
-          model: openai('gpt-4o-mini'),
-          prompt: finalPrompt,
-          system: options.system,
-        })
-
-        console.log('output text: ', text)
-
-        return text
+      settings: {
+        name: 'openai-gpt-text-settings',
+        label: 'OpenAI GPT Settings',
+        type: 'group',
+        admin: {
+          condition(data) {
+            return data['model-id'] === 'openai-gpt-text'
+          },
+        },
+        fields: [
+          {
+            name: 'model',
+            type: 'select',
+            defaultValue: 'gpt-4o-mini',
+            label: 'Model',
+            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-3.5-turbo'],
+          },
+        ],
       },
-      output: 'text',
-    },
-    {
-      id: 'gpt-4o',
-      name: 'OpenAI GPT-4',
-      fields: ['text', 'textarea'],
-      output: 'text',
     },
     {
       id: 'dall-e',
@@ -199,10 +190,9 @@ export const OpenAIConfig: GenerationConfig = {
       id: 'openai-gpt-object',
       name: 'OpenAI GPT',
       fields: ['richText'], //TODO: Use these field to find and replace auto generation functionality in payload config - then we dont need to manually pass the fields - use field admin.components.Label function
-      handler: async (text: string, options) => {
+      handler: (text: string, options) => {
         //TODO: change it to open ai text to speech api
-        const objectData = await generateRichText(text, options)
-        return objectData
+        return generateRichText(text, options)
       },
       output: 'text',
       settings: {
@@ -219,7 +209,7 @@ export const OpenAIConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'gpt-4o',
             label: 'Model',
-            options: ['gpt-4o', 'gpt-4-turbo'],
+            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini'],
           },
           {
             name: 'system',

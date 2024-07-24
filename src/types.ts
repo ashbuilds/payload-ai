@@ -63,11 +63,12 @@ export type MenuEvents =
   | 'onTone'
   | 'onTranslate'
 
-export type UseMenuProps = {
+export type UseMenuEvents = {
   [key in MenuEvents]?: () => void
 }
 
 export type BaseItemProps = {
   hideIcon?: boolean
   onClick: () => void
+  children?: React.ReactNode
 }

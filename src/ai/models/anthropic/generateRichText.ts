@@ -1,11 +1,11 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { generateObject } from 'ai'
+import { streamObject } from 'ai'
 
 import { DocumentSchema } from '../../RichTextSchema.js'
 import { exampleOutput } from '../example.js'
 
 export const generateRichText = async (text: string, options: any) => {
-  const result = await generateObject({
+  const streamResult = await streamObject({
     model: anthropic(options.model),
     prompt: text,
     schema: DocumentSchema,
@@ -19,14 +19,11 @@ export const generateRichText = async (text: string, options: any) => {
 
       SAMPLE OUTPUT OBJECT:
       ${JSON.stringify(exampleOutput)}
-
-
+      
       LAYOUT:
       ${options.layout}
       `,
   })
 
-  console.log('generateRichText result:', result)
-
-  return result.object
+  return streamResult.toTextStreamResponse()
 }

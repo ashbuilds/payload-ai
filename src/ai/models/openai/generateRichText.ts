@@ -1,11 +1,11 @@
 import { openai } from '@ai-sdk/openai'
-import { generateObject } from 'ai'
+import { streamObject } from 'ai'
 
 import { DocumentSchema } from '../../RichTextSchema.js'
 import { exampleOutput } from '../example.js'
 
 export const generateRichText = async (text: string, options: any) => {
-  const result = await generateObject({
+  const streamResult = await streamObject({
     model: openai(options.model),
     prompt: text,
     schema: DocumentSchema,
@@ -19,14 +19,12 @@ export const generateRichText = async (text: string, options: any) => {
 
       SAMPLE OUTPUT OBJECT:
       ${JSON.stringify(exampleOutput)}
-
-
+      
       LAYOUT:
       ${options.layout}
       `,
   })
-
-  return result.object
+  return streamResult.toTextStreamResponse()
 }
 
 export interface SerializedLexicalNode {

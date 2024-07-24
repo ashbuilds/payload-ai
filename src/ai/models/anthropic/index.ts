@@ -14,10 +14,9 @@ export const AnthropicConfig: GenerationConfig = {
       id: 'anthropic-claude-object',
       name: 'Anthropic Claude',
       fields: ['richText'], //TODO: Use these field to find and replace auto generation functionality in payload config - then we dont need to manually pass the fields - use field admin.components.Label function
-      handler: async (text: string, options) => {
+      handler: (text: string, options) => {
         //TODO: change it to open ai text to speech api
-        const objectData = await generateRichText(text, options)
-        return objectData
+        return generateRichText(text, options)
       },
       output: 'text',
       settings: {

@@ -121,8 +121,7 @@ export const endpoints: Endpoints = {
     handler: async (req: PayloadRequest) => {
       const data = await req.json?.()
 
-      console.log('data', JSON.stringify(data, null, 2))
-
+      console.log('data -----> ', JSON.stringify(data, null, 2))
       const { locale = 'en', options } = data
       const { instructionId, action } = options
       const contextData = data.doc
@@ -138,7 +137,7 @@ export const endpoints: Endpoints = {
       }
 
       console.log('Instructions', instructions)
-      console.log('data.doc', contextData)
+      console.log('contextData', contextData)
 
       let { prompt: promptTemplate = '' } = instructions
 
@@ -149,7 +148,7 @@ export const endpoints: Endpoints = {
         context: contextData,
       })
 
-      console.log('prompts:', prompts)
+      console.log('Running with prompts:', prompts)
       const { defaultLocale, locales = [] } = req.payload.config.localization || {}
       const localeData = locales.find((l) => {
         return l.code === locale
@@ -161,18 +160,17 @@ export const endpoints: Endpoints = {
       const opt = {
         locale: localeInfo,
         modelId: instructions['model-id'],
-        system: prompts.system,
       }
 
       const model = GenerationModels.find((model) => model.id === opt.modelId)
       const settingsName = model.settings?.name
       const modelOptions = instructions[settingsName] || {}
 
-      const result = await model.handler?.(prompts.prompt, { ...modelOptions, ...opt })
-
-      // const result = 'working... on ' + action
-
-      return new Response(JSON.stringify({ result }))
+      return model.handler?.(prompts.prompt, {
+        ...modelOptions,
+        ...opt,
+        system: prompts.system || modelOptions.system,
+      })
     },
     method: 'post',
     path: '/ai/generate/textarea',
