@@ -3,10 +3,10 @@ name: Build Plugin
 on:
   push:
     branches:
-      - master
+      - master  
   pull_request:
     branches:
-      - master
+      - master 
 
 jobs:
   build:
@@ -58,7 +58,7 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "Automated build"
-          git fetch origin ${{ github.ref }}
-          git rebase origin/${{ github.ref }}
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
+          git fetch origin ${{ github.ref_name }}
+          git rebase origin/${{ github.ref_name }}
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
         fi
