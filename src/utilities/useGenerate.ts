@@ -1,3 +1,5 @@
+import type { LexicalEditor } from 'lexical'
+
 import {
   useConfig,
   useDocumentEvents,
@@ -7,19 +9,15 @@ import {
   useForm,
   useLocale,
 } from '@payloadcms/ui'
+import { useCompletion, experimental_useObject as useObject } from 'ai/react'
+import { $getRoot } from 'lexical'
 import { useCallback, useEffect } from 'react'
 
-import { GenerateTextarea, MenuItems } from '../types.js'
+import type { GenerateTextarea, MenuItems } from '../types.js'
 
+import { DocumentSchema } from '../ai/RichTextSchema.js'
 import { useInstructions } from '../providers/InstructionsProvider/index.js'
 import { useDotFields } from './useDotFields.js'
-import { DocumentSchema } from '../ai/RichTextSchema.js'
-
-import { experimental_useObject as useObject, useCompletion } from 'ai/react'
-import { $getRoot, LexicalEditor } from 'lexical'
-import { useMenu } from '../ui/Actions/useMenu.js'
-
-type Generate = (options: { action: MenuItems }) => Promise<void | Response>
 
 type UseGenerate = {
   lexicalEditor: LexicalEditor
@@ -44,18 +42,18 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
 
   const { object, submit } = useObject({
     api: '/api/ai/generate/textarea',
-    schema: DocumentSchema,
     onError: (error) => {
       console.error('Error generating object:', error)
     },
+    schema: DocumentSchema,
   })
 
   const { complete, completion } = useCompletion({
     api: '/api/ai/generate/textarea',
-    streamMode: 'stream-data',
     onError: (error) => {
       console.error('Error generating text:', error)
     },
+    streamMode: 'text',
   })
 
   useEffect(() => {
@@ -94,8 +92,8 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     async ({ action = 'Compose' }: { action: MenuItems }) => {
       const { fields = {} } = getDotFields()
       const options = {
-        instructionId,
         action,
+        instructionId,
       }
 
       console.log('Streaming object with options: ', options)
@@ -103,7 +101,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
       submit({
         doc: fields,
         locale: localFromContext?.code,
-        options: options,
+        options,
       })
     },
     [getDotFields, localFromContext?.code, instructionId],
@@ -113,8 +111,8 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     async ({ action = 'Compose' }: { action: MenuItems }) => {
       const { fields = {} } = getDotFields()
       const options = {
-        instructionId,
         action,
+        instructionId,
       }
 
       console.log('Streaming text with options: ', options)
@@ -123,7 +121,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
         body: {
           doc: fields,
           locale: localFromContext?.code,
-          options: options,
+          options,
         },
       })
     },
@@ -183,17 +181,4 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     },
     [generateUpload, streamObject, streamText, type],
   )
-
-  // return async (options?: { action: MenuItems }) => {
-  //   if (type === 'richText') {
-  //     return streamObject(options)
-  //   }
-  //
-  //   if (['text', 'textarea'].includes(type)) {
-  //     return streamText(options)
-  //   }
-  //   if (type === 'upload') {
-  //     return generateUpload()
-  //   }
-  // }
 }

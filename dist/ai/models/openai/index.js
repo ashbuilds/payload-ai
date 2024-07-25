@@ -5,6 +5,7 @@ import { generateImage } from './generateImage.js';
 import { generateRichText } from './generateRichText.js';
 import { generateVoice } from './generateVoice.js';
 //TODO: Simplify this file by moving the handlers to separate files and remove duplicate code
+//TODO: every config must have default settings selected
 export const OpenAIConfig = {
     models: [
         {
@@ -30,7 +31,6 @@ export const OpenAIConfig = {
             output: 'text',
             settings: {
                 name: 'openai-gpt-text-settings',
-                label: 'OpenAI GPT Settings',
                 type: 'group',
                 admin: {
                     condition (data) {
@@ -50,7 +50,8 @@ export const OpenAIConfig = {
                             'gpt-3.5-turbo'
                         ]
                     }
-                ]
+                ],
+                label: 'OpenAI GPT Settings'
             }
         },
         {

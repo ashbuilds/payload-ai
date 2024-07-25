@@ -3,16 +3,17 @@ import { GenerationModels } from '../ai/models/index.js';
 const replacePlaceholders = (prompt, values)=>{
     return Handlebars.compile(prompt)(values);
 };
-const assignPrompt = (action, { template, field, context })=>{
+const assignPrompt = (action, { context, field, template })=>{
     const prompt = replacePlaceholders(template, context);
     switch(action){
         case 'Compose':
             return {
-                system: '',
-                prompt
+                prompt,
+                system: ''
             };
         case 'Expand':
             return {
+                prompt: replacePlaceholders(`{{${field}}}`, context),
                 system: `You are a creative writer and subject matter expert. 
         Your task is to expand on the given text, adding depth, detail, 
         and relevant information while maintaining the original tone and style.
@@ -24,11 +25,11 @@ const assignPrompt = (action, { template, field, context })=>{
         - Maintain the original tone, style, and intent of the text.
         - Ensure the expanded version flows naturally and coherently.
         - Do not contradict or alter the original meaning or message.
-        -------------`,
-                prompt: replacePlaceholders(`{{${field}}}`, context)
+        -------------`
             };
         case 'Proofread':
             return {
+                prompt: replacePlaceholders(`{{${field}}}`, context),
                 system: `You are an English language expert. Your task is to carefully proofread the given text, 
       focusing solely on correcting grammar and spelling mistakes. Do not alter the content, 
       style, or tone of the original text in any way.
@@ -40,11 +41,11 @@ const assignPrompt = (action, { template, field, context })=>{
       - Do not change the content, meaning, tone, or style of the original text.
       - Always return the full text, whether corrections were made or not.
       - Do not provide any additional comments or analysis.
-      -------------`,
-                prompt: replacePlaceholders(`{{${field}}}`, context)
+      -------------`
             };
         case 'Rephrase':
             return {
+                prompt: replacePlaceholders(`{{${field}}}`, context),
                 system: `You are a skilled language expert. Rephrase the given text while maintaining its original meaning, tone, and emotional content. Use different words and sentence structures where possible, but preserve the overall style and sentiment of the original.
         -------------
         INSTRUCTIONS:
@@ -54,11 +55,11 @@ const assignPrompt = (action, { template, field, context })=>{
         - Ensure the rephrased text conveys the same message and feeling as the original.
         ${prompt ? '- Below is a previous prompt that was used to generate the original text.' : ''}
           ${prompt}
-        -------------`,
-                prompt: replacePlaceholders(`{{${field}}}`, context)
+        -------------`
             };
         case 'Simplify':
             return {
+                prompt: replacePlaceholders(`{{${field}}}`, context),
                 system: `You are a skilled communicator specializing in clear and concise writing. 
         Your task is to simplify the given text, making it easier to understand while retaining its core message.
         -------------
@@ -75,28 +76,27 @@ const assignPrompt = (action, { template, field, context })=>{
         PREVIOUS PROMPT:
         ${prompt}
         ` : ''}
-        -------------`,
-                prompt: replacePlaceholders(`{{${field}}}`, context)
+        -------------`
             };
         case 'Summarize':
             return {
-                system: '',
-                prompt: replacePlaceholders(`{{${field}}}`, context)
+                prompt: replacePlaceholders(`{{${field}}}`, context),
+                system: ''
             };
         case 'Tone':
             return {
-                system: '',
-                prompt: replacePlaceholders(`{{${field}}}`, context)
+                prompt: replacePlaceholders(`{{${field}}}`, context),
+                system: ''
             };
         case 'Translate':
             return {
-                system: '',
-                prompt: replacePlaceholders(`{{${field}}}`, context)
+                prompt: replacePlaceholders(`{{${field}}}`, context),
+                system: ''
             };
         default:
             return {
-                system: '',
-                prompt: replacePlaceholders(template, context)
+                prompt: replacePlaceholders(template, context),
+                system: ''
             };
     }
 };
@@ -104,9 +104,9 @@ export const endpoints = {
     textarea: {
         handler: async (req)=>{
             const data = await req.json?.();
-            console.log('data -----> ', JSON.stringify(data, null, 2));
+            console.log('incoming data -----> ', JSON.stringify(data, null, 2));
             const { locale = 'en', options } = data;
-            const { instructionId, action } = options;
+            const { action, instructionId } = options;
             const contextData = data.doc;
             let instructions = {
                 'model-id': '',
@@ -119,14 +119,12 @@ export const endpoints = {
                     collection: 'instructions'
                 });
             }
-            console.log('Instructions', instructions);
-            console.log('contextData', contextData);
-            let { prompt: promptTemplate = '' } = instructions;
+            const { prompt: promptTemplate = '' } = instructions;
             const fieldName = instructions['schema-path']?.split('.').pop();
             const prompts = assignPrompt(action, {
-                template: promptTemplate,
+                context: contextData,
                 field: fieldName,
-                context: contextData
+                template: promptTemplate
             });
             console.log('Running with prompts:', prompts);
             const { defaultLocale, locales = [] } = req.payload.config.localization || {};
@@ -146,6 +144,11 @@ export const endpoints = {
                 ...modelOptions,
                 ...opt,
                 system: prompts.system || modelOptions.system
+            }).catch((error)=>{
+                console.error('Error: endpoint - generating text:', error);
+                return new Response(JSON.stringify(error.message), {
+                    status: 500
+                });
             });
         },
         method: 'post',
