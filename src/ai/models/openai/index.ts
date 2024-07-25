@@ -2,7 +2,7 @@ import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
 import { openai } from '@ai-sdk/openai'
-import { generateText, streamText } from 'ai'
+import { streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
@@ -12,6 +12,7 @@ import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
 
 //TODO: Simplify this file by moving the handlers to separate files and remove duplicate code
+//TODO: every config must have default settings selected
 export const OpenAIConfig: GenerationConfig = {
   models: [
     {
@@ -20,7 +21,7 @@ export const OpenAIConfig: GenerationConfig = {
       fields: ['text', 'textarea'],
       handler: async (
         prompt: string,
-        options: { locale: string; system: string; model: string },
+        options: { locale: string; model: string; system: string },
       ) => {
         const finalPrompt = `Output language code: ${options.locale}
           Prompt: ${prompt}
@@ -39,7 +40,6 @@ export const OpenAIConfig: GenerationConfig = {
       output: 'text',
       settings: {
         name: 'openai-gpt-text-settings',
-        label: 'OpenAI GPT Settings',
         type: 'group',
         admin: {
           condition(data) {
@@ -55,6 +55,7 @@ export const OpenAIConfig: GenerationConfig = {
             options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-3.5-turbo'],
           },
         ],
+        label: 'OpenAI GPT Settings',
       },
     },
     {

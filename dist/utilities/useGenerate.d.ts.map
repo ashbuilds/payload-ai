@@ -1,1 +1,0 @@
-{"version":3,"file":"useGenerate.d.ts","sourceRoot":"","sources":["../../src/utilities/useGenerate.ts"],"names":[],"mappings":"AAWA,OAAO,EAAoB,SAAS,EAAE,MAAM,aAAa,CAAA;AAOzD,OAAO,EAAY,aAAa,EAAE,MAAM,SAAS,CAAA;AAKjD,KAAK,WAAW,GAAG;IACjB,aAAa,EAAE,aAAa,CAAA;CAC7B,CAAA;AAED,eAAO,MAAM,WAAW,sBAAuB,WAAW,gBAgJrC;IAAE,MAAM,EAAE,SAAS,CAAA;CAAE,6BA2BzC,CAAA"}

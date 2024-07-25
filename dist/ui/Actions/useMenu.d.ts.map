@@ -1,1 +1,0 @@
-{"version":3,"file":"useMenu.d.ts","sourceRoot":"","sources":["../../../src/ui/Actions/useMenu.tsx"],"names":[],"mappings":"AAIA,OAAO,EAAE,aAAa,EAAE,MAAM,SAAS,CAAA;AAavC,OAAO,EAA4B,aAAa,EAAE,MAAM,gBAAgB,CAAA;AAsDxE,KAAK,YAAY,GAAG;IAClB,aAAa,EAAE,aAAa,CAAA;CAC7B,CAAA;AAED,eAAO,MAAM,OAAO,sBAAuB,YAAY,cAAc,aAAa;;;;;;;;CA8DjF,CAAA"}

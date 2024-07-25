@@ -1,1 +1,0 @@
-{"version":3,"sources":["../src/index.ts"],"sourcesContent":["export { payloadAiPlugin } from './plugin.js'\n"],"names":["payloadAiPlugin"],"mappings":"AAAA,SAASA,eAAe,QAAQ,cAAa"}
