@@ -5,6 +5,7 @@ import Handlebars from 'handlebars'
 import type { Endpoints, MenuItems } from '../types.js'
 
 import { GenerationModels } from '../ai/models/index.js'
+import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js'
 
 const replacePlaceholders = (prompt: string, values: object) => {
   return Handlebars.compile(prompt)(values)
@@ -175,7 +176,7 @@ export const endpoints: Endpoints = {
         })
     },
     method: 'post',
-    path: '/ai/generate/textarea',
+    path: PLUGIN_API_ENDPOINT_GENERATE,
   },
   upload: {
     handler: async (req: PayloadRequest) => {
@@ -229,6 +230,6 @@ export const endpoints: Endpoints = {
       )
     },
     method: 'post',
-    path: '/ai/generate/upload',
+    path: PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   },
 }

@@ -1,14 +1,6 @@
 import type { LexicalEditor } from 'lexical'
 
-import {
-  useConfig,
-  useDocumentEvents,
-  useDocumentInfo,
-  useField,
-  useFieldProps,
-  useForm,
-  useLocale,
-} from '@payloadcms/ui'
+import { useField, useFieldProps, useLocale } from '@payloadcms/ui'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { $getRoot } from 'lexical'
 import { useCallback, useEffect } from 'react'
@@ -29,7 +21,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   //TODO: This should be dynamic, i think it was the part of component props but its not inside useFieldProps
   const relationTo = 'media'
 
-  const { setValue, value, ...restFieldInfo } = useField<string>({
+  const { setValue } = useField<string>({
     path: pathFromContext,
   })
 
@@ -55,10 +47,6 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     },
     streamMode: 'stream-data',
   })
-
-  if (type === 'richText') {
-    console.log('Rich Text Field', { setValue }, value)
-  }
 
   useEffect(() => {
     if (!object) return
@@ -101,8 +89,6 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
         instructionId,
       }
 
-      console.log('Streaming object with options: ', options)
-
       submit({
         doc: fields,
         locale: localFromContext?.code,
@@ -119,8 +105,6 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
         action,
         instructionId,
       }
-
-      console.log('Streaming text with options: ', options)
 
       await complete('', {
         body: {
