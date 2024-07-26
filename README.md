@@ -10,6 +10,8 @@
 - [x] Voice generation with ElevenLabs
 - [x] Image generation with OpenAI
 - [x] Field level prompt customization
+- [ ] Analyse documents 
+- [ ] Automation of content creation workflows
 - [ ] Internationalization support
 
 ## 📋 Table of Contents
