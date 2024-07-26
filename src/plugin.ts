@@ -11,7 +11,7 @@ import { InstructionsProvider } from './providers/InstructionsProvider/Instructi
 import { translations } from './translations/index.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
-const payloadAiPlugin =
+const payloadPluginAI =
   (pluginConfig: PluginConfig) =>
   async (incomingConfig: Config): Promise<Config> => {
     const collections = [...(incomingConfig.collections ?? []), Instructions]
@@ -68,10 +68,12 @@ const payloadAiPlugin =
     updatedConfig.onInit = async (payload) => {
       if (incomingConfig.onInit) await incomingConfig.onInit(payload)
 
-      init(payload, collectionsFieldPathMap)
+      init(payload, collectionsFieldPathMap).catch((error) => {
+        payload.logger.error(`— AI Plugin: Initialization Error: ${error}`)
+      })
     }
 
     return updatedConfig
   }
 
-export { payloadAiPlugin }
+export { payloadPluginAI }

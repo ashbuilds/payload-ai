@@ -1,5 +1,5 @@
 {
-  "name": "@ashbuilds/payload-ai",
+  "name": "payload-plugin-ai",
   "version": "1.0.0",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",

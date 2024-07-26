@@ -1,5 +1,4 @@
-import type { DocumentInfoContext } from '@payloadcms/ui'
-import type { Config, Endpoint, Field, GroupField } from 'payload'
+import type { Endpoint, Field, GroupField } from 'payload'
 
 export interface PluginConfig {
   collections?: string[]
@@ -68,7 +67,7 @@ export type UseMenuEvents = {
 }
 
 export type BaseItemProps = {
+  children?: React.ReactNode
   hideIcon?: boolean
   onClick: () => void
-  children?: React.ReactNode
 }

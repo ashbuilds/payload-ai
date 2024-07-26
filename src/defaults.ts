@@ -1,12 +1,3 @@
-export const defaults = {
-  description: {
-    maxLength: 150,
-    minLength: 100,
-  },
-  title: {
-    maxLength: 60,
-    minLength: 50,
-  },
-}
-
-export const PLUGIN_NAME = 'ai-plugin'
+export const PLUGIN_NAME = 'plugin-ai'
+export const PLUGIN_INSTRUCTIONS_TABLE = 'instructions'
+export const PLUGIN_INSTRUCTIONS_MAP_GLOBAL = 'ai-plugin__instructions_map'
