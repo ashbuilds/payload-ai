@@ -23,8 +23,6 @@ export const useDotFields = ()=>{
             fields: {}
         };
         const siblingData = getSiblingData(path);
-        console.log('siblingData : ', siblingData);
-        console.log('data : ', data);
         const dataDot = dot.dot(data);
         const siblingDataDot = dot.dot(siblingData);
         if (arraysHaveSameStrings(Object.keys(dataDot), Object.keys(siblingDataDot))) {

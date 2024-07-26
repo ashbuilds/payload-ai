@@ -1,5 +1,5 @@
 'use client';
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx } from "react/jsx-runtime";
 import { TextareaField as InputField, useField, useFieldProps, useForm } from '@payloadcms/ui';
 import React, { useContext, useEffect, useRef } from 'react';
 import { PromptContext } from '../../providers/Prompt/index.js';
@@ -29,9 +29,10 @@ export const PromptTextareaField = (props)=>{
         fieldsInfo,
         elementRef
     ]);
-    return /*#__PURE__*/ _jsxs(React.Fragment, {
-        children: [
-            /*#__PURE__*/ _jsx(Floatype, {
+    return /*#__PURE__*/ _jsx(React.Fragment, {
+        children: /*#__PURE__*/ _jsx(InputField, {
+            ...props,
+            CustomDescription: /*#__PURE__*/ _jsx(Floatype, {
                 inputRef: elementRef,
                 options: {
                     onQuery: (val)=>{
@@ -57,11 +58,8 @@ export const PromptTextareaField = (props)=>{
                         }
                     }
                 }
-            }),
-            /*#__PURE__*/ _jsx(InputField, {
-                ...props
             })
-        ]
+        })
     });
 };
 

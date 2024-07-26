@@ -221,8 +221,6 @@ export function Floatype({ inputRef, options }) {
     return /*#__PURE__*/ _jsxs("div", {
         className: "field-type textarea",
         style: {
-            // display: items.length > 0 ? 'block' : 'none',
-            // margin: items.length > 0 ? 'block' : 'none',
             position: 'relative'
         },
         children: [

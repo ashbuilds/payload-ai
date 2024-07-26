@@ -1,5 +1,6 @@
 import Handlebars from 'handlebars';
 import { GenerationModels } from '../ai/models/index.js';
+import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js';
 const replacePlaceholders = (prompt, values)=>{
     return Handlebars.compile(prompt)(values);
 };
@@ -152,7 +153,7 @@ export const endpoints = {
             });
         },
         method: 'post',
-        path: '/ai/generate/textarea'
+        path: PLUGIN_API_ENDPOINT_GENERATE
     },
     upload: {
         handler: async (req)=>{
@@ -196,7 +197,7 @@ export const endpoints = {
             }));
         },
         method: 'post',
-        path: '/ai/generate/upload'
+        path: PLUGIN_API_ENDPOINT_GENERATE_UPLOAD
     }
 };
 

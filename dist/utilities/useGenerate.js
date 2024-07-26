@@ -3,13 +3,14 @@ import { useCompletion, experimental_useObject as useObject } from 'ai/react';
 import { $getRoot } from 'lexical';
 import { useCallback, useEffect } from 'react';
 import { DocumentSchema } from '../ai/RichTextSchema.js';
+import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js';
 import { useInstructions } from '../providers/InstructionsProvider/index.js';
 import { useDotFields } from './useDotFields.js';
 export const useGenerate = ({ lexicalEditor })=>{
     const { type, path: pathFromContext, schemaPath } = useFieldProps();
     //TODO: This should be dynamic, i think it was the part of component props but its not inside useFieldProps
     const relationTo = 'media';
-    const { setValue, value, ...restFieldInfo } = useField({
+    const { setValue } = useField({
         path: pathFromContext
     });
     const { id: instructionId } = useInstructions({
@@ -18,14 +19,14 @@ export const useGenerate = ({ lexicalEditor })=>{
     const localFromContext = useLocale();
     const { getDotFields } = useDotFields();
     const { object, submit } = useObject({
-        api: '/api/ai/generate/textarea',
+        api: PLUGIN_API_ENDPOINT_GENERATE,
         onError: (error)=>{
             console.error('Error generating object:', error);
         },
         schema: DocumentSchema
     });
     const { complete, completion } = useCompletion({
-        api: '/api/ai/generate/textarea',
+        api: PLUGIN_API_ENDPOINT_GENERATE,
         onError: (error)=>{
             console.error('Error generating text:', error);
         },
@@ -33,6 +34,7 @@ export const useGenerate = ({ lexicalEditor })=>{
     });
     useEffect(()=>{
         if (!object) return;
+        // TODO: Improve error handling
         requestAnimationFrame(()=>{
             try {
                 const editorState = lexicalEditor.parseEditorState(JSON.stringify(object));
@@ -46,7 +48,7 @@ export const useGenerate = ({ lexicalEditor })=>{
                     discrete: true
                 });
             } catch (e) {
-                setValue(object);
+            // setValue(object) //TODO: This breaks the editor find a better way to handle objects that are not valid
             }
         });
     }, [
@@ -60,13 +62,12 @@ export const useGenerate = ({ lexicalEditor })=>{
     }, [
         completion
     ]);
-    const streamObject = useCallback(async ({ action = 'Compose' })=>{
+    const streamObject = useCallback(({ action = 'Compose' })=>{
         const { fields = {} } = getDotFields();
         const options = {
             action,
             instructionId
         };
-        console.log('Streaming object with options: ', options);
         submit({
             doc: fields,
             locale: localFromContext?.code,
@@ -83,7 +84,6 @@ export const useGenerate = ({ lexicalEditor })=>{
             action,
             instructionId
         };
-        console.log('Streaming text with options: ', options);
         await complete('', {
             body: {
                 doc: fields,
@@ -102,7 +102,7 @@ export const useGenerate = ({ lexicalEditor })=>{
             console.log('dotFields is empty');
             return;
         }
-        return fetch('/api/ai/generate/upload', {
+        return fetch(PLUGIN_API_ENDPOINT_GENERATE_UPLOAD, {
             body: JSON.stringify({
                 doc: fields,
                 locale: localFromContext?.code,
