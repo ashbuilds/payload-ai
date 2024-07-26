@@ -1,2 +1,2 @@
-export { payloadAiPlugin } from './plugin.js';
+export { payloadPluginAI } from './plugin.js';
 //# sourceMappingURL=index.d.ts.map

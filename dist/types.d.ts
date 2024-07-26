@@ -39,8 +39,8 @@ export type UseMenuEvents = {
     [key in MenuEvents]?: () => void;
 };
 export type BaseItemProps = {
+    children?: React.ReactNode;
     hideIcon?: boolean;
     onClick: () => void;
-    children?: React.ReactNode;
 };
 //# sourceMappingURL=types.d.ts.map
