@@ -1,13 +1,10 @@
 import type { PayloadRequest } from 'payload'
 
-import { StreamTextResult } from 'ai'
-import { createStreamableValue } from 'ai/rsc'
 import Handlebars from 'handlebars'
 
 import type { Endpoints, MenuItems } from '../types.js'
 
 import { GenerationModels } from '../ai/models/index.js'
-import { Instructions } from '../types.js'
 
 const replacePlaceholders = (prompt: string, values: object) => {
   return Handlebars.compile(prompt)(values)
