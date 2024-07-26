@@ -32,6 +32,9 @@ export const useDotFields = (): DotFields => {
     if (Object.keys(data).length === 0) return { dotFields: {}, fields: {} }
 
     const siblingData = getSiblingData(path)
+    console.log('siblingData : ', siblingData)
+    console.log('data : ', data)
+
     const dataDot = dot.dot(data)
     const siblingDataDot = dot.dot(siblingData)
 
