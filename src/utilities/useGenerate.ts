@@ -56,9 +56,14 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     streamMode: 'stream-data',
   })
 
+  if (type === 'richText') {
+    console.log('Rich Text Field', { setValue }, value)
+  }
+
   useEffect(() => {
     if (!object) return
 
+    // TODO: Improve error handling
     requestAnimationFrame(() => {
       try {
         const editorState = lexicalEditor.parseEditorState(JSON.stringify(object))
@@ -75,7 +80,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
           },
         )
       } catch (e) {
-        setValue(object)
+        // setValue(object) //TODO: This breaks the editor find a better way to handle objects that are not valid
       }
     })
   }, [object])
@@ -89,7 +94,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   }, [completion])
 
   const streamObject = useCallback(
-    async ({ action = 'Compose' }: { action: MenuItems }) => {
+    ({ action = 'Compose' }: { action: MenuItems }) => {
       const { fields = {} } = getDotFields()
       const options = {
         action,
