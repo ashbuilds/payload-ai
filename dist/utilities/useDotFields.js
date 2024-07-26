@@ -11,14 +11,18 @@ export const useDotFields = ()=>{
         fields: null,
         getDotFields: ()=>({})
     });
+    // TODO: I think this needs to be disabled for rich text fields, its currently throwing error in vercel
     const getDotFields = useCallback(()=>{
         if (typeof getData !== 'function') return {
             dotFields: {},
             fields: {}
         };
         const data = getData();
+        if (Object.keys(data).length === 0) return {
+            dotFields: {},
+            fields: {}
+        };
         const siblingData = getSiblingData(path);
-        // console.log('siblingData: ', siblingData)
         const dataDot = dot.dot(data);
         const siblingDataDot = dot.dot(siblingData);
         if (arraysHaveSameStrings(Object.keys(dataDot), Object.keys(siblingDataDot))) {
