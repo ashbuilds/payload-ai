@@ -8,6 +8,7 @@ import { useCallback, useEffect } from 'react'
 import type { GenerateTextarea, MenuItems } from '../types.js'
 
 import { DocumentSchema } from '../ai/RichTextSchema.js'
+import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js'
 import { useInstructions } from '../providers/InstructionsProvider/index.js'
 import { useDotFields } from './useDotFields.js'
 
@@ -33,7 +34,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   const { getDotFields } = useDotFields()
 
   const { object, submit } = useObject({
-    api: '/api/ai/generate/textarea',
+    api: PLUGIN_API_ENDPOINT_GENERATE,
     onError: (error) => {
       console.error('Error generating object:', error)
     },
@@ -41,7 +42,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   })
 
   const { complete, completion } = useCompletion({
-    api: '/api/ai/generate/textarea',
+    api: PLUGIN_API_ENDPOINT_GENERATE,
     onError: (error) => {
       console.error('Error generating text:', error)
     },
@@ -124,7 +125,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
       return
     }
 
-    return fetch('/api/ai/generate/upload', {
+    return fetch(PLUGIN_API_ENDPOINT_GENERATE_UPLOAD, {
       body: JSON.stringify({
         doc: fields,
         locale: localFromContext?.code,
