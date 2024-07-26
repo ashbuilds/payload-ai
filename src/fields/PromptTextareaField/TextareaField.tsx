@@ -34,37 +34,41 @@ export const PromptTextareaField = (props: TextareaFieldProps) => {
 
   return (
     <React.Fragment>
-      <Floatype
-        inputRef={elementRef}
-        options={{
-          onQuery: (val) => {
-            const filteredItems = fieldsInfo.fields.filter((field) => {
-              return field.toLowerCase().includes(val.toLowerCase())
-            })
+      <InputField
+        {...props}
+        CustomDescription={
+          <Floatype
+            inputRef={elementRef}
+            options={{
+              onQuery: (val) => {
+                const filteredItems = fieldsInfo.fields.filter((field) => {
+                  return field.toLowerCase().includes(val.toLowerCase())
+                })
 
-            if (val === '{{ ') {
-              return fieldsInfo.fields
-            }
+                if (val === '{{ ') {
+                  return fieldsInfo.fields
+                }
 
-            return filteredItems
-          },
-          onSelect: (value, query) => {
-            if (query === '{{ ') {
-              return `${value} }}`
-            }
+                return filteredItems
+              },
+              onSelect: (value, query) => {
+                if (query === '{{ ') {
+                  return `${value} }}`
+                }
 
-            if (fieldsInfo.fields.includes(value)) {
-              return value
-            }
-          },
-          onUpdate: (value) => {
-            if (value) {
-              setValue(value)
-            }
-          },
-        }}
+                if (fieldsInfo.fields.includes(value)) {
+                  return value
+                }
+              },
+              onUpdate: (value) => {
+                if (value) {
+                  setValue(value)
+                }
+              },
+            }}
+          />
+        }
       />
-      <InputField {...props} />
     </React.Fragment>
   )
 }

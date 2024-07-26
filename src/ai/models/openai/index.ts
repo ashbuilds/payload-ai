@@ -190,7 +190,7 @@ export const OpenAIConfig: GenerationConfig = {
     {
       id: 'openai-gpt-object',
       name: 'OpenAI GPT',
-      fields: ['richText'], //TODO: Use these field to find and replace auto generation functionality in payload config - then we dont need to manually pass the fields - use field admin.components.Label function
+      fields: ['richText'],
       handler: (text: string, options) => {
         //TODO: change it to open ai text to speech api
         return generateRichText(text, options)

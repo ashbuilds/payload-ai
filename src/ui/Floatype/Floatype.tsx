@@ -243,8 +243,6 @@ export function Floatype<T>({ inputRef, options }: FloatypeProps<T>) {
     <div
       className="field-type textarea"
       style={{
-        // display: items.length > 0 ? 'block' : 'none',
-        // margin: items.length > 0 ? 'block' : 'none',
         position: 'relative',
       }}
     >

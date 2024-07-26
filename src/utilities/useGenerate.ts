@@ -1,14 +1,6 @@
 import type { LexicalEditor } from 'lexical'
 
-import {
-  useConfig,
-  useDocumentEvents,
-  useDocumentInfo,
-  useField,
-  useFieldProps,
-  useForm,
-  useLocale,
-} from '@payloadcms/ui'
+import { useField, useFieldProps, useLocale } from '@payloadcms/ui'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { $getRoot } from 'lexical'
 import { useCallback, useEffect } from 'react'
@@ -16,6 +8,7 @@ import { useCallback, useEffect } from 'react'
 import type { GenerateTextarea, MenuItems } from '../types.js'
 
 import { DocumentSchema } from '../ai/RichTextSchema.js'
+import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js'
 import { useInstructions } from '../providers/InstructionsProvider/index.js'
 import { useDotFields } from './useDotFields.js'
 
@@ -29,7 +22,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   //TODO: This should be dynamic, i think it was the part of component props but its not inside useFieldProps
   const relationTo = 'media'
 
-  const { setValue, value, ...restFieldInfo } = useField<string>({
+  const { setValue } = useField<string>({
     path: pathFromContext,
   })
 
@@ -41,7 +34,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   const { getDotFields } = useDotFields()
 
   const { object, submit } = useObject({
-    api: '/api/ai/generate/textarea',
+    api: PLUGIN_API_ENDPOINT_GENERATE,
     onError: (error) => {
       console.error('Error generating object:', error)
     },
@@ -49,7 +42,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   })
 
   const { complete, completion } = useCompletion({
-    api: '/api/ai/generate/textarea',
+    api: PLUGIN_API_ENDPOINT_GENERATE,
     onError: (error) => {
       console.error('Error generating text:', error)
     },
@@ -59,6 +52,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   useEffect(() => {
     if (!object) return
 
+    // TODO: Improve error handling
     requestAnimationFrame(() => {
       try {
         const editorState = lexicalEditor.parseEditorState(JSON.stringify(object))
@@ -75,7 +69,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
           },
         )
       } catch (e) {
-        setValue(object)
+        // setValue(object) //TODO: This breaks the editor find a better way to handle objects that are not valid
       }
     })
   }, [object])
@@ -89,14 +83,12 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   }, [completion])
 
   const streamObject = useCallback(
-    async ({ action = 'Compose' }: { action: MenuItems }) => {
+    ({ action = 'Compose' }: { action: MenuItems }) => {
       const { fields = {} } = getDotFields()
       const options = {
         action,
         instructionId,
       }
-
-      console.log('Streaming object with options: ', options)
 
       submit({
         doc: fields,
@@ -114,8 +106,6 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
         action,
         instructionId,
       }
-
-      console.log('Streaming text with options: ', options)
 
       await complete('', {
         body: {
@@ -135,7 +125,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
       return
     }
 
-    return fetch('/api/ai/generate/upload', {
+    return fetch(PLUGIN_API_ENDPOINT_GENERATE_UPLOAD, {
       body: JSON.stringify({
         doc: fields,
         locale: localFromContext?.code,
