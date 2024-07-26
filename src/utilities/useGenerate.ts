@@ -53,7 +53,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     onError: (error) => {
       console.error('Error generating text:', error)
     },
-    streamMode: 'text',
+    streamMode: 'stream-data',
   })
 
   useEffect(() => {
