@@ -1,4 +1,3 @@
-import { PromptTextareaField } from '../../../fields/PromptTextareaField/TextareaField.js';
 import { SelectField } from '../../../fields/SelectField/SelectField.js';
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js';
 import { generateVoice } from './generateVoice.js';
@@ -124,21 +123,21 @@ export const ElevenLabsConfig = {
                             {
                                 name: 'previous_text',
                                 type: 'textarea',
-                                admin: {
-                                    components: {
-                                        Field: PromptTextareaField
-                                    }
-                                },
+                                // admin: {
+                                //   components: {
+                                //     Field: PromptTextareaField,
+                                //   },
+                                // },
                                 label: 'Previous Text'
                             },
                             {
                                 name: 'next_text',
                                 type: 'textarea',
-                                admin: {
-                                    components: {
-                                        Field: PromptTextareaField
-                                    }
-                                },
+                                // admin: {
+                                //   components: {
+                                //     Field: PromptTextareaField,
+                                //   },
+                                // },
                                 label: 'Next Text'
                             }
                         ]

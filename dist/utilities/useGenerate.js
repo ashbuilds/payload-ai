@@ -1,5 +1,6 @@
 import { useField, useFieldProps, useLocale } from '@payloadcms/ui';
 import { useCompletion, experimental_useObject as useObject } from 'ai/react';
+import { jsonrepair } from 'jsonrepair';
 import { $getRoot } from 'lexical';
 import { useCallback, useEffect } from 'react';
 import { DocumentSchema } from '../ai/RichTextSchema.js';
@@ -19,14 +20,14 @@ export const useGenerate = ({ lexicalEditor })=>{
     const localFromContext = useLocale();
     const { getDotFields } = useDotFields();
     const { object, submit } = useObject({
-        api: PLUGIN_API_ENDPOINT_GENERATE,
+        api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
         onError: (error)=>{
             console.error('Error generating object:', error);
         },
         schema: DocumentSchema
     });
     const { complete, completion } = useCompletion({
-        api: PLUGIN_API_ENDPOINT_GENERATE,
+        api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
         onError: (error)=>{
             console.error('Error generating text:', error);
         },
@@ -37,7 +38,8 @@ export const useGenerate = ({ lexicalEditor })=>{
         // TODO: Improve error handling
         requestAnimationFrame(()=>{
             try {
-                const editorState = lexicalEditor.parseEditorState(JSON.stringify(object));
+                const repairedObject = jsonrepair(JSON.stringify(object));
+                const editorState = lexicalEditor.parseEditorState(repairedObject);
                 if (editorState.isEmpty()) return;
                 lexicalEditor.update(()=>{
                     const root = $getRoot();
@@ -48,6 +50,13 @@ export const useGenerate = ({ lexicalEditor })=>{
                     discrete: true
                 });
             } catch (e) {
+                console.error('Error setting object:', e);
+                console.error('Object:', object);
+                if (type === 'richText') {
+                    console.log('type is richText', {
+                        setValue
+                    });
+                }
             // setValue(object) //TODO: This breaks the editor find a better way to handle objects that are not valid
             }
         });
@@ -102,7 +111,7 @@ export const useGenerate = ({ lexicalEditor })=>{
             console.log('dotFields is empty');
             return;
         }
-        return fetch(PLUGIN_API_ENDPOINT_GENERATE_UPLOAD, {
+        return fetch(`/api${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
             body: JSON.stringify({
                 doc: fields,
                 locale: localFromContext?.code,

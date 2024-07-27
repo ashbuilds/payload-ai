@@ -1,3 +1,4 @@
 import type { TextareaFieldProps } from '@payloadcms/ui';
-export declare const PromptTextareaField: (props: TextareaFieldProps) => import("react/jsx-runtime").JSX.Element;
+import React from 'react';
+export declare const PromptTextareaField: React.FC<TextareaFieldProps>;
 //# sourceMappingURL=TextareaField.d.ts.map
