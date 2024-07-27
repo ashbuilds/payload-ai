@@ -3,72 +3,70 @@
 import type { TextareaFieldProps } from '@payloadcms/ui'
 
 import { TextareaField as InputField, useField, useFieldProps, useForm } from '@payloadcms/ui'
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
 import { PromptContext } from '../../providers/Prompt/index.js'
 import { Floatype } from '../../ui/Floatype/Floatype.js'
 
-export const PromptTextareaField = (props: TextareaFieldProps) => {
-  const { name, path: pathFromProps } = props
+export const PromptTextareaField: React.FC<TextareaFieldProps> = (props) => {
+  const { name, path: pathFromProps, ...restProps } = props
   const { path: pathFromContext } = useFieldProps()
+  const { fields } = useContext(PromptContext)
+  const elementRef = useRef<HTMLTextAreaElement>(null)
 
   const { path, setValue } = useField<string>({
     path: pathFromContext || pathFromProps || name,
   })
-  const formInfo = useForm()
-  const { formRef } = formInfo
-  const fieldsInfo = useContext(PromptContext)
-  const elementRef = useRef<any>(null)
+
+  const { formRef, initializing } = useForm()
 
   useEffect(() => {
-    if (!formRef.current || elementRef.current) {
-      return
-    }
+    if (!formRef.current || elementRef.current) return
 
     const fieldId = `#field-${path.replace(/\./g, '__')}`
-    const textareaElement = formRef.current.querySelector(fieldId)
-    if (textareaElement) {
-      elementRef.current = textareaElement
-    }
-  }, [formRef, path, fieldsInfo, elementRef])
+    elementRef.current = formRef.current.querySelector(fieldId)
+  }, [formRef, path])
+
+  const handleQuery = useCallback(
+    (val: string) => {
+      if (val === '{{ ') return fields
+      return fields.filter((field) => field.toLowerCase().includes(val.toLowerCase()))
+    },
+    [fields],
+  )
+
+  const handleSelect = useCallback(
+    (value: string, query: string) => {
+      if (query === '{{ ') return `${value} }}`
+      return fields.includes(value) ? value : undefined
+    },
+    [fields],
+  )
+
+  const handleUpdate = useCallback(
+    (value: string) => {
+      if (value) setValue(value)
+    },
+    [setValue],
+  )
+
+  const CustomDescription = !initializing ? (
+    <Floatype
+      options={{
+        onQuery: handleQuery,
+        onSelect: handleSelect,
+        onUpdate: handleUpdate,
+      }}
+      ref={elementRef}
+    />
+  ) : null
 
   return (
-    <React.Fragment>
-      <InputField
-        {...props}
-        CustomDescription={
-          <Floatype
-            inputRef={elementRef}
-            options={{
-              onQuery: (val) => {
-                const filteredItems = fieldsInfo.fields.filter((field) => {
-                  return field.toLowerCase().includes(val.toLowerCase())
-                })
-
-                if (val === '{{ ') {
-                  return fieldsInfo.fields
-                }
-
-                return filteredItems
-              },
-              onSelect: (value, query) => {
-                if (query === '{{ ') {
-                  return `${value} }}`
-                }
-
-                if (fieldsInfo.fields.includes(value)) {
-                  return value
-                }
-              },
-              onUpdate: (value) => {
-                if (value) {
-                  setValue(value)
-                }
-              },
-            }}
-          />
-        }
-      />
-    </React.Fragment>
+    <InputField
+      {...restProps}
+      CustomDescription={CustomDescription}
+      name={name}
+      path={pathFromProps}
+    />
   )
 }

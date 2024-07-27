@@ -30,19 +30,22 @@
     "prepublishOnly": "pnpm clean && pnpm build"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^0.0.30",
-    "@ai-sdk/openai": "^0.0.34",
+    "@ai-sdk/anthropic": "^0.0.33",
+    "@ai-sdk/openai": "^0.0.40",
+    "@anthropic-ai/sdk": "^0.24.3",
     "@langchain/core": "^0.2.15",
     "@langchain/openai": "^0.2.1",
-    "ai": "^3.2.16",
+    "@lexical/html": "^0.16.1",
+    "ai": "^3.2.37",
     "dot-object": "^2.1.5",
     "elevenlabs": "^0.8.2",
     "handlebars": "4.7.8",
+    "jsonrepair": "^3.8.0",
     "langchain": "^0.2.9",
+    "lexical": "^0.16.1",
     "openai": "^4.47.1",
     "zod": "^3.23.8",
-    "@lexical/html": "^0.16.1",
-    "lexical": "^0.16.1"
+    "zod-to-json-schema": "^3.23.1"
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.1",

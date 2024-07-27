@@ -13,6 +13,7 @@
 - [ ] Analyse documents 
 - [ ] Automation of content creation workflows
 - [ ] Internationalization support
+- [ ] Live chat support
 
 ## 📋 Table of Contents
 
