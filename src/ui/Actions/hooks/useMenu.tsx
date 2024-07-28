@@ -1,10 +1,12 @@
 'use client'
 
-import React, { useEffect, useState, memo, useMemo } from 'react'
-import { useField, useFieldProps } from '@payloadcms/ui'
-import { LexicalEditor } from 'lexical'
+import type { LexicalEditor } from 'lexical'
 
-import styles from './actions.module.scss'
+import { useField, useFieldProps } from '@payloadcms/ui'
+import React, { memo, useEffect, useMemo, useState } from 'react'
+
+import type { BaseItemProps, MenuItems, UseMenuEvents } from '../../../types.js'
+
 import {
   DocsAddOnIcon,
   EditNoteIcon,
@@ -14,8 +16,8 @@ import {
   SummarizeIcon,
   TranslateIcon,
   TuneIcon,
-} from './icons.js'
-import { BaseItemProps, MenuItems, UseMenuEvents } from '../../types.js'
+} from '../Icons.js'
+import styles from '../actions.module.scss'
 
 const Item: React.FC<BaseItemProps> = memo(({ children, onClick = () => {} }) => (
   <span

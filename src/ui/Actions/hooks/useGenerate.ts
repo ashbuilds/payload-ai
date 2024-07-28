@@ -1,22 +1,25 @@
 import type { LexicalEditor } from 'lexical'
 
-import { useField, useFieldProps, useLocale } from '@payloadcms/ui'
+import { useField, useFieldProps, useForm, useLocale } from '@payloadcms/ui'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { jsonrepair } from 'jsonrepair'
 import { $getRoot } from 'lexical'
 import { useCallback, useEffect } from 'react'
 
-import type { GenerateTextarea, MenuItems } from '../types.js'
+import type { GenerateTextarea, MenuItems } from '../../../types.js'
 
-import { DocumentSchema } from '../ai/RichTextSchema.js'
-import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js'
-import { useInstructions } from '../providers/InstructionsProvider/index.js'
-import { useDotFields } from './useDotFields.js'
+import { DocumentSchema } from '../../../ai/RichTextSchema.js'
+import {
+  PLUGIN_API_ENDPOINT_GENERATE,
+  PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
+} from '../../../defaults.js'
+import { useInstructions } from '../../../providers/InstructionsProvider/hook.js'
 
 type UseGenerate = {
   lexicalEditor: LexicalEditor
 }
 
+//TODO: DONATION IDEA - Add a url to donate in cli when user installs the plugin and uses it for couple of times.
 export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
 
@@ -31,10 +34,15 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     path: schemaPath,
   })
 
+  const { getData } = useForm()
   const localFromContext = useLocale()
-  const { getDotFields } = useDotFields()
 
-  const { object, submit } = useObject({
+  const {
+    isLoading: loadingObject,
+    object,
+    stop, // TODO: Implement this function
+    submit,
+  } = useObject({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
       console.error('Error generating object:', error)
@@ -42,7 +50,11 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     schema: DocumentSchema,
   })
 
-  const { complete, completion } = useCompletion({
+  const {
+    complete,
+    completion,
+    isLoading: loadingCompletion,
+  } = useCompletion({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
       console.error('Error generating text:', error)
@@ -91,24 +103,24 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
 
   const streamObject = useCallback(
     ({ action = 'Compose' }: { action: MenuItems }) => {
-      const { fields = {} } = getDotFields()
+      const doc = getData()
       const options = {
         action,
         instructionId,
       }
 
       submit({
-        doc: fields,
+        doc,
         locale: localFromContext?.code,
         options,
       })
     },
-    [getDotFields, localFromContext?.code, instructionId],
+    [getData, localFromContext?.code, instructionId],
   )
 
   const streamText = useCallback(
     async ({ action = 'Compose' }: { action: MenuItems }) => {
-      const { fields = {} } = getDotFields()
+      const doc = getData()
       const options = {
         action,
         instructionId,
@@ -116,25 +128,20 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
 
       await complete('', {
         body: {
-          doc: fields,
+          doc,
           locale: localFromContext?.code,
           options,
         },
       })
     },
-    [getDotFields, localFromContext?.code, instructionId],
+    [getData, localFromContext?.code, instructionId],
   )
 
   const generateUpload = useCallback(async () => {
-    const { fields = {} } = getDotFields()
-    if (!Object.keys(fields).length) {
-      console.log('dotFields is empty')
-      return
-    }
-
+    const doc = getData()
     return fetch(`/api${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
       body: JSON.stringify({
-        doc: fields,
+        doc,
         locale: localFromContext?.code,
         options: {
           instructionId,
@@ -161,9 +168,9 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
       .catch((error) => {
         console.error('Error generating image', error)
       })
-  }, [getDotFields, localFromContext?.code, instructionId, relationTo, setValue])
+  }, [getData, localFromContext?.code, instructionId, relationTo, setValue])
 
-  return useCallback(
+  const generate = useCallback(
     async (options?: { action: MenuItems }) => {
       if (type === 'richText') {
         return streamObject(options)
@@ -178,4 +185,9 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     },
     [generateUpload, streamObject, streamText, type],
   )
+
+  return {
+    generate,
+    isLoading: loadingCompletion || loadingObject,
+  }
 }

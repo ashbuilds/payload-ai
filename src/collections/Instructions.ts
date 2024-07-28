@@ -1,7 +1,7 @@
 import type { CollectionConfig, GroupField } from 'payload'
 
 import { GenerationModels } from '../ai/models/index.js'
-import { PromptTextareaField } from '../fields/PromptTextareaField/TextareaField.js'
+import { PromptEditorField } from '../fields/PromptEditorField/PromptEditorField.js'
 import { SelectField } from '../fields/SelectField/SelectField.js'
 
 const groupSettings = GenerationModels.reduce((fields, model) => {
@@ -31,6 +31,7 @@ export const Instructions: CollectionConfig = {
       name: 'schema-path',
       type: 'text',
       admin: {
+        hidden: true,
         readOnly: true,
       },
       unique: true,
@@ -39,6 +40,7 @@ export const Instructions: CollectionConfig = {
       name: 'field-type',
       type: 'select',
       admin: {
+        hidden: true,
         readOnly: true,
       },
       defaultValue: 'text',
@@ -88,7 +90,7 @@ export const Instructions: CollectionConfig = {
       type: 'textarea',
       admin: {
         components: {
-          Field: PromptTextareaField,
+          Field: PromptEditorField,
         },
       },
     },

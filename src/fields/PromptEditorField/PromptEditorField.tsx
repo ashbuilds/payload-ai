@@ -3,16 +3,20 @@
 import type { TextareaFieldProps } from '@payloadcms/ui'
 
 import { TextareaField as InputField, useField, useFieldProps, useForm } from '@payloadcms/ui'
-import React, { useCallback, useContext, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 
-import { PromptContext } from '../../providers/Prompt/index.js'
+import { useInstructions } from '../../providers/InstructionsProvider/hook.js'
 import { Floatype } from '../../ui/Floatype/Floatype.js'
 
-export const PromptTextareaField: React.FC<TextareaFieldProps> = (props) => {
+//TODO: Display the handlebarjs tips in description
+export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
   const { name, path: pathFromProps, ...restProps } = props
   const { path: pathFromContext } = useFieldProps()
-  const { fields } = useContext(PromptContext)
+
   const elementRef = useRef<HTMLTextAreaElement>(null)
+  const { fields } = useInstructions({
+    path: pathFromProps,
+  })
 
   const { path, setValue } = useField<string>({
     path: pathFromContext || pathFromProps || name,
