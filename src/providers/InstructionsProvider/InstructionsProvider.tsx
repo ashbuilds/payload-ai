@@ -1,7 +1,29 @@
-import { InstructionsProvider as Provider } from './index.js'
+'use client'
 
-export const InstructionsProvider: React.FC<{
-  children: React.ReactNode
-}> = ({ children }) => {
-  return <Provider>{children}</Provider>
+import React, { createContext, useEffect, useState } from 'react'
+
+const initialContext = {
+  instructions: undefined,
+}
+
+export const InstructionsContext = createContext(initialContext)
+
+export const InstructionsProvider = ({ children }: { children: React.ReactNode }) => {
+  const [instructions, setInstructionsState] = useState({})
+
+  useEffect(() => {
+    fetch('/api/globals/ai-plugin__instructions_map')
+      .then((res) => {
+        res.json().then((data) => {
+          setInstructionsState(data.map)
+        })
+      })
+      .catch((err) => {
+        console.error('err:', err)
+      })
+  }, [])
+
+  return (
+    <InstructionsContext.Provider value={{ instructions }}>{children}</InstructionsContext.Provider>
+  )
 }

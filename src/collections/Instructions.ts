@@ -31,6 +31,7 @@ export const Instructions: CollectionConfig = {
       name: 'schema-path',
       type: 'text',
       admin: {
+        hidden: true,
         readOnly: true,
       },
       unique: true,
@@ -39,6 +40,7 @@ export const Instructions: CollectionConfig = {
       name: 'field-type',
       type: 'select',
       admin: {
+        hidden: true,
         readOnly: true,
       },
       defaultValue: 'text',

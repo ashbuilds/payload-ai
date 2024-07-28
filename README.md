@@ -6,11 +6,12 @@
 
 ## 🌟 Features
 
-- [x] Rich text generation using Anthropic and OpenAI models
+- [x] Rich text generation
 - [x] Voice generation with ElevenLabs
 - [x] Image generation with OpenAI
 - [x] Field level prompt customization
 - [ ] Analyse documents 
+- [ ] Fact checking
 - [ ] Automation of content creation workflows
 - [ ] Internationalization support
 - [ ] Live chat support

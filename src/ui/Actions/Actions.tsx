@@ -1,15 +1,14 @@
 'use client'
 
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { PromptContext } from '../../providers/Prompt/index.js'
-import { useDotFields } from '../../utilities/useDotFields.js'
-import { useGenerate } from '../../utilities/useGenerate.js'
+import { PluginIcon } from './Icons.js'
 import styles from './actions.module.scss'
-import { AiIcon3, PluginIcon } from './icons.js'
-import { useMenu } from './useMenu.js'
-import LottieAnimation from './LottieAnimation.js'
+import { useDotFields } from './hooks/useDotFields.js'
+import { useGenerate } from './hooks/useGenerate.js'
+import { useMenu } from './hooks/useMenu.js'
 // import { LexicalRichTextAdapterProvider } from '@payloadcms/richtext-lexical'
 // import { useEditorConfigContext } from '@payloadcms/richtext-lexical/dist/lexical/config/client/EditorConfigProvider.js'
 import { getNearestEditorFromDOMNode } from 'lexical'
@@ -30,31 +29,13 @@ function findParentWithClass(element, className) {
 
 //TODO: Add undo/redo to the actions toolbar
 export const Actions = ({ descriptionProps, instructionId }) => {
-  const [DocumentDrawer, DocumentDrawerToggler, { closeDrawer, openDrawer }] = useDocumentDrawer({
+  const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: instructionId,
     collectionSlug: 'instructions',
   })
 
-  const { dotFields } = useDotFields()
   const fieldProps = useFieldProps()
-  const { path: pathFromContext, schemaPath, type: fieldType } = fieldProps
-  const currentField = useField({
-    path: pathFromContext,
-  })
-
-  const [fieldsInfo, setFieldsInfo] = useState(null)
-  useEffect(() => {
-    if (!dotFields) return
-
-    setFieldsInfo({
-      fields: Object.keys(dotFields),
-      selectedField: {
-        field: currentField,
-        //TODO: Why props need to be passed?
-        props: fieldProps,
-      },
-    })
-  }, [dotFields, currentField, fieldProps])
+  const { type: fieldType, path: pathFromContext, schemaPath } = fieldProps
 
   const [input, setInput] = useState(null)
   const [lexicalEditor, setLexicalEditor] = useState()
@@ -114,6 +95,14 @@ export const Actions = ({ descriptionProps, instructionId }) => {
           setIsProcessing(false)
         })
       },
+      onExpand: async () => {
+        setIsProcessing(true)
+        await generate({
+          action: 'Expand',
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
       onProofread: async () => {
         console.log('Proofreading...')
         setIsProcessing(true)
@@ -132,14 +121,7 @@ export const Actions = ({ descriptionProps, instructionId }) => {
           setIsProcessing(false)
         })
       },
-      onExpand: async () => {
-        setIsProcessing(true)
-        await generate({
-          action: 'Expand',
-        }).finally(() => {
-          setIsProcessing(false)
-        })
-      },
+      onSettings: openDrawer,
       onSimplify: async () => {
         setIsProcessing(true)
         await generate({
@@ -148,26 +130,23 @@ export const Actions = ({ descriptionProps, instructionId }) => {
           setIsProcessing(false)
         })
       },
-      onSettings: openDrawer,
     },
   )
 
   return (
     <React.Fragment>
       <label className={`${styles.actions}`} ref={actionsRef}>
-        <PromptContext.Provider value={fieldsInfo}>
-          <DocumentDrawer
-            onSave={() => {
-              closeDrawer()
-            }}
-          />
-        </PromptContext.Provider>
+        <DocumentDrawer
+          onSave={() => {
+            closeDrawer()
+          }}
+        />
         <Popup
           button={<PluginIcon isLoading={isProcessing} />}
-          verticalAlign={'bottom'}
           render={({ close }) => {
             return <Menu onClose={close} />
           }}
+          verticalAlign="bottom"
         />
         <ActiveComponent />
       </label>

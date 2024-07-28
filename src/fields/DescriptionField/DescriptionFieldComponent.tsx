@@ -5,7 +5,7 @@ import type { FieldDescriptionProps } from 'payload'
 import { useFieldProps } from '@payloadcms/ui'
 import React from 'react'
 
-import { useInstructions } from '../../providers/InstructionsProvider/index.js'
+import { useInstructions } from '../../providers/InstructionsProvider/hook.js'
 import { Actions } from '../../ui/Actions/Actions.js'
 
 export const DescriptionFieldComponent: React.FC<FieldDescriptionProps> = (props) => {
