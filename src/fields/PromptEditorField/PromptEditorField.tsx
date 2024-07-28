@@ -8,7 +8,8 @@ import React, { useCallback, useEffect, useRef } from 'react'
 import { useInstructions } from '../../providers/InstructionsProvider/hook.js'
 import { Floatype } from '../../ui/Floatype/Floatype.js'
 
-export const PromptTextareaField: React.FC<TextareaFieldProps> = (props) => {
+//TODO: Display the handlebarjs tips in description
+export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
   const { name, path: pathFromProps, ...restProps } = props
   const { path: pathFromContext } = useFieldProps()
 

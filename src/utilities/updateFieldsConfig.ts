@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { DescriptionField } from '../fields/DescriptionField/index.js'
+import { DescriptionField } from '../fields/DescriptionField/DescriptionField.js'
 
 interface UpdateFieldsConfig {
   schemaPathMap: Record<string, string>

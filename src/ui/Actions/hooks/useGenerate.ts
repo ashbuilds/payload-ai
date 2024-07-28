@@ -37,7 +37,12 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   const { getData } = useForm()
   const localFromContext = useLocale()
 
-  const { object, submit } = useObject({
+  const {
+    isLoading: loadingObject,
+    object,
+    stop, // TODO: Implement this function
+    submit,
+  } = useObject({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
       console.error('Error generating object:', error)
@@ -45,7 +50,11 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     schema: DocumentSchema,
   })
 
-  const { complete, completion } = useCompletion({
+  const {
+    complete,
+    completion,
+    isLoading: loadingCompletion,
+  } = useCompletion({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
       console.error('Error generating text:', error)
@@ -161,7 +170,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
       })
   }, [getData, localFromContext?.code, instructionId, relationTo, setValue])
 
-  return useCallback(
+  const generate = useCallback(
     async (options?: { action: MenuItems }) => {
       if (type === 'richText') {
         return streamObject(options)
@@ -176,4 +185,9 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     },
     [generateUpload, streamObject, streamText, type],
   )
+
+  return {
+    generate,
+    isLoading: loadingCompletion || loadingObject,
+  }
 }

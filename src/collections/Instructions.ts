@@ -1,7 +1,7 @@
 import type { CollectionConfig, GroupField } from 'payload'
 
 import { GenerationModels } from '../ai/models/index.js'
-import { PromptTextareaField } from '../fields/PromptTextareaField/TextareaField.js'
+import { PromptEditorField } from '../fields/PromptEditorField/PromptEditorField.js'
 import { SelectField } from '../fields/SelectField/SelectField.js'
 
 const groupSettings = GenerationModels.reduce((fields, model) => {
@@ -90,7 +90,7 @@ export const Instructions: CollectionConfig = {
       type: 'textarea',
       admin: {
         components: {
-          Field: PromptTextareaField,
+          Field: PromptEditorField,
         },
       },
     },

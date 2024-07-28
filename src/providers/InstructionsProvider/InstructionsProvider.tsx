@@ -11,6 +11,9 @@ export const InstructionsContext = createContext(initialContext)
 export const InstructionsProvider = ({ children }: { children: React.ReactNode }) => {
   const [instructions, setInstructionsState] = useState({})
 
+  // This is here because each field have separate instructions and
+  // their ID is needed to edit them for Drawer, so instead of fetching it
+  // one by one its map is saved in globals during build
   useEffect(() => {
     fetch('/api/globals/ai-plugin__instructions_map')
       .then((res) => {
@@ -19,7 +22,7 @@ export const InstructionsProvider = ({ children }: { children: React.ReactNode }
         })
       })
       .catch((err) => {
-        console.error('err:', err)
+        console.error('InstructionsProvider:', err)
       })
   }, [])
 

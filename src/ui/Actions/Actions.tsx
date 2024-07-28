@@ -1,17 +1,13 @@
 'use client'
 
-import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
+import { FieldDescription, Popup, useDocumentDrawer, useFieldProps } from '@payloadcms/ui'
 import React, { useEffect, useRef, useState } from 'react'
 
-import { PromptContext } from '../../providers/Prompt/index.js'
 import { PluginIcon } from './Icons.js'
 import styles from './actions.module.scss'
-import { useDotFields } from './hooks/useDotFields.js'
 import { useGenerate } from './hooks/useGenerate.js'
 import { useMenu } from './hooks/useMenu.js'
-// import { LexicalRichTextAdapterProvider } from '@payloadcms/richtext-lexical'
-// import { useEditorConfigContext } from '@payloadcms/richtext-lexical/dist/lexical/config/client/EditorConfigProvider.js'
-import { getNearestEditorFromDOMNode } from 'lexical'
+
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
   if (!element || element === document.body) {
@@ -82,7 +78,7 @@ export const Actions = ({ descriptionProps, instructionId }) => {
 
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const generate = useGenerate({ lexicalEditor })
+  const { generate, isLoading } = useGenerate({ lexicalEditor })
   const { ActiveComponent, Menu } = useMenu(
     { lexicalEditor },
     {
@@ -96,38 +92,28 @@ export const Actions = ({ descriptionProps, instructionId }) => {
         })
       },
       onExpand: async () => {
-        setIsProcessing(true)
+        console.log('Expanding...')
         await generate({
           action: 'Expand',
-        }).finally(() => {
-          setIsProcessing(false)
         })
       },
       onProofread: async () => {
         console.log('Proofreading...')
-        setIsProcessing(true)
         await generate({
           action: 'Proofread',
-        }).finally(() => {
-          setIsProcessing(false)
         })
       },
       onRephrase: async () => {
-        console.log('Rephrasing...', !isProcessing)
-        setIsProcessing(true)
+        console.log('Rephrasing...')
         await generate({
           action: 'Rephrase',
-        }).finally(() => {
-          setIsProcessing(false)
         })
       },
       onSettings: openDrawer,
       onSimplify: async () => {
-        setIsProcessing(true)
+        console.log('Simplifying...')
         await generate({
           action: 'Simplify',
-        }).finally(() => {
-          setIsProcessing(false)
         })
       },
     },
@@ -142,7 +128,7 @@ export const Actions = ({ descriptionProps, instructionId }) => {
           }}
         />
         <Popup
-          button={<PluginIcon isLoading={isProcessing} />}
+          button={<PluginIcon isLoading={isProcessing || isLoading} />}
           render={({ close }) => {
             return <Menu onClose={close} />
           }}
