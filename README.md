@@ -1,6 +1,6 @@
 ![Payload AI Plugin](assets/payloadcms-ai.gif)
 
-### Payload AI Plugin is a powerful extension for the Payload CMS, integrating advanced AI capabilities to enhance content creation and management.
+### The Payload AI Plugin is a powerful extension for the Payload CMS, integrating advanced AI capabilities to enhance content creation and management.
 
 ## 🌟 Features
 
@@ -28,13 +28,13 @@
 To install the Payload AI Plugin, run the following command in your Payload project:
 
 ```bash
-npm install @ashbuilds/payload-ai
+npm install payload-ai-plugin
 ```
 
 or if you're using pnpm:
 
 ```bash
-pnpm add @ashbuilds/payload-ai
+pnpm add payload-ai-plugin
 ```
 
 ## 🔧 Usage
@@ -43,11 +43,11 @@ To use the Payload AI Plugin in your Payload config:
 
 ```javascript
 import { buildConfig } from 'payload/config';
-import aiPlugin from '@ashbuilds/payload-ai';
+import { payloadAI } from 'payload-ai-plugin';
 
 export default buildConfig({
   plugins: [
-    aiPlugin(),
+    payloadAI(),
   ],
   // ... rest of your payload config
 });
