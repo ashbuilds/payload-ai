@@ -1,4 +1,4 @@
-![Payload AI Plugin](assets/payloadcms-ai.gif)
+<img alt="Payload AI Plugin" src="assets/payloadcms-ai.gif" width="100%" />
 
 ### Payload AI Plugin is a powerful extension for the Payload CMS, integrating advanced AI capabilities to enhance content creation and management.
 
