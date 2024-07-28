@@ -24,10 +24,10 @@ export const defaultESLintIgnores = [
 let FlatConfig
 
 export const rootParserOptions = {
-  EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
-  EXPERIMENTAL_useProjectService: {
-    allowDefaultProjectForFiles: ['./src/*.ts', './src/*.tsx'],
-  },
+  // EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
+  // EXPERIMENTAL_useProjectService: {
+  //   allowDefaultProjectForFiles: ['./src/*.ts', './src/*.tsx'],
+  // },
   sourceType: 'module',
   ecmaVersion: 'latest',
 }
