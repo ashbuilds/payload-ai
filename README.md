@@ -1,6 +1,4 @@
-# Payload AI Plugin
-
-![Payload AI Plugin](https://via.placeholder.com/800x400?text=Payload+AI+Plugin)
+![Payload AI Plugin](assets/payloadcms-ai.gif)
 
 ### Payload AI Plugin is a powerful extension for the Payload CMS, integrating advanced AI capabilities to enhance content creation and management.
 
