@@ -1,5 +1,5 @@
 import { GenerationModels } from '../ai/models/index.js';
-import { PromptTextareaField } from '../fields/PromptTextareaField/TextareaField.js';
+import { PromptEditorField } from '../fields/PromptEditorField/PromptEditorField.js';
 import { SelectField } from '../fields/SelectField/SelectField.js';
 const groupSettings = GenerationModels.reduce((fields, model)=>{
     if (model.settings) {
@@ -26,6 +26,7 @@ export const Instructions = {
             name: 'schema-path',
             type: 'text',
             admin: {
+                hidden: true,
                 readOnly: true
             },
             unique: true
@@ -34,6 +35,7 @@ export const Instructions = {
             name: 'field-type',
             type: 'select',
             admin: {
+                hidden: true,
                 readOnly: true
             },
             defaultValue: 'text',
@@ -83,7 +85,7 @@ export const Instructions = {
             type: 'textarea',
             admin: {
                 components: {
-                    Field: PromptTextareaField
+                    Field: PromptEditorField
                 }
             }
         },

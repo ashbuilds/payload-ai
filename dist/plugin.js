@@ -2,10 +2,10 @@ import { deepMerge } from 'payload/shared';
 import { Instructions } from './collections/Instructions.js';
 import { endpoints } from './endpoints/index.js';
 import { init } from './init.js';
-import { InstructionsProvider } from './providers/InstructionsProvider/InstructionsProvider.js';
+import { InstructionsProvider } from './providers/InstructionsProvider/index.js';
 import { translations } from './translations/index.js';
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js';
-const payloadPluginAI = (pluginConfig)=>async (incomingConfig)=>{
+const payloadPluginAI = (pluginConfig)=>(incomingConfig)=>{
         const collections = [
             ...incomingConfig.collections ?? [],
             Instructions
@@ -61,7 +61,7 @@ const payloadPluginAI = (pluginConfig)=>async (incomingConfig)=>{
         };
         updatedConfig.onInit = async (payload)=>{
             if (incomingConfig.onInit) await incomingConfig.onInit(payload);
-            init(payload, collectionsFieldPathMap).catch((error)=>{
+            await init(payload, collectionsFieldPathMap).catch((error)=>{
                 payload.logger.error(`— AI Plugin: Initialization Error: ${error}`);
             });
         };

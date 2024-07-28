@@ -1,4 +1,4 @@
-import { DescriptionField } from '../fields/DescriptionField/index.js';
+import { DescriptionField } from '../fields/DescriptionField/DescriptionField.js';
 export const updateFieldsConfig = (collectionConfig)=>{
     let schemaPathMap = {};
     function updateField(field, parentPath = '') {

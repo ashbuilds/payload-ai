@@ -2,7 +2,7 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { useFieldProps } from '@payloadcms/ui';
 import React from 'react';
-import { useInstructions } from '../../providers/InstructionsProvider/index.js';
+import { useInstructions } from '../../providers/InstructionsProvider/hook.js';
 import { Actions } from '../../ui/Actions/Actions.js';
 export const DescriptionFieldComponent = (props)=>{
     const { schemaPath } = useFieldProps();

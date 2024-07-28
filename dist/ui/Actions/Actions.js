@@ -1,13 +1,11 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui';
+import { FieldDescription, Popup, useDocumentDrawer, useFieldProps } from '@payloadcms/ui';
 import React, { useEffect, useRef, useState } from 'react';
-import { PromptContext } from '../../providers/Prompt/index.js';
-import { useDotFields } from '../../utilities/useDotFields.js';
-import { useGenerate } from '../../utilities/useGenerate.js';
+import { PluginIcon } from './Icons.js';
 import styles from './actions.module.scss';
-import { PluginIcon } from './icons.js';
-import { useMenu } from './useMenu.js';
+import { useGenerate } from './hooks/useGenerate.js';
+import { useMenu } from './hooks/useMenu.js';
 function findParentWithClass(element, className) {
     // Base case: if the element is null or we've reached the top of the DOM
     if (!element || element === document.body) {
@@ -22,32 +20,12 @@ function findParentWithClass(element, className) {
 }
 //TODO: Add undo/redo to the actions toolbar
 export const Actions = ({ descriptionProps, instructionId })=>{
-    const [DocumentDrawer, DocumentDrawerToggler, { closeDrawer, openDrawer }] = useDocumentDrawer({
+    const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
         id: instructionId,
         collectionSlug: 'instructions'
     });
-    const { dotFields } = useDotFields();
     const fieldProps = useFieldProps();
-    const { path: pathFromContext, schemaPath, type: fieldType } = fieldProps;
-    const currentField = useField({
-        path: pathFromContext
-    });
-    const [fieldsInfo, setFieldsInfo] = useState(null);
-    useEffect(()=>{
-        if (!dotFields) return;
-        setFieldsInfo({
-            fields: Object.keys(dotFields),
-            selectedField: {
-                field: currentField,
-                //TODO: Why props need to be passed?
-                props: fieldProps
-            }
-        });
-    }, [
-        dotFields,
-        currentField,
-        fieldProps
-    ]);
+    const { type: fieldType, path: pathFromContext, schemaPath } = fieldProps;
     const [input, setInput] = useState(null);
     const [lexicalEditor, setLexicalEditor] = useState();
     const actionsRef = useRef(null);
@@ -93,7 +71,7 @@ export const Actions = ({ descriptionProps, instructionId })=>{
         actionsRef
     ]);
     const [isProcessing, setIsProcessing] = useState(false);
-    const generate = useGenerate({
+    const { generate, isLoading } = useGenerate({
         lexicalEditor
     });
     const { ActiveComponent, Menu } = useMenu({
@@ -108,41 +86,31 @@ export const Actions = ({ descriptionProps, instructionId })=>{
                 setIsProcessing(false);
             });
         },
+        onExpand: async ()=>{
+            console.log('Expanding...');
+            await generate({
+                action: 'Expand'
+            });
+        },
         onProofread: async ()=>{
             console.log('Proofreading...');
-            setIsProcessing(true);
             await generate({
                 action: 'Proofread'
-            }).finally(()=>{
-                setIsProcessing(false);
             });
         },
         onRephrase: async ()=>{
-            console.log('Rephrasing...', !isProcessing);
-            setIsProcessing(true);
+            console.log('Rephrasing...');
             await generate({
                 action: 'Rephrase'
-            }).finally(()=>{
-                setIsProcessing(false);
             });
         },
-        onExpand: async ()=>{
-            setIsProcessing(true);
-            await generate({
-                action: 'Expand'
-            }).finally(()=>{
-                setIsProcessing(false);
-            });
-        },
+        onSettings: openDrawer,
         onSimplify: async ()=>{
-            setIsProcessing(true);
+            console.log('Simplifying...');
             await generate({
                 action: 'Simplify'
-            }).finally(()=>{
-                setIsProcessing(false);
             });
-        },
-        onSettings: openDrawer
+        }
     });
     return /*#__PURE__*/ _jsxs(React.Fragment, {
         children: [
@@ -150,24 +118,21 @@ export const Actions = ({ descriptionProps, instructionId })=>{
                 className: `${styles.actions}`,
                 ref: actionsRef,
                 children: [
-                    /*#__PURE__*/ _jsx(PromptContext.Provider, {
-                        value: fieldsInfo,
-                        children: /*#__PURE__*/ _jsx(DocumentDrawer, {
-                            onSave: ()=>{
-                                closeDrawer();
-                            }
-                        })
+                    /*#__PURE__*/ _jsx(DocumentDrawer, {
+                        onSave: ()=>{
+                            closeDrawer();
+                        }
                     }),
                     /*#__PURE__*/ _jsx(Popup, {
                         button: /*#__PURE__*/ _jsx(PluginIcon, {
-                            isLoading: isProcessing
+                            isLoading: isProcessing || isLoading
                         }),
-                        verticalAlign: 'bottom',
                         render: ({ close })=>{
                             return /*#__PURE__*/ _jsx(Menu, {
                                 onClose: close
                             });
-                        }
+                        },
+                        verticalAlign: "bottom"
                     }),
                     /*#__PURE__*/ _jsx(ActiveComponent, {})
                 ]
