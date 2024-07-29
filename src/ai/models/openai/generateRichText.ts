@@ -11,6 +11,16 @@ export const generateRichText = async (text: string, options: any) => {
     schema: DocumentSchema,
     system: `${options.system}
 
+      RULES:
+      - Must be original and unique content.
+      - Must follow given guidelines and instructions.
+      - Always use given tool
+      - Must follow rules of sample output object
+      - Must be valid JSON with no undefined or null values
+
+      SAMPLE OUTPUT OBJECT:
+      ${JSON.stringify(exampleOutput)}
+      
       LAYOUT:
       ${options.layout}
       `,

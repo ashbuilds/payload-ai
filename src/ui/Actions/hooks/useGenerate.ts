@@ -84,8 +84,8 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
         )
       } catch (e) {
         console.error('Error setting object:', e)
-        console.error('Object:', object)
         if (type === 'richText') {
+          console.log('Object:', object)
           console.log('type is richText', { setValue })
         }
         // setValue(object) //TODO: This breaks the editor find a better way to handle objects that are not valid

@@ -130,11 +130,11 @@ export const Actions = ({ descriptionProps, instructionId }) => {
         <Popup
           button={<PluginIcon isLoading={isProcessing || isLoading} />}
           render={({ close }) => {
-            return <Menu onClose={close} />
+            return <Menu isLoading={isProcessing || isLoading} onClose={close} />
           }}
           verticalAlign="bottom"
         />
-        <ActiveComponent />
+        <ActiveComponent isLoading={isProcessing || isLoading} />
       </label>
       <div>
         <FieldDescription {...descriptionProps} />
