@@ -1,11 +1,12 @@
 'use client'
 
-import { FieldDescription, Popup, useDocumentDrawer, useFieldProps } from '@payloadcms/ui'
+import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
 import React, { useEffect, useRef, useState } from 'react'
 
 import { PluginIcon } from './Icons.js'
 import styles from './actions.module.scss'
 import { useGenerate } from './hooks/useGenerate.js'
+import { useHistory } from './hooks/useHistory.js'
 import { useMenu } from './hooks/useMenu.js'
 
 function findParentWithClass(element, className) {
@@ -119,6 +120,16 @@ export const Actions = ({ descriptionProps, instructionId }) => {
     },
   )
 
+  const { canRedo, canUndo, redo, undo } = useHistory(pathFromContext)
+
+  const { setValue, value: currentFieldValue } = useField<string>({
+    path: pathFromContext,
+  })
+
+  // if (pathFromContext === 'title') {
+  //   console.log('canUndo:', canUndo)
+  // }
+
   return (
     <React.Fragment>
       <label className={`${styles.actions}`} ref={actionsRef}>
@@ -135,6 +146,26 @@ export const Actions = ({ descriptionProps, instructionId }) => {
           verticalAlign="bottom"
         />
         <ActiveComponent isLoading={isProcessing || isLoading} />
+        <button
+          disabled={!canUndo}
+          onClick={() => {
+            const val = undo()
+            if (val) setValue(val)
+          }}
+          type="button"
+        >
+          Undo
+        </button>
+        <button
+          disabled={!canRedo}
+          onClick={() => {
+            const val = redo()
+            if (val) setValue(val)
+          }}
+          type="button"
+        >
+          Redo
+        </button>
       </label>
       <div>
         <FieldDescription {...descriptionProps} />

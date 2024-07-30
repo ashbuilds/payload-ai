@@ -47,6 +47,9 @@ dependencies:
   handlebars:
     specifier: 4.7.8
     version: 4.7.8
+  handlebars-async-helpers:
+    specifier: ^1.0.6
+    version: 1.0.6(handlebars@4.7.8)
   jsonrepair:
     specifier: ^3.8.0
     version: 3.8.0
@@ -3911,6 +3914,14 @@ packages:
   /graphql@16.9.0:
     resolution: {integrity: sha512-GGTKBX4SD7Wdb8mqeDLni2oaRGYQWjWHGKPQ24ZMnUtKfcsVoiv4uX8+LJr1K6U5VW2Lu1BwJnj7uiori0YtRw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
+
+  /handlebars-async-helpers@1.0.6(handlebars@4.7.8):
+    resolution: {integrity: sha512-rZd4aNoQQlGBx94TF+jA7a+YKaB0IAFINH5QYBEdd7s7paOvG3ouALGKo2cK7u4Qncy+/fntR1bU3LOiq43WTg==}
+    peerDependencies:
+      handlebars: 4.7.6
+    dependencies:
+      handlebars: 4.7.8
+    dev: false
 
   /handlebars@4.7.8:
     resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}

@@ -23,8 +23,8 @@ const Item: React.FC<BaseItemProps> = memo(({ children, disabled, onClick = () =
   <span
     className={styles.generate_button}
     data-disabled={disabled}
-    onClick={!disabled && onClick}
-    onKeyDown={!disabled && onClick}
+    onClick={!disabled ? onClick : null}
+    onKeyDown={!disabled ? onClick : null}
     role="presentation"
   >
     {children}

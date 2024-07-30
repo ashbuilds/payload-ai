@@ -94,13 +94,19 @@ export const Instructions: CollectionConfig = {
         },
       },
     },
+    {
+      // Settings to allow users to save history(for undo/redo functions) to database
+      name: 'field-history',
+      type: 'json',
+      hidden: true,
+    },
     ...groupSettings,
   ],
   hooks: {
     beforeChange: [
       (req) => {
-        // console.log('req: ', req)
         if (req.data['openai-gpt-object-settings'].layout?.length === 0) {
+          // TODO: why??
           req.data['openai-gpt-object-settings'].layout = ''
         }
         return req.data

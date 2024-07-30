@@ -14,6 +14,7 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
 } from '../../../defaults.js'
 import { useInstructions } from '../../../providers/InstructionsProvider/hook.js'
+import { useHistory } from './useHistory.js'
 
 type UseGenerate = {
   lexicalEditor: LexicalEditor
@@ -26,9 +27,11 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   //TODO: This should be dynamic, i think it was the part of component props but its not inside useFieldProps
   const relationTo = 'media'
 
-  const { setValue } = useField<string>({
+  const { setValue, value: currentFieldValue } = useField<string>({
     path: pathFromContext,
   })
+
+  const { set } = useHistory(pathFromContext)
 
   const { id: instructionId } = useInstructions({
     path: schemaPath,
@@ -44,6 +47,63 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     submit,
   } = useObject({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
+    fetch: async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      console.log('Fetching:', input, init)
+      // Modify the init object to include the 'Accept' header for event stream
+      const modifiedInit: RequestInit = {
+        ...init,
+        headers: {
+          ...init?.headers,
+          Accept: 'text/event-stream',
+        },
+      }
+
+      // Call the native fetch with our modified options
+      const response = await fetch(input, modifiedInit)
+
+      // Create a custom Response object to handle the stream
+      return new Response(
+        new ReadableStream({
+          async start(controller) {
+            const reader = response.body.getReader()
+            let result = ''
+
+            try {
+              while (true) {
+                const { done, value } = await reader.read()
+
+                if (done) {
+                  console.log('Stream ended')
+                  requestAnimationFrame(() => {
+                    set(object)
+                  })
+                  break
+                }
+
+                const chunk = new TextDecoder().decode(value)
+                result += chunk
+
+                // Process each chunk as it arrives
+                console.log('Received chunk:', chunk)
+
+                // Push the chunk to the new stream
+                controller.enqueue(value)
+              }
+            } catch (error) {
+              console.error('Error reading stream:', error)
+              controller.error(error)
+            } finally {
+              controller.close()
+            }
+          },
+        }),
+        {
+          headers: response.headers,
+          status: response.status,
+          statusText: response.statusText,
+        },
+      )
+    },
     onError: (error) => {
       console.error('Error generating object:', error)
     },
@@ -58,6 +118,9 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
       console.error('Error generating text:', error)
+    },
+    onFinish: (p, comp) => {
+      set(comp)
     },
     streamMode: 'stream-data',
   })
@@ -121,6 +184,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   const streamText = useCallback(
     async ({ action = 'Compose' }: { action: MenuItems }) => {
       const doc = getData()
+
       const options = {
         action,
         instructionId,
