@@ -1,5 +1,6 @@
 'use client'
 
+import { useForm } from '@payloadcms/ui'
 import { useCallback, useEffect, useState } from 'react'
 
 import { PLUGIN_NAME } from '../../../defaults.js'
@@ -13,7 +14,7 @@ interface HistoryState {
   }
 }
 
-export const useHistory = (path: string) => {
+export const useHistory = (path: string, currentFieldValue = null) => {
   const getLatestHistory = useCallback((): HistoryState => {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
@@ -26,6 +27,27 @@ export const useHistory = (path: string) => {
   const saveToLocalStorage = useCallback((newGlobalHistory: HistoryState) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
   }, [])
+
+  // TODO: Reset undo/redo once user type anything on fields or change it manually
+  useEffect(() => {
+    if (currentFieldValue) {
+      const latestHistory = getLatestHistory()
+      const { currentIndex, history } = latestHistory[path] || { currentIndex: -1, history: [] }
+
+      let newIndex = currentIndex
+      if (currentIndex == -1) {
+        newIndex = 0
+      }
+
+      history[0] = currentFieldValue
+      const newGlobalHistory = {
+        ...latestHistory,
+        [path]: { currentIndex: newIndex, history },
+      }
+
+      saveToLocalStorage(newGlobalHistory)
+    }
+  }, [path])
 
   const set = useCallback(
     (data: any) => {

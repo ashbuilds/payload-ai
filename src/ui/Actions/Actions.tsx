@@ -1,7 +1,10 @@
 'use client'
 
+import type { LexicalEditor } from 'lexical'
+
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
-import React, { useEffect, useRef, useState } from 'react'
+import { $getRoot } from 'lexical'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PluginIcon } from './Icons.js'
 import styles from './actions.module.scss'
@@ -35,7 +38,7 @@ export const Actions = ({ descriptionProps, instructionId }) => {
   const { type: fieldType, path: pathFromContext, schemaPath } = fieldProps
 
   const [input, setInput] = useState(null)
-  const [lexicalEditor, setLexicalEditor] = useState()
+  const [lexicalEditor, setLexicalEditor] = useState<LexicalEditor>()
   const actionsRef = useRef(null)
   // Used to show the actions menu on active input fields
   useEffect(() => {
@@ -120,15 +123,40 @@ export const Actions = ({ descriptionProps, instructionId }) => {
     },
   )
 
-  const { canRedo, canUndo, redo, undo } = useHistory(pathFromContext)
-
   const { setValue, value: currentFieldValue } = useField<string>({
     path: pathFromContext,
   })
+  const { canRedo, canUndo, redo, undo } = useHistory(pathFromContext, currentFieldValue)
 
-  // if (pathFromContext === 'title') {
-  //   console.log('canUndo:', canUndo)
-  // }
+  const setIfValueIsLexicalState = useCallback(
+    (val) => {
+      if (val.root && lexicalEditor) {
+        const editorState = lexicalEditor.parseEditorState(JSON.stringify(val))
+        if (editorState.isEmpty()) return
+
+        lexicalEditor.update(() => {
+          lexicalEditor.setEditorState(editorState)
+        })
+      }
+    },
+    [lexicalEditor],
+  )
+
+  const redoHistoryValue = useCallback(() => {
+    const val = redo()
+    if (val) {
+      setValue(val)
+      setIfValueIsLexicalState(val)
+    }
+  }, [redo, setIfValueIsLexicalState])
+
+  const undoHistoryValue = useCallback(() => {
+    const val = undo()
+    if (val) {
+      setValue(val)
+      setIfValueIsLexicalState(val)
+    }
+  }, [undo, setIfValueIsLexicalState])
 
   return (
     <React.Fragment>
@@ -146,24 +174,10 @@ export const Actions = ({ descriptionProps, instructionId }) => {
           verticalAlign="bottom"
         />
         <ActiveComponent isLoading={isProcessing || isLoading} />
-        <button
-          disabled={!canUndo}
-          onClick={() => {
-            const val = undo()
-            if (val) setValue(val)
-          }}
-          type="button"
-        >
+        <button disabled={!canUndo} onClick={undoHistoryValue} type="button">
           Undo
         </button>
-        <button
-          disabled={!canRedo}
-          onClick={() => {
-            const val = redo()
-            if (val) setValue(val)
-          }}
-          type="button"
-        >
+        <button disabled={!canRedo} onClick={redoHistoryValue} type="button">
           Redo
         </button>
       </label>

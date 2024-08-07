@@ -217,17 +217,13 @@ export const endpoints: Endpoints = {
         })
       }
 
-      // console.log('Instructions', instructions)
-      // console.log('data.doc', contextData)
-
       const { prompt: promptTemplate = '' } = instructions
 
+      //TODO: add autocomplete ability using handlebars template on PromptEditorField and include custom helpers in dropdown
       asyncHandlebars.registerHelper(
         'toLexicalHTML',
         async function (content: SerializedEditorState) {
-          // console.log('registerHelper:content', content)
           const html = await lexicalToHTML(content, editor.editorConfig)
-          // console.log('registerHelper:html', html)
           return new asyncHandlebars.SafeString(html)
         },
       )

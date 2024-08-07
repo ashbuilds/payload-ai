@@ -2,8 +2,6 @@ import type { LexicalEditor } from 'lexical'
 
 import { useField, useFieldProps, useForm, useLocale } from '@payloadcms/ui'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
-import { jsonrepair } from 'jsonrepair'
-import { $getRoot } from 'lexical'
 import { useCallback, useEffect } from 'react'
 
 import type { GenerateTextarea, MenuItems } from '../../../types.js'
@@ -14,6 +12,7 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
 } from '../../../defaults.js'
 import { useInstructions } from '../../../providers/InstructionsProvider/hook.js'
+import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
 type UseGenerate = {
@@ -32,7 +31,6 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   })
 
   const { set } = useHistory(pathFromContext)
-
   const { id: instructionId } = useInstructions({
     path: schemaPath,
   })
@@ -47,68 +45,25 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     submit,
   } = useObject({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
-    fetch: async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-      console.log('Fetching:', input, init)
-      // Modify the init object to include the 'Accept' header for event stream
-      const modifiedInit: RequestInit = {
-        ...init,
-        headers: {
-          ...init?.headers,
-          Accept: 'text/event-stream',
-        },
-      }
-
-      // Call the native fetch with our modified options
-      const response = await fetch(input, modifiedInit)
-
-      // Create a custom Response object to handle the stream
-      return new Response(
-        new ReadableStream({
-          async start(controller) {
-            const reader = response.body.getReader()
-            let result = ''
-
-            try {
-              while (true) {
-                const { done, value } = await reader.read()
-
-                if (done) {
-                  console.log('Stream ended')
-                  requestAnimationFrame(() => {
-                    set(object)
-                  })
-                  break
-                }
-
-                const chunk = new TextDecoder().decode(value)
-                result += chunk
-
-                // Process each chunk as it arrives
-                console.log('Received chunk:', chunk)
-
-                // Push the chunk to the new stream
-                controller.enqueue(value)
-              }
-            } catch (error) {
-              console.error('Error reading stream:', error)
-              controller.error(error)
-            } finally {
-              controller.close()
-            }
-          },
-        }),
-        {
-          headers: response.headers,
-          status: response.status,
-          statusText: response.statusText,
-        },
-      )
-    },
     onError: (error) => {
       console.error('Error generating object:', error)
     },
+    onFinish: ({ object }) => {
+      set(object)
+    },
     schema: DocumentSchema,
   })
+
+  useEffect(() => {
+    if (!object) return
+
+    if (!lexicalEditor) {
+      setValue(object)
+      return
+    }
+
+    setSafeLexicalState(object, lexicalEditor)
+  }, [object])
 
   const {
     complete,
@@ -122,39 +77,8 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     onFinish: (p, comp) => {
       set(comp)
     },
-    streamMode: 'stream-data',
+    streamProtocol: 'data',
   })
-
-  useEffect(() => {
-    if (!object) return
-
-    // TODO: Improve error handling
-    requestAnimationFrame(() => {
-      try {
-        const repairedObject = jsonrepair(JSON.stringify(object))
-        const editorState = lexicalEditor.parseEditorState(repairedObject)
-        if (editorState.isEmpty()) return
-
-        lexicalEditor.update(
-          () => {
-            const root = $getRoot()
-            root.clear() //TODO: this is hack to prevent reconciliation error - find a way
-            lexicalEditor.setEditorState(editorState)
-          },
-          {
-            discrete: true,
-          },
-        )
-      } catch (e) {
-        console.error('Error setting object:', e)
-        if (type === 'richText') {
-          console.log('Object:', object)
-          console.log('type is richText', { setValue })
-        }
-        // setValue(object) //TODO: This breaks the editor find a better way to handle objects that are not valid
-      }
-    })
-  }, [object])
 
   useEffect(() => {
     if (!completion) return
