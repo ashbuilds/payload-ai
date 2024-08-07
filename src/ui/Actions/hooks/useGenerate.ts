@@ -26,11 +26,11 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   //TODO: This should be dynamic, i think it was the part of component props but its not inside useFieldProps
   const relationTo = 'media'
 
-  const { setValue, value: currentFieldValue } = useField<string>({
+  const { setValue } = useField<string>({
     path: pathFromContext,
   })
 
-  const { set } = useHistory(pathFromContext)
+  const { set: setHistory } = useHistory()
   const { id: instructionId } = useInstructions({
     path: schemaPath,
   })
@@ -49,7 +49,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
       console.error('Error generating object:', error)
     },
     onFinish: ({ object }) => {
-      set(object)
+      setHistory(object)
     },
     schema: DocumentSchema,
   })
@@ -57,12 +57,15 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   useEffect(() => {
     if (!object) return
 
-    if (!lexicalEditor) {
-      setValue(object)
-      return
-    }
+    requestAnimationFrame(() => {
+      if (!lexicalEditor) {
+        setValue(object)
+        return
+      }
 
-    setSafeLexicalState(object, lexicalEditor)
+      // Currently this is being used as setValue for RichText component does not render new changes right away.
+      setSafeLexicalState(object, lexicalEditor)
+    })
   }, [object])
 
   const {
@@ -74,8 +77,8 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     onError: (error) => {
       console.error('Error generating text:', error)
     },
-    onFinish: (p, comp) => {
-      set(comp)
+    onFinish: (prompt, result) => {
+      setHistory(result)
     },
     streamProtocol: 'data',
   })

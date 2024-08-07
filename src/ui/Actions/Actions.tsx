@@ -123,10 +123,10 @@ export const Actions = ({ descriptionProps, instructionId }) => {
     },
   )
 
-  const { setValue, value: currentFieldValue } = useField<string>({
+  const { setValue } = useField<string>({
     path: pathFromContext,
   })
-  const { canRedo, canUndo, redo, undo } = useHistory(pathFromContext, currentFieldValue)
+  const { canRedo, canUndo, redo, undo } = useHistory()
 
   const setIfValueIsLexicalState = useCallback(
     (val) => {
