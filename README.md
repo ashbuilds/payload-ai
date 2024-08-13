@@ -75,7 +75,7 @@ export default buildConfig({
 
 ## ⚙️ Configuration
 
-Unlock the full potential with these environment variables. Add them to your `.env` file:
+The plugin uses environment variables for configuration. Create a .env file in your project root and add the following variables:
 
 ```
 ANTHROPIC_API_KEY=your-anthropic-api-key
