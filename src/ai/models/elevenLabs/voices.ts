@@ -4,7 +4,7 @@ let voicesState = { voices: [] }
 export const getAllVoices = async () => {
   try {
     const elevenLabs = new ElevenLabsClient()
-    if (!voicesState) {
+    if (!voicesState.voices.length) {
       voicesState = await elevenLabs.voices.getAll({
         timeoutInSeconds: 10000,
       })
