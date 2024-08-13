@@ -1,4 +1,4 @@
-import type { CollectionConfig, Config } from 'payload'
+import type { Config } from 'payload'
 
 import { deepMerge } from 'payload/shared'
 
