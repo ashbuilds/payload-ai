@@ -1,49 +1,63 @@
-<img alt="Payload AI Plugin" src="assets/payloadcms-ai.gif" width="100%" />
+# 🚀 Payload AI Plugin
 
-### The Payload AI Plugin is a powerful extension for the [Payload CMS](https://payloadcms.com), integrating advanced AI capabilities to enhance content creation and management.
+<p align="center">
+  <img alt="Payload AI Plugin" src="assets/payloadcms-ai.gif" width="100%" />
+</p>
 
-### 🖼️ [Quick demo](https://youtu.be/qaYukeGpuu4)
+## 🌟 Supercharge Your [Payload CMS](https://payloadcms.com) with AI-Powered Content Creation
 
-## 🌟 Features
+The Payload AI Plugin is an extension that seamlessly integrates advanced AI capabilities into your Payload CMS, elevating content creation and management.
 
-- [x] Rich text generation
-  - [x] Compose
-  - [ ] Proofread(Beta)
-  - [ ] Translate
-  - [ ] Expand
-  - [ ] Summarize
-  - [ ] Simplify
-  - [ ] Rephrase(Beta)
-  
-- [x] Voice generation with ElevenLabs
-- [x] Image generation with OpenAI
-- [x] Field level prompt customization
-- [ ] Prompt Editor(Beta)
-- [ ] Analyse documents
-- [ ] Fact checking
-- [ ] Automation of content creation workflows
-- [ ] Internationalization support
-- [ ] AI Chat support
+> **⚠️ Note:** This plugin is currently under heavy development. Expect frequent updates and improvements as we work tirelessly to enhance its capabilities.
 
-## 📋 Table of Contents
+### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
 
-## 🚀 Installation
 
-To install the Payload AI Plugin, run the following command in your Payload project:
+## ✨ Supported fields and features
+
+### Text and Rich text Field
+- 📝 **Text Generation**
+  - [x] **Compose** masterpieces effortlessly
+  - [ ] **Proofread** with precision (Beta)
+  - [ ] **Translate** across languages
+  - [ ] **Expand** your ideas
+  - [ ] **Summarize** with clarity
+  - [ ] **Simplify** complex concepts
+  - [ ] **Rephrase** for impact (Beta)
+
+### Upload Field
+- 🎙️ **Voice Generation** powered by ElevenLabs
+- 🖼️ **Image Generation** powered by OpenAI
+
+### Other features
+- 🎛️ **Field-level Prompt Customization**
+- 🧠 **Prompt Editor** (Beta)
+- 📊 **Document Analyser** (Coming Soon)
+- ✅ **Fact Checking** (Coming Soon)
+- 🔄 **Automated Content Workflows** (Coming Soon)
+- 🌍 **Internationalization Support** (Coming Soon)
+- 💬 **AI Chat Support** (Coming Soon)
+
+## 📚 Table of Contents
+
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Configuration](#%EF%B8%8F-configuration)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+## 📦 Installation
+
+Elevate your Payload project with a single command:
 
 ```bash
 pnpm add payload-ai-plugin
 ```
 
-## 🔧 Usage
+## 🛠 Usage
 
-To use the Payload AI Plugin in your Payload config:
+Integrate the AI magic into your Payload config:
 
 ```javascript
 import { buildConfig } from 'payload/config';
@@ -55,13 +69,13 @@ export default buildConfig({
       collections: [Posts.slug],
     }),
   ],
-  // ... rest of your payload config
+  // ... your existing Payload configuration
 });
 ```
 
 ## ⚙️ Configuration
 
-The plugin uses environment variables for configuration. Create a `.env` file in your project root and add the following variables:
+Unlock the full potential with these environment variables. Add them to your `.env` file:
 
 ```
 ANTHROPIC_API_KEY=your-anthropic-api-key
@@ -69,12 +83,12 @@ OPENAI_API_KEY=your-openai-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ```
 
-Make sure to replace the placeholder values with your actual API keys.
+Remember to replace the placeholders with your actual API keys.
 
-## 🤝 Contributing
+## 👥 Contributing
 
-We welcome contributions to the Payload AI Plugin! Please join us on [Discord](https://discord.com/channels/967097582721572934/1270873253581160499) for more details.
+Join our community of innovators! We welcome contributions to the Payload AI Plugin. Connect with us on [Discord](https://discord.com/channels/967097582721572934/1270873253581160499) to get started.
 
 ## 📄 License
 
-Payload AI Plugin is [MIT licensed](link-to-license-file).
+Payload AI Plugin is open-source software licensed under the [MIT license](link-to-license-file).
