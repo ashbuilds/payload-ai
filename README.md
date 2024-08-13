@@ -8,7 +8,7 @@
 
 The Payload AI Plugin is an extension that seamlessly integrates advanced AI capabilities into your Payload CMS, elevating content creation and management.
 
-> **⚠️ Note:** This plugin is currently under heavy development. Expect frequent updates and improvements as we work tirelessly to enhance its capabilities.
+> **⚠️ Note:** This plugin is currently under heavy development. Expect frequent updates and improvements as we work tirelessly to enhance its capabilities. Currently, the plugin is only tested with Payload version 3.0.0-beta.65
 
 ### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
 
