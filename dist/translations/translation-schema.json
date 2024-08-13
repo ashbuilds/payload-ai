@@ -6,82 +6,11 @@
     "$schema": {
       "type": "string"
     },
-    "plugin-ai": {
+    "ai-plugin": {
       "type": "object",
       "additionalProperties": false,
-      "properties": {
-        "almostThere": {
-          "type": "string"
-        },
-        "autoGenerate": {
-          "type": "string"
-        },
-        "bestPractices": {
-          "type": "string"
-        },
-        "characterCount": {
-          "type": "string"
-        },
-        "charactersLeftOver": {
-          "type": "string"
-        },
-        "charactersToGo": {
-          "type": "string"
-        },
-        "charactersTooMany": {
-          "type": "string"
-        },
-        "checksPassing": {
-          "type": "string"
-        },
-        "good": {
-          "type": "string"
-        },
-        "imageAutoGenerationTip": {
-          "type": "string"
-        },
-        "lengthTipDescription": {
-          "type": "string"
-        },
-        "lengthTipTitle": {
-          "type": "string"
-        },
-        "noImage": {
-          "type": "string"
-        },
-        "preview": {
-          "type": "string"
-        },
-        "previewDescription": {
-          "type": "string"
-        },
-        "tooLong": {
-          "type": "string"
-        },
-        "tooShort": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "autoGenerate",
-        "imageAutoGenerationTip",
-        "bestPractices",
-        "lengthTipTitle",
-        "lengthTipDescription",
-        "good",
-        "tooLong",
-        "tooShort",
-        "almostThere",
-        "characterCount",
-        "charactersToGo",
-        "charactersLeftOver",
-        "charactersTooMany",
-        "noImage",
-        "checksPassing",
-        "preview",
-        "previewDescription"
-      ]
+      "properties": {}
     }
   },
-  "required": ["plugin-ai"]
+  "required": ["ai-plugin"]
 }
