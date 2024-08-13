@@ -4,6 +4,7 @@ import { generateVoice } from './generateVoice.js';
 import { getAllVoices } from './voices.js';
 //TODO: Add prompt optimisation for ElevenLabs models
 const { voices = [] } = await getAllVoices();
+console.log('voices-->', voices);
 const voiceOptions = voices.map((voice)=>{
     return {
         label: voice.name,
@@ -54,7 +55,7 @@ export const ElevenLabsConfig = {
                                 options: voiceOptions
                             }
                         },
-                        defaultValue: voiceOptions[0].voice_id,
+                        defaultValue: voiceOptions[0]?.voice_id,
                         label: 'Voice',
                         options: voiceOptions.map((option)=>{
                             return {
