@@ -1,11 +1,7 @@
 import type { File } from 'payload'
 
-import { usePayloadAPI } from '@payloadcms/ui'
-import payload from 'payload'
-
 import type { GenerationConfig } from '../../../types.js'
 
-import { PromptEditorField } from '../../../fields/PromptEditorField/PromptEditorField.js'
 import { SelectField } from '../../../fields/SelectField/SelectField.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateVoice } from './generateVoice.js'
