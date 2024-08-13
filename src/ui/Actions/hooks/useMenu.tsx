@@ -16,7 +16,7 @@ import {
   SummarizeIcon,
   TranslateIcon,
   TuneIcon,
-} from '../Icons.js'
+} from '../../Icons/Icons.js'
 import styles from '../actions.module.scss'
 
 const Item: React.FC<BaseItemProps> = memo(({ children, disabled, onClick = () => {} }) => (

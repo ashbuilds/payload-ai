@@ -6,7 +6,7 @@ import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } f
 import { $getRoot } from 'lexical'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-import { PluginIcon } from './Icons.js'
+import { PluginIcon } from '../Icons/Icons.js'
 import styles from './actions.module.scss'
 import { useGenerate } from './hooks/useGenerate.js'
 import { useHistory } from './hooks/useHistory.js'
