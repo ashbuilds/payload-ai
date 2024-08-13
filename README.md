@@ -17,7 +17,7 @@ The Payload AI Plugin is an extension that seamlessly integrates advanced AI cap
 ## ✨ Supported fields and features
 
 ### Text and Rich text Field
-- 📝 **Rich Text Generation**
+- 📝 **Text Generation**
   - [x] **Compose** masterpieces effortlessly
   - [ ] **Proofread** with precision (Beta)
   - [ ] **Translate** across languages
