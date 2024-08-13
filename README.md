@@ -87,7 +87,7 @@ Remember to replace the placeholders with your actual API keys.
 
 ## 👥 Contributing
 
-Join our community of innovators! We welcome contributions to the Payload AI Plugin. Connect with us on [Discord](https://discord.com/channels/967097582721572934/1270873253581160499) to get started.
+Join our community of innovators! We welcome contributions to the Payload AI Plugin. Connect with us on [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) to get started.
 
 ## 📄 License
 
