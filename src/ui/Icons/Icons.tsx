@@ -1,7 +1,7 @@
 import React from 'react'
 
-import LottieAnimation from '../Actions/LottieAnimation.js'
-import styles from '../Actions/actions.module.scss'
+import LottieAnimation from './LottieAnimation.js'
+import styles from './icons.module.scss'
 
 export const PluginIcon = ({ color = 'white', isLoading }) => {
   return (
