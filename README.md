@@ -6,7 +6,7 @@
 
 ## 🌟 Supercharge Your [Payload CMS](https://payloadcms.com) with AI-Powered Content Creation
 
-The Payload AI Plugin is an extension that seamlessly integrates advanced AI capabilities into your Payload CMS, revolutionizing content creation and management.
+The Payload AI Plugin is an extension that seamlessly integrates advanced AI capabilities into your Payload CMS, elevating content creation and management.
 
 > **⚠️ Note:** This plugin is currently under heavy development. Expect frequent updates and improvements as we work tirelessly to enhance its capabilities.
 
