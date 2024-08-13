@@ -1,3 +1,3 @@
-export { payloadPluginAI } from './plugin.js';
+export { payloadAI } from './plugin.js';
 
 //# sourceMappingURL=index.js.map

@@ -6,11 +6,5 @@ export const GenerationModels = [
     ...ElevenLabsConfig.models,
     ...OpenAIConfig.models
 ];
-export const GenerationModelOptions = GenerationModels.map((model)=>{
-    return {
-        label: model.name,
-        value: model.id
-    };
-});
 
 //# sourceMappingURL=index.js.map

@@ -1,2 +1,4 @@
-export declare const getAllVoices: () => Promise<any>;
+export declare const getAllVoices: () => Promise<{
+    voices: any[];
+}>;
 //# sourceMappingURL=voices.d.ts.map

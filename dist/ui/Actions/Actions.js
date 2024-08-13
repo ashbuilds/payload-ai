@@ -1,10 +1,11 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { FieldDescription, Popup, useDocumentDrawer, useFieldProps } from '@payloadcms/ui';
-import React, { useEffect, useRef, useState } from 'react';
+import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { PluginIcon } from './Icons.js';
 import styles from './actions.module.scss';
 import { useGenerate } from './hooks/useGenerate.js';
+import { useHistory } from './hooks/useHistory.js';
 import { useMenu } from './hooks/useMenu.js';
 function findParentWithClass(element, className) {
     // Base case: if the element is null or we've reached the top of the DOM
@@ -112,6 +113,41 @@ export const Actions = ({ descriptionProps, instructionId })=>{
             });
         }
     });
+    const { setValue } = useField({
+        path: pathFromContext
+    });
+    const { canRedo, canUndo, redo, undo } = useHistory();
+    const setIfValueIsLexicalState = useCallback((val)=>{
+        if (val.root && lexicalEditor) {
+            const editorState = lexicalEditor.parseEditorState(JSON.stringify(val));
+            if (editorState.isEmpty()) return;
+            lexicalEditor.update(()=>{
+                lexicalEditor.setEditorState(editorState);
+            });
+        }
+    }, [
+        lexicalEditor
+    ]);
+    const redoHistoryValue = useCallback(()=>{
+        const val = redo();
+        if (val) {
+            setValue(val);
+            setIfValueIsLexicalState(val);
+        }
+    }, [
+        redo,
+        setIfValueIsLexicalState
+    ]);
+    const undoHistoryValue = useCallback(()=>{
+        const val = undo();
+        if (val) {
+            setValue(val);
+            setIfValueIsLexicalState(val);
+        }
+    }, [
+        undo,
+        setIfValueIsLexicalState
+    ]);
     return /*#__PURE__*/ _jsxs(React.Fragment, {
         children: [
             /*#__PURE__*/ _jsxs("label", {
@@ -129,12 +165,27 @@ export const Actions = ({ descriptionProps, instructionId })=>{
                         }),
                         render: ({ close })=>{
                             return /*#__PURE__*/ _jsx(Menu, {
+                                isLoading: isProcessing || isLoading,
                                 onClose: close
                             });
                         },
                         verticalAlign: "bottom"
                     }),
-                    /*#__PURE__*/ _jsx(ActiveComponent, {})
+                    /*#__PURE__*/ _jsx(ActiveComponent, {
+                        isLoading: isProcessing || isLoading
+                    }),
+                    /*#__PURE__*/ _jsx("button", {
+                        disabled: !canUndo,
+                        onClick: undoHistoryValue,
+                        type: "button",
+                        children: "Undo"
+                    }),
+                    /*#__PURE__*/ _jsx("button", {
+                        disabled: !canRedo,
+                        onClick: redoHistoryValue,
+                        type: "button",
+                        children: "Redo"
+                    })
                 ]
             }),
             /*#__PURE__*/ _jsx("div", {

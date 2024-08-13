@@ -16,14 +16,14 @@ export const OpenAIConfig = {
                 'textarea'
             ],
             handler: async (prompt, options)=>{
-                const finalPrompt = `Output language code: ${options.locale}
-          Prompt: ${prompt}
-          Output:
-          `;
-                console.log('finalPrompt: ', finalPrompt);
+                // const finalPrompt = `Output language code: ${options.locale}
+                //   Prompt: ${prompt}
+                //   Output:
+                //   `
+                // console.log('finalPrompt: ', finalPrompt)
                 const streamTextResult = await streamText({
                     model: openai(options.model),
-                    prompt: finalPrompt,
+                    prompt,
                     system: options.system
                 });
                 return streamTextResult.toAIStreamResponse();

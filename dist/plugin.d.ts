@@ -1,5 +1,5 @@
 import type { Config } from 'payload';
 import type { PluginConfig } from './types.js';
-declare const payloadPluginAI: (pluginConfig: PluginConfig) => (incomingConfig: Config) => Config;
-export { payloadPluginAI };
+declare const payloadAI: (pluginConfig: PluginConfig) => (incomingConfig: Config) => Config;
+export { payloadAI };
 //# sourceMappingURL=plugin.d.ts.map

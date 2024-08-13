@@ -1,1 +1,1 @@
-{"version":3,"sources":["../src/index.ts"],"sourcesContent":["export { payloadPluginAI } from './plugin.js'\n"],"names":["payloadPluginAI"],"mappings":"AAAA,SAASA,eAAe,QAAQ,cAAa"}
+{"version":3,"sources":["../src/index.ts"],"sourcesContent":["export { payloadAI } from './plugin.js'\n"],"names":["payloadAI"],"mappings":"AAAA,SAASA,SAAS,QAAQ,cAAa"}

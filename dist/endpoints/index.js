@@ -1,11 +1,15 @@
 import Handlebars from 'handlebars';
+import asyncHelpers from 'handlebars-async-helpers';
+import { flattenTopLevelFields } from 'payload';
 import { GenerationModels } from '../ai/models/index.js';
 import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js';
-const replacePlaceholders = (prompt, values)=>{
-    return Handlebars.compile(prompt)(values);
+import { lexicalToHTML } from '../utilities/lexicalToHTML.js';
+const asyncHandlebars = asyncHelpers(Handlebars);
+const replacePlaceholders = async (prompt, values)=>{
+    return asyncHandlebars.compile(prompt)(values);
 };
-const assignPrompt = (action, { context, field, template })=>{
-    const prompt = replacePlaceholders(template, context);
+const assignPrompt = async (action, { context, field, template })=>{
+    const prompt = await replacePlaceholders(template, context);
     switch(action){
         case 'Compose':
             return {
@@ -30,7 +34,7 @@ const assignPrompt = (action, { context, field, template })=>{
             };
         case 'Proofread':
             return {
-                prompt: replacePlaceholders(`{{${field}}}`, context),
+                prompt: await replacePlaceholders(`{{${field}}}`, context),
                 system: `You are an English language expert. Your task is to carefully proofread the given text, 
       focusing solely on correcting grammar and spelling mistakes. Do not alter the content, 
       style, or tone of the original text in any way.
@@ -46,7 +50,7 @@ const assignPrompt = (action, { context, field, template })=>{
             };
         case 'Rephrase':
             return {
-                prompt: replacePlaceholders(`{{${field}}}`, context),
+                prompt: await replacePlaceholders(`{{${field}}}`, context),
                 system: `You are a skilled language expert. Rephrase the given text while maintaining its original meaning, tone, and emotional content. Use different words and sentence structures where possible, but preserve the overall style and sentiment of the original.
         -------------
         INSTRUCTIONS:
@@ -60,7 +64,7 @@ const assignPrompt = (action, { context, field, template })=>{
             };
         case 'Simplify':
             return {
-                prompt: replacePlaceholders(`{{${field}}}`, context),
+                prompt: await replacePlaceholders(`{{${field}}}`, context),
                 system: `You are a skilled communicator specializing in clear and concise writing. 
         Your task is to simplify the given text, making it easier to understand while retaining its core message.
         -------------
@@ -81,22 +85,22 @@ const assignPrompt = (action, { context, field, template })=>{
             };
         case 'Summarize':
             return {
-                prompt: replacePlaceholders(`{{${field}}}`, context),
+                prompt: await replacePlaceholders(`{{${field}}}`, context),
                 system: ''
             };
         case 'Tone':
             return {
-                prompt: replacePlaceholders(`{{${field}}}`, context),
+                prompt: await replacePlaceholders(`{{${field}}}`, context),
                 system: ''
             };
         case 'Translate':
             return {
-                prompt: replacePlaceholders(`{{${field}}}`, context),
+                prompt: await replacePlaceholders(`{{${field}}}`, context),
                 system: ''
             };
         default:
             return {
-                prompt: replacePlaceholders(template, context),
+                prompt: await replacePlaceholders(template, context),
                 system: ''
             };
     }
@@ -105,6 +109,7 @@ export const endpoints = {
     textarea: {
         handler: async (req)=>{
             const data = await req.json?.();
+            // console.log('req.payload.config.editor : ', req.payload.config.editor.editorConfig)
             console.log('incoming data -----> ', JSON.stringify(data, null, 2));
             const { locale = 'en', options } = data;
             const { action, instructionId } = options;
@@ -122,7 +127,7 @@ export const endpoints = {
             }
             const { prompt: promptTemplate = '' } = instructions;
             const fieldName = instructions['schema-path']?.split('.').pop();
-            const prompts = assignPrompt(action, {
+            const prompts = await assignPrompt(action, {
                 context: contextData,
                 field: fieldName,
                 template: promptTemplate
@@ -158,6 +163,18 @@ export const endpoints = {
     upload: {
         handler: async (req)=>{
             const data = await req.json?.();
+            // console.log('incoming req.payload.collection -----> ', req.payload.collections)
+            const postsCollection = req.payload.collections['posts'];
+            // console.log('postsCollection : ', postsCollection)
+            const flattenFields = flattenTopLevelFields(postsCollection.config.fields);
+            const fieldConfig = flattenFields.find((f)=>{
+                return f.name === 'content';
+            });
+            // @ts-expect-error
+            const { editor } = fieldConfig || {
+                editor: {}
+            };
+            // console.log('fieldConfig : ', fieldConfig)
             const { options } = data;
             const { instructionId, uploadCollectionSlug } = options;
             const contextData = data.doc;
@@ -172,10 +189,13 @@ export const endpoints = {
                     collection: 'instructions'
                 });
             }
-            console.log('Instructions', instructions);
-            console.log('data.doc', contextData);
             const { prompt: promptTemplate = '' } = instructions;
-            const text = replacePlaceholders(promptTemplate, contextData);
+            //TODO: add autocomplete ability using handlebars template on PromptEditorField and include custom helpers in dropdown
+            asyncHandlebars.registerHelper('toLexicalHTML', async function(content) {
+                const html = await lexicalToHTML(content, editor.editorConfig);
+                return new asyncHandlebars.SafeString(html);
+            });
+            const text = await replacePlaceholders(promptTemplate, contextData);
             const modelId = instructions['model-id'];
             console.log('prompt text:', text);
             const model = GenerationModels.find((model)=>model.id === modelId);

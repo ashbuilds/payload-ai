@@ -5,7 +5,7 @@ import { init } from './init.js';
 import { InstructionsProvider } from './providers/InstructionsProvider/index.js';
 import { translations } from './translations/index.js';
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js';
-const payloadPluginAI = (pluginConfig)=>(incomingConfig)=>{
+const payloadAI = (pluginConfig)=>(incomingConfig)=>{
         const collections = [
             ...incomingConfig.collections ?? [],
             Instructions
@@ -67,6 +67,6 @@ const payloadPluginAI = (pluginConfig)=>(incomingConfig)=>{
         };
         return updatedConfig;
     };
-export { payloadPluginAI };
+export { payloadAI };
 
 //# sourceMappingURL=plugin.js.map

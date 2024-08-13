@@ -1,5 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './actions.module.scss';
 const LottieAnimation = ({ isLoading = false })=>{
     const svgRef = useRef(null);
@@ -9,10 +9,10 @@ const LottieAnimation = ({ isLoading = false })=>{
         if (!svg) return;
         const animateTransform = (element, keyframes)=>{
             const animation = element.animate(keyframes, {
-                duration: 1000,
-                iterations: Infinity,
                 direction: 'alternate',
-                easing: 'ease-in-out'
+                duration: 1000,
+                easing: 'ease-in-out',
+                iterations: Infinity
             });
             return animation;
         };
@@ -64,31 +64,31 @@ const LottieAnimation = ({ isLoading = false })=>{
     ]);
     return /*#__PURE__*/ _jsx("span", {
         style: {
+            left: '3px',
             position: 'relative',
-            top: '-6px',
-            left: '3px'
+            top: '-6px'
         },
         children: /*#__PURE__*/ _jsxs("svg", {
-            ref: svgRef,
-            width: "41",
             height: "41",
+            ref: svgRef,
             viewBox: "-250 -250 500 500",
+            width: "41",
             children: [
                 /*#__PURE__*/ _jsx("g", {
                     id: "group2",
                     children: /*#__PURE__*/ _jsx("rect", {
-                        x: "-20.5",
-                        y: "-20.5",
-                        width: "41",
+                        className: styles.color_fill,
                         height: "41",
-                        className: styles.color_fill
+                        width: "41",
+                        x: "-20.5",
+                        y: "-20.5"
                     })
                 }),
                 /*#__PURE__*/ _jsx("g", {
                     id: "group3",
                     children: /*#__PURE__*/ _jsx("path", {
-                        d: "M48.5 57.5L48.5 -57.5L-49.5 -1.093L48.5 57.5Z",
-                        className: styles.color_fill
+                        className: styles.color_fill,
+                        d: "M48.5 57.5L48.5 -57.5L-49.5 -1.093L48.5 57.5Z"
                     })
                 })
             ]
