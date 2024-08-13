@@ -2,7 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { PluginIcon } from './Icons.js';
+import { PluginIcon } from '../Icons/Icons.js';
 import styles from './actions.module.scss';
 import { useGenerate } from './hooks/useGenerate.js';
 import { useHistory } from './hooks/useHistory.js';
