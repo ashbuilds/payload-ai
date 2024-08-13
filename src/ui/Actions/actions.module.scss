@@ -47,6 +47,11 @@
   &:active {
     opacity: 0.5;
   }
+
+  [data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .color_fill {

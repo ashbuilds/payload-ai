@@ -2,7 +2,6 @@ import type { File } from 'payload'
 
 import type { GenerationConfig } from '../../../types.js'
 
-import { PromptEditorField } from '../../../fields/PromptEditorField/PromptEditorField.js'
 import { SelectField } from '../../../fields/SelectField/SelectField.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateVoice } from './generateVoice.js'
@@ -10,15 +9,7 @@ import { getAllVoices } from './voices.js'
 
 //TODO: Add prompt optimisation for ElevenLabs models
 
-const { voices = [] } = {
-  voices: [
-    {
-      name: 'en-US-Wavenet-A',
-      language_code: 'en-US',
-      voice_id: 'en-US-Wavenet-A',
-    },
-  ],
-} // await getAllVoices()
+const { voices = [] } = await getAllVoices()
 
 const voiceOptions = voices.map((voice) => {
   return {
@@ -38,7 +29,7 @@ export const ElevenLabsConfig: GenerationConfig = {
         const voiceData = await generateVoice(text, options)
         return {
           data: {
-            // alt: text.alt,
+            alt: 'voice over',
           },
           file: {
             name: `voice_${generateFileNameByPrompt(text)}.mp3`,

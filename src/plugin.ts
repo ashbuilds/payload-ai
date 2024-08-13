@@ -1,4 +1,4 @@
-import type { Config } from 'payload'
+import type { CollectionConfig, Config } from 'payload'
 
 import { deepMerge } from 'payload/shared'
 
@@ -11,7 +11,7 @@ import { InstructionsProvider } from './providers/InstructionsProvider/index.js'
 import { translations } from './translations/index.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
-const payloadPluginAI =
+const payloadAI =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
     const collections = [...(incomingConfig.collections ?? []), Instructions]
@@ -76,4 +76,4 @@ const payloadPluginAI =
     return updatedConfig
   }
 
-export { payloadPluginAI }
+export { payloadAI }

@@ -1,27 +1,33 @@
-# Payload AI Plugin
+<img alt="Payload AI Plugin" src="assets/payloadcms-ai.gif" width="100%" />
 
-![Payload AI Plugin](https://via.placeholder.com/800x400?text=Payload+AI+Plugin)
-
-### Payload AI Plugin is a powerful extension for the Payload CMS, integrating advanced AI capabilities to enhance content creation and management.
+### The Payload AI Plugin is a powerful extension for the [Payload CMS](https://payloadcms.com), integrating advanced AI capabilities to enhance content creation and management.
 
 ## 🌟 Features
 
 - [x] Rich text generation
+  - [x] Compose
+  - [ ] Proofread(Beta)
+  - [ ] Translate
+  - [ ] Expand
+  - [ ] Summarize
+  - [ ] Simplify
+  - [ ] Rephrase(Beta)
+  
 - [x] Voice generation with ElevenLabs
 - [x] Image generation with OpenAI
 - [x] Field level prompt customization
-- [ ] Analyse documents 
+- [ ] Prompt Editor(Beta)
+- [ ] Analyse documents
 - [ ] Fact checking
 - [ ] Automation of content creation workflows
 - [ ] Internationalization support
-- [ ] Live chat support
+- [ ] AI Chat support
 
 ## 📋 Table of Contents
 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
-- [API Reference](#api-reference)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -30,13 +36,7 @@
 To install the Payload AI Plugin, run the following command in your Payload project:
 
 ```bash
-npm install @ashbuilds/payload-ai
-```
-
-or if you're using pnpm:
-
-```bash
-pnpm add @ashbuilds/payload-ai
+pnpm add payload-ai-plugin
 ```
 
 ## 🔧 Usage
@@ -45,11 +45,13 @@ To use the Payload AI Plugin in your Payload config:
 
 ```javascript
 import { buildConfig } from 'payload/config';
-import aiPlugin from '@ashbuilds/payload-ai';
+import { payloadAI } from 'payload-ai-plugin';
 
 export default buildConfig({
   plugins: [
-    aiPlugin(),
+    payloadAI({
+      collections: [Posts.slug],
+    }),
   ],
   // ... rest of your payload config
 });
@@ -67,13 +69,9 @@ ELEVENLABS_API_KEY=your-elevenlabs-api-key
 
 Make sure to replace the placeholder values with your actual API keys.
 
-## 📚 API Reference
-
-For detailed API documentation, please refer to our [API Reference](link-to-api-reference).
-
 ## 🤝 Contributing
 
-We welcome contributions to the Payload AI Plugin! Please see our [Contributing Guide](link-to-contributing-guide) for more details.
+We welcome contributions to the Payload AI Plugin! Please join us on [Discord](https://discord.com/channels/967097582721572934/1270873253581160499) for more details.
 
 ## 📄 License
 

@@ -23,15 +23,15 @@ export const OpenAIConfig: GenerationConfig = {
         prompt: string,
         options: { locale: string; model: string; system: string },
       ) => {
-        const finalPrompt = `Output language code: ${options.locale}
-          Prompt: ${prompt}
-          Output:
-          `
+        // const finalPrompt = `Output language code: ${options.locale}
+        //   Prompt: ${prompt}
+        //   Output:
+        //   `
 
-        console.log('finalPrompt: ', finalPrompt)
+        // console.log('finalPrompt: ', finalPrompt)
         const streamTextResult = await streamText({
           model: openai(options.model),
-          prompt: finalPrompt,
+          prompt,
           system: options.system,
         })
 

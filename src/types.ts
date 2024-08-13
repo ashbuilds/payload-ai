@@ -68,6 +68,7 @@ export type UseMenuEvents = {
 
 export type BaseItemProps = {
   children?: React.ReactNode
+  disabled?: boolean
   hideIcon?: boolean
   onClick: () => void
 }

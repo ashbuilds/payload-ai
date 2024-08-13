@@ -19,22 +19,23 @@ import {
 } from '../Icons.js'
 import styles from '../actions.module.scss'
 
-const Item: React.FC<BaseItemProps> = memo(({ children, onClick = () => {} }) => (
+const Item: React.FC<BaseItemProps> = memo(({ children, disabled, onClick = () => {} }) => (
   <span
     className={styles.generate_button}
-    onClick={onClick}
-    onKeyDown={onClick}
+    data-disabled={disabled}
+    onClick={!disabled ? onClick : null}
+    onKeyDown={!disabled ? onClick : null}
     role="presentation"
   >
     {children}
   </span>
 ))
 
-const createMenuItem = (IconComponent, text) =>
-  memo(({ hideIcon, onClick }: BaseItemProps) => (
-    <Item onClick={onClick}>
+const createMenuItem = (IconComponent, initialText) =>
+  memo(({ children, disabled, hideIcon, onClick }: BaseItemProps) => (
+    <Item disabled={disabled} onClick={onClick}>
       {hideIcon || <IconComponent size={18} />}
-      {text}
+      {children || initialText}
     </Item>
   ))
 
@@ -47,14 +48,26 @@ const Simplify = createMenuItem(SegmentIcon, 'Simplify')
 const Compose = createMenuItem(StylusNoteIcon, 'Compose')
 const Settings = createMenuItem(TuneIcon, 'Settings')
 
-const MenuItemsMap = [
-  { name: 'Proofread', component: Proofread, excludedFor: ['upload'] },
-  { name: 'Rephrase', component: Rephrase, excludedFor: ['upload'] },
-  { name: 'Translate', component: Translate, excludedFor: ['upload'] },
-  { name: 'Expand', component: Expand, excludedFor: ['upload', 'text'] },
-  { name: 'Summarize', component: Summarize, excludedFor: ['upload', 'text'] },
-  { name: 'Simplify', component: Simplify, excludedFor: ['upload'] },
-  { name: 'Compose', component: Compose },
+type MenuItemsMapType = {
+  component: React.FC<BaseItemProps>
+  excludedFor?: string[]
+  loadingText?: string
+  name: MenuItems
+}
+
+const MenuItemsMap: MenuItemsMapType[] = [
+  { name: 'Proofread', component: Proofread, excludedFor: ['upload'], loadingText: 'Proofreading' },
+  { name: 'Rephrase', component: Rephrase, excludedFor: ['upload'], loadingText: 'Rephrasing' },
+  { name: 'Translate', component: Translate, excludedFor: ['upload'], loadingText: 'Translating' },
+  { name: 'Expand', component: Expand, excludedFor: ['upload', 'text'], loadingText: 'Expanding' },
+  {
+    name: 'Summarize',
+    component: Summarize,
+    excludedFor: ['upload', 'text'],
+    loadingText: 'Summarizing',
+  },
+  { name: 'Simplify', component: Simplify, excludedFor: ['upload'], loadingText: 'Simplifying' },
+  { name: 'Compose', component: Compose, loadingText: 'Composing' },
   { name: 'Settings', component: Settings },
 ]
 
@@ -101,9 +114,14 @@ export const useMenu = ({ lexicalEditor }: UseMenuProps, menuEvents: UseMenuEven
   }, [initialValue, value, fieldType, lexicalEditor])
 
   const MemoizedActiveComponent = useMemo(() => {
-    return ({ disabled = false }) => {
+    return ({ isLoading }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
-      return <ActiveComponent hideIcon onClick={menuEvents[`on${activeComponent}`]} />
+      const activeItem = MenuItemsMap.find((i) => i.name === activeComponent)
+      return (
+        <ActiveComponent disabled={isLoading} hideIcon onClick={menuEvents[`on${activeComponent}`]}>
+          {isLoading && activeItem.loadingText}
+        </ActiveComponent>
+      )
     }
   }, [activeComponent, menuEvents])
 
@@ -114,18 +132,25 @@ export const useMenu = ({ lexicalEditor }: UseMenuProps, menuEvents: UseMenuEven
   )
 
   const MemoizedMenu = useMemo(() => {
-    return ({ disabled = false, onClose }) => (
+    return ({ isLoading, onClose }) => (
       <div className={styles.menu}>
         {filteredMenuItems.map((i) => {
           const Item = i.component
           return (
             <Item
+              disabled={isLoading}
               key={i.name}
               onClick={() => {
+                if (i.name !== 'Settings') {
+                  setActiveComponent(i.name)
+                }
+
                 menuEvents[`on${i.name}`]()
                 onClose()
               }}
-            />
+            >
+              {isLoading && i.loadingText}
+            </Item>
           )
         })}
       </div>

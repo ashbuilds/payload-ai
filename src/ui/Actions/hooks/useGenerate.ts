@@ -2,8 +2,6 @@ import type { LexicalEditor } from 'lexical'
 
 import { useField, useFieldProps, useForm, useLocale } from '@payloadcms/ui'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
-import { jsonrepair } from 'jsonrepair'
-import { $getRoot } from 'lexical'
 import { useCallback, useEffect } from 'react'
 
 import type { GenerateTextarea, MenuItems } from '../../../types.js'
@@ -14,6 +12,8 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
 } from '../../../defaults.js'
 import { useInstructions } from '../../../providers/InstructionsProvider/hook.js'
+import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
+import { useHistory } from './useHistory.js'
 
 type UseGenerate = {
   lexicalEditor: LexicalEditor
@@ -30,6 +30,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     path: pathFromContext,
   })
 
+  const { set: setHistory } = useHistory()
   const { id: instructionId } = useInstructions({
     path: schemaPath,
   })
@@ -47,8 +48,25 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     onError: (error) => {
       console.error('Error generating object:', error)
     },
+    onFinish: ({ object }) => {
+      setHistory(object)
+    },
     schema: DocumentSchema,
   })
+
+  useEffect(() => {
+    if (!object) return
+
+    requestAnimationFrame(() => {
+      if (!lexicalEditor) {
+        setValue(object)
+        return
+      }
+
+      // Currently this is being used as setValue for RichText component does not render new changes right away.
+      setSafeLexicalState(object, lexicalEditor)
+    })
+  }, [object])
 
   const {
     complete,
@@ -59,39 +77,11 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
     onError: (error) => {
       console.error('Error generating text:', error)
     },
-    streamMode: 'stream-data',
+    onFinish: (prompt, result) => {
+      setHistory(result)
+    },
+    streamProtocol: 'data',
   })
-
-  useEffect(() => {
-    if (!object) return
-
-    // TODO: Improve error handling
-    requestAnimationFrame(() => {
-      try {
-        const repairedObject = jsonrepair(JSON.stringify(object))
-        const editorState = lexicalEditor.parseEditorState(repairedObject)
-        if (editorState.isEmpty()) return
-
-        lexicalEditor.update(
-          () => {
-            const root = $getRoot()
-            root.clear() //TODO: this is hack to prevent reconciliation error - find a way
-            lexicalEditor.setEditorState(editorState)
-          },
-          {
-            discrete: true,
-          },
-        )
-      } catch (e) {
-        console.error('Error setting object:', e)
-        console.error('Object:', object)
-        if (type === 'richText') {
-          console.log('type is richText', { setValue })
-        }
-        // setValue(object) //TODO: This breaks the editor find a better way to handle objects that are not valid
-      }
-    })
-  }, [object])
 
   useEffect(() => {
     if (!completion) return
@@ -121,6 +111,7 @@ export const useGenerate = ({ lexicalEditor }: UseGenerate) => {
   const streamText = useCallback(
     async ({ action = 'Compose' }: { action: MenuItems }) => {
       const doc = getData()
+
       const options = {
         action,
         instructionId,

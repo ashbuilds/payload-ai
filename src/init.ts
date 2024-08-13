@@ -41,5 +41,6 @@ export const init = async (payload, fieldSchemaPaths) => {
     },
     depth: 2,
   })
+
   payload.logger.info(`— AI Plugin: Initialized!`)
 }
