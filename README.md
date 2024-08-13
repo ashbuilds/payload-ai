@@ -1,4 +1,4 @@
-# 🚀 Payload AI Plugin
+# Payload AI Plugin
 
 <p align="center">
   <img alt="Payload AI Plugin" src="assets/payloadcms-ai.gif" width="100%" />
