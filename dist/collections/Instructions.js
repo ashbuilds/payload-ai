@@ -89,12 +89,6 @@ export const Instructions = {
                 }
             }
         },
-        {
-            // Settings to allow users to save history(for undo/redo functions) to database
-            name: 'field-history',
-            type: 'json',
-            hidden: true
-        },
         ...groupSettings
     ],
     hooks: {
