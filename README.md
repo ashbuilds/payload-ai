@@ -89,6 +89,14 @@ Remember to replace the placeholders with your actual API keys.
 
 Join our community of innovators! We welcome contributions to the Payload AI Plugin. Connect with us on [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) to get started.
 
-## 📄 License
+## Licensing
 
-Payload AI Plugin is open-source software licensed under the [MIT license](link-to-license-file).
+This plugin is available under dual licensing:
+
+- ### Open-Source License
+
+  This plugin is available under the [MIT License](LICENSE.md). You can use, modify, and distribute it freely under the terms of this license.
+
+- ### Commercial License
+
+  For companies or individuals who wish to use the plugin in a commercial context, require additional features, or need support, please refer to the [Commercial License Agreement](COMMERCIAL-LICENSE.md) for more details.
