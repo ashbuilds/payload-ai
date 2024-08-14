@@ -52,7 +52,7 @@ The Payload AI Plugin is an extension that seamlessly integrates advanced AI cap
 Elevate your Payload project with a single command:
 
 ```bash
-pnpm add payload-ai-plugin
+pnpm add @ai-stack/payloadcms
 ```
 
 ## 🛠 Usage
@@ -61,7 +61,7 @@ Integrate the AI magic into your Payload config:
 
 ```javascript
 import { buildConfig } from 'payload/config';
-import { payloadAI } from 'payload-ai-plugin';
+import { payloadAI } from '@ai-stack/payloadcms';
 
 export default buildConfig({
   plugins: [

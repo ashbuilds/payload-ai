@@ -1,5 +1,5 @@
 {
-  "name": "payload-ai-plugin",
+  "name": "@ai-stack/payloadcms",
   "version": "3.0.0-beta.65",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
