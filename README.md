@@ -26,7 +26,7 @@ The Payload AI Plugin is an extension that seamlessly integrates advanced AI cap
   - [x] **Rephrase** for impact (Beta)
 
 ### Upload Field
-- 🎙️ **Voice Generation** powered by ElevenLabs
+- 🎙️ **Voice Generation** powered by ElevenLabs, OpenAI
 - 🖼️ **Image Generation** powered by OpenAI
 
 ### Other features
