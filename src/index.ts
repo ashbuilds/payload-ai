@@ -5,4 +5,4 @@
  * without appropriate licensing is prohibited.
  */
 
-export { payloadAI } from './plugin.js'
+export { payloadAiPlugin } from './plugin.js'

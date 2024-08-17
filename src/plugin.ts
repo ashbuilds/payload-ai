@@ -11,7 +11,7 @@ import { InstructionsProvider } from './providers/InstructionsProvider/index.js'
 import { translations } from './translations/index.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
-const payloadAI =
+const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
     const collections = [...(incomingConfig.collections ?? []), Instructions]
@@ -76,4 +76,4 @@ const payloadAI =
     return updatedConfig
   }
 
-export { payloadAI }
+export { payloadAiPlugin }
