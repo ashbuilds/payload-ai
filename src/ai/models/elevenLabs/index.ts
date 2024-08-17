@@ -10,7 +10,7 @@ import { getAllVoices } from './voices.js'
 //TODO: Add prompt optimisation for ElevenLabs models
 
 const { voices = [] } = await getAllVoices()
-console.log('voices-->', voices)
+
 const voiceOptions = voices.map((voice) => {
   return {
     label: voice.name,
