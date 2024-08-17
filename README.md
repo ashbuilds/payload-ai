@@ -60,11 +60,11 @@ Integrate the AI magic into your Payload config:
 
 ```javascript
 import { buildConfig } from 'payload/config';
-import { payloadAI } from '@ai-stack/payloadcms';
+import { payloadAiPlugin } from '@ai-stack/payloadcms';
 
 export default buildConfig({
   plugins: [
-    payloadAI({
+    payloadAiPlugin({
       collections: [Posts.slug],
     }),
   ],
