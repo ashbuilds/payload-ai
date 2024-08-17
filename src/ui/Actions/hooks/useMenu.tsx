@@ -17,7 +17,7 @@ import {
   TranslateIcon,
   TuneIcon,
 } from '../../Icons/Icons.js'
-import styles from '../actions.module.scss'
+import styles from '../actions.module.css'
 
 const Item: React.FC<BaseItemProps> = memo(({ children, disabled, onClick = () => {} }) => (
   <span

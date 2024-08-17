@@ -15,10 +15,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
 
-  & > svg{
+.icon > svg{
     fill: var(--theme-elevation-800);
-  }
 }
 
 .color_fill {

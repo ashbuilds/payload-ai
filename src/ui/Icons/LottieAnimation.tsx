@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 
-import styles from './icons.module.scss'
+import styles from './icons.module.css'
 
 const LottieAnimation = ({ isLoading = false }) => {
   const svgRef = useRef(null)

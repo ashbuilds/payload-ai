@@ -26,32 +26,34 @@
   color: var(--theme-elevation-800);
   transition: opacity 0.3s ease;
   opacity: 1;
+}
 
-  & > .icon {
-    width: 20px;
-  }
+.generate_button > .icon {
+  width: 20px;
+}
 
-  &:active {
-    opacity: 0.5;
-  }
+.generate_button:active {
+  opacity: 0.5;
+}
 
-  [data-disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.generate_button [data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .menu {
   display: flex;
   gap: 1px;
   flex-direction: column;
-  & > span {
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: flex;
-    gap: 8px;
-    &:hover {
-      background: var(--theme-elevation-100);
-    }
-  }
+}
+
+.menu > span {
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  gap: 8px;
+}
+
+.menu > span:hover {
+  background: var(--theme-elevation-100);
 }

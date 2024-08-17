@@ -7,7 +7,7 @@
 
 import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 
-import styles from './floatype.module.scss'
+import styles from './floatype.module.css'
 
 type Options = {
   debounce?: number

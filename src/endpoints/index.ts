@@ -13,7 +13,7 @@ import { lexicalToHTML } from '../utilities/lexicalToHTML.js'
 
 const asyncHandlebars = asyncHelpers(Handlebars)
 
-const replacePlaceholders = async (prompt: string, values: object) => {
+const replacePlaceholders = (prompt: string, values: object) => {
   return asyncHandlebars.compile(prompt)(values)
 }
 
@@ -191,14 +191,15 @@ export const endpoints: Endpoints = {
     handler: async (req: PayloadRequest) => {
       const data = await req.json?.()
 
-      // console.log('incoming req.payload.collection -----> ', req.payload.collections)
       const postsCollection = req.payload.collections['posts']
-
-      // console.log('postsCollection : ', postsCollection)
       const flattenFields = flattenTopLevelFields(postsCollection.config.fields)
+
+      //TODO: Important find a way to use lexcial editor in more generic way
       const fieldConfig = flattenFields.find((f) => {
         return f.name === 'content'
       })
+
+      //TODO: Important
       // @ts-expect-error
       const { editor } = fieldConfig || { editor: {} }
 
