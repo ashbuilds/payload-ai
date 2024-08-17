@@ -5,7 +5,7 @@ import { GenerationModels } from '../ai/models/index.js';
 import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js';
 import { lexicalToHTML } from '../utilities/lexicalToHTML.js';
 const asyncHandlebars = asyncHelpers(Handlebars);
-const replacePlaceholders = async (prompt, values)=>{
+const replacePlaceholders = (prompt, values)=>{
     return asyncHandlebars.compile(prompt)(values);
 };
 const assignPrompt = async (action, { context, field, template })=>{
@@ -163,13 +163,13 @@ export const endpoints = {
     upload: {
         handler: async (req)=>{
             const data = await req.json?.();
-            // console.log('incoming req.payload.collection -----> ', req.payload.collections)
             const postsCollection = req.payload.collections['posts'];
-            // console.log('postsCollection : ', postsCollection)
             const flattenFields = flattenTopLevelFields(postsCollection.config.fields);
+            //TODO: Important find a way to use lexcial editor in more generic way
             const fieldConfig = flattenFields.find((f)=>{
                 return f.name === 'content';
             });
+            //TODO: Important
             // @ts-expect-error
             const { editor } = fieldConfig || {
                 editor: {}

@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React, { useEffect, useRef, useState } from 'react';
-import styles from './icons.module.scss';
+import styles from './icons.module.css';
 const LottieAnimation = ({ isLoading = false })=>{
     const svgRef = useRef(null);
     const [animations, setAnimations] = useState([]);

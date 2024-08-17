@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useField, useFieldProps } from '@payloadcms/ui';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { DocsAddOnIcon, EditNoteIcon, SegmentIcon, SpellCheckIcon, StylusNoteIcon, SummarizeIcon, TranslateIcon, TuneIcon } from '../../Icons/Icons.js';
-import styles from '../actions.module.scss';
+import styles from '../actions.module.css';
 const Item = /*#__PURE__*/ memo(({ children, disabled, onClick = ()=>{} })=>/*#__PURE__*/ _jsx("span", {
         className: styles.generate_button,
         "data-disabled": disabled,
