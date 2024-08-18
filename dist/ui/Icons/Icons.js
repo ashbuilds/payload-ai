@@ -1,7 +1,7 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import React from 'react';
 import LottieAnimation from './LottieAnimation.js';
-import styles from './icons.module.scss';
+import styles from './icons.module.css';
 export const PluginIcon = ({ color = 'white', isLoading })=>{
     return /*#__PURE__*/ _jsx("span", {
         className: styles.actions_icon,

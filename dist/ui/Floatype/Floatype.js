@@ -5,7 +5,7 @@
  * Reacted By: Claude 3.5 Sonnet and Ashbuilds
  */ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React, { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
-import styles from './floatype.module.scss';
+import styles from './floatype.module.css';
 export const Floatype = /*#__PURE__*/ forwardRef(({ options }, inputRef)=>{
     const [items, setItems] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
