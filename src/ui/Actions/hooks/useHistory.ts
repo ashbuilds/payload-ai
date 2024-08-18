@@ -1,7 +1,7 @@
 'use client'
 
-import { useDocumentInfo, useField, useFieldProps, useForm } from '@payloadcms/ui'
-import { useCallback, useEffect, useState } from 'react'
+import { useDocumentInfo, useField, useFieldProps } from '@payloadcms/ui'
+import { useCallback, useEffect } from 'react'
 
 import { PLUGIN_NAME } from '../../../defaults.js'
 
@@ -25,7 +25,11 @@ export const useHistory = () => {
 
   const getLatestHistory = useCallback((): HistoryState => {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+      // This condition is applied, as it was somehow triggering on server side
+      if (typeof localStorage !== 'undefined') {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+      }
+      return {}
     } catch (e) {
       console.error('Error parsing history:', e)
       return {}

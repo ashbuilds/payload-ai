@@ -5,4 +5,5 @@
  * without appropriate licensing is prohibited.
  */
 
+export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js'
 export { payloadAiPlugin } from './plugin.js'

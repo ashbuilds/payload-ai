@@ -1,6 +1,7 @@
 import type { CollectionConfig, GroupField } from 'payload'
 
 import { GenerationModels } from '../ai/models/index.js'
+import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 import { PromptEditorField } from '../fields/PromptEditorField/PromptEditorField.js'
 import { SelectField } from '../fields/SelectField/SelectField.js'
 
@@ -20,11 +21,16 @@ const modelOptions = GenerationModels.map((model) => {
 })
 
 export const Instructions: CollectionConfig = {
-  slug: 'instructions',
+  slug: PLUGIN_INSTRUCTIONS_TABLE,
+
+  // TODO: Revisit permissions, better if end user can provide this
   access: {
     create: () => true,
     read: () => true,
     update: () => true,
+  },
+  admin: {
+    hidden: true,
   },
   fields: [
     {

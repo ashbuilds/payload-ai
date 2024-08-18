@@ -3,9 +3,9 @@
 import type { LexicalEditor } from 'lexical'
 
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
-import { $getRoot } from 'lexical'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
+import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { PluginIcon } from '../Icons/Icons.js'
 import styles from './actions.module.css'
 import { useGenerate } from './hooks/useGenerate.js'
@@ -28,10 +28,10 @@ function findParentWithClass(element, className) {
 }
 
 //TODO: Add undo/redo to the actions toolbar
-export const Actions = ({ descriptionProps, instructionId }) => {
+export const Actions = ({ descriptionProps = {}, instructionId }) => {
   const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: instructionId,
-    collectionSlug: 'instructions',
+    collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
   })
 
   const fieldProps = useFieldProps()
@@ -82,46 +82,43 @@ export const Actions = ({ descriptionProps, instructionId }) => {
 
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const { generate, isLoading } = useGenerate({ lexicalEditor })
-  const { ActiveComponent, Menu } = useMenu(
-    { lexicalEditor },
-    {
-      onCompose: async () => {
-        console.log('Composing...')
-        setIsProcessing(true)
-        await generate({
-          action: 'Compose',
-        }).finally(() => {
-          setIsProcessing(false)
-        })
-      },
-      onExpand: async () => {
-        console.log('Expanding...')
-        await generate({
-          action: 'Expand',
-        })
-      },
-      onProofread: async () => {
-        console.log('Proofreading...')
-        await generate({
-          action: 'Proofread',
-        })
-      },
-      onRephrase: async () => {
-        console.log('Rephrasing...')
-        await generate({
-          action: 'Rephrase',
-        })
-      },
-      onSettings: openDrawer,
-      onSimplify: async () => {
-        console.log('Simplifying...')
-        await generate({
-          action: 'Simplify',
-        })
-      },
+  const { generate, isLoading } = useGenerate()
+  const { ActiveComponent, Menu } = useMenu({
+    onCompose: async () => {
+      console.log('Composing...')
+      setIsProcessing(true)
+      await generate({
+        action: 'Compose',
+      }).finally(() => {
+        setIsProcessing(false)
+      })
     },
-  )
+    onExpand: async () => {
+      console.log('Expanding...')
+      await generate({
+        action: 'Expand',
+      })
+    },
+    onProofread: async () => {
+      console.log('Proofreading...')
+      await generate({
+        action: 'Proofread',
+      })
+    },
+    onRephrase: async () => {
+      console.log('Rephrasing...')
+      await generate({
+        action: 'Rephrase',
+      })
+    },
+    onSettings: openDrawer,
+    onSimplify: async () => {
+      console.log('Simplifying...')
+      await generate({
+        action: 'Simplify',
+      })
+    },
+  })
 
   const { setValue } = useField<string>({
     path: pathFromContext,

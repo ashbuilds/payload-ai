@@ -5,6 +5,7 @@ import { deepMerge } from 'payload/shared'
 import type { PluginConfig } from './types.js'
 
 import { Instructions } from './collections/Instructions.js'
+import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL } from './defaults.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
 import { InstructionsProvider } from './providers/InstructionsProvider/index.js'
@@ -42,12 +43,12 @@ const payloadAiPlugin =
       globals: [
         ...incomingConfig.globals,
         {
-          slug: 'ai-plugin__instructions_map',
+          slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL,
           access: {
             read: () => true,
           },
           admin: {
-            hidden: true,
+            hidden: false,
           },
           fields: [
             {

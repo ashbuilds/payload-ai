@@ -1,20 +1,24 @@
 import type { SerializedEditorState } from 'lexical'
-import type { PayloadRequest } from 'payload'
+import type { BasePayload, PayloadRequest } from 'payload'
 
 import Handlebars from 'handlebars'
 import asyncHelpers from 'handlebars-async-helpers'
-import { flattenTopLevelFields } from 'payload'
 
 import type { Endpoints, MenuItems } from '../types.js'
 
 import { GenerationModels } from '../ai/models/index.js'
-import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../defaults.js'
+import {
+  PLUGIN_API_ENDPOINT_GENERATE,
+  PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
+  PLUGIN_INSTRUCTIONS_TABLE,
+} from '../defaults.js'
+import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { lexicalToHTML } from '../utilities/lexicalToHTML.js'
 
 const asyncHandlebars = asyncHelpers(Handlebars)
 
 const replacePlaceholders = (prompt: string, values: object) => {
-  return asyncHandlebars.compile(prompt)(values)
+  return asyncHandlebars.compile(prompt, { trackIds: true })(values)
 }
 
 const assignPrompt = async (
@@ -123,14 +127,46 @@ const assignPrompt = async (
   }
 }
 
+const registerEditorHelper = (payload, schemaPath) => {
+  //TODO: add autocomplete ability using handlebars template on PromptEditorField and include custom helpers in dropdown
+
+  let fieldInfo = getFieldInfo(payload.collections, schemaPath)
+  const schemaPathChunks = schemaPath.split('.')
+
+  asyncHandlebars.registerHelper(
+    'toLexicalHTML',
+    async function (content: SerializedEditorState, options) {
+      const collectionSlug = schemaPathChunks[0]
+      const { ids } = options
+      for (const id of ids) {
+        //TODO: Find a better to get schemaPath of defined field in prompt editor
+        const path = `${collectionSlug}.${id}`
+        fieldInfo = getFieldInfo(payload.collections, path)
+      }
+
+      const html = await lexicalToHTML(content, fieldInfo.editor?.editorConfig)
+      return new asyncHandlebars.SafeString(html)
+    },
+  )
+}
+
+const getFieldInfo = (collections: BasePayload['collections'], schemaPath: string) => {
+  let fieldInfo = null
+  //TODO: Only run below for enabled collections
+  for (const collectionsKey in collections) {
+    const collection = collections[collectionsKey]
+    fieldInfo = getFieldBySchemaPath(collection.config, schemaPath)
+    if (fieldInfo) {
+      return fieldInfo
+    }
+  }
+}
+
 export const endpoints: Endpoints = {
   textarea: {
     handler: async (req: PayloadRequest) => {
       const data = await req.json?.()
 
-      // console.log('req.payload.config.editor : ', req.payload.config.editor.editorConfig)
-
-      console.log('incoming data -----> ', JSON.stringify(data, null, 2))
       const { locale = 'en', options } = data
       const { action, instructionId } = options
       const contextData = data.doc
@@ -141,13 +177,16 @@ export const endpoints: Endpoints = {
         // @ts-expect-error
         instructions = await req.payload.findByID({
           id: instructionId,
-          collection: 'instructions',
+          collection: PLUGIN_INSTRUCTIONS_TABLE,
         })
       }
 
       const { prompt: promptTemplate = '' } = instructions
 
-      const fieldName = instructions['schema-path']?.split('.').pop()
+      const schemaPath = instructions['schema-path']
+      const fieldName = schemaPath?.split('.').pop()
+
+      registerEditorHelper(req.payload, schemaPath)
 
       const prompts = await assignPrompt(action, {
         context: contextData,
@@ -191,19 +230,6 @@ export const endpoints: Endpoints = {
     handler: async (req: PayloadRequest) => {
       const data = await req.json?.()
 
-      const postsCollection = req.payload.collections['posts']
-      const flattenFields = flattenTopLevelFields(postsCollection.config.fields)
-
-      //TODO: Important find a way to use lexcial editor in more generic way
-      const fieldConfig = flattenFields.find((f) => {
-        return f.name === 'content'
-      })
-
-      //TODO: Important
-      // @ts-expect-error
-      const { editor } = fieldConfig || { editor: {} }
-
-      // console.log('fieldConfig : ', fieldConfig)
       const { options } = data
       const { instructionId, uploadCollectionSlug } = options
       const contextData = data.doc
@@ -214,20 +240,14 @@ export const endpoints: Endpoints = {
         // @ts-expect-error
         instructions = await req.payload.findByID({
           id: instructionId,
-          collection: 'instructions',
+          collection: PLUGIN_INSTRUCTIONS_TABLE,
         })
       }
 
       const { prompt: promptTemplate = '' } = instructions
+      const schemaPath = instructions['schema-path']
 
-      //TODO: add autocomplete ability using handlebars template on PromptEditorField and include custom helpers in dropdown
-      asyncHandlebars.registerHelper(
-        'toLexicalHTML',
-        async function (content: SerializedEditorState) {
-          const html = await lexicalToHTML(content, editor.editorConfig)
-          return new asyncHandlebars.SafeString(html)
-        },
-      )
+      registerEditorHelper(req.payload, schemaPath)
 
       const text = await replacePlaceholders(promptTemplate, contextData)
       const modelId = instructions['model-id']

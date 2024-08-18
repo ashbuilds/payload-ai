@@ -1,7 +1,5 @@
 'use client'
 
-import type { LexicalEditor } from 'lexical'
-
 import { useField, useFieldProps } from '@payloadcms/ui'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 
@@ -84,11 +82,7 @@ const getActiveComponent = (ac) => {
   }
 }
 
-type UseMenuProps = {
-  lexicalEditor: LexicalEditor
-}
-
-export const useMenu = ({ lexicalEditor }: UseMenuProps, menuEvents: UseMenuEvents) => {
+export const useMenu = (menuEvents: UseMenuEvents) => {
   const { type: fieldType, path: pathFromContext } = useFieldProps()
   const field = useField({ path: pathFromContext })
   const [activeComponent, setActiveComponent] = useState<MenuItems>('Rephrase')
@@ -111,7 +105,7 @@ export const useMenu = ({ lexicalEditor }: UseMenuProps, menuEvents: UseMenuEven
     } else {
       setActiveComponent('Rephrase')
     }
-  }, [initialValue, value, fieldType, lexicalEditor])
+  }, [initialValue, value, fieldType])
 
   const MemoizedActiveComponent = useMemo(() => {
     return ({ isLoading }) => {
