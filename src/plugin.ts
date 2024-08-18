@@ -48,7 +48,7 @@ const payloadAiPlugin =
             read: () => true,
           },
           admin: {
-            hidden: false,
+            hidden: true,
           },
           fields: [
             {
