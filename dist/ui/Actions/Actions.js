@@ -2,6 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js';
 import { PluginIcon } from '../Icons/Icons.js';
 import styles from './actions.module.css';
 import { useGenerate } from './hooks/useGenerate.js';
@@ -20,10 +21,10 @@ function findParentWithClass(element, className) {
     return findParentWithClass(element.parentElement, className);
 }
 //TODO: Add undo/redo to the actions toolbar
-export const Actions = ({ descriptionProps, instructionId })=>{
+export const Actions = ({ descriptionProps = {}, instructionId })=>{
     const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
         id: instructionId,
-        collectionSlug: 'instructions'
+        collectionSlug: PLUGIN_INSTRUCTIONS_TABLE
     });
     const fieldProps = useFieldProps();
     const { type: fieldType, path: pathFromContext, schemaPath } = fieldProps;
@@ -72,12 +73,8 @@ export const Actions = ({ descriptionProps, instructionId })=>{
         actionsRef
     ]);
     const [isProcessing, setIsProcessing] = useState(false);
-    const { generate, isLoading } = useGenerate({
-        lexicalEditor
-    });
+    const { generate, isLoading } = useGenerate();
     const { ActiveComponent, Menu } = useMenu({
-        lexicalEditor
-    }, {
         onCompose: async ()=>{
             console.log('Composing...');
             setIsProcessing(true);

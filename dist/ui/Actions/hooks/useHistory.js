@@ -12,7 +12,11 @@ export const useHistory = ()=>{
     const fieldKey = `${id}.${schemaPath}`;
     const getLatestHistory = useCallback(()=>{
         try {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            // This condition is applied, as it was somehow triggering on server side
+            if (typeof localStorage !== 'undefined') {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            }
+            return {};
         } catch (e) {
             console.error('Error parsing history:', e);
             return {};

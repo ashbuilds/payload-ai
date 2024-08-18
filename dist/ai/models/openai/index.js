@@ -16,11 +16,6 @@ export const OpenAIConfig = {
                 'textarea'
             ],
             handler: async (prompt, options)=>{
-                // const finalPrompt = `Output language code: ${options.locale}
-                //   Prompt: ${prompt}
-                //   Output:
-                //   `
-                // console.log('finalPrompt: ', finalPrompt)
                 const streamTextResult = await streamText({
                     model: openai(options.model),
                     prompt,
@@ -219,7 +214,6 @@ export const OpenAIConfig = {
                 'richText'
             ],
             handler: (text, options)=>{
-                //TODO: change it to open ai text to speech api
                 return generateRichText(text, options);
             },
             output: 'text',
@@ -247,10 +241,10 @@ export const OpenAIConfig = {
                         name: 'system',
                         type: 'textarea',
                         defaultValue: `INSTRUCTIONS:
-      You are a highly skilled and professional blog writer,
-      renowned for crafting engaging and well-organized articles.
-      When given a title, you meticulously create blogs that are not only
-      informative and accurate but also captivating and beautifully structured.`,
+You are a highly skilled and professional blog writer,
+renowned for crafting engaging and well-organized articles.
+When given a title, you meticulously create blogs that are not only
+informative and accurate but also captivating and beautifully structured.`,
                         label: 'System prompt'
                     },
                     {
@@ -261,11 +255,11 @@ export const OpenAIConfig = {
              */ name: 'layout',
                         type: 'textarea',
                         defaultValue: `[paragraph] - A short introduction to the topic.
-            [horizontalrule]
-            [list] - A section with headings and a paragraph.
-            [horizontalrule]
-            [paragraph] - A short conclusion.
-            [quote] - A quote from a famous person based on the topic.
+[horizontalrule]
+[list] - A section with headings and a paragraph.
+[horizontalrule]
+[paragraph] - A short conclusion.
+[quote] - A quote from a famous person based on the topic.
             `,
                         label: 'Layout'
                     }
