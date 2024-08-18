@@ -7,7 +7,10 @@ export const updateFieldsConfig = (collectionConfig)=>{
         if (field.admin?.disabled || field.admin?.readOnly || field.admin?.hidden) {
             return field;
         }
-        if (field.type && [
+        // Map field path for global fieldInstructionsMap to load related instructions
+        // This is done due to save extra API call to get instructions when Field components are loaded in admin
+        // Doing is will only call instructions data when user clicks on settings
+        if ([
             'richText',
             'text',
             'textarea',
@@ -17,6 +20,13 @@ export const updateFieldsConfig = (collectionConfig)=>{
                 ...schemaPathMap,
                 [currentSchemaPath]: field.type
             };
+        }
+        // Inject AI actions, richText is not included here as it has to be explicitly defined by user
+        if ([
+            'text',
+            'textarea',
+            'upload'
+        ].includes(field.type)) {
             return {
                 ...field,
                 admin: {

@@ -1,9 +1,5 @@
-import type { LexicalEditor } from 'lexical';
 import type { UseMenuEvents } from '../../../types.js';
-type UseMenuProps = {
-    lexicalEditor: LexicalEditor;
-};
-export declare const useMenu: ({ lexicalEditor }: UseMenuProps, menuEvents: UseMenuEvents) => {
+export declare const useMenu: (menuEvents: UseMenuEvents) => {
     ActiveComponent: ({ isLoading }: {
         isLoading: any;
     }) => import("react/jsx-runtime").JSX.Element;
@@ -12,5 +8,4 @@ export declare const useMenu: ({ lexicalEditor }: UseMenuProps, menuEvents: UseM
         onClose: any;
     }) => import("react/jsx-runtime").JSX.Element;
 };
-export {};
 //# sourceMappingURL=useMenu.d.ts.map

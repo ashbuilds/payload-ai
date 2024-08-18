@@ -103,7 +103,7 @@ const getActiveComponent = (ac)=>{
             return Rephrase;
     }
 };
-export const useMenu = ({ lexicalEditor }, menuEvents)=>{
+export const useMenu = (menuEvents)=>{
     const { type: fieldType, path: pathFromContext } = useFieldProps();
     const field = useField({
         path: pathFromContext
@@ -127,8 +127,7 @@ export const useMenu = ({ lexicalEditor }, menuEvents)=>{
     }, [
         initialValue,
         value,
-        fieldType,
-        lexicalEditor
+        fieldType
     ]);
     const MemoizedActiveComponent = useMemo(()=>{
         return ({ isLoading })=>{

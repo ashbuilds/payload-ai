@@ -1,13 +1,8 @@
-import type { LexicalEditor } from 'lexical';
 import type { MenuItems } from '../../../types.js';
-type UseGenerate = {
-    lexicalEditor: LexicalEditor;
-};
-export declare const useGenerate: ({ lexicalEditor }: UseGenerate) => {
+export declare const useGenerate: () => {
     generate: (options?: {
         action: MenuItems;
     }) => Promise<void | Response>;
     isLoading: boolean;
 };
-export {};
 //# sourceMappingURL=useGenerate.d.ts.map

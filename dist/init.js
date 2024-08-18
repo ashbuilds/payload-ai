@@ -1,3 +1,4 @@
+import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js';
 export const init = async (payload, fieldSchemaPaths)=>{
     payload.logger.info(`— AI Plugin: Initializing...`);
     const paths = Object.keys(fieldSchemaPaths);
@@ -6,7 +7,7 @@ export const init = async (payload, fieldSchemaPaths)=>{
         const path = paths[i];
         const fieldType = fieldSchemaPaths[path];
         const entry = await payload.find({
-            collection: 'instructions',
+            collection: PLUGIN_INSTRUCTIONS_TABLE,
             where: {
                 'field-type': {
                     equals: fieldType
@@ -18,7 +19,7 @@ export const init = async (payload, fieldSchemaPaths)=>{
         });
         if (!entry?.docs?.length) {
             const instructions = await payload.create({
-                collection: 'instructions',
+                collection: PLUGIN_INSTRUCTIONS_TABLE,
                 data: {
                     'field-type': fieldType,
                     'schema-path': path
@@ -30,8 +31,9 @@ export const init = async (payload, fieldSchemaPaths)=>{
             fieldInstructionsMap[path] = instructions.id;
         }
     }
+    payload.logger.info(`— AI Plugin: Enabled fieldMap: ${JSON.stringify(fieldInstructionsMap, null, 2)}`);
     await payload.updateGlobal({
-        slug: 'ai-plugin__instructions_map',
+        slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL,
         data: {
             map: fieldInstructionsMap
         },
