@@ -43,7 +43,7 @@ const payloadAiPlugin = (pluginConfig)=>(incomingConfig)=>{
                         read: ()=>true
                     },
                     admin: {
-                        hidden: false
+                        hidden: true
                     },
                     fields: [
                         {
