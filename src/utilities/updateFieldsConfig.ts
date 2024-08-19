@@ -1,6 +1,13 @@
-import type { CollectionConfig } from 'payload'
+import type {
+  CollectionConfig,
+  Description,
+  DescriptionComponent,
+  FieldDescriptionProps,
+  ServerProps,
+} from 'payload'
 
 import { DescriptionField } from '../fields/DescriptionField/DescriptionField.js'
+import { ComponentClass } from 'react'
 
 interface UpdateFieldsConfig {
   schemaPathMap: Record<string, string>
@@ -35,6 +42,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
           ...field.admin,
           components: {
             ...field.admin?.components,
+            // @ts-ignore
             Description: DescriptionField({
               Description: field.admin?.components?.Description,
             }),

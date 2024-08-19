@@ -1,8 +1,10 @@
 import { withMergedProps } from '@payloadcms/ui/shared'
 
 import { DescriptionFieldComponent } from './DescriptionFieldComponent.js'
+import { DescriptionComponent } from 'payload'
 
-export const DescriptionField = (options: any) => {
+// @ts-ignore
+export const DescriptionField: DescriptionComponent = (options: any) => {
   const mergedPropsFunc = withMergedProps({
     Component: DescriptionFieldComponent,
     sanitizeServerOnlyProps: true,

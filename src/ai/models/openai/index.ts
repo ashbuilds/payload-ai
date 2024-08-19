@@ -203,7 +203,7 @@ export const OpenAIConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'gpt-4o',
             label: 'Model',
-            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini'],
+            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-4o-2024-08-06'],
           },
           {
             name: 'system',

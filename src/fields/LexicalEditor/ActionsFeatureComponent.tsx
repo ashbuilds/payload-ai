@@ -1,3 +1,4 @@
+import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { useFieldProps } from '@payloadcms/ui'
 
 import { useInstructions } from '../../providers/InstructionsProvider/hook.js'

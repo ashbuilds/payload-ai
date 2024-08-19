@@ -100,3 +100,13 @@ export const EditNoteIcon = ({ color = 'white', size = 24 }) => {
     </span>
   )
 }
+
+export const ArrowIcon = ({ color = 'white', size = 24 }) => {
+  return (
+    <span className={styles.icon}>
+      <svg height={size} viewBox="0 -960 960 960" width={size} xmlns="http://www.w3.org/2000/svg">
+        <path d="m531.69-480-184-184L376-692.31 588.31-480 376-267.69 347.69-296l184-184Z" />
+      </svg>
+    </span>
+  )
+}

@@ -7,10 +7,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { PluginIcon } from '../Icons/Icons.js'
-import styles from './actions.module.css'
+import styles from './actions.module.scss'
 import { useGenerate } from './hooks/useGenerate.js'
 import { useHistory } from './hooks/useHistory.js'
-import { useMenu } from './hooks/useMenu.js'
+import { useMenu } from './hooks/menu/useMenu.js'
 
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
@@ -116,6 +116,13 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
       console.log('Simplifying...')
       await generate({
         action: 'Simplify',
+      })
+    },
+    onTranslate: async (data) => {
+      console.log('Translate...', data)
+      await generate({
+        action: 'Translate',
+        params: data,
       })
     },
   })

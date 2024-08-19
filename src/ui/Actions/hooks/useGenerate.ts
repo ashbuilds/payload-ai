@@ -5,7 +5,7 @@ import { useDocumentInfo, useField, useFieldProps, useForm, useLocale } from '@p
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { useCallback, useEffect } from 'react'
 
-import type { GenerateTextarea, MenuItems } from '../../../types.js'
+import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
 import { DocumentSchema } from '../../../ai/RichTextSchema.js'
 import {
@@ -17,11 +17,15 @@ import { getFieldBySchemaPath } from '../../../utilities/getFieldBySchemaPath.js
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
+type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
+
 //TODO: DONATION IDEA - Add a url to donate in cli when user installs the plugin and uses it for couple of times.
 export const useGenerate = () => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
 
   const editorConfigContext = useEditorConfigContext()
+  // editorConfigContext.
+  // console.log('editorConfigContext : ', editorConfigContext)
   const { editor } = editorConfigContext
 
   const { docConfig } = useDocumentInfo()
@@ -50,6 +54,7 @@ export const useGenerate = () => {
     },
     onFinish: ({ object }) => {
       setHistory(object)
+      setValue(object)
     },
     schema: DocumentSchema,
   })
@@ -92,10 +97,11 @@ export const useGenerate = () => {
   }, [completion])
 
   const streamObject = useCallback(
-    ({ action = 'Compose' }: { action: MenuItems }) => {
+    ({ action = 'Compose', params }: ActionCallbackParams) => {
       const doc = getData()
       const options = {
         action,
+        actionParams: params,
         instructionId,
       }
 
@@ -109,11 +115,12 @@ export const useGenerate = () => {
   )
 
   const streamText = useCallback(
-    async ({ action = 'Compose' }: { action: MenuItems }) => {
+    async ({ action = 'Compose', params }: ActionCallbackParams) => {
       const doc = getData()
 
       const options = {
         action,
+        actionParams: params,
         instructionId,
       }
 
@@ -168,7 +175,7 @@ export const useGenerate = () => {
   }, [getData, localFromContext?.code, instructionId, setValue])
 
   const generate = useCallback(
-    async (options?: { action: MenuItems }) => {
+    async (options?: ActionCallbackParams) => {
       if (type === 'richText') {
         return streamObject(options)
       }

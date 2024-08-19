@@ -1,4 +1,5 @@
 import type { Endpoint, Field, GroupField } from 'payload'
+import { CSSProperties, MouseEventHandler } from 'react'
 
 export interface PluginConfig {
   collections?: string[]
@@ -40,7 +41,7 @@ export interface Endpoints {
   upload: Omit<Endpoint, 'root'>
 }
 
-export type MenuItems =
+export type ActionMenuItems =
   | 'Compose'
   | 'Expand'
   | 'Proofread'
@@ -51,7 +52,7 @@ export type MenuItems =
   | 'Tone'
   | 'Translate'
 
-export type MenuEvents =
+export type ActionMenuEvents =
   | 'onCompose'
   | 'onExpand'
   | 'onProofread'
@@ -63,12 +64,17 @@ export type MenuEvents =
   | 'onTranslate'
 
 export type UseMenuEvents = {
-  [key in MenuEvents]?: () => void
+  [key in ActionMenuEvents]?: (data?: unknown) => void
 }
 
-export type BaseItemProps = {
+export type BaseItemProps<T = any> = {
   children?: React.ReactNode
   disabled?: boolean
   hideIcon?: boolean
-  onClick: () => void
+  onClick: (data?: unknown) => void
+  onMouseEnter?: MouseEventHandler<T> | undefined
+  onMouseLeave?: MouseEventHandler<T> | undefined
+  style?: CSSProperties | undefined
+  isMenu?: boolean
+  isActive?: boolean
 }
