@@ -1,5 +1,6 @@
 import { withMergedProps } from '@payloadcms/ui/shared';
 import { DescriptionFieldComponent } from './DescriptionFieldComponent.js';
+// @ts-ignore
 export const DescriptionField = (options)=>{
     const mergedPropsFunc = withMergedProps({
         Component: DescriptionFieldComponent,

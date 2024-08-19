@@ -33,6 +33,7 @@ export const updateFieldsConfig = (collectionConfig)=>{
                     ...field.admin,
                     components: {
                         ...field.admin?.components,
+                        // @ts-ignore
                         Description: DescriptionField({
                             Description: field.admin?.components?.Description
                         })

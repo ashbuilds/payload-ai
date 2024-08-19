@@ -1,1 +1,1 @@
-{"version":3,"file":"DescriptionField.d.ts","sourceRoot":"","sources":["../../../src/fields/DescriptionField/DescriptionField.tsx"],"names":[],"mappings":"AAIA,eAAO,MAAM,gBAAgB,YAAa,GAAG,gEAW5C,CAAA"}
+{"version":3,"file":"DescriptionField.d.ts","sourceRoot":"","sources":["../../../src/fields/DescriptionField/DescriptionField.tsx"],"names":[],"mappings":"AAGA,OAAO,EAAE,oBAAoB,EAAE,MAAM,SAAS,CAAA;AAG9C,eAAO,MAAM,gBAAgB,EAAE,oBAW9B,CAAA"}
