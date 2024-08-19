@@ -1,2 +1,3 @@
-export declare const DescriptionField: (options: any) => import("react").FC<import("payload").FieldDescriptionProps>;
+import { DescriptionComponent } from 'payload';
+export declare const DescriptionField: DescriptionComponent;
 //# sourceMappingURL=DescriptionField.d.ts.map

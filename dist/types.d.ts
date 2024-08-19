@@ -1,4 +1,5 @@
 import type { Endpoint, Field, GroupField } from 'payload';
+import { CSSProperties, MouseEventHandler } from 'react';
 export interface PluginConfig {
     collections?: string[];
     fields?: Field[];
@@ -33,15 +34,20 @@ export interface Endpoints {
     textarea: Omit<Endpoint, 'root'>;
     upload: Omit<Endpoint, 'root'>;
 }
-export type MenuItems = 'Compose' | 'Expand' | 'Proofread' | 'Rephrase' | 'Settings' | 'Simplify' | 'Summarize' | 'Tone' | 'Translate';
-export type MenuEvents = 'onCompose' | 'onExpand' | 'onProofread' | 'onRephrase' | 'onSettings' | 'onSimplify' | 'onSummarize' | 'onTone' | 'onTranslate';
+export type ActionMenuItems = 'Compose' | 'Expand' | 'Proofread' | 'Rephrase' | 'Settings' | 'Simplify' | 'Summarize' | 'Tone' | 'Translate';
+export type ActionMenuEvents = 'onCompose' | 'onExpand' | 'onProofread' | 'onRephrase' | 'onSettings' | 'onSimplify' | 'onSummarize' | 'onTone' | 'onTranslate';
 export type UseMenuEvents = {
-    [key in MenuEvents]?: () => void;
+    [key in ActionMenuEvents]?: (data?: unknown) => void;
 };
-export type BaseItemProps = {
+export type BaseItemProps<T = any> = {
     children?: React.ReactNode;
     disabled?: boolean;
     hideIcon?: boolean;
-    onClick: () => void;
+    onClick: (data?: unknown) => void;
+    onMouseEnter?: MouseEventHandler<T> | undefined;
+    onMouseLeave?: MouseEventHandler<T> | undefined;
+    style?: CSSProperties | undefined;
+    isMenu?: boolean;
+    isActive?: boolean;
 };
 //# sourceMappingURL=types.d.ts.map

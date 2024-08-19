@@ -38,4 +38,8 @@ export declare const EditNoteIcon: ({ color, size }: {
     color?: string;
     size?: number;
 }) => import("react/jsx-runtime").JSX.Element;
+export declare const ArrowIcon: ({ color, size }: {
+    color?: string;
+    size?: number;
+}) => import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=Icons.d.ts.map

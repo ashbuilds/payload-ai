@@ -1,8 +1,11 @@
-import type { MenuItems } from '../../../types.js';
+import type { ActionMenuItems } from '../../../types.js';
+type ActionCallbackParams = {
+    action: ActionMenuItems;
+    params?: unknown;
+};
 export declare const useGenerate: () => {
-    generate: (options?: {
-        action: MenuItems;
-    }) => Promise<void | Response>;
+    generate: (options?: ActionCallbackParams) => Promise<void | Response>;
     isLoading: boolean;
 };
+export {};
 //# sourceMappingURL=useGenerate.d.ts.map

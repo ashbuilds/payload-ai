@@ -136,5 +136,19 @@ export const EditNoteIcon = ({ color = 'white', size = 24 })=>{
         })
     });
 };
+export const ArrowIcon = ({ color = 'white', size = 24 })=>{
+    return /*#__PURE__*/ _jsx("span", {
+        className: styles.icon,
+        children: /*#__PURE__*/ _jsx("svg", {
+            height: size,
+            viewBox: "0 -960 960 960",
+            width: size,
+            xmlns: "http://www.w3.org/2000/svg",
+            children: /*#__PURE__*/ _jsx("path", {
+                d: "m531.69-480-184-184L376-692.31 588.31-480 376-267.69 347.69-296l184-184Z"
+            })
+        })
+    });
+};
 
 //# sourceMappingURL=Icons.js.map

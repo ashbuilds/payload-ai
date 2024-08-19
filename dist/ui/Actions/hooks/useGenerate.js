@@ -12,6 +12,8 @@ import { useHistory } from './useHistory.js';
 export const useGenerate = ()=>{
     const { type, path: pathFromContext, schemaPath } = useFieldProps();
     const editorConfigContext = useEditorConfigContext();
+    // editorConfigContext.
+    // console.log('editorConfigContext : ', editorConfigContext)
     const { editor } = editorConfigContext;
     const { docConfig } = useDocumentInfo();
     const { setValue } = useField({
@@ -30,6 +32,7 @@ export const useGenerate = ()=>{
         },
         onFinish: ({ object })=>{
             setHistory(object);
+            setValue(object);
         },
         schema: DocumentSchema
     });
@@ -64,10 +67,11 @@ export const useGenerate = ()=>{
     }, [
         completion
     ]);
-    const streamObject = useCallback(({ action = 'Compose' })=>{
+    const streamObject = useCallback(({ action = 'Compose', params })=>{
         const doc = getData();
         const options = {
             action,
+            actionParams: params,
             instructionId
         };
         submit({
@@ -80,10 +84,11 @@ export const useGenerate = ()=>{
         localFromContext?.code,
         instructionId
     ]);
-    const streamText = useCallback(async ({ action = 'Compose' })=>{
+    const streamText = useCallback(async ({ action = 'Compose', params })=>{
         const doc = getData();
         const options = {
             action,
+            actionParams: params,
             instructionId
         };
         await complete('', {

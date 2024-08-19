@@ -234,7 +234,8 @@ export const OpenAIConfig = {
                         options: [
                             'gpt-4o',
                             'gpt-4-turbo',
-                            'gpt-4o-mini'
+                            'gpt-4o-mini',
+                            'gpt-4o-2024-08-06'
                         ]
                     },
                     {
