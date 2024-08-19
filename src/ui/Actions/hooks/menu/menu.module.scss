@@ -78,8 +78,20 @@
 }
 
 .menuInput {
+  box-shadow: 0 2px 3px #0002040d, 0 10px 4px -8px #00020405;
+  font-family: var(--font-body);
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-input-bg);
+  color: var(--theme-elevation-800);
+  border-radius: 0;
+  -webkit-appearance: none;
+
+  font-size: inherit !important;
+  height: auto !important;
+  line-height: 1.9rem;
+
   width: 100%;
-  padding: 4px 8px;
+  padding: 4px 8px !important;
 
   outline: none;
   &:focus-visible{
