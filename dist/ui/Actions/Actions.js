@@ -6,8 +6,10 @@ import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js';
 import { PluginIcon } from '../Icons/Icons.js';
 import styles from './actions.module.scss';
 import { useGenerate } from './hooks/useGenerate.js';
-import { useHistory } from './hooks/useHistory.js';
 import { useMenu } from './hooks/menu/useMenu.js';
+import { UndoRedoActions } from './UndoRedoActions.js';
+import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client';
+import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js';
 function findParentWithClass(element, className) {
     // Base case: if the element is null or we've reached the top of the DOM
     if (!element || element === document.body) {
@@ -26,36 +28,29 @@ export const Actions = ({ descriptionProps = {}, instructionId })=>{
         id: instructionId,
         collectionSlug: PLUGIN_INSTRUCTIONS_TABLE
     });
-    const fieldProps = useFieldProps();
-    const { type: fieldType, path: pathFromContext, schemaPath } = fieldProps;
+    const { type: fieldType, path: pathFromContext, schemaPath } = useFieldProps();
+    const { editor: lexicalEditor, editorContainerRef } = useEditorConfigContext();
+    // Below snippet is used to show/hide the actions menu on AI enabled fields
     const [input, setInput] = useState(null);
-    const [lexicalEditor, setLexicalEditor] = useState();
     const actionsRef = useRef(null);
-    // Used to show the actions menu on active input fields
+    // Set input element for current field
     useEffect(()=>{
+        if (!actionsRef.current) return;
         const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`;
         let inputElement = document.getElementById(fieldId);
-        if (!actionsRef.current) return;
-        actionsRef.current.setAttribute('for', fieldId);
-        if (!inputElement) {
-            if (fieldType === 'richText') {
-                const editorWrapper = findParentWithClass(actionsRef.current, 'field-type');
-                //TODO: Find a better way get rich-text field instance
-                setTimeout(()=>{
-                    inputElement = editorWrapper.querySelector('div[contenteditable="true"]');
-                    // @ts-expect-error
-                    setLexicalEditor(inputElement.__lexicalEditor);
-                    setInput(inputElement);
-                }, 0);
-            }
+        if (!inputElement && fieldType === 'richText') {
+            setInput(editorContainerRef.current);
         } else {
+            actionsRef.current.setAttribute('for', fieldId);
             setInput(inputElement);
         }
     }, [
         pathFromContext,
         schemaPath,
-        actionsRef
+        actionsRef,
+        editorContainerRef
     ]);
+    // Show or hide actions menu on field
     useEffect(()=>{
         if (!input || !actionsRef.current) return;
         actionsRef.current.classList.add(styles.actions_hidden);
@@ -120,38 +115,12 @@ export const Actions = ({ descriptionProps = {}, instructionId })=>{
     const { setValue } = useField({
         path: pathFromContext
     });
-    const { canRedo, canUndo, redo, undo } = useHistory();
     const setIfValueIsLexicalState = useCallback((val)=>{
         if (val.root && lexicalEditor) {
-            const editorState = lexicalEditor.parseEditorState(JSON.stringify(val));
-            if (editorState.isEmpty()) return;
-            lexicalEditor.update(()=>{
-                lexicalEditor.setEditorState(editorState);
-            });
+            setSafeLexicalState(JSON.stringify(val), lexicalEditor);
         }
-    }, [
-        lexicalEditor
-    ]);
-    const redoHistoryValue = useCallback(()=>{
-        const val = redo();
-        if (val) {
-            setValue(val);
-            setIfValueIsLexicalState(val);
-        }
-    }, [
-        redo,
-        setIfValueIsLexicalState
-    ]);
-    const undoHistoryValue = useCallback(()=>{
-        const val = undo();
-        if (val) {
-            setValue(val);
-            setIfValueIsLexicalState(val);
-        }
-    }, [
-        undo,
-        setIfValueIsLexicalState
-    ]);
+    // DO NOT PROVIDE lexicalEditor as a dependency, it freaks out and does not update the editor after first undo/redo
+    }, []);
     return /*#__PURE__*/ _jsxs(React.Fragment, {
         children: [
             /*#__PURE__*/ _jsxs("label", {
@@ -178,17 +147,11 @@ export const Actions = ({ descriptionProps = {}, instructionId })=>{
                     /*#__PURE__*/ _jsx(ActiveComponent, {
                         isLoading: isProcessing || isLoading
                     }),
-                    /*#__PURE__*/ _jsx("button", {
-                        disabled: !canUndo,
-                        onClick: undoHistoryValue,
-                        type: "button",
-                        children: "Undo"
-                    }),
-                    /*#__PURE__*/ _jsx("button", {
-                        disabled: !canRedo,
-                        onClick: redoHistoryValue,
-                        type: "button",
-                        children: "Redo"
+                    /*#__PURE__*/ _jsx(UndoRedoActions, {
+                        onChange: (val)=>{
+                            setValue(val);
+                            setIfValueIsLexicalState(val);
+                        }
                     })
                 ]
             }),
