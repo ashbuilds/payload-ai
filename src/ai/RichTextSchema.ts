@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+//TODO: IMP
 const BaseNode = z.object({
   type: z.string(),
   children: z.array(z.lazy(() => Node)).optional(),

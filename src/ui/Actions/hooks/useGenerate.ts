@@ -24,8 +24,6 @@ export const useGenerate = () => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
 
   const editorConfigContext = useEditorConfigContext()
-  // editorConfigContext.
-  // console.log('editorConfigContext : ', editorConfigContext)
   const { editor } = editorConfigContext
 
   const { docConfig } = useDocumentInfo()
@@ -52,9 +50,12 @@ export const useGenerate = () => {
     onError: (error) => {
       console.error('Error generating object:', error)
     },
-    onFinish: ({ object }) => {
-      setHistory(object)
-      setValue(object)
+    onFinish: (result) => {
+      console.log('onFinish', result.object)
+      if (result.object) {
+        setHistory(result.object)
+        setValue(result.object)
+      }
     },
     schema: DocumentSchema,
   })
@@ -158,19 +159,22 @@ export const useGenerate = () => {
       },
       method: 'POST',
     })
-      .then(async (generatedImageResponse) => {
-        if (generatedImageResponse.ok) {
-          const { result: generatedImage } = await generatedImageResponse.json()
-          setValue(generatedImage?.id)
+      .then(async (uploadResponse) => {
+        if (uploadResponse.ok) {
+          const { result } = await uploadResponse.json()
+          if (!result) throw new Error('generateUpload: Something went wrong')
+
+          setValue(result?.id)
+          setHistory(result?.id)
         } else {
-          const { errors = [] } = await generatedImageResponse.json()
+          const { errors = [] } = await uploadResponse.json()
           const errStr = errors.map((error) => error.message).join(', ')
           throw new Error(errStr)
         }
-        return generatedImageResponse
+        return uploadResponse
       })
       .catch((error) => {
-        console.error('Error generating image', error)
+        console.error('Error generating your upload', error)
       })
   }, [getData, localFromContext?.code, instructionId, setValue])
 
