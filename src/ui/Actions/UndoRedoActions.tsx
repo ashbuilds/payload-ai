@@ -1,22 +1,32 @@
 import { useHistory } from './hooks/useHistory.js'
-import React, { useCallback } from 'react'
+import React, { MouseEventHandler, useCallback } from 'react'
 
 export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void }) => {
   const { canRedo, canUndo, redo, undo } = useHistory()
 
-  const redoHistoryValue = useCallback(() => {
-    const val = redo()
-    if (val) {
-      onChange(val)
-    }
-  }, [redo])
+  const redoHistoryValue = useCallback<MouseEventHandler>(
+    (event) => {
+      event.stopPropagation()
 
-  const undoHistoryValue = useCallback(() => {
-    const val = undo()
-    if (val) {
-      onChange(val)
-    }
-  }, [undo])
+      const value = redo()
+      if (value) {
+        onChange(value)
+      }
+    },
+    [redo],
+  )
+
+  const undoHistoryValue = useCallback<MouseEventHandler>(
+    (event) => {
+      event.stopPropagation()
+
+      const value = undo()
+      if (value) {
+        onChange(value)
+      }
+    },
+    [undo],
+  )
 
   if (!canUndo && !canRedo) return null
 
