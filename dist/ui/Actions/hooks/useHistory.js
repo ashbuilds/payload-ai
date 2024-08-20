@@ -25,28 +25,46 @@ export const useHistory = ()=>{
     const saveToLocalStorage = useCallback((newGlobalHistory)=>{
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory));
     }, []);
-    // TODO: Reset undo/redo once user type anything on fields or change it manually
-    useEffect(()=>{
-        if (currentFieldValue) {
-            const latestHistory = getLatestHistory();
-            const { currentIndex, history } = latestHistory[fieldKey] || {
-                currentIndex: -1,
-                history: []
-            };
-            let newIndex = currentIndex;
-            if (currentIndex == -1) {
-                newIndex = 0;
+    // Clear previous history
+    const clearHistory = useCallback(()=>{
+        const latestHistory = {
+            ...getLatestHistory()
+        };
+        Object.keys(latestHistory).forEach((k)=>{
+            if (!k.startsWith(id.toString())) {
+                delete latestHistory[k];
             }
-            history[newIndex] = currentFieldValue;
-            const newGlobalHistory = {
-                ...latestHistory,
-                [fieldKey]: {
-                    currentIndex: newIndex,
-                    history
-                }
-            };
-            saveToLocalStorage(newGlobalHistory);
+        });
+        saveToLocalStorage(latestHistory);
+    }, [
+        id,
+        fieldKey,
+        getLatestHistory,
+        saveToLocalStorage
+    ]);
+    useEffect(()=>{
+        // This is applied to clear out the document history which is not currently in use
+        clearHistory();
+        const latestHistory = getLatestHistory();
+        const { currentIndex, history } = latestHistory[fieldKey] || {
+            currentIndex: -1,
+            history: []
+        };
+        let newIndex = currentIndex;
+        if (currentIndex == -1) {
+            newIndex = 0;
+            if (currentFieldValue) {
+                history[newIndex] = currentFieldValue;
+            }
         }
+        const newGlobalHistory = {
+            ...latestHistory,
+            [fieldKey]: {
+                currentIndex: newIndex,
+                history
+            }
+        };
+        saveToLocalStorage(newGlobalHistory);
     }, [
         fieldKey
     ]);
