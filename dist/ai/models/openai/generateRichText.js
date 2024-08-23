@@ -1,12 +1,11 @@
 import { openai } from '@ai-sdk/openai';
 import { streamObject } from 'ai';
-import { DocumentSchema } from '../../RichTextSchema.js';
 import { exampleOutput } from '../example.js';
 export const generateRichText = async (text, options)=>{
     const streamResult = await streamObject({
         model: openai(options.model),
         prompt: text,
-        schema: DocumentSchema,
+        schema: options.editorSchema,
         system: `${options.system}
 
       RULES:
