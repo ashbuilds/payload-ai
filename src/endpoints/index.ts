@@ -15,6 +15,8 @@ import {
 } from '../defaults.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { lexicalToHTML } from '../utilities/lexicalToHTML.js'
+import { lexicalSchema } from '../ai/editor/lexical.schema.js'
+// import { DocumentSchema } from '../ai/editor/lexical.schema.js'
 
 const asyncHandlebars = asyncHelpers(Handlebars)
 
@@ -106,6 +108,15 @@ export const endpoints: Endpoints = {
       const contextData = data.doc
 
       let instructions = { 'model-id': '', prompt: '' }
+      const { collections } = req.payload.config
+      const collection = collections.find(
+        (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
+      )
+
+      const { editorConfig: { schema: editorSchema = lexicalSchema() } = {} } =
+        collection.custom || {}
+
+      console.log('editorSchema : ', editorSchema)
 
       if (instructionId) {
         // @ts-expect-error
@@ -154,6 +165,7 @@ export const endpoints: Endpoints = {
           ...modelOptions,
           ...opt,
           system: prompts.system,
+          editorSchema,
         })
         .catch((error) => {
           console.error('Error: endpoint - generating text:', error)

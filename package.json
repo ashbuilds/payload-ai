@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.1",
+    "@eslint/js": "^9.9.0",
     "@swc/cli": "0.4.0",
     "@types/dot-object": "2.1.6",
     "@types/react": "npm:types-react@19.0.0-beta.2",

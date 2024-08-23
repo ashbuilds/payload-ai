@@ -1,20 +1,45 @@
 import type { Config } from 'payload'
-
 import { deepMerge } from 'payload/shared'
 
 import type { PluginConfig } from './types.js'
 
 import { Instructions } from './collections/Instructions.js'
-import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL } from './defaults.js'
+import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_NAME } from './defaults.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
 import { InstructionsProvider } from './providers/InstructionsProvider/index.js'
 import { translations } from './translations/index.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
+import { lexicalSchema } from './ai/editor/lexical.schema.js'
+
+import { zodToJsonSchema } from 'zod-to-json-schema'
 
 const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
+    // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit
+    const zodLexicalSchema = lexicalSchema(pluginConfig.editorConfig?.nodes)
+
+    Instructions.admin.custom = {
+      ...(Instructions.admin.custom || {}),
+      [PLUGIN_NAME]: {
+        editorConfig: {
+          // Used in admin client for useObject hook
+          schema: zodToJsonSchema(zodLexicalSchema),
+        },
+      },
+    }
+
+    Instructions.custom = {
+      ...(Instructions.custom || {}),
+      [PLUGIN_NAME]: {
+        editorConfig: {
+          // Used in textarea endpoint for llm
+          schema: zodLexicalSchema,
+        },
+      },
+    }
+
     const collections = [...(incomingConfig.collections ?? []), Instructions]
     const { collections: collectionSlugs = [] } = pluginConfig
 

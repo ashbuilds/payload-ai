@@ -1,16 +1,24 @@
 import type { ClientCollectionConfig, UploadField } from 'payload'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { useDocumentInfo, useField, useFieldProps, useForm, useLocale } from '@payloadcms/ui'
+import {
+  useConfig,
+  useDocumentInfo,
+  useField,
+  useFieldProps,
+  useForm,
+  useLocale,
+} from '@payloadcms/ui'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { useCallback, useEffect } from 'react'
+import { z } from 'zod'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
-import { DocumentSchema } from '../../../ai/RichTextSchema.js'
 import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
+  PLUGIN_INSTRUCTIONS_TABLE,
 } from '../../../defaults.js'
 import { useInstructions } from '../../../providers/InstructionsProvider/hook.js'
 import { getFieldBySchemaPath } from '../../../utilities/getFieldBySchemaPath.js'
@@ -24,7 +32,7 @@ export const useGenerate = () => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
 
   const editorConfigContext = useEditorConfigContext()
-  const { editor } = editorConfigContext
+  const { editor, focusedEditor } = editorConfigContext
 
   const { docConfig } = useDocumentInfo()
 
@@ -39,6 +47,10 @@ export const useGenerate = () => {
 
   const { getData } = useForm()
   const localFromContext = useLocale()
+  const { collections } = useConfig()
+  const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
+  const { custom: { editorConfig } = {} } = collection.admin
+  const { schema: DocumentSchema = {} } = editorConfig || {}
 
   const {
     isLoading: loadingObject,
@@ -52,12 +64,13 @@ export const useGenerate = () => {
     },
     onFinish: (result) => {
       console.log('onFinish', result.object)
+      //TODO: Sometimes object is undefined?!
       if (result.object) {
         setHistory(result.object)
         setValue(result.object)
       }
     },
-    schema: DocumentSchema,
+    schema: z.string().transform(DocumentSchema),
   })
 
   useEffect(() => {

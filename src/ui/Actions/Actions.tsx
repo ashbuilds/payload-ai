@@ -64,8 +64,11 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
     actionsRef.current.classList.add(styles.actions_hidden)
     input.addEventListener('click', (event) => {
       document.querySelectorAll('.ai-plugin-active')?.forEach((element) => {
-        element.querySelector(`.${styles.actions}`).classList.add(styles.actions_hidden)
-        element.classList.remove('ai-plugin-active')
+        const actionElement = element.querySelector(`.${styles.actions}`)
+        if (actionElement) {
+          actionElement.classList.add(styles.actions_hidden)
+          element.classList.remove('ai-plugin-active')
+        }
       })
 
       actionsRef.current.classList.remove(styles.actions_hidden)
@@ -121,9 +124,14 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
     },
   })
 
-  const { setValue } = useField<string>({
+  const { setValue, value } = useField<string>({
     path: pathFromContext,
   })
+
+  useEffect(() => {
+    console.log('lexicalEditor :', value)
+    console.log('lexicalEditor :', { setValue })
+  }, [value])
 
   const setIfValueIsLexicalState = useCallback((val) => {
     if (val.root && lexicalEditor) {
@@ -135,7 +143,7 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
 
   return (
     <React.Fragment>
-      <label className={`${styles.actions}`} ref={actionsRef}>
+      <label className={`${styles.actions}`} ref={actionsRef} onClick={(e) => e.preventDefault()}>
         <DocumentDrawer
           onSave={() => {
             closeDrawer()
