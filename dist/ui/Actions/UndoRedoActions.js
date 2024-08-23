@@ -3,18 +3,20 @@ import { useHistory } from './hooks/useHistory.js';
 import React, { useCallback } from 'react';
 export const UndoRedoActions = ({ onChange })=>{
     const { canRedo, canUndo, redo, undo } = useHistory();
-    const redoHistoryValue = useCallback(()=>{
-        const val = redo();
-        if (val) {
-            onChange(val);
+    const redoHistoryValue = useCallback((event)=>{
+        event.stopPropagation();
+        const value = redo();
+        if (value) {
+            onChange(value);
         }
     }, [
         redo
     ]);
-    const undoHistoryValue = useCallback(()=>{
-        const val = undo();
-        if (val) {
-            onChange(val);
+    const undoHistoryValue = useCallback((event)=>{
+        event.stopPropagation();
+        const value = undo();
+        if (value) {
+            onChange(value);
         }
     }, [
         undo
