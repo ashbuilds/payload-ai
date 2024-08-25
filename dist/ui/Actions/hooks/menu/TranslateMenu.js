@@ -21,7 +21,6 @@ export const TranslateMenu = ({ onClick })=>{
         children: [
             /*#__PURE__*/ _jsx(Translate, {
                 onClick: ()=>{
-                    console.log('locales : ', locales);
                     setShow(!show);
                 },
                 onMouseEnter: ()=>setShow(true),
@@ -59,7 +58,9 @@ export const TranslateMenu = ({ onClick })=>{
                         languages.map((locale)=>{
                             return /*#__PURE__*/ _jsx(Item, {
                                 onClick: ()=>{
-                                    onClick(locale.tag);
+                                    onClick({
+                                        locale: locale.tag
+                                    });
                                 },
                                 children: /*#__PURE__*/ _jsx("span", {
                                     className: styles.ellipsis,

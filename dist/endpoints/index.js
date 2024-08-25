@@ -2,31 +2,41 @@ import Handlebars from 'handlebars';
 import asyncHelpers from 'handlebars-async-helpers';
 import { GenerationModels } from '../ai/models/index.js';
 import { defaultPrompts } from '../ai/prompts.js';
-import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD, PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js';
+import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD, PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../defaults.js';
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js';
 import { lexicalToHTML } from '../utilities/lexicalToHTML.js';
 import { lexicalSchema } from '../ai/editor/lexical.schema.js';
-// import { DocumentSchema } from '../ai/editor/lexical.schema.js'
 const asyncHandlebars = asyncHelpers(Handlebars);
 const replacePlaceholders = (prompt, values)=>{
     return asyncHandlebars.compile(prompt, {
         trackIds: true
     })(values);
 };
-const assignPrompt = async (action, { type, actionParams, context, field, systemPrompt = '', template })=>{
+const assignPrompt = async (action, { type, actionParams, context, field, systemPrompt = '', template, layout })=>{
     const prompt = await replacePlaceholders(template, context);
     const toLexicalHTML = type === 'richText' ? 'toLexicalHTML' : '';
     const assignedPrompts = {
         prompt,
-        system: systemPrompt
+        system: systemPrompt,
+        layout
     };
     if (action === 'Compose') {
         return assignedPrompts;
     }
-    const { system: getSystemPrompt } = defaultPrompts.find((p)=>p.name === action);
+    const { system: getSystemPrompt, layout: getLayout } = defaultPrompts.find((p)=>p.name === action);
+    let updatedLayout = layout;
+    if (getLayout) {
+        updatedLayout = getLayout();
+    }
+    const system = getSystemPrompt({
+        ...actionParams || {},
+        prompt,
+        systemPrompt
+    });
     return {
         prompt: await replacePlaceholders(`{{${toLexicalHTML} ${field}}}`, context),
-        system: getSystemPrompt(prompt, systemPrompt, actionParams || '')
+        system,
+        layout: updatedLayout
     };
 };
 const registerEditorHelper = (payload, schemaPath)=>{
@@ -37,7 +47,7 @@ const registerEditorHelper = (payload, schemaPath)=>{
         const collectionSlug = schemaPathChunks[0];
         const { ids } = options;
         for (const id of ids){
-            //TODO: Find a better to get schemaPath of defined field in prompt editor
+            //TODO: Find a better way to get schemaPath of defined field in prompt editor
             const path = `${collectionSlug}.${id}`;
             fieldInfo = getFieldInfo(payload.collections, path);
         }
@@ -63,21 +73,16 @@ export const endpoints = {
             const { locale = 'en', options } = data;
             const { action, actionParams, instructionId } = options;
             const contextData = data.doc;
-            let instructions = {
-                'model-id': '',
-                prompt: ''
-            };
+            if (!instructionId) {
+                throw new Error(`Instruction ID is required for "${PLUGIN_NAME}" to work, please check your configuration`);
+            }
+            let instructions = await req.payload.findByID({
+                id: instructionId,
+                collection: PLUGIN_INSTRUCTIONS_TABLE
+            });
             const { collections } = req.payload.config;
             const collection = collections.find((collection)=>collection.slug === PLUGIN_INSTRUCTIONS_TABLE);
             const { editorConfig: { schema: editorSchema = lexicalSchema() } = {} } = collection.custom || {};
-            console.log('editorSchema : ', editorSchema);
-            if (instructionId) {
-                // @ts-expect-error
-                instructions = await req.payload.findByID({
-                    id: instructionId,
-                    collection: PLUGIN_INSTRUCTIONS_TABLE
-                });
-            }
             const { prompt: promptTemplate = '' } = instructions;
             const schemaPath = instructions['schema-path'];
             const fieldName = schemaPath?.split('.').pop();
@@ -94,21 +99,23 @@ export const endpoints = {
             };
             const model = GenerationModels.find((model)=>model.id === opt.modelId);
             const settingsName = model.settings?.name;
-            const modelOptions = instructions[settingsName] || {};
+            const modelOptions = instructions[settingsName];
             const prompts = await assignPrompt(action, {
                 type: instructions['field-type'],
                 actionParams,
                 context: contextData,
                 field: fieldName,
                 systemPrompt: modelOptions.system,
-                template: promptTemplate
+                template: promptTemplate,
+                layout: modelOptions.layout
             });
             console.log('Running handler with prompts:', prompts);
             return model.handler?.(prompts.prompt, {
                 ...modelOptions,
                 ...opt,
                 system: prompts.system,
-                editorSchema
+                editorSchema,
+                layout: prompts.layout
             }).catch((error)=>{
                 console.error('Error: endpoint - generating text:', error);
                 return new Response(JSON.stringify(error.message), {

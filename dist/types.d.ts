@@ -2,13 +2,16 @@ import type { Endpoint, Field, GroupField } from 'payload';
 import { CSSProperties, MouseEventHandler } from 'react';
 import { LexicalBaseNode } from './ai/editor/lexical.schema.js';
 export interface PluginConfig {
-    collections?: string[];
+    collections: {
+        [key: string]: boolean;
+    };
     fields?: Field[];
     globals?: string[];
     interfaceName?: string;
     editorConfig?: {
         nodes: (typeof LexicalBaseNode)[];
     };
+    debugging?: boolean;
 }
 export interface GenerationModel {
     fields: string[];
@@ -54,4 +57,37 @@ export type BaseItemProps<T = any> = {
     isMenu?: boolean;
     isActive?: boolean;
 };
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-instructions".
+ */
+export interface PluginAiInstruction {
+    id: string;
+    'schema-path'?: string | null;
+    'field-type'?: ('text' | 'textarea' | 'upload' | 'richText') | null;
+    'model-id'?: ('openai-gpt-text' | 'dall-e' | 'tts' | 'openai-gpt-object') | null;
+    prompt?: string | null;
+    'openai-gpt-text-settings'?: {
+        model?: ('gpt-4o' | 'gpt-4-turbo' | 'gpt-4o-mini' | 'gpt-3.5-turbo') | null;
+    };
+    'dalle-e-settings'?: {
+        version?: ('dall-e-3' | 'dall-e-2') | null;
+        size?: ('256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792') | null;
+        style?: ('vivid' | 'natural') | null;
+        'enable-prompt-optimization'?: boolean | null;
+    };
+    'openai-tts-settings'?: {
+        voice?: ('alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer') | null;
+        model?: ('tts-1' | 'tts-1-hd') | null;
+        response_format?: ('mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm') | null;
+        speed?: number | null;
+    };
+    'openai-gpt-object-settings'?: {
+        model?: ('gpt-4o' | 'gpt-4-turbo' | 'gpt-4o-mini' | 'gpt-4o-2024-08-06') | null;
+        system?: string | null;
+        layout?: string | null;
+    };
+    updatedAt: string;
+    createdAt: string;
+}
 //# sourceMappingURL=types.d.ts.map

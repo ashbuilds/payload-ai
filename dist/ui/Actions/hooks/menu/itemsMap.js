@@ -36,11 +36,13 @@ export const menuItemsMap = [
         loadingText: 'Expanding'
     },
     {
+        // Turned off - WIP
         name: 'Summarize',
         component: Summarize,
         excludedFor: [
             'upload',
-            'text'
+            'text',
+            'richText'
         ],
         loadingText: 'Summarizing'
     },

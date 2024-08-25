@@ -49,10 +49,10 @@
 
 .subMenu {
   position: absolute;
-  left: calc(var(--popup-width) + 24px);
+  left: calc(var(--popup-width) + 12px);
   width: calc(var(--popup-width) + 12px);
-  top: 15px;
-  height: calc(100% - 20px);
+  top: 10px;
+  height: calc(100% - 16px);
 
   overflow: auto;
 }
