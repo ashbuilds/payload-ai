@@ -108,11 +108,16 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
         action: 'Rephrase',
       })
     },
-    onSettings: openDrawer,
     onSimplify: async () => {
       console.log('Simplifying...')
       await generate({
         action: 'Simplify',
+      })
+    },
+    onSummarize: async () => {
+      console.log('Summarizing...')
+      await generate({
+        action: 'Summarize',
       })
     },
     onTranslate: async (data) => {
@@ -122,16 +127,12 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
         params: data,
       })
     },
+    onSettings: openDrawer,
   })
 
   const { setValue, value } = useField<string>({
     path: pathFromContext,
   })
-
-  useEffect(() => {
-    console.log('lexicalEditor :', value)
-    console.log('lexicalEditor :', { setValue })
-  }, [value])
 
   const setIfValueIsLexicalState = useCallback((val) => {
     if (val.root && lexicalEditor) {

@@ -11,7 +11,6 @@ import {
 } from '@payloadcms/ui'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { useCallback, useEffect } from 'react'
-import { z } from 'zod'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
@@ -24,6 +23,7 @@ import { useInstructions } from '../../../providers/InstructionsProvider/hook.js
 import { getFieldBySchemaPath } from '../../../utilities/getFieldBySchemaPath.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
+import { jsonSchemaToZod } from '../../../utilities/jsonToZod.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
 
@@ -51,9 +51,11 @@ export const useGenerate = () => {
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const { custom: { editorConfig } = {} } = collection.admin
   const { schema: DocumentSchema = {} } = editorConfig || {}
+  const zodSchema = jsonSchemaToZod(DocumentSchema)
 
   const {
     isLoading: loadingObject,
+    // @ts-expect-error - Object execssivily deep issue
     object,
     stop, // TODO: Implement this function
     submit,
@@ -63,14 +65,14 @@ export const useGenerate = () => {
       console.error('Error generating object:', error)
     },
     onFinish: (result) => {
-      console.log('onFinish', result.object)
+      console.log('onFinish: result', result)
       //TODO: Sometimes object is undefined?!
       if (result.object) {
         setHistory(result.object)
         setValue(result.object)
       }
     },
-    schema: z.string().transform(DocumentSchema),
+    schema: zodSchema,
   })
 
   useEffect(() => {

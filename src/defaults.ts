@@ -7,3 +7,6 @@ export const PLUGIN_LEXICAL_EDITOR_FEATURE = `${PLUGIN_NAME}-actions-feature`
 export const PLUGIN_API_ENDPOINT_BASE = `/${PLUGIN_NAME}`
 export const PLUGIN_API_ENDPOINT_GENERATE = `${PLUGIN_API_ENDPOINT_BASE}/generate`
 export const PLUGIN_API_ENDPOINT_GENERATE_UPLOAD = `${PLUGIN_API_ENDPOINT_GENERATE}/upload`
+
+// LLM Settings
+export const PLUGIN_DEFAULT_MODEL_NAME = `gpt-4o-mini`

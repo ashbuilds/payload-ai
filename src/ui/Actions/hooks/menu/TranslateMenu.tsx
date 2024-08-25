@@ -26,7 +26,6 @@ export const TranslateMenu = ({ onClick }) => {
     >
       <Translate
         onClick={() => {
-          console.log('locales : ', locales)
           setShow(!show)
         }}
         onMouseEnter={() => setShow(true)}
@@ -69,7 +68,7 @@ export const TranslateMenu = ({ onClick }) => {
               <Item
                 key={locale.tag}
                 onClick={() => {
-                  onClick(locale.tag)
+                  onClick({ locale: locale.tag })
                 }}
               >
                 <span className={styles.ellipsis}>{`${locale.location} (${locale.tag})`}</span>

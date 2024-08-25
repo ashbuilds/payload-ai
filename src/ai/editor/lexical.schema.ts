@@ -53,8 +53,7 @@ export const lexicalSchema = (customNodes?: (typeof LexicalBaseNode)[]) => {
     tag: z.enum(['h1', 'h2', 'h3', 'h4']),
   })
 
-  // Apply these from paylodcma-ai config as example
-
+  // Example of custom node - wip
   const MediaNode = BaseNode.extend({
     type: z.literal('block'),
     version: z.literal(2),

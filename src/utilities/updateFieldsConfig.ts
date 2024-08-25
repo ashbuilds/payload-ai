@@ -1,13 +1,6 @@
-import type {
-  CollectionConfig,
-  Description,
-  DescriptionComponent,
-  FieldDescriptionProps,
-  ServerProps,
-} from 'payload'
+import type { CollectionConfig } from 'payload'
 
 import { DescriptionField } from '../fields/DescriptionField/DescriptionField.js'
-import { ComponentClass } from 'react'
 
 interface UpdateFieldsConfig {
   schemaPathMap: Record<string, string>
@@ -30,7 +23,10 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
     if (['richText', 'text', 'textarea', 'upload'].includes(field.type)) {
       schemaPathMap = {
         ...schemaPathMap,
-        [currentSchemaPath]: field.type,
+        [currentSchemaPath]: {
+          type: field.type,
+          label: field.label || field.name,
+        }, // TODO add field name to support seed time prompt generation
       }
     }
 
@@ -41,8 +37,8 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
         admin: {
           ...field.admin,
           components: {
-            ...field.admin?.components,
-            // @ts-ignore
+            ...(field.admin?.components || {}),
+            // @ts-expect-error
             Description: DescriptionField({
               Description: field.admin?.components?.Description,
             }),

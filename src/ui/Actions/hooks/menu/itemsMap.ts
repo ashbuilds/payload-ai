@@ -23,9 +23,10 @@ export const menuItemsMap: MenuItemsMapType[] = [
   },
   { name: 'Expand', component: Expand, excludedFor: ['upload', 'text'], loadingText: 'Expanding' },
   {
+    // Turned off - WIP
     name: 'Summarize',
     component: Summarize,
-    excludedFor: ['upload', 'text'],
+    excludedFor: ['upload', 'text', 'richText'],
     loadingText: 'Summarizing',
   },
   { name: 'Simplify', component: Simplify, excludedFor: ['upload'], loadingText: 'Simplifying' },

@@ -48,13 +48,14 @@ export const AnthropicConfig: GenerationConfig = {
           {
             name: 'layout',
             type: 'textarea',
-            defaultValue: `[paragraph] - A short introduction to the topic.
-            [horizontalrule]
-            [list] - A section with headings and a paragraph.
-            [horizontalrule]
-            [paragraph] - A short conclusion.
-            [quote] - A quote from a famous person based on the topic.
-            `,
+            defaultValue: `[paragraph] - Write a concise introduction (2-3 sentences) that outlines the main topic.
+[horizontalrule] - Insert a horizontal rule to separate the introduction from the main content.
+[list] - Create a list with 3-5 items. Each list item should contain:
+   a. [heading] - A brief, descriptive heading (up to 5 words)
+   b. [paragraph] - A short explanation or elaboration (1-2 sentences)
+[horizontalrule] - Insert another horizontal rule to separate the main content from the conclusion.
+[paragraph] - Compose a brief conclusion (2-3 sentences) summarizing the key points.
+[quote] - Include a relevant quote from a famous person, directly related to the topic. Format: "Quote text." - Author Name`,
             label: 'Layout',
           },
         ],

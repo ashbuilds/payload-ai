@@ -4,7 +4,7 @@ import type { BasePayload, PayloadRequest } from 'payload'
 import Handlebars from 'handlebars'
 import asyncHelpers from 'handlebars-async-helpers'
 
-import type { ActionMenuItems, Endpoints } from '../types.js'
+import { ActionMenuItems, Endpoints } from '../types.js'
 
 import { GenerationModels } from '../ai/models/index.js'
 import { defaultPrompts } from '../ai/prompts.js'
@@ -12,11 +12,13 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   PLUGIN_INSTRUCTIONS_TABLE,
+  PLUGIN_NAME,
 } from '../defaults.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { lexicalToHTML } from '../utilities/lexicalToHTML.js'
 import { lexicalSchema } from '../ai/editor/lexical.schema.js'
-// import { DocumentSchema } from '../ai/editor/lexical.schema.js'
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
 
 const asyncHandlebars = asyncHelpers(Handlebars)
 
@@ -33,13 +35,15 @@ const assignPrompt = async (
     field,
     systemPrompt = '',
     template,
+    layout,
   }: {
-    actionParams: unknown
+    actionParams: Record<any, any>
     context: object
     field: string
     systemPrompt: string
     template: string
     type: string
+    layout: string
   },
 ) => {
   const prompt = await replacePlaceholders(template, context)
@@ -49,17 +53,32 @@ const assignPrompt = async (
   const assignedPrompts = {
     prompt,
     system: systemPrompt,
+    layout,
   }
 
   if (action === 'Compose') {
     return assignedPrompts
   }
 
-  const { system: getSystemPrompt } = defaultPrompts.find((p) => p.name === action)
+  const { system: getSystemPrompt, layout: getLayout } = defaultPrompts.find(
+    (p) => p.name === action,
+  )
+
+  let updatedLayout = layout
+  if (getLayout) {
+    updatedLayout = getLayout()
+  }
+
+  const system = getSystemPrompt({
+    ...(actionParams || {}),
+    prompt,
+    systemPrompt,
+  })
 
   return {
     prompt: await replacePlaceholders(`{{${toLexicalHTML} ${field}}}`, context),
-    system: getSystemPrompt(prompt, systemPrompt, (actionParams || '') as string),
+    system,
+    layout: updatedLayout,
   }
 }
 
@@ -75,7 +94,7 @@ const registerEditorHelper = (payload, schemaPath) => {
       const collectionSlug = schemaPathChunks[0]
       const { ids } = options
       for (const id of ids) {
-        //TODO: Find a better to get schemaPath of defined field in prompt editor
+        //TODO: Find a better way to get schemaPath of defined field in prompt editor
         const path = `${collectionSlug}.${id}`
         fieldInfo = getFieldInfo(payload.collections, path)
       }
@@ -107,7 +126,17 @@ export const endpoints: Endpoints = {
       const { action, actionParams, instructionId } = options
       const contextData = data.doc
 
-      let instructions = { 'model-id': '', prompt: '' }
+      if (!instructionId) {
+        throw new Error(
+          `Instruction ID is required for "${PLUGIN_NAME}" to work, please check your configuration`,
+        )
+      }
+
+      let instructions = await req.payload.findByID({
+        id: instructionId,
+        collection: PLUGIN_INSTRUCTIONS_TABLE,
+      })
+
       const { collections } = req.payload.config
       const collection = collections.find(
         (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
@@ -116,19 +145,9 @@ export const endpoints: Endpoints = {
       const { editorConfig: { schema: editorSchema = lexicalSchema() } = {} } =
         collection.custom || {}
 
-      console.log('editorSchema : ', editorSchema)
-
-      if (instructionId) {
-        // @ts-expect-error
-        instructions = await req.payload.findByID({
-          id: instructionId,
-          collection: PLUGIN_INSTRUCTIONS_TABLE,
-        })
-      }
-
       const { prompt: promptTemplate = '' } = instructions
 
-      const schemaPath = instructions['schema-path']
+      const schemaPath = instructions['schema-path'] as string
       const fieldName = schemaPath?.split('.').pop()
 
       registerEditorHelper(req.payload, schemaPath)
@@ -148,15 +167,19 @@ export const endpoints: Endpoints = {
 
       const model = GenerationModels.find((model) => model.id === opt.modelId)
       const settingsName = model.settings?.name
-      const modelOptions = instructions[settingsName] || {}
+      const modelOptions = instructions[settingsName] as {
+        system: string
+        layout: string
+      }
 
       const prompts = await assignPrompt(action, {
-        type: instructions['field-type'],
+        type: instructions['field-type'] as string,
         actionParams,
         context: contextData,
         field: fieldName,
         systemPrompt: modelOptions.system,
-        template: promptTemplate,
+        template: promptTemplate as string,
+        layout: modelOptions.layout,
       })
 
       console.log('Running handler with prompts:', prompts)
@@ -166,6 +189,7 @@ export const endpoints: Endpoints = {
           ...opt,
           system: prompts.system,
           editorSchema,
+          layout: prompts.layout,
         })
         .catch((error) => {
           console.error('Error: endpoint - generating text:', error)

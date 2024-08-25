@@ -65,7 +65,10 @@ import { payloadAiPlugin } from '@ai-stack/payloadcms';
 export default buildConfig({
   plugins: [
     payloadAiPlugin({
-      collections: [Posts.slug],
+      collections: {
+        [Posts.slug]: true,
+      },
+      debugging: false,
     }),
   ],
   // ... your existing Payload configuration
@@ -77,8 +80,8 @@ export default buildConfig({
 The plugin uses environment variables for configuration. Create a .env file in your project root and add the following variables:
 
 ```
-ANTHROPIC_API_KEY=your-anthropic-api-key
 OPENAI_API_KEY=your-openai-api-key
+ANTHROPIC_API_KEY=your-anthropic-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ```
 
