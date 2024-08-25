@@ -55,7 +55,7 @@ export const useGenerate = () => {
 
   const {
     isLoading: loadingObject,
-    // @ts-expect-error - Object execssivily deep issue
+    // @ts-ignore - Object execssivily deep issue
     object,
     stop, // TODO: Implement this function
     submit,
