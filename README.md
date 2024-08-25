@@ -61,6 +61,8 @@ pnpm add @ai-stack/payloadcms
 Integrate the AI magic into your Payload config:
 
 ```javascript
+
+// Add below in payload.config.ts
 import { buildConfig } from 'payload/config';
 import { payloadAiPlugin } from '@ai-stack/payloadcms';
 
@@ -75,6 +77,26 @@ export default buildConfig({
   ],
   // ... your existing Payload configuration
 });
+
+
+// Add below in Lexical Editor field config
+import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+
+fields: [
+  {
+    name: 'content',
+    type: 'richText',
+    editor: lexicalEditor({
+      features: ({ rootFeatures }) => {
+        return [
+          // ... your existing features
+          PayloadAiPluginLexicalEditorFeature()
+        ]
+      },
+    }),
+  },
+]
+
 ```
 
 ## ⚙️ Configuration
