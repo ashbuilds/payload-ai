@@ -9,6 +9,7 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "keywords": ["plugin", "text-to-speech", "ai", "text-generation", "text-to-image", "content-generation", "ai-writing","payloadcms","smart-generation","ai-translate","ai-writing-tool"],
   "exports": {
     ".": {
       "import": "./dist/index.js",
