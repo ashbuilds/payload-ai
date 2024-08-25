@@ -6,35 +6,35 @@
 
 ## 🌟 Supercharge Your [Payload CMS](https://payloadcms.com) with AI-Powered Content Creation
 
-The Payload AI Plugin is an extension that seamlessly integrates advanced AI capabilities into your Payload CMS, elevating content creation and management.
+The Payload AI Plugin is an advanced extension that integrates modern AI capabilities into your Payload CMS, streamlining content creation and management.
 
-> **⚠️ Important:** This plugin is in active development. We're continuously working to improve its features and functionality. Please be prepared for regular updates. At present, the plugin has only been tested with Payload version 3.0.0-beta.65.
+> **⚠️ Important:** This plugin is in active development. We're doing our best to improve its features and functionality. Please be prepared for regular updates; at the moment, the plugin has only been tested with Payload version 3.0.0-beta.65.
 >
-> For a quick start, we recommend using [Payload's website template](https://github.com/payloadcms/payload/tree/v3.0.0-beta.65/templates/website).
+> To give it a try, we recommend using [Payload's website template](https://github.com/payloadcms/payload/tree/v3.0.0-beta.65/templates/website).
 
 ### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
 
 
-## ✨ Supported fields and features
+## ✨ Supported Fields and Features
 
-### Text and Rich text Field
+### Text and RichText Field
 - 📝 **Text Generation**
   - [x] **Compose** masterpieces effortlessly
   - [x] **Proofread** with precision (Beta)
-  - [ ] **Translate** across languages
+  - [x] **Translate** across languages
   - [ ] **Expand** your ideas
   - [ ] **Summarize** with clarity
   - [ ] **Simplify** complex concepts
-  - [x] **Rephrase** for impact (Beta)
+  - [x] **Rephrase** for maximum impact (Beta)
 
 ### Upload Field
 - 🎙️ **Voice Generation** powered by ElevenLabs, OpenAI
 - 🖼️ **Image Generation** powered by OpenAI
 
-### Other features
+### Other Features
 - 🎛️ **Field-level Prompt Customization**
 - 🧠 **Prompt Editor** (Beta)
-- 📊 **Document Analyser** (Coming Soon)
+- 📊 **Document Analyzer** (Coming Soon)
 - ✅ **Fact Checking** (Coming Soon)
 - 🔄 **Automated Content Workflows** (Coming Soon)
 - 🌍 **Internationalization Support** (Coming Soon)
@@ -46,11 +46,11 @@ The Payload AI Plugin is an extension that seamlessly integrates advanced AI cap
 - [Usage](#-usage)
 - [Configuration](#%EF%B8%8F-configuration)
 - [Contributing](#-contributing)
-- [License](#-license)
+- [License](#licensing)
 
 ## 📦 Installation
 
-Elevate your Payload project with a single command:
+Rock your Payload project with a single command:
 
 ```bash
 pnpm add @ai-stack/payloadcms
@@ -58,7 +58,7 @@ pnpm add @ai-stack/payloadcms
 
 ## 🛠 Usage
 
-Integrate the AI magic into your Payload config:
+Config with ease: 
 
 ```javascript
 
@@ -112,7 +112,7 @@ ELEVENLABS_API_KEY=your-elevenlabs-api-key
 
 ## 👥 Contributing
 
-Join our community of innovators! We welcome contributions to the Payload AI Plugin. Connect with us on [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) to get started.
+Innovators: welcome! We're always excited to expand our community. Connect with us on [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) to get started.
 
 ## Licensing
 
