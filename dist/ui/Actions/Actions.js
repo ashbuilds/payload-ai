@@ -56,8 +56,11 @@ export const Actions = ({ descriptionProps = {}, instructionId })=>{
         actionsRef.current.classList.add(styles.actions_hidden);
         input.addEventListener('click', (event)=>{
             document.querySelectorAll('.ai-plugin-active')?.forEach((element)=>{
-                element.querySelector(`.${styles.actions}`).classList.add(styles.actions_hidden);
-                element.classList.remove('ai-plugin-active');
+                const actionElement = element.querySelector(`.${styles.actions}`);
+                if (actionElement) {
+                    actionElement.classList.add(styles.actions_hidden);
+                    element.classList.remove('ai-plugin-active');
+                }
             });
             actionsRef.current.classList.remove(styles.actions_hidden);
             const parentWithClass = findParentWithClass(event.target, 'field-type');
@@ -112,9 +115,17 @@ export const Actions = ({ descriptionProps = {}, instructionId })=>{
             });
         }
     });
-    const { setValue } = useField({
+    const { setValue, value } = useField({
         path: pathFromContext
     });
+    useEffect(()=>{
+        console.log('lexicalEditor :', value);
+        console.log('lexicalEditor :', {
+            setValue
+        });
+    }, [
+        value
+    ]);
     const setIfValueIsLexicalState = useCallback((val)=>{
         if (val.root && lexicalEditor) {
             setSafeLexicalState(JSON.stringify(val), lexicalEditor);
@@ -126,6 +137,7 @@ export const Actions = ({ descriptionProps = {}, instructionId })=>{
             /*#__PURE__*/ _jsxs("label", {
                 className: `${styles.actions}`,
                 ref: actionsRef,
+                onClick: (e)=>e.preventDefault(),
                 children: [
                     /*#__PURE__*/ _jsx(DocumentDrawer, {
                         onSave: ()=>{

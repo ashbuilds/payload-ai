@@ -5,6 +5,8 @@ import { defaultPrompts } from '../ai/prompts.js';
 import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD, PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js';
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js';
 import { lexicalToHTML } from '../utilities/lexicalToHTML.js';
+import { lexicalSchema } from '../ai/editor/lexical.schema.js';
+// import { DocumentSchema } from '../ai/editor/lexical.schema.js'
 const asyncHandlebars = asyncHelpers(Handlebars);
 const replacePlaceholders = (prompt, values)=>{
     return asyncHandlebars.compile(prompt, {
@@ -65,6 +67,10 @@ export const endpoints = {
                 'model-id': '',
                 prompt: ''
             };
+            const { collections } = req.payload.config;
+            const collection = collections.find((collection)=>collection.slug === PLUGIN_INSTRUCTIONS_TABLE);
+            const { editorConfig: { schema: editorSchema = lexicalSchema() } = {} } = collection.custom || {};
+            console.log('editorSchema : ', editorSchema);
             if (instructionId) {
                 // @ts-expect-error
                 instructions = await req.payload.findByID({
@@ -101,7 +107,8 @@ export const endpoints = {
             return model.handler?.(prompts.prompt, {
                 ...modelOptions,
                 ...opt,
-                system: prompts.system
+                system: prompts.system,
+                editorSchema
             }).catch((error)=>{
                 console.error('Error: endpoint - generating text:', error);
                 return new Response(JSON.stringify(error.message), {

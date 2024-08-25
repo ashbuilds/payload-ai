@@ -6,4 +6,5 @@
  */
 export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js';
 export { payloadAiPlugin } from './plugin.js';
+export { LexicalBaseNode } from './ai/editor/lexical.schema.js';
 //# sourceMappingURL=index.d.ts.map
