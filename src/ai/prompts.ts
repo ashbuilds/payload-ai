@@ -204,7 +204,7 @@ For upload:
   field-type: upload
   field-name: Featured Image
   schema-path: posts.image
-  Generated prompt: Describe a high-quality featured image for '{{ title }}'
+  Generated prompt: Imagine a high-quality product image for '{{ title }}
 
 For upload:
   field-type: upload
