@@ -5,4 +5,5 @@ export declare const PLUGIN_LEXICAL_EDITOR_FEATURE = "plugin-ai-actions-feature"
 export declare const PLUGIN_API_ENDPOINT_BASE = "/plugin-ai";
 export declare const PLUGIN_API_ENDPOINT_GENERATE = "/plugin-ai/generate";
 export declare const PLUGIN_API_ENDPOINT_GENERATE_UPLOAD = "/plugin-ai/generate/upload";
+export declare const PLUGIN_DEFAULT_MODEL_NAME = "gpt-4o-mini";
 //# sourceMappingURL=defaults.d.ts.map

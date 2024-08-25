@@ -61,7 +61,7 @@ export const lexicalSchema = (customNodes)=>{
             'h4'
         ])
     });
-    // Apply these from paylodcma-ai config as example
+    // Example of custom node - wip
     const MediaNode = BaseNode.extend({
         type: z.literal('block'),
         version: z.literal(2),

@@ -2,12 +2,12 @@ import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client';
 import { useConfig, useDocumentInfo, useField, useFieldProps, useForm, useLocale } from '@payloadcms/ui';
 import { useCompletion, experimental_useObject as useObject } from 'ai/react';
 import { useCallback, useEffect } from 'react';
-import { z } from 'zod';
 import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD, PLUGIN_INSTRUCTIONS_TABLE } from '../../../defaults.js';
 import { useInstructions } from '../../../providers/InstructionsProvider/hook.js';
 import { getFieldBySchemaPath } from '../../../utilities/getFieldBySchemaPath.js';
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js';
 import { useHistory } from './useHistory.js';
+import { jsonSchemaToZod } from '../../../utilities/jsonToZod.js';
 //TODO: DONATION IDEA - Add a url to donate in cli when user installs the plugin and uses it for couple of times.
 export const useGenerate = ()=>{
     const { type, path: pathFromContext, schemaPath } = useFieldProps();
@@ -27,20 +27,22 @@ export const useGenerate = ()=>{
     const collection = collections.find((collection)=>collection.slug === PLUGIN_INSTRUCTIONS_TABLE);
     const { custom: { editorConfig } = {} } = collection.admin;
     const { schema: DocumentSchema = {} } = editorConfig || {};
-    const { isLoading: loadingObject, object, stop, submit } = useObject({
+    const zodSchema = jsonSchemaToZod(DocumentSchema);
+    const { isLoading: loadingObject, // @ts-ignore - Object execssivily deep issue
+    object, stop, submit } = useObject({
         api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
         onError: (error)=>{
             console.error('Error generating object:', error);
         },
         onFinish: (result)=>{
-            console.log('onFinish', result.object);
+            console.log('onFinish: result', result);
             //TODO: Sometimes object is undefined?!
             if (result.object) {
                 setHistory(result.object);
                 setValue(result.object);
             }
         },
-        schema: z.string().transform(DocumentSchema)
+        schema: zodSchema
     });
     useEffect(()=>{
         if (!object) return;

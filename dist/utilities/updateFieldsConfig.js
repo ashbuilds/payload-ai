@@ -18,7 +18,10 @@ export const updateFieldsConfig = (collectionConfig)=>{
         ].includes(field.type)) {
             schemaPathMap = {
                 ...schemaPathMap,
-                [currentSchemaPath]: field.type
+                [currentSchemaPath]: {
+                    type: field.type,
+                    label: field.label || field.name
+                }
             };
         }
         // Inject AI actions, richText is not included here as it has to be explicitly defined by user
@@ -32,8 +35,8 @@ export const updateFieldsConfig = (collectionConfig)=>{
                 admin: {
                     ...field.admin,
                     components: {
-                        ...field.admin?.components,
-                        // @ts-ignore
+                        ...field.admin?.components || {},
+                        // @ts-expect-error
                         Description: DescriptionField({
                             Description: field.admin?.components?.Description
                         })

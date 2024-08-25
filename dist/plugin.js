@@ -11,6 +11,9 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 const payloadAiPlugin = (pluginConfig)=>(incomingConfig)=>{
         // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit
         const zodLexicalSchema = lexicalSchema(pluginConfig.editorConfig?.nodes);
+        if (pluginConfig.debugging) {
+            Instructions.admin.hidden = false;
+        }
         Instructions.admin.custom = {
             ...Instructions.admin.custom || {},
             [PLUGIN_NAME]: {
@@ -42,7 +45,7 @@ const payloadAiPlugin = (pluginConfig)=>(incomingConfig)=>{
         const updatedConfig = {
             ...incomingConfig,
             collections: collections.map((collection)=>{
-                if (collectionSlugs.indexOf(collection.slug) > -1) {
+                if (collectionSlugs[collection.slug]) {
                     const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(collection);
                     collectionsFieldPathMap = {
                         ...collectionsFieldPathMap,
@@ -65,7 +68,7 @@ const payloadAiPlugin = (pluginConfig)=>(incomingConfig)=>{
                         read: ()=>true
                     },
                     admin: {
-                        hidden: true
+                        hidden: !pluginConfig.debugging
                     },
                     fields: [
                         {
