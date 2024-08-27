@@ -1,16 +1,15 @@
 import type { Payload } from 'payload'
 
-import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
 import { GenerationModels } from './ai/models/index.js'
-import { generateSeedPrompt } from './ai/utils/generateSeedPrompt.js'
 import { seedPrompts } from './ai/prompts.js'
+import { generateSeedPrompt } from './ai/utils/generateSeedPrompt.js'
+import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
 
 export const init = async (payload: Payload, fieldSchemaPaths) => {
   payload.logger.info(`— AI Plugin: Initializing...`)
 
   const paths = Object.keys(fieldSchemaPaths)
 
-  // TODO: Add default options according to field type in INSTRUCTIONS table
   const fieldInstructionsMap = {}
   for (let i = 0; i < paths.length; i++) {
     const path = paths[i]
@@ -28,15 +27,15 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
     })
 
     if (!entry?.docs?.length) {
-      const { system, prompt } = seedPrompts({
-        fieldType,
+      const { prompt, system } = seedPrompts({
         fieldLabel,
-        path,
         fieldSchemaPaths,
+        fieldType,
+        path,
       })
       const generatedPrompt = await generateSeedPrompt({
-        system,
         prompt,
+        system,
       })
       payload.logger.info(
         `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
@@ -45,11 +44,11 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
         collection: PLUGIN_INSTRUCTIONS_TABLE,
         data: {
           'field-type': fieldType,
-          'schema-path': path,
           'model-id': GenerationModels.find((a) => {
             return a.fields.includes(fieldType)
-          }).id,
+          })?.id,
           prompt: generatedPrompt,
+          'schema-path': path,
         },
       })
       fieldInstructionsMap[path] = instructions.id

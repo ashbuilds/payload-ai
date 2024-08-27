@@ -12,7 +12,6 @@ import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
 
 //TODO: Simplify this file by moving the handlers to separate files and remove duplicate code
-//TODO: every config must have default settings selected
 export const OpenAIConfig: GenerationConfig = {
   models: [
     {

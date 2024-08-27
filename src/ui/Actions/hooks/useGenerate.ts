@@ -21,9 +21,9 @@ import {
 } from '../../../defaults.js'
 import { useInstructions } from '../../../providers/InstructionsProvider/hook.js'
 import { getFieldBySchemaPath } from '../../../utilities/getFieldBySchemaPath.js'
+import { jsonSchemaToZod } from '../../../utilities/jsonToZod.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
-import { jsonSchemaToZod } from '../../../utilities/jsonToZod.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
 
@@ -32,7 +32,7 @@ export const useGenerate = () => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
 
   const editorConfigContext = useEditorConfigContext()
-  const { editor, focusedEditor } = editorConfigContext
+  const { editor } = editorConfigContext
 
   const { docConfig } = useDocumentInfo()
 
@@ -55,7 +55,6 @@ export const useGenerate = () => {
 
   const {
     isLoading: loadingObject,
-    // @ts-ignore - Object execssivily deep issue
     object,
     stop, // TODO: Implement this function
     submit,
@@ -65,11 +64,11 @@ export const useGenerate = () => {
       console.error('Error generating object:', error)
     },
     onFinish: (result) => {
-      console.log('onFinish: result', result)
-      //TODO: Sometimes object is undefined?!
       if (result.object) {
         setHistory(result.object)
         setValue(result.object)
+      } else {
+        console.log('onFinish: result ', result)
       }
     },
     schema: zodSchema,

@@ -105,7 +105,7 @@ export const Instructions: CollectionConfig = {
   hooks: {
     beforeChange: [
       (req) => {
-        if (req.data['openai-gpt-object-settings'].layout?.length === 0) {
+        if (req.data['openai-gpt-object-settings']?.layout?.length === 0) {
           // TODO: why??
           req.data['openai-gpt-object-settings'].layout = ''
         }
