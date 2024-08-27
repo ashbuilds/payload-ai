@@ -109,6 +109,7 @@ const payloadAiPlugin =
       }
 
       await init(payload, collectionsFieldPathMap).catch((error) => {
+        console.error(error)
         payload.logger.error(`— AI Plugin: Initialization Error: ${error}`)
       })
     }

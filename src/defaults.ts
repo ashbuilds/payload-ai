@@ -9,4 +9,5 @@ export const PLUGIN_API_ENDPOINT_GENERATE = `${PLUGIN_API_ENDPOINT_BASE}/generat
 export const PLUGIN_API_ENDPOINT_GENERATE_UPLOAD = `${PLUGIN_API_ENDPOINT_GENERATE}/upload`
 
 // LLM Settings
-export const PLUGIN_DEFAULT_MODEL_NAME = `gpt-4o-mini`
+export const PLUGIN_DEFAULT_OPENAI_MODEL = `gpt-4o-mini`
+export const PLUGIN_DEFAULT_ANTHROPIC_MODEL = `claude-3-sonnet-20240229`

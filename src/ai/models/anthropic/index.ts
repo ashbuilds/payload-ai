@@ -1,3 +1,7 @@
+import { anthropic } from '@ai-sdk/anthropic'
+import { openai } from '@ai-sdk/openai'
+import { streamText } from 'ai'
+
 import type { GenerationConfig } from '../../../types.js'
 
 import { generateRichText } from './generateRichText.js'
@@ -5,10 +9,49 @@ import { generateRichText } from './generateRichText.js'
 export const AnthropicConfig: GenerationConfig = {
   models: [
     {
-      id: 'anthropic/claude-3.5-sonnet',
-      name: 'Anthropic Claude 3.5 Sonnet',
+      id: 'anthropic-claude-text',
+      name: 'Anthropic Claude',
       fields: ['text', 'textarea'],
+      handler: async (
+        prompt: string,
+        options: { locale: string; model: string; system: string },
+      ) => {
+        console.log('options ', options)
+        console.log('prompt ', prompt)
+
+        const streamTextResult = await streamText({
+          model: anthropic(options.model),
+          prompt,
+          system: options.system || 'IMPORTANT: JUST PRODUCE THE OUTPUT, DO NOT ENGAGE!',
+        })
+
+        return streamTextResult.toAIStreamResponse()
+      },
       output: 'text',
+      settings: {
+        name: 'anthropic-claude-text-settings',
+        type: 'group',
+        admin: {
+          condition(data) {
+            return data['model-id'] === 'anthropic-claude-text'
+          },
+        },
+        fields: [
+          {
+            name: 'model',
+            type: 'select',
+            defaultValue: 'claude-3-5-sonnet-20240620',
+            label: 'Model',
+            options: [
+              'claude-3-haiku-20240307',
+              'claude-3-sonnet-20240229',
+              'claude-3-opus-20240229',
+              'claude-3-5-sonnet-20240620',
+            ],
+          },
+        ],
+        label: 'Anthropic Claude Settings',
+      },
     },
     {
       id: 'anthropic-claude-object',
@@ -33,7 +76,12 @@ export const AnthropicConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'claude-3-5-sonnet-20240620',
             label: 'Model',
-            options: ['claude-3-5-sonnet-20240620'],
+            options: [
+              'claude-3-haiku-20240307',
+              'claude-3-sonnet-20240229',
+              'claude-3-opus-20240229',
+              'claude-3-5-sonnet-20240620',
+            ],
           },
           {
             name: 'system',

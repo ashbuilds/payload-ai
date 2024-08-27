@@ -225,6 +225,8 @@ Remember to adapt the prompts based on the specific schema-path provided, consid
 
 Schema Map Context:
 ${JSON.stringify(fieldSchemaPaths)}
+
+IMPORTANT: JUST PRODUCE THE OUTPUT, DO NOT ENGAGE!
 `,
   }
 }

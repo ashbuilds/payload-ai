@@ -46,7 +46,7 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
           'field-type': fieldType,
           'model-id': GenerationModels.find((a) => {
             return a.fields.includes(fieldType)
-          }).id,
+          })?.id,
           prompt: generatedPrompt,
           'schema-path': path,
         },
