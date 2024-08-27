@@ -96,7 +96,7 @@
       }
     },
     "main": "./dist/index.js",
-    "@ai-stack:registry": "https://npm.pkg.github.com",
+    "@ai-stack:registry": "https://registry.npmjs.org",
     "types": "./dist/index.d.ts",
     "access": "public"
   }
