@@ -1,17 +1,16 @@
 'use client'
 
+import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
-import { PluginIcon } from '../Icons/Icons.js'
-import styles from './actions.module.scss'
-import { useGenerate } from './hooks/useGenerate.js'
-
-import { useMenu } from './hooks/menu/useMenu.js'
-import { UndoRedoActions } from './UndoRedoActions.js'
-import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
+import { PluginIcon } from '../Icons/Icons.js'
+import { UndoRedoActions } from './UndoRedoActions.js'
+import styles from './actions.module.scss'
+import { useMenu } from './hooks/menu/useMenu.js'
+import { useGenerate } from './hooks/useGenerate.js'
 
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
@@ -28,7 +27,6 @@ function findParentWithClass(element, className) {
   return findParentWithClass(element.parentElement, className)
 }
 
-//TODO: Add undo/redo to the actions toolbar
 export const Actions = ({ descriptionProps = {}, instructionId }) => {
   const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: instructionId,
@@ -47,7 +45,7 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
     if (!actionsRef.current) return
 
     const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
-    let inputElement = document.getElementById(fieldId)
+    const inputElement = document.getElementById(fieldId)
 
     if (!inputElement && fieldType === 'richText') {
       setInput(editorContainerRef.current)
@@ -108,6 +106,7 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
         action: 'Rephrase',
       })
     },
+    onSettings: openDrawer,
     onSimplify: async () => {
       console.log('Simplifying...')
       await generate({
@@ -121,13 +120,12 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
       })
     },
     onTranslate: async (data) => {
-      console.log('Translate...', data)
+      console.log('Translating...', data)
       await generate({
         action: 'Translate',
         params: data,
       })
     },
-    onSettings: openDrawer,
   })
 
   const { setValue, value } = useField<string>({
@@ -144,7 +142,7 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
 
   return (
     <React.Fragment>
-      <label className={`${styles.actions}`} ref={actionsRef} onClick={(e) => e.preventDefault()}>
+      <label className={`${styles.actions}`} onClick={(e) => e.preventDefault()} ref={actionsRef}>
         <DocumentDrawer
           onSave={() => {
             closeDrawer()

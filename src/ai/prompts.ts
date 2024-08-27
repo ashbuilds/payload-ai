@@ -1,16 +1,16 @@
 import type { ActionMenuItems } from '../types.js'
 
 type ActionPromptOptions = {
+  layout?: string
+  locale?: string
   prompt?: string
   systemPrompt?: string
-  locale?: string
-  layout?: string
 }
 
 type ActionPrompt = {
+  layout?: (options?: ActionPromptOptions) => string
   name: ActionMenuItems
   system: (options: ActionPromptOptions) => string
-  layout?: (options?: ActionPromptOptions) => string
 }
 
 export const defaultPrompts: ActionPrompt[] = [
@@ -76,6 +76,10 @@ export const defaultPrompts: ActionPrompt[] = [
   },
   {
     name: 'Summarize',
+    layout: () => `
+[heading] - Summary
+[paragraph] - Your summary goes here...
+    `,
     system: () =>
       `You are an expert at summarizing information. Your task is to create a concise summary of the given text that captures its key points and essential details while preserving the original meaning.
 
@@ -87,10 +91,6 @@ INSTRUCTIONS:
 5. Ensure your summary is approximately 25-30% of the original text length.
 6. Use clear and precise language, avoiding unnecessary jargon or complexity.
 `,
-    layout: () => `
-[heading] - Summary
-[paragraph] - Your summary goes here...
-    `,
   },
   {
     name: 'Tone',
@@ -106,7 +106,7 @@ INSTRUCTIONS:
   },
   {
     name: 'Translate',
-    system: ({ prompt = '', systemPrompt = '', locale }) =>
+    system: ({ locale, prompt = '', systemPrompt = '' }) =>
       `You are a skilled translator. Translate the following text into ${locale}, ensuring the original meaning, tone, and context are preserved.
     
     -------------
@@ -120,8 +120,16 @@ INSTRUCTIONS:
   },
 ]
 
-export const seedPrompts = ({ fieldLabel, fieldType, path, fieldSchemaPaths }) => {
+export const seedPrompts = ({ fieldLabel, fieldSchemaPaths, fieldType, path }) => {
   return {
+    prompt: `field-type: ${fieldType}
+field-name: ${fieldLabel}
+schema-path: ${path}
+
+Give me a prompt that relate to the given field type and schema path.
+
+Generated prompt:
+`,
     system: `# AI Assistant for CMS Prompt Generation
 
 Your role: Generate prompts for Content Management System (CMS) fields based on field-type and schema-path.
@@ -204,7 +212,7 @@ For upload:
   field-type: upload
   field-name: Featured Image
   schema-path: posts.image
-  Generated prompt: Imagine a high-quality featured image for '{{ title }}
+  Generated prompt: Imagine {{ title }}
 
 For upload:
   field-type: upload
@@ -217,14 +225,6 @@ Remember to adapt the prompts based on the specific schema-path provided, consid
 
 Schema Map Context:
 ${JSON.stringify(fieldSchemaPaths)}
-`,
-    prompt: `field-type: ${fieldType}
-field-name: ${fieldLabel}
-schema-path: ${path}
-
-Give me a prompt that relate to the given field type and schema path.
-
-Generated prompt:
 `,
   }
 }
