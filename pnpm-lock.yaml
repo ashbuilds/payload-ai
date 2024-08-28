@@ -46,7 +46,7 @@ importers:
         version: 3.0.0-beta.65(monaco-editor@0.51.0)(next@15.0.0-rc.0(@opentelemetry/api@1.9.0)(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)(sass@1.77.4))(payload@3.0.0-beta.65(@swc/core@1.7.18(@swc/helpers@0.5.11))(@swc/types@0.1.12)(graphql@16.9.0)(typescript@5.5.4))(react-dom@19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522))(react@19.0.0-rc-f994737d14-20240522)(types-react@19.0.0-beta.2)
       ai:
         specifier: ^3.3.3
-        version: 3.3.17(openai@4.56.0(zod@3.23.8))(react@19.0.0-rc-f994737d14-20240522)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.4.38(typescript@5.5.4))(zod@3.23.8)
+        version: 3.3.17(openai@4.56.0(zod@3.23.8))(react@19.0.0-rc.0)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.4.38(typescript@5.5.4))(zod@3.23.8)
       elevenlabs:
         specifier: ^0.8.2
         version: 0.8.2
@@ -142,11 +142,11 @@ importers:
         specifier: ^3.3.3
         version: 3.3.3
       react:
-        specifier: 19.0.0-rc-f994737d14-20240522
-        version: 19.0.0-rc-f994737d14-20240522
+        specifier: 19.0.0-rc.0
+        version: 19.0.0-rc.0
       react-dom:
-        specifier: 19.0.0-rc-f994737d14-20240522
-        version: 19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522)
+        specifier: 19.0.0-rc.0
+        version: 19.0.0-rc.0(react@19.0.0-rc.0)
       rimraf:
         specifier: 6.0.1
         version: 6.0.1
@@ -3216,6 +3216,11 @@ packages:
     peerDependencies:
       react: 19.0.0-rc-f994737d14-20240522
 
+  react-dom@19.0.0-rc.0:
+    resolution: {integrity: sha512-MhgN2RMYFUkZekkFbsXg9ycwEGaMBzATpTNvGGvWNA9BZZEkdzIL4pv7iDuZKn48YoGARk8ydu4S+Ehd8Yrc4g==}
+    peerDependencies:
+      react: 19.0.0-rc.0
+
   react-error-boundary@3.1.4:
     resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
     engines: {node: '>=10', npm: '>=6'}
@@ -3255,6 +3260,10 @@ packages:
 
   react@19.0.0-rc-f994737d14-20240522:
     resolution: {integrity: sha512-SeU2v5Xy6FotVhKz0pMS2gvYP7HlkF0qgTskj3JzA1vlxcb3dQjxlm9t0ZlJqcgoyI3VFAw7bomuDMdgy1nBuw==}
+    engines: {node: '>=0.10.0'}
+
+  react@19.0.0-rc.0:
+    resolution: {integrity: sha512-8nrDCl5uE54FHeKqKrEO0TS+10bT4cxutJGb2okiJc0FHMQ6I3FeItaqly/1nbijlhSO3HmAVyPIexIQQWYAtQ==}
     engines: {node: '>=0.10.0'}
 
   readable-stream@1.0.34:
@@ -3375,6 +3384,9 @@ packages:
 
   scheduler@0.25.0-rc-f994737d14-20240522:
     resolution: {integrity: sha512-qS+xGFF7AljP2APO2iJe8zESNsK20k25MACz+WGOXPybUsRdi1ssvaoF93im2nSX2q/XT3wKkjdz6RQfbmaxdw==}
+
+  scheduler@0.25.0-rc.0:
+    resolution: {integrity: sha512-B3aSqMfoRkucM94MztZD1CyNyf68W9A3dL/TT453G6uNcxMBqGQ+rhFKyxNnWH/mfRHlGBr0tF0F472JCETH4g==}
 
   scmp@2.1.0:
     resolution: {integrity: sha512-o/mRQGk9Rcer/jEEw/yw4mwo3EU/NvYvp577/Btqrym9Qy5/MdWGBqipbALgd2lrdWTJ5/gqDusxfnQBxOxT2Q==}
@@ -3985,13 +3997,13 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@0.0.51(react@19.0.0-rc-f994737d14-20240522)(zod@3.23.8)':
+  '@ai-sdk/react@0.0.51(react@19.0.0-rc.0)(zod@3.23.8)':
     dependencies:
       '@ai-sdk/provider-utils': 1.0.16(zod@3.23.8)
       '@ai-sdk/ui-utils': 0.0.38(zod@3.23.8)
-      swr: 2.2.5(react@19.0.0-rc-f994737d14-20240522)
+      swr: 2.2.5(react@19.0.0-rc.0)
     optionalDependencies:
-      react: 19.0.0-rc-f994737d14-20240522
+      react: 19.0.0-rc.0
       zod: 3.23.8
 
   '@ai-sdk/solid@0.0.41(zod@3.23.8)':
@@ -5099,11 +5111,11 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ai@3.3.17(openai@4.56.0(zod@3.23.8))(react@19.0.0-rc-f994737d14-20240522)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.4.38(typescript@5.5.4))(zod@3.23.8):
+  ai@3.3.17(openai@4.56.0(zod@3.23.8))(react@19.0.0-rc.0)(sswr@2.1.0(svelte@4.2.19))(svelte@4.2.19)(vue@3.4.38(typescript@5.5.4))(zod@3.23.8):
     dependencies:
       '@ai-sdk/provider': 0.0.21
       '@ai-sdk/provider-utils': 1.0.16(zod@3.23.8)
-      '@ai-sdk/react': 0.0.51(react@19.0.0-rc-f994737d14-20240522)(zod@3.23.8)
+      '@ai-sdk/react': 0.0.51(react@19.0.0-rc.0)(zod@3.23.8)
       '@ai-sdk/solid': 0.0.41(zod@3.23.8)
       '@ai-sdk/svelte': 0.0.43(svelte@4.2.19)(zod@3.23.8)
       '@ai-sdk/ui-utils': 0.0.38(zod@3.23.8)
@@ -5117,7 +5129,7 @@ snapshots:
       zod-to-json-schema: 3.23.2(zod@3.23.8)
     optionalDependencies:
       openai: 4.56.0(zod@3.23.8)
-      react: 19.0.0-rc-f994737d14-20240522
+      react: 19.0.0-rc.0
       sswr: 2.1.0(svelte@4.2.19)
       svelte: 4.2.19
       zod: 3.23.8
@@ -7273,6 +7285,11 @@ snapshots:
       react: 19.0.0-rc-f994737d14-20240522
       scheduler: 0.25.0-rc-f994737d14-20240522
 
+  react-dom@19.0.0-rc.0(react@19.0.0-rc.0):
+    dependencies:
+      react: 19.0.0-rc.0
+      scheduler: 0.25.0-rc.0
+
   react-error-boundary@3.1.4(react@19.0.0-rc-f994737d14-20240522):
     dependencies:
       '@babel/runtime': 7.25.4
@@ -7321,6 +7338,8 @@ snapshots:
       react-dom: 19.0.0-rc-f994737d14-20240522(react@19.0.0-rc-f994737d14-20240522)
 
   react@19.0.0-rc-f994737d14-20240522: {}
+
+  react@19.0.0-rc.0: {}
 
   readable-stream@1.0.34:
     dependencies:
@@ -7460,6 +7479,8 @@ snapshots:
       source-map-js: 1.2.0
 
   scheduler@0.25.0-rc-f994737d14-20240522: {}
+
+  scheduler@0.25.0-rc.0: {}
 
   scmp@2.1.0: {}
 
@@ -7728,11 +7749,11 @@ snapshots:
       magic-string: 0.30.11
       periscopic: 3.1.0
 
-  swr@2.2.5(react@19.0.0-rc-f994737d14-20240522):
+  swr@2.2.5(react@19.0.0-rc.0):
     dependencies:
       client-only: 0.0.1
-      react: 19.0.0-rc-f994737d14-20240522
-      use-sync-external-store: 1.2.2(react@19.0.0-rc-f994737d14-20240522)
+      react: 19.0.0-rc.0
+      use-sync-external-store: 1.2.2(react@19.0.0-rc.0)
 
   swrev@4.0.0: {}
 
@@ -7907,9 +7928,9 @@ snapshots:
     optionalDependencies:
       '@types/react': types-react@19.0.0-beta.2
 
-  use-sync-external-store@1.2.2(react@19.0.0-rc-f994737d14-20240522):
+  use-sync-external-store@1.2.2(react@19.0.0-rc.0):
     dependencies:
-      react: 19.0.0-rc-f994737d14-20240522
+      react: 19.0.0-rc.0
 
   utf8-byte-length@1.0.5: {}
 
