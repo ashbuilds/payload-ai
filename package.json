@@ -1,6 +1,6 @@
 {
   "name": "@ai-stack/payloadcms",
-  "version": "3.0.0-beta.65.1",
+  "version": "3.0.0-beta.65.2",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
@@ -9,7 +9,19 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "keywords": ["plugin", "text-to-speech", "ai", "text-generation", "text-to-image", "content-generation", "ai-writing","payloadcms","smart-generation","ai-translate","ai-writing-tool"],
+  "keywords": [
+    "plugin",
+    "text-to-speech",
+    "ai",
+    "text-generation",
+    "text-to-image",
+    "content-generation",
+    "ai-writing",
+    "payloadcms",
+    "smart-generation",
+    "ai-translate",
+    "ai-writing-tool"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
