@@ -74,7 +74,7 @@ const payloadAiPlugin =
         }),
         endpoints: [...(incomingConfig.endpoints ?? []), endpoints.textarea, endpoints.upload],
         globals: [
-          ...incomingConfig.globals,
+          ...incomingConfig.globals || [],
           {
             slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL,
             access: {
