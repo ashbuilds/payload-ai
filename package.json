@@ -59,7 +59,6 @@
     "@types/react-dom": "npm:types-react-dom@19.0.0-beta.2",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
-    "chokidar": "^3.6.0",
     "copyfiles": "2.4.1",
     "eslint": "^9.7.0",
     "eslint-config-prettier": "^9.1.0",
@@ -96,8 +95,8 @@
       }
     },
     "main": "./dist/index.js",
-    "@ai-stack:registry": "https://registry.npmjs.org",
     "types": "./dist/index.d.ts",
+    "@ai-stack:registry": "https://registry.npmjs.org",
     "access": "public"
   }
 }
