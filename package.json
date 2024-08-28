@@ -97,6 +97,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "@ai-stack:registry": "https://registry.npmjs.org",
-    "access": "public"
+    "access": "public",
+    "provenance": true
   }
 }
