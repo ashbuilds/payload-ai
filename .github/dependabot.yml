@@ -4,7 +4,6 @@ updates:
     directories:
       - /
       - /.github/workflows
-      - /.github/actions/setup
     target-branch: next
     schedule:
       interval: monthly
