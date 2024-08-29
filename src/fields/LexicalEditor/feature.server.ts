@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createServerFeature } from '@payloadcms/richtext-lexical'
 
 import { PLUGIN_LEXICAL_EDITOR_FEATURE } from '../../defaults.js'
@@ -17,7 +16,7 @@ export const PayloadAiPluginLexicalEditorFeature = createServerFeature({
           : props.disableIfParentHasFixedToolbar,
     }
     return {
-      ClientFeature: isActivated ? '@ai-stack/payloadcms#LexicalEditorFeatureClient' : null,
+      ClientFeature: isActivated ? '@ai-stack/payloadcms/client#LexicalEditorFeatureClient' : null,
       clientFeatureProps: sanitizedProps,
       sanitizedServerFeatureProps: sanitizedProps,
     }
