@@ -93,7 +93,7 @@ if (voiceOptions.length) {
     type: 'select',
     admin: {
       components: {
-        Field: SelectField,
+        // Field: SelectField,
       },
       custom: {
         options: voiceOptions,
@@ -103,7 +103,10 @@ if (voiceOptions.length) {
     label: 'Voice',
     options: fieldVoiceOptions,
     required: true,
-    validate: () => true,
+    // validate: async (...arg) => {
+    //   console.log('validate ---> ', arg)
+    //   return ''
+    // },
   })
 }
 

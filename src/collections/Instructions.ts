@@ -37,7 +37,7 @@ export const Instructions: CollectionConfig = {
       name: 'schema-path',
       type: 'text',
       admin: {
-        hidden: true,
+        // hidden: true,
         readOnly: true,
       },
       unique: true,
@@ -46,7 +46,7 @@ export const Instructions: CollectionConfig = {
       name: 'field-type',
       type: 'select',
       admin: {
-        hidden: true,
+        // hidden: true,
         readOnly: true,
       },
       defaultValue: 'text',
@@ -75,7 +75,7 @@ export const Instructions: CollectionConfig = {
       type: 'select',
       admin: {
         components: {
-          Field: SelectField,
+          // Field: SelectField,
         },
         custom: {
           filterByField: 'field-type',
@@ -89,14 +89,17 @@ export const Instructions: CollectionConfig = {
           value: option.value,
         }
       }),
-      validate: () => true,
+      // validate: async (...arg) => {
+      //   console.log('validate ---> ', arg)
+      //   return ''
+      // },
     },
     {
       name: 'prompt',
       type: 'textarea',
       admin: {
         components: {
-          Field: PromptEditorField,
+          // Field: PromptEditorField,
         },
       },
     },

@@ -38,10 +38,10 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
           ...field.admin,
           components: {
             ...(field.admin?.components || {}),
-            // @ts-expect-error
-            Description: DescriptionField({
-              Description: field.admin?.components?.Description,
-            }),
+            Description: '@ai-stack/payloadcms/client#DescriptionFieldComponent',
+            // Description: DescriptionField({
+            //   Description: field.admin?.components?.Description,
+            // }),
           },
         },
       }

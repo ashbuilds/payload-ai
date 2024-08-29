@@ -14,6 +14,10 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
   for (let i = 0; i < paths.length; i++) {
     const path = paths[i]
     const { type: fieldType, label: fieldLabel } = fieldSchemaPaths[path]
+    console.log('fieldType : ', fieldType)
+    console.log('fieldType path : ', path)
+    console.log('fieldSchemaPaths : ', fieldSchemaPaths)
+    //TODO: if global is broken the plugin doesn't know and does not run reindexing
     const entry = await payload.find({
       collection: PLUGIN_INSTRUCTIONS_TABLE,
       where: {
@@ -26,34 +30,52 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
       },
     })
 
+    console.log('entryType : ', entry)
+
     if (!entry?.docs?.length) {
-      const { prompt, system } = seedPrompts({
-        fieldLabel,
-        fieldSchemaPaths,
-        fieldType,
-        path,
-      })
-      const generatedPrompt = await generateSeedPrompt({
-        prompt,
-        system,
-      })
-      payload.logger.info(
-        `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
+      // const { prompt, system } = seedPrompts({
+      //   fieldLabel,
+      //   fieldSchemaPaths,
+      //   fieldType,
+      //   path,
+      // })
+      // const generatedPrompt = await generateSeedPrompt({
+      //   prompt,
+      //   system,
+      // })
+      // payload.logger.info(
+      //   `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
+      // )
+      console.log(
+        'entryType inside : ',
+        GenerationModels.find((a) => {
+          return a.fields.includes(fieldType)
+        })?.id,
       )
-      const instructions = await payload.create({
-        collection: PLUGIN_INSTRUCTIONS_TABLE,
-        data: {
-          'field-type': fieldType,
-          'model-id': GenerationModels.find((a) => {
-            return a.fields.includes(fieldType)
-          })?.id,
-          prompt: generatedPrompt,
-          'schema-path': path,
-        },
-      })
-      fieldInstructionsMap[path] = instructions.id
+      const instructions = await payload
+        .create({
+          collection: PLUGIN_INSTRUCTIONS_TABLE,
+          data: {
+            'field-type': fieldType,
+            'model-id': GenerationModels.find((a) => {
+              return a.fields.includes(fieldType)
+            })?.id,
+            prompt: 'generatedPrompt',
+            'schema-path': path,
+          },
+        })
+        .then((a) => a)
+        .catch((a) => {
+          console.log('err-', a)
+        })
+      console.log('instructions : ', instructions)
+      // @ts-expect-error
+      if (instructions?.id) {
+        fieldInstructionsMap[path] = instructions.id
+      }
     } else {
       const [instructions] = entry.docs
+      console.log('instructions else : ', instructions)
       fieldInstructionsMap[path] = instructions.id
     }
   }

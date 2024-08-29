@@ -1,7 +1,7 @@
+// @ts-nocheck
 'use client'
 
-import type { SelectFieldProps } from '@payloadcms/ui'
-import type { Option } from 'payload'
+import type { Option, SelectFieldProps } from 'payload'
 
 import { SelectField as Select, useField, useFieldProps } from '@payloadcms/ui'
 import React, { useEffect, useState } from 'react'

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react'
 
 import { InstructionsProvider as Provider } from './InstructionsProvider.js'

@@ -163,9 +163,9 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
           }}
         />
       </label>
-      <div>
-        <FieldDescription {...descriptionProps} />
-      </div>
+      {/*<div>*/}
+      {/*  <FieldDescription {...descriptionProps} />*/}
+      {/*</div>*/}
     </React.Fragment>
   )
 }

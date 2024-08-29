@@ -55,7 +55,11 @@ const payloadAiPlugin =
 
       incomingConfig.admin.components.providers = [
         ...(incomingConfig.admin.components.providers ?? []),
-        InstructionsProvider,
+        {
+          clientProps: {},
+          path: '@ai-stack/payloadcms/client#InstructionsProvider',
+          serverProps: {},
+        },
       ]
 
       updatedConfig = {
@@ -74,7 +78,7 @@ const payloadAiPlugin =
         }),
         endpoints: [...(incomingConfig.endpoints ?? []), endpoints.textarea, endpoints.upload],
         globals: [
-          ...incomingConfig.globals || [],
+          ...(incomingConfig.globals || []),
           {
             slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL,
             access: {

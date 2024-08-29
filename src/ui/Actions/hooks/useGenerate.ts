@@ -47,7 +47,9 @@ export const useGenerate = () => {
 
   const { getData } = useForm()
   const localFromContext = useLocale()
-  const { collections } = useConfig()
+  const {
+    config: { collections },
+  } = useConfig()
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const { custom: { editorConfig } = {} } = collection.admin
   const { schema: DocumentSchema = {} } = editorConfig || {}

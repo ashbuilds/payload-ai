@@ -5,6 +5,11 @@
  * without appropriate licensing is prohibited.
  */
 
-export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js'
-export { payloadAiPlugin } from './plugin.js'
 export { LexicalBaseNode } from './ai/editor/lexical.schema.js'
+export { DescriptionField } from './fields/DescriptionField/DescriptionField.js'
+export { DescriptionFieldComponent } from './fields/DescriptionField/DescriptionFieldComponent.js'
+export { LexicalEditorFeatureClient } from './fields/LexicalEditor/feature.client.js'
+export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js'
+
+export { payloadAiPlugin } from './plugin.js'
+export { InstructionsProvider } from './providers/InstructionsProvider/InstructionsProvider.js'
