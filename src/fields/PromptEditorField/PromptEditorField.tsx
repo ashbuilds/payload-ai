@@ -1,26 +1,31 @@
 'use client'
 
-// import type { TextareaFieldProps } from '@payloadcms/ui'
+import type { TextareaFieldProps } from 'payload'
 
 import { TextareaField as InputField, useField, useFieldProps, useForm } from '@payloadcms/ui'
 import React, { useCallback, useEffect, useRef } from 'react'
 
 import { useInstructions } from '../../providers/InstructionsProvider/hook.js'
 import { Floatype } from '../../ui/Floatype/Floatype.js'
-// React.FC<TextareaFieldProps>
+
 //TODO: Display the handlebarjs tips in description
-export const PromptEditorField: React.FC<any> = (props) => {
-  const { name, path: pathFromProps, ...restProps } = props
+export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
+  // const { name, ...restProps } = props
   const { path: pathFromContext } = useFieldProps()
 
   const elementRef = useRef<HTMLTextAreaElement>(null)
   const { fields } = useInstructions({
-    path: pathFromProps,
+    path: pathFromContext,
   })
 
   const { path, setValue } = useField<string>({
-    path: pathFromContext || pathFromProps || name,
+    path: pathFromContext,
   })
+
+  const fieldProps = useFieldProps()
+
+  // console.log('PromptEditorField:props : ', props)
+  // console.log('PromptEditorField:fieldProps : ', fieldProps)
 
   const { formRef, initializing } = useForm()
 
@@ -67,10 +72,10 @@ export const PromptEditorField: React.FC<any> = (props) => {
 
   return (
     <InputField
-      {...restProps}
-      CustomDescription={CustomDescription}
-      name={name}
-      path={pathFromProps}
+      {...props}
+      // CustomDescription={CustomDescription}
+      // name={name}
+      // path={pathFromContext}
     />
   )
 }

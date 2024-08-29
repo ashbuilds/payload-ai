@@ -14,9 +14,6 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
   for (let i = 0; i < paths.length; i++) {
     const path = paths[i]
     const { type: fieldType, label: fieldLabel } = fieldSchemaPaths[path]
-    console.log('fieldType : ', fieldType)
-    console.log('fieldType path : ', path)
-    console.log('fieldSchemaPaths : ', fieldSchemaPaths)
     //TODO: if global is broken the plugin doesn't know and does not run reindexing
     const entry = await payload.find({
       collection: PLUGIN_INSTRUCTIONS_TABLE,
@@ -29,8 +26,6 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
         },
       },
     })
-
-    console.log('entryType : ', entry)
 
     if (!entry?.docs?.length) {
       // const { prompt, system } = seedPrompts({
@@ -75,7 +70,6 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
       }
     } else {
       const [instructions] = entry.docs
-      console.log('instructions else : ', instructions)
       fieldInstructionsMap[path] = instructions.id
     }
   }

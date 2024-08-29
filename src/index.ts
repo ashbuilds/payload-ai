@@ -11,5 +11,9 @@ export { DescriptionFieldComponent } from './fields/DescriptionField/Description
 export { LexicalEditorFeatureClient } from './fields/LexicalEditor/feature.client.js'
 export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js'
 
+export { PromptEditorField } from './fields/PromptEditorField/PromptEditorField.js'
+export { SelectField } from './fields/SelectField/SelectField.js'
+
 export { payloadAiPlugin } from './plugin.js'
+
 export { InstructionsProvider } from './providers/InstructionsProvider/InstructionsProvider.js'
