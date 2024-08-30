@@ -1,16 +1,19 @@
 'use client'
 
 import type { TextareaFieldProps } from 'payload'
+import type { ChangeEvent } from 'react'
 
-import { TextareaField as InputField, useField, useFieldProps, useForm } from '@payloadcms/ui'
+import { TextareaInput, useField, useFieldProps, useForm } from '@payloadcms/ui'
 import React, { useCallback, useEffect, useRef } from 'react'
 
 import { useInstructions } from '../../providers/InstructionsProvider/hook.js'
 import { Floatype } from '../../ui/Floatype/Floatype.js'
 
+// Maybe try lexical editor instead?!
+//TODO: HMR does not work for plugin components anymore, I think it has to do with importMap/ string path
 //TODO: Display the handlebarjs tips in description
 export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
-  // const { name, ...restProps } = props
+  const { field } = props
   const { path: pathFromContext } = useFieldProps()
 
   const elementRef = useRef<HTMLTextAreaElement>(null)
@@ -18,14 +21,11 @@ export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
     path: pathFromContext,
   })
 
-  const { path, setValue } = useField<string>({
+  const { path, setValue, value } = useField<string>({
     path: pathFromContext,
   })
 
-  const fieldProps = useFieldProps()
-
-  // console.log('PromptEditorField:props : ', props)
-  // console.log('PromptEditorField:fieldProps : ', fieldProps)
+  console.log('PromptEditorField:props : ', props)
 
   const { formRef, initializing } = useForm()
 
@@ -70,12 +70,17 @@ export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
     />
   ) : null
 
+  console.log('CustomDescription :', CustomDescription)
+
   return (
-    <InputField
-      {...props}
-      // CustomDescription={CustomDescription}
-      // name={name}
-      // path={pathFromContext}
+    <TextareaInput
+      Description={CustomDescription}
+      label={field.label}
+      onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+        setValue(e.target.value)
+      }}
+      path={path}
+      value={value}
     />
   )
 }
