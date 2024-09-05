@@ -1,7 +1,7 @@
 import type { SerializedEditorState } from 'lexical'
 
-import { getFieldInfo } from '../utilities/getFieldInfo.js'
-import { lexicalToHTML } from '../utilities/lexicalToHTML.js'
+import { getFieldInfo } from '../../utilities/getFieldInfo.js'
+import { lexicalToHTML } from '../../utilities/lexicalToHTML.js'
 import { asyncHandlebars } from './asyncHandlebars.js'
 import { handlebarsHelpersMap } from './helpersMap.js'
 

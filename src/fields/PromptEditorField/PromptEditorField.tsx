@@ -18,10 +18,10 @@ import {
 import { ChangeEvent, useState } from 'react'
 import React, { use, useCallback, useEffect, useRef } from 'react'
 
-import { handlebarsHelpers, handlebarsHelpersMap } from '../../handlebars/helpersMap.js'
-import { useInstructions } from '../../providers/InstructionsProvider/hook.js'
+import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
+import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { getFieldBySchemaPath } from '../../utilities/getFieldBySchemaPath.js'
-import { AutocompleteTextField } from './AutocompleteTextArea.js'
+import { AutocompleteTextField } from '../../libraries/autocomplete/AutocompleteTextArea.js'
 
 // Maybe try lexical editor instead?!
 //TODO: HMR does not work for plugin components anymore, I think it has to do with importMap/ string path

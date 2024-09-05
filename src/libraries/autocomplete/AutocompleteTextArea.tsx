@@ -1,3 +1,10 @@
+/**
+ * Credit: Yury Dymov
+ * Github: https://github.com/yury-dymov/react-autocomplete-input
+ *
+ * Modified to only be use for PromptEditorField
+ */
+
 import * as inputSelection from 'get-input-selection'
 import isEqual from 'lodash.isequal'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -435,19 +442,10 @@ export const AutocompleteTextField = (props) => {
         value = val
       }
 
-      // const highlightStart = val
-      //   .toLowerCase()
-      //   .indexOf(recentValue.current.substr(matchStart, matchLength).toLowerCase())
-
-      // console.log('helper, value: ', helper, value)
-
       const renderHighlightedText = (text) => {
         const highlightStart = text
           .toLowerCase()
           .indexOf(recentValue.current.substr(matchStart, matchLength).toLowerCase())
-
-        console.log('highlightStart : ', highlightStart)
-        console.log('highlightStart text: ', text)
 
         const highlightedText = text.substr(highlightStart, matchLength)
 
@@ -464,8 +462,6 @@ export const AutocompleteTextField = (props) => {
         )
       }
 
-      // TODO: Add helper if defined inside span before value
-      // TODO: Add highlight to helper
       return (
         <li
           className={idx === selection ? styles.active : null}
@@ -482,10 +478,6 @@ export const AutocompleteTextField = (props) => {
           ref={idx === selection ? currentRef : null}
           role="presentation"
         >
-          {/*{val.slice(0, highlightStart)}*/}
-          {/*<strong>{val.substr(highlightStart, matchLength)}</strong>*/}
-          {/*{val.slice(highlightStart + matchLength)}*/}
-
           {helper && <code className={styles.helper}>{renderHighlightedText(helper)}</code>}
           {renderHighlightedText(value)}
         </li>
@@ -532,7 +524,7 @@ export const AutocompleteTextField = (props) => {
       <textarea
         className="textarea-outer"
         disabled={disabled}
-        // onBlur={handleBlur}
+        onBlur={handleBlur}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         ref={inputRef}

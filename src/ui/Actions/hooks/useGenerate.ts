@@ -19,7 +19,7 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   PLUGIN_INSTRUCTIONS_TABLE,
 } from '../../../defaults.js'
-import { useInstructions } from '../../../providers/InstructionsProvider/hook.js'
+import { useInstructions } from '../../../providers/InstructionsProvider/useInstructions.js'
 import { getFieldBySchemaPath } from '../../../utilities/getFieldBySchemaPath.js'
 import { jsonSchemaToZod } from '../../../utilities/jsonToZod.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'

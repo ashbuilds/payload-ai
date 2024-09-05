@@ -11,9 +11,9 @@ import {
   PLUGIN_INSTRUCTIONS_TABLE,
   PLUGIN_NAME,
 } from '../defaults.js'
-import { registerEditorHelper } from '../handlebars/helpers.js'
-import { handlebarsHelpersMap } from '../handlebars/helpersMap.js'
-import { replacePlaceholders } from '../handlebars/replacePlaceholders.js'
+import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
+import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
+import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 
 const assignPrompt = async (
   action: ActionMenuItems,
