@@ -14,7 +14,7 @@ export const SelectField = (
 ) => {
   const { field, filterByField, options } = props
   const { path } = useFieldProps()
-  const { value } = useField<string>({
+  const { value: relatedField } = useField<string>({
     path: filterByField,
   })
 
@@ -24,14 +24,14 @@ export const SelectField = (
     if (!Array.isArray(options)) return
 
     const opts = options.filter((option) => {
-      if (!value || !option.fields) return true
+      if (!relatedField || !option.fields) return true
 
       if (Array.isArray(option.fields)) {
-        return option.fields.includes(value)
+        return option.fields.includes(relatedField)
       }
     })
     setFilterOptions(opts)
-  }, [value, options])
+  }, [relatedField, options])
 
   const { setValue, value: selectValue } = useField<string>({ path })
 

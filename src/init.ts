@@ -66,11 +66,17 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
       console.log('instructions : ', instructions)
       // @ts-expect-error
       if (instructions?.id) {
-        fieldInstructionsMap[path] = instructions.id
+        fieldInstructionsMap[path] = {
+          id: instructions.id,
+          fieldType,
+        }
       }
     } else {
       const [instructions] = entry.docs
-      fieldInstructionsMap[path] = instructions.id
+      fieldInstructionsMap[path] = {
+        id: instructions.id,
+        fieldType,
+      }
     }
   }
 

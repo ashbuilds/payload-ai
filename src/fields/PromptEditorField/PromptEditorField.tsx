@@ -1,13 +1,27 @@
 'use client'
 
 import type { TextareaFieldProps } from 'payload'
-import type { ChangeEvent } from 'react'
+// import type { ChangeEvent } from 'react'
 
-import { TextareaInput, useField, useFieldProps, useForm } from '@payloadcms/ui'
-import React, { useCallback, useEffect, useRef } from 'react'
+import {
+  FieldLabel,
+  TextareaInput,
+  useConfig,
+  useField,
+  useFieldComponents,
+  useFieldProps,
+  useForm,
+  useFormFields,
+} from '@payloadcms/ui'
+// import { Textcomplete } from '@textcomplete/core'
+// import { TextareaEditor } from '@textcomplete/textarea'
+import { ChangeEvent, useState } from 'react'
+import React, { use, useCallback, useEffect, useRef } from 'react'
 
+import { handlebarsHelpers, handlebarsHelpersMap } from '../../handlebars/helpersMap.js'
 import { useInstructions } from '../../providers/InstructionsProvider/hook.js'
-import { Floatype } from '../../ui/Floatype/Floatype.js'
+import { getFieldBySchemaPath } from '../../utilities/getFieldBySchemaPath.js'
+import { AutocompleteTextField } from './AutocompleteTextArea.js'
 
 // Maybe try lexical editor instead?!
 //TODO: HMR does not work for plugin components anymore, I think it has to do with importMap/ string path
@@ -17,7 +31,7 @@ export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
   const { path: pathFromContext } = useFieldProps()
 
   const elementRef = useRef<HTMLTextAreaElement>(null)
-  const { fields } = useInstructions({
+  const { fields, map: fieldsMap } = useInstructions({
     path: pathFromContext,
   })
 
@@ -25,9 +39,7 @@ export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
     path: pathFromContext,
   })
 
-  console.log('PromptEditorField:props : ', props)
-
-  const { formRef, initializing } = useForm()
+  const { formRef, getField, initializing } = useForm()
 
   useEffect(() => {
     if (!formRef.current || elementRef.current) return
@@ -36,51 +48,43 @@ export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
     elementRef.current = formRef.current.querySelector(fieldId)
   }, [formRef, path])
 
-  const handleQuery = useCallback(
-    (val: string) => {
-      if (val === '{{ ') return fields
-      return fields.filter((field) => field.toLowerCase().includes(val.toLowerCase()))
-    },
-    [fields],
-  )
+  const opts = [...fields].reduce((acc, f) => {
+    const fieldKey = Object.keys(fieldsMap).find((k) => k.endsWith(f))
+    const fieldInfo = fieldsMap[fieldKey]
 
-  const handleSelect = useCallback(
-    (value: string, query: string) => {
-      if (query === '{{ ') return `${value} }}`
-      return fields.includes(value) ? value : undefined
-    },
-    [fields],
-  )
+    const helpers = handlebarsHelpers.filter(
+      (h) => handlebarsHelpersMap[h]?.field === fieldInfo.fieldType,
+    )
 
-  const handleUpdate = useCallback(
-    (value: string) => {
-      if (value) setValue(value)
-    },
-    [setValue],
-  )
+    if (helpers.length) {
+      for (const helper of helpers) {
+        acc.push(helper + ` ${f}`)
+      }
+      return acc
+    }
 
-  const CustomDescription = !initializing ? (
-    <Floatype
-      options={{
-        onQuery: handleQuery,
-        onSelect: handleSelect,
-        onUpdate: handleUpdate,
-      }}
-      ref={elementRef}
-    />
-  ) : null
-
-  console.log('CustomDescription :', CustomDescription)
+    acc.push(f)
+    return acc
+  }, [])
 
   return (
-    <TextareaInput
-      Description={CustomDescription}
-      label={field.label}
-      onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
-        setValue(e.target.value)
-      }}
-      path={path}
-      value={value}
-    />
+    <div className="field-type textarea">
+      <FieldLabel field={field} label={field.label} />
+      <AutocompleteTextField
+        changeOnSelect={(trigger, selected) => {
+          if (handlebarsHelpers.includes(selected.trim())) {
+            return trigger + selected
+          }
+
+          return trigger + selected + ' }}'
+        }}
+        onChange={(val: string) => {
+          setValue(val)
+        }}
+        options={opts}
+        trigger={['{{ ', ...handlebarsHelpers.map((h) => `{{ ${h}  `)]}
+        value={value}
+      />
+    </div>
   )
 }

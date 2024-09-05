@@ -10,5 +10,5 @@ export const useInstructions = ({ path }) => {
     return key.split('.').slice(1).join('.')
   })
 
-  return { ...context, id: context.instructions[path], fields, map: context.instructions }
+  return { ...context, ...(context.instructions[path] || {}), fields, map: context.instructions }
 }
