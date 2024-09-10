@@ -5,15 +5,6 @@
  * without appropriate licensing is prohibited.
  */
 
-export { LexicalBaseNode } from './ai/schemas/lexical.schema.js'
-export { DescriptionField } from './fields/DescriptionField/DescriptionField.js'
-export { DescriptionFieldComponent } from './fields/DescriptionField/DescriptionFieldComponent.js'
-export { LexicalEditorFeatureClient } from './fields/LexicalEditor/feature.client.js'
-export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js'
-
-export { PromptEditorField } from './fields/PromptEditorField/PromptEditorField.js'
-export { SelectField } from './fields/SelectField/SelectField.js'
-
 export { payloadAiPlugin } from './plugin.js'
-
-export { InstructionsProvider } from './providers/InstructionsProvider/InstructionsProvider.js'
+export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js'
+export { LexicalBaseNode } from './ai/schemas/lexical.schema.js'
