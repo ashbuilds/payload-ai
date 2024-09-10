@@ -28,24 +28,18 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
     })
 
     if (!entry?.docs?.length) {
-      // const { prompt, system } = seedPrompts({
-      //   fieldLabel,
-      //   fieldSchemaPaths,
-      //   fieldType,
-      //   path,
-      // })
-      // const generatedPrompt = await generateSeedPrompt({
-      //   prompt,
-      //   system,
-      // })
-      // payload.logger.info(
-      //   `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
-      // )
-      console.log(
-        'entryType inside : ',
-        GenerationModels.find((a) => {
-          return a.fields.includes(fieldType)
-        })?.id,
+      const { prompt, system } = seedPrompts({
+        fieldLabel,
+        fieldSchemaPaths,
+        fieldType,
+        path,
+      })
+      const generatedPrompt = await generateSeedPrompt({
+        prompt,
+        system,
+      })
+      payload.logger.info(
+        `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
       )
       const instructions = await payload
         .create({
@@ -55,7 +49,7 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
             'model-id': GenerationModels.find((a) => {
               return a.fields.includes(fieldType)
             })?.id,
-            prompt: 'generatedPrompt',
+            prompt: generatedPrompt,
             'schema-path': path,
           },
         })
@@ -63,7 +57,7 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
         .catch((a) => {
           console.log('err-', a)
         })
-      console.log('instructions : ', instructions)
+
       // @ts-expect-error
       if (instructions?.id) {
         fieldInstructionsMap[path] = {
