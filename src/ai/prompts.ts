@@ -13,6 +13,10 @@ type ActionPrompt = {
   system: (options: ActionPromptOptions) => string
 }
 
+export const defaultSystemPrompt = `
+IMPORTANT: JUST PRODUCE THE OUTPUT WITHOUT QUOTES AND DO NOT ENGAGE!
+`
+
 export const defaultPrompts: ActionPrompt[] = [
   {
     name: 'Rephrase',
@@ -226,7 +230,7 @@ Remember to adapt the prompts based on the specific schema-path provided, consid
 Schema Map Context:
 ${JSON.stringify(fieldSchemaPaths)}
 
-IMPORTANT: JUST PRODUCE THE OUTPUT, DO NOT ENGAGE!
+${defaultSystemPrompt}
 `,
   }
 }
