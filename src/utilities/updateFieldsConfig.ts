@@ -36,7 +36,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
           ...field.admin,
           components: {
             ...(field.admin?.components || {}),
-            Description: '@ai-stack/payloadcms/client#DescriptionFieldComponent',
+            Description: '@ai-stack/payloadcms/fields#DescriptionField',
             // Description: DescriptionField({
             //   Description: field.admin?.components?.Description,
             // }),

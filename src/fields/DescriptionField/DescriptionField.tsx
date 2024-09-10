@@ -1,19 +1,17 @@
-import { withMergedProps } from '@payloadcms/ui/shared'
+'use client'
 
-import { DescriptionFieldComponent } from './DescriptionFieldComponent.js'
-// import { DescriptionComponent } from 'payload'
+import { useFieldProps } from '@payloadcms/ui'
+import React from 'react'
 
-//DescriptionField: DescriptionComponent
+import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
+import { Actions } from '../../ui/Actions/Actions.js'
+import { FieldDescriptionClientProps } from 'payload'
 
-export const DescriptionField = (options: any) => {
-  const mergedPropsFunc = withMergedProps({
-    Component: DescriptionFieldComponent,
-    sanitizeServerOnlyProps: true,
-    toMergeIntoProps: options,
+export const DescriptionField: React.FC<FieldDescriptionClientProps> = (props) => {
+  const { schemaPath } = useFieldProps()
+  const { id: instructionId } = useInstructions({
+    path: schemaPath,
   })
 
-  // TODO: Might use this in order to add field entry for Instructions on plugin Init
-  mergedPropsFunc.displayName = 'DescriptionField'
-
-  return mergedPropsFunc
+  return <Actions descriptionProps={props} instructionId={instructionId} />
 }
