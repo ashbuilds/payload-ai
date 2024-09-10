@@ -5,7 +5,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 
 import type { PluginConfig } from './types.js'
 
-import { lexicalSchema } from './ai/editor/lexical.schema.js'
+import { lexicalSchema } from './ai/schemas/lexical.schema.js'
 import { Instructions } from './collections/Instructions.js'
 import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_NAME } from './defaults.js'
 import { endpoints } from './endpoints/index.js'

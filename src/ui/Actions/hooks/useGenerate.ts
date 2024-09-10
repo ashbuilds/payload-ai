@@ -53,7 +53,7 @@ export const useGenerate = () => {
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const { custom: { editorConfig } = {} } = collection.admin
   const { schema: DocumentSchema = {} } = editorConfig || {}
-  const zodSchema = jsonSchemaToZod(DocumentSchema)
+  const lexicalZodSchema = jsonSchemaToZod(DocumentSchema)
 
   const {
     isLoading: loadingObject,
@@ -73,7 +73,7 @@ export const useGenerate = () => {
         console.log('onFinish: result ', result)
       }
     },
-    schema: zodSchema,
+    schema: lexicalZodSchema,
   })
 
   useEffect(() => {

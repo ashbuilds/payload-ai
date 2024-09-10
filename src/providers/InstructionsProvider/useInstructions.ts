@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
 import { InstructionsContext } from './InstructionsProvider.js'
+import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
 
 export const useInstructions = ({ path }) => {
   const context = useContext(InstructionsContext)
@@ -10,5 +11,30 @@ export const useInstructions = ({ path }) => {
     return key.split('.').slice(1).join('.')
   })
 
-  return { ...context, ...(context.instructions[path] || {}), fields, map: context.instructions }
+  const promptEditorSuggestions = [...fields].reduce((acc, f) => {
+    const fieldKey = Object.keys(context.instructions).find((k) => k.endsWith(f))
+    const fieldInfo = context.instructions[fieldKey]
+
+    const helpers = handlebarsHelpers.filter(
+      (h) => handlebarsHelpersMap[h]?.field === fieldInfo.fieldType,
+    )
+
+    if (helpers.length) {
+      for (const helper of helpers) {
+        acc.push(helper + ` ${f}`)
+      }
+      return acc
+    }
+
+    acc.push(f)
+    return acc
+  }, [])
+
+  return {
+    ...context,
+    ...(context.instructions[path] || {}),
+    fields,
+    map: context.instructions,
+    promptEditorSuggestions,
+  }
 }

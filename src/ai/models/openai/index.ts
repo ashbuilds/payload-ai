@@ -28,7 +28,7 @@ export const OpenAIConfig: GenerationConfig = {
           system: options.system,
         })
 
-        return streamTextResult.toAIStreamResponse()
+        return streamTextResult.toDataStreamResponse()
       },
       output: 'text',
       settings: {

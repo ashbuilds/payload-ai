@@ -5,7 +5,7 @@
  * without appropriate licensing is prohibited.
  */
 
-export { LexicalBaseNode } from './ai/editor/lexical.schema.js'
+export { LexicalBaseNode } from './ai/schemas/lexical.schema.js'
 export { DescriptionField } from './fields/DescriptionField/DescriptionField.js'
 export { DescriptionFieldComponent } from './fields/DescriptionField/DescriptionFieldComponent.js'
 export { LexicalEditorFeatureClient } from './fields/LexicalEditor/feature.client.js'

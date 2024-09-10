@@ -2,7 +2,7 @@ import type { PayloadRequest } from 'payload'
 
 import type { ActionMenuItems, Endpoints } from '../types.js'
 
-import { lexicalSchema } from '../ai/editor/lexical.schema.js'
+import { lexicalSchema } from '../ai/schemas/lexical.schema.js'
 import { GenerationModels } from '../ai/models/index.js'
 import { defaultPrompts } from '../ai/prompts.js'
 import {
@@ -36,9 +36,7 @@ const assignPrompt = async (
   },
 ) => {
   const prompt = await replacePlaceholders(template, context)
-
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
-
   const assignedPrompts = {
     layout,
     prompt,

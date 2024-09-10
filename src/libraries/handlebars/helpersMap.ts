@@ -16,7 +16,7 @@ export const handlebarsHelpersMap: HandlebarsHelpers = {
   },
   toText: {
     name: 'toText',
-    field: 'richText',
+    field: '-',
   },
 }
 
