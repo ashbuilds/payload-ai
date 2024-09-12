@@ -90,10 +90,9 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
 
   if (customComponentsFound) {
     console.warn(
-      `\n— Oops! AI Plugin Alert 🚨:
-  Uh-oh, custom component(s) spotted!
-  We might not be able to inject the AI Composer automatically 🤖.
-  No worries, though! You can add it manually using this path:
+      `\n— AI Plugin Alert 🚨:
+  Uh-oh, custom component(s) spotted! We might not be able to inject the AI Composer automatically for these components 🤖.
+  No worries, though! You can add it manually using below path:
   '@ai-stack/payloadcms/fields#DescriptionField'.\n`,
     )
   }
