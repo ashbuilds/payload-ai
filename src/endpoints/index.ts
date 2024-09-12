@@ -192,8 +192,6 @@ export const endpoints: Endpoints = {
         file: result.file,
       })
 
-      console.log('assetData', assetData)
-
       return new Response(
         JSON.stringify({
           result: {
