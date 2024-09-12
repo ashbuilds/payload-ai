@@ -7,6 +7,7 @@ interface UpdateFieldsConfig {
 
 export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFieldsConfig => {
   let schemaPathMap = {}
+  let customComponentsFound = false
   function updateField(field: any, parentPath = ''): any {
     const currentPath = parentPath ? `${parentPath}.${field.name}` : field.name
     const currentSchemaPath = `${collectionConfig.slug}.${currentPath}`
@@ -31,14 +32,8 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
     // Inject AI actions, richText is not included here as it has to be explicitly defined by user
     if (['text', 'textarea', 'upload'].includes(field.type)) {
       let customField = {}
-      if (field.admin?.components?.Field) {
-        console.warn(
-          `\n— Oops! AI Plugin Alert 🚨:
-  Uh-oh, custom component with field name "${field.name}" detected!
-  We couldn't auto-inject the AI Composer component 🤖.
-  But no worries, just add it yourself using this path:
-  '@ai-stack/payloadcms/fields#DescriptionField'.\n`,
-        )
+      if (field.admin?.components?.Field || field.admin?.components?.Description) {
+        customComponentsFound = true
       }
 
       return {
@@ -91,6 +86,16 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
   const updatedCollectionConfig = {
     ...collectionConfig,
     fields: collectionConfig.fields.map((field) => updateField(field)),
+  }
+
+  if (customComponentsFound) {
+    console.warn(
+      `\n— Oops! AI Plugin Alert 🚨:
+  Uh-oh, custom component(s) spotted!
+  We might not be able to inject the AI Composer automatically 🤖.
+  No worries, though! You can add it manually using this path:
+  '@ai-stack/payloadcms/fields#DescriptionField'.\n`,
+    )
   }
 
   return {
