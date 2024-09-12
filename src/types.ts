@@ -11,6 +11,7 @@ export interface PluginConfig {
   interfaceName?: string
   editorConfig?: { nodes: (typeof LexicalBaseNode)[] }
   debugging?: boolean
+  generatePromptOnInit?: boolean
 }
 
 export interface GenerationModel {

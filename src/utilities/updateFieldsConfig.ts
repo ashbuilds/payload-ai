@@ -30,6 +30,17 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
 
     // Inject AI actions, richText is not included here as it has to be explicitly defined by user
     if (['text', 'textarea', 'upload'].includes(field.type)) {
+      let customField = {}
+      if (field.admin?.components?.Field) {
+        console.warn(
+          `\n— Oops! AI Plugin Alert 🚨:
+  Uh-oh, custom component with field name "${field.name}" detected!
+  We couldn't auto-inject the AI Composer component 🤖.
+  But no worries, just add it yourself using this path:
+  '@ai-stack/payloadcms/fields#DescriptionField'.\n`,
+        )
+      }
+
       return {
         ...field,
         admin: {
@@ -37,9 +48,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
           components: {
             ...(field.admin?.components || {}),
             Description: '@ai-stack/payloadcms/fields#DescriptionField',
-            // Description: DescriptionField({
-            //   Description: field.admin?.components?.Description,
-            // }),
+            ...customField,
           },
         },
       }
@@ -55,10 +64,12 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
     if (field.tabs) {
       return {
         ...field,
-        tabs: field.tabs.map((tab: any) => ({
-          ...tab,
-          fields: tab.fields.map((subField: any) => updateField(subField, currentPath)),
-        })),
+        tabs: field.tabs.map((tab: any) => {
+          return {
+            ...tab,
+            fields: tab.fields.map((subField: any) => updateField(subField, tab.name)),
+          }
+        }),
       }
     }
 

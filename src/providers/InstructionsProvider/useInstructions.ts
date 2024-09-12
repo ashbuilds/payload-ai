@@ -15,6 +15,11 @@ export const useInstructions = ({ path }) => {
     const fieldKey = Object.keys(context.instructions).find((k) => k.endsWith(f))
     const fieldInfo = context.instructions[fieldKey]
 
+    // Currently, Upload fields are excluded from suggestions
+    if (fieldInfo.fieldType === 'upload') {
+      return acc
+    }
+
     const helpers = handlebarsHelpers.filter(
       (h) => handlebarsHelpersMap[h]?.field === fieldInfo.fieldType,
     )

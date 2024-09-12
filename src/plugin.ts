@@ -14,9 +14,15 @@ import { translations } from './translations/index.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
+const defaultPluginConfig: PluginConfig = {
+  generatePromptOnInit: true,
+  collections: {},
+}
+
 const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
+    pluginConfig = { ...defaultPluginConfig, ...pluginConfig }
     const isActivated = isPluginActivated()
     let updatedConfig: Config = { ...incomingConfig }
     let collectionsFieldPathMap = {}
@@ -111,7 +117,7 @@ const payloadAiPlugin =
         return
       }
 
-      await init(payload, collectionsFieldPathMap).catch((error) => {
+      await init(payload, collectionsFieldPathMap, pluginConfig).catch((error) => {
         console.error(error)
         payload.logger.error(`— AI Plugin: Initialization Error: ${error}`)
       })

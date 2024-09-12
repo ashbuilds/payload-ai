@@ -4,8 +4,9 @@ import { GenerationModels } from './ai/models/index.js'
 import { seedPrompts } from './ai/prompts.js'
 import { generateSeedPrompt } from './ai/utils/generateSeedPrompt.js'
 import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
+import type { PluginConfig } from './types.js'
 
-export const init = async (payload: Payload, fieldSchemaPaths) => {
+export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: PluginConfig) => {
   payload.logger.info(`— AI Plugin: Initializing...`)
 
   const paths = Object.keys(fieldSchemaPaths)
@@ -34,13 +35,18 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
         fieldType,
         path,
       })
-      const generatedPrompt = await generateSeedPrompt({
-        prompt,
-        system,
-      })
-      payload.logger.info(
-        `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
-      )
+
+      let generatedPrompt = '{{ title }}'
+      if (pluginConfig.generatePromptOnInit) {
+        generatedPrompt = await generateSeedPrompt({
+          prompt,
+          system,
+        })
+        payload.logger.info(
+          `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
+        )
+      }
+
       const instructions = await payload
         .create({
           collection: PLUGIN_INSTRUCTIONS_TABLE,
@@ -86,7 +92,9 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
   })
 
   payload.logger.info(`— AI Plugin: Initialized!`)
-  payload.logger.info(
-    '\n\n-AI Plugin: Example prompts are added to get you started, Now go break some code 🚀🚀🚀\n\n',
-  )
+  if (pluginConfig.generatePromptOnInit) {
+    payload.logger.info(
+      '\n\n-AI Plugin: Example prompts are added to get you started, Now go break some code 🚀🚀🚀\n\n',
+    )
+  }
 }

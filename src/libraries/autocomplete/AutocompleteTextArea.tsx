@@ -203,8 +203,10 @@ export const AutocompleteTextField = (props) => {
   )
 
   const updateCaretPosition = useCallback((newCaret) => {
-    setCaret(newCaret)
-    inputSelection.default.setCaretPosition(inputRef.current, newCaret)
+    requestAnimationFrame(() => {
+      setCaret(newCaret)
+      inputSelection.default.setCaretPosition(inputRef.current, newCaret)
+    })
   }, [])
 
   const updateHelper = useCallback(
@@ -240,11 +242,12 @@ export const AutocompleteTextField = (props) => {
           }
           resetHelper()
         }
+        updateCaretPosition(caretPos)
       } else {
         resetHelper()
       }
     },
-    [getMatch, minChars, requestOnlyIfNoOptions, onRequestOptions],
+    [getMatch, minChars, requestOnlyIfNoOptions, onRequestOptions, updateCaretPosition],
   )
 
   const resetHelper = useCallback(() => {
@@ -262,9 +265,6 @@ export const AutocompleteTextField = (props) => {
       }
 
       recentValue.current = str
-
-      setCaret(caretPos)
-      setValue(e.target.value)
 
       if (!str.length || !caretPos) {
         return onChange(e.target.value)
