@@ -4,8 +4,9 @@ import { GenerationModels } from './ai/models/index.js'
 import { seedPrompts } from './ai/prompts.js'
 import { generateSeedPrompt } from './ai/utils/generateSeedPrompt.js'
 import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
+import type { PluginConfig } from './types.js'
 
-export const init = async (payload: Payload, fieldSchemaPaths) => {
+export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: PluginConfig) => {
   payload.logger.info(`— AI Plugin: Initializing...`)
 
   const paths = Object.keys(fieldSchemaPaths)
@@ -14,6 +15,7 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
   for (let i = 0; i < paths.length; i++) {
     const path = paths[i]
     const { type: fieldType, label: fieldLabel } = fieldSchemaPaths[path]
+    //TODO: if global is broken the plugin doesn't know and does not run reindexing
     const entry = await payload.find({
       collection: PLUGIN_INSTRUCTIONS_TABLE,
       where: {
@@ -33,28 +35,48 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
         fieldType,
         path,
       })
-      const generatedPrompt = await generateSeedPrompt({
-        prompt,
-        system,
-      })
-      payload.logger.info(
-        `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
-      )
-      const instructions = await payload.create({
-        collection: PLUGIN_INSTRUCTIONS_TABLE,
-        data: {
-          'field-type': fieldType,
-          'model-id': GenerationModels.find((a) => {
-            return a.fields.includes(fieldType)
-          })?.id,
-          prompt: generatedPrompt,
-          'schema-path': path,
-        },
-      })
-      fieldInstructionsMap[path] = instructions.id
+
+      let generatedPrompt = '{{ title }}'
+      if (pluginConfig.generatePromptOnInit) {
+        generatedPrompt = await generateSeedPrompt({
+          prompt,
+          system,
+        })
+        payload.logger.info(
+          `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
+        )
+      }
+
+      const instructions = await payload
+        .create({
+          collection: PLUGIN_INSTRUCTIONS_TABLE,
+          data: {
+            'field-type': fieldType,
+            'model-id': GenerationModels.find((a) => {
+              return a.fields.includes(fieldType)
+            })?.id,
+            prompt: generatedPrompt,
+            'schema-path': path,
+          },
+        })
+        .then((a) => a)
+        .catch((a) => {
+          console.log('err-', a)
+        })
+
+      // @ts-expect-error
+      if (instructions?.id) {
+        fieldInstructionsMap[path] = {
+          id: instructions.id,
+          fieldType,
+        }
+      }
     } else {
       const [instructions] = entry.docs
-      fieldInstructionsMap[path] = instructions.id
+      fieldInstructionsMap[path] = {
+        id: instructions.id,
+        fieldType,
+      }
     }
   }
 
@@ -70,7 +92,9 @@ export const init = async (payload: Payload, fieldSchemaPaths) => {
   })
 
   payload.logger.info(`— AI Plugin: Initialized!`)
-  payload.logger.info(
-    '\n\n-AI Plugin: Example prompts are added to get you started, Now go break some code 🚀🚀🚀\n\n',
-  )
+  if (pluginConfig.generatePromptOnInit) {
+    payload.logger.info(
+      '\n\n-AI Plugin: Example prompts are added to get you started, Now go break some code 🚀🚀🚀\n\n',
+    )
+  }
 }

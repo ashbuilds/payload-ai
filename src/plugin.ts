@@ -5,19 +5,24 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 
 import type { PluginConfig } from './types.js'
 
-import { lexicalSchema } from './ai/editor/lexical.schema.js'
+import { lexicalSchema } from './ai/schemas/lexical.schema.js'
 import { Instructions } from './collections/Instructions.js'
 import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_NAME } from './defaults.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
-import { InstructionsProvider } from './providers/InstructionsProvider/index.js'
 import { translations } from './translations/index.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
+const defaultPluginConfig: PluginConfig = {
+  generatePromptOnInit: true,
+  collections: {},
+}
+
 const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
+    pluginConfig = { ...defaultPluginConfig, ...pluginConfig }
     const isActivated = isPluginActivated()
     let updatedConfig: Config = { ...incomingConfig }
     let collectionsFieldPathMap = {}
@@ -55,7 +60,11 @@ const payloadAiPlugin =
 
       incomingConfig.admin.components.providers = [
         ...(incomingConfig.admin.components.providers ?? []),
-        InstructionsProvider,
+        {
+          clientProps: {},
+          path: '@ai-stack/payloadcms/client#InstructionsProvider',
+          serverProps: {},
+        },
       ]
 
       updatedConfig = {
@@ -74,7 +83,7 @@ const payloadAiPlugin =
         }),
         endpoints: [...(incomingConfig.endpoints ?? []), endpoints.textarea, endpoints.upload],
         globals: [
-          ...incomingConfig.globals || [],
+          ...(incomingConfig.globals || []),
           {
             slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL,
             access: {
@@ -108,7 +117,7 @@ const payloadAiPlugin =
         return
       }
 
-      await init(payload, collectionsFieldPathMap).catch((error) => {
+      await init(payload, collectionsFieldPathMap, pluginConfig).catch((error) => {
         console.error(error)
         payload.logger.error(`— AI Plugin: Initialization Error: ${error}`)
       })

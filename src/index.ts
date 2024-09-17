@@ -5,6 +5,6 @@
  * without appropriate licensing is prohibited.
  */
 
-export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js'
 export { payloadAiPlugin } from './plugin.js'
-export { LexicalBaseNode } from './ai/editor/lexical.schema.js'
+export { PayloadAiPluginLexicalEditorFeature } from './fields/LexicalEditor/feature.server.js'
+export { LexicalBaseNode } from './ai/schemas/lexical.schema.js'

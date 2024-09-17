@@ -2,8 +2,6 @@ import type { CollectionConfig, GroupField } from 'payload'
 
 import { GenerationModels } from '../ai/models/index.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
-import { PromptEditorField } from '../fields/PromptEditorField/PromptEditorField.js'
-import { SelectField } from '../fields/SelectField/SelectField.js'
 
 const groupSettings = GenerationModels.reduce((fields, model) => {
   if (model.settings) {
@@ -37,7 +35,6 @@ export const Instructions: CollectionConfig = {
       name: 'schema-path',
       type: 'text',
       admin: {
-        hidden: true,
         readOnly: true,
       },
       unique: true,
@@ -46,7 +43,6 @@ export const Instructions: CollectionConfig = {
       name: 'field-type',
       type: 'select',
       admin: {
-        hidden: true,
         readOnly: true,
       },
       defaultValue: 'text',
@@ -75,11 +71,13 @@ export const Instructions: CollectionConfig = {
       type: 'select',
       admin: {
         components: {
-          Field: SelectField,
-        },
-        custom: {
-          filterByField: 'field-type',
-          options: modelOptions,
+          Field: {
+            clientProps: {
+              filterByField: 'field-type',
+              options: modelOptions,
+            },
+            path: '@ai-stack/payloadcms/fields#SelectField',
+          },
         },
       },
       label: 'Model',
@@ -89,14 +87,13 @@ export const Instructions: CollectionConfig = {
           value: option.value,
         }
       }),
-      validate: () => true,
     },
     {
       name: 'prompt',
       type: 'textarea',
       admin: {
         components: {
-          Field: PromptEditorField,
+          Field: '@ai-stack/payloadcms/fields#PromptEditorField',
         },
       },
     },

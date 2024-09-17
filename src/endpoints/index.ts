@@ -1,11 +1,8 @@
-import type { SerializedEditorState } from 'lexical'
-import type { BasePayload, PayloadRequest } from 'payload'
+import type { PayloadRequest } from 'payload'
 
-import Handlebars from 'handlebars'
-import asyncHelpers from 'handlebars-async-helpers'
+import type { ActionMenuItems, Endpoints } from '../types.js'
 
-import { ActionMenuItems, Endpoints } from '../types.js'
-
+import { lexicalSchema } from '../ai/schemas/lexical.schema.js'
 import { GenerationModels } from '../ai/models/index.js'
 import { defaultPrompts } from '../ai/prompts.js'
 import {
@@ -14,17 +11,9 @@ import {
   PLUGIN_INSTRUCTIONS_TABLE,
   PLUGIN_NAME,
 } from '../defaults.js'
-import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
-import { lexicalToHTML } from '../utilities/lexicalToHTML.js'
-import { lexicalSchema } from '../ai/editor/lexical.schema.js'
-import { generateText } from 'ai'
-import { openai } from '@ai-sdk/openai'
-
-const asyncHandlebars = asyncHelpers(Handlebars)
-
-const replacePlaceholders = (prompt: string, values: object) => {
-  return asyncHandlebars.compile(prompt, { trackIds: true })(values)
-}
+import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
+import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
+import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 
 const assignPrompt = async (
   action: ActionMenuItems,
@@ -33,34 +22,32 @@ const assignPrompt = async (
     actionParams,
     context,
     field,
+    layout,
     systemPrompt = '',
     template,
-    layout,
   }: {
     actionParams: Record<any, any>
     context: object
     field: string
+    layout: string
     systemPrompt: string
     template: string
     type: string
-    layout: string
   },
 ) => {
   const prompt = await replacePlaceholders(template, context)
-
-  const toLexicalHTML = type === 'richText' ? 'toLexicalHTML' : ''
-
+  const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
   const assignedPrompts = {
+    layout,
     prompt,
     system: systemPrompt,
-    layout,
   }
 
   if (action === 'Compose') {
     return assignedPrompts
   }
 
-  const { system: getSystemPrompt, layout: getLayout } = defaultPrompts.find(
+  const { layout: getLayout, system: getSystemPrompt } = defaultPrompts.find(
     (p) => p.name === action,
   )
 
@@ -76,44 +63,10 @@ const assignPrompt = async (
   })
 
   return {
+    layout: updatedLayout,
+    // TODO: revisit this toLexicalHTML
     prompt: await replacePlaceholders(`{{${toLexicalHTML} ${field}}}`, context),
     system,
-    layout: updatedLayout,
-  }
-}
-
-const registerEditorHelper = (payload, schemaPath) => {
-  //TODO: add autocomplete ability using handlebars template on PromptEditorField and include custom helpers in dropdown
-
-  let fieldInfo = getFieldInfo(payload.collections, schemaPath)
-  const schemaPathChunks = schemaPath.split('.')
-
-  asyncHandlebars.registerHelper(
-    'toLexicalHTML',
-    async function (content: SerializedEditorState, options) {
-      const collectionSlug = schemaPathChunks[0]
-      const { ids } = options
-      for (const id of ids) {
-        //TODO: Find a better way to get schemaPath of defined field in prompt editor
-        const path = `${collectionSlug}.${id}`
-        fieldInfo = getFieldInfo(payload.collections, path)
-      }
-
-      const html = await lexicalToHTML(content, fieldInfo.editor?.editorConfig)
-      return new asyncHandlebars.SafeString(html)
-    },
-  )
-}
-
-const getFieldInfo = (collections: BasePayload['collections'], schemaPath: string) => {
-  let fieldInfo = null
-  //TODO: Only run below for enabled collections
-  for (const collectionsKey in collections) {
-    const collection = collections[collectionsKey]
-    fieldInfo = getFieldBySchemaPath(collection.config, schemaPath)
-    if (fieldInfo) {
-      return fieldInfo
-    }
   }
 }
 
@@ -132,7 +85,7 @@ export const endpoints: Endpoints = {
         )
       }
 
-      let instructions = await req.payload.findByID({
+      const instructions = await req.payload.findByID({
         id: instructionId,
         collection: PLUGIN_INSTRUCTIONS_TABLE,
       })
@@ -168,8 +121,8 @@ export const endpoints: Endpoints = {
       const model = GenerationModels.find((model) => model.id === opt.modelId)
       const settingsName = model.settings?.name
       const modelOptions = instructions[settingsName] as {
-        system: string
         layout: string
+        system: string
       }
 
       const prompts = await assignPrompt(action, {
@@ -177,9 +130,9 @@ export const endpoints: Endpoints = {
         actionParams,
         context: contextData,
         field: fieldName,
+        layout: modelOptions.layout,
         systemPrompt: modelOptions.system,
         template: promptTemplate as string,
-        layout: modelOptions.layout,
       })
 
       console.log('Running handler with prompts:', prompts)
@@ -187,9 +140,9 @@ export const endpoints: Endpoints = {
         .handler?.(prompts.prompt, {
           ...modelOptions,
           ...opt,
-          system: prompts.system,
           editorSchema,
           layout: prompts.layout,
+          system: prompts.system,
         })
         .catch((error) => {
           console.error('Error: endpoint - generating text:', error)
@@ -238,8 +191,6 @@ export const endpoints: Endpoints = {
         data: result.data,
         file: result.file,
       })
-
-      console.log('assetData', assetData)
 
       return new Response(
         JSON.stringify({

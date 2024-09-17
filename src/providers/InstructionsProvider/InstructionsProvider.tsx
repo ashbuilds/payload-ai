@@ -10,7 +10,7 @@ const initialContext = {
 
 export const InstructionsContext = createContext(initialContext)
 
-export const InstructionsProvider = ({ children }: { children: React.ReactNode }) => {
+export const InstructionsProvider: React.FC = ({ children }: { children: React.ReactNode }) => {
   const [instructions, setInstructionsState] = useState({})
 
   // This is here because each field have separate instructions and

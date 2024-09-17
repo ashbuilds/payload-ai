@@ -1,38 +1,50 @@
 'use client'
 
-import type { SelectFieldProps } from '@payloadcms/ui'
-import type { Option } from 'payload'
+import type { OptionObject, SelectFieldClientProps } from 'payload'
 
-import { SelectField as Select, useField, useFieldProps } from '@payloadcms/ui'
+import { SelectInput, useField, useFieldProps } from '@payloadcms/ui'
 import React, { useEffect, useState } from 'react'
 
-export const SelectField = (props: SelectFieldProps) => {
-  const fieldProps = useFieldProps()
-
-  const { custom: selectOptions, path } = fieldProps
-  const { options: optionsFromProps = [] } = props
-  const { filterByField, options } = selectOptions
-
-  const { value } = useField({
+// Use to filter model options in settings based on field types
+export const SelectField = (
+  props: {
+    filterByField: string
+    options: { fields: string[]; label: string; value: string }[]
+  } & SelectFieldClientProps,
+) => {
+  const { field, filterByField, options } = props
+  const { path } = useFieldProps()
+  const { value: relatedField } = useField<string>({
     path: filterByField,
   })
-  const [filterOptions, setFilterOptions] = useState<Option[]>([])
 
-  //TODO: Remove this mess, find alternative
+  const [filterOptions, setFilterOptions] = useState<OptionObject[]>([])
+
   useEffect(() => {
-    if (Array.isArray(options)) {
-      const opts = options.filter((option) => {
-        if (!value || !option.fields) return true
+    if (!Array.isArray(options)) return
 
-        if (Array.isArray(option.fields)) {
-          return option.fields.includes(value)
-        }
-      })
-      setFilterOptions(opts)
-    } else {
-      setFilterOptions(optionsFromProps)
-    }
-  }, [value, optionsFromProps, options])
+    const opts = options.filter((option) => {
+      if (!relatedField || !option.fields) return true
 
-  return <Select {...props} options={filterOptions} />
+      if (Array.isArray(option.fields)) {
+        return option.fields.includes(relatedField)
+      }
+    })
+    setFilterOptions(opts)
+  }, [relatedField, options])
+
+  const { setValue, value: selectValue } = useField<string>({ path })
+
+  return (
+    <SelectInput
+      label={field.label}
+      name={path}
+      onChange={(e: OptionObject) => {
+        setValue(e.value)
+      }}
+      options={filterOptions}
+      path={path}
+      value={selectValue}
+    />
+  )
 }

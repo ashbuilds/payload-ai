@@ -1,14 +1,11 @@
 {
   "name": "@ai-stack/payloadcms",
-  "version": "3.0.0-beta.65.2",
+  "version": "3.0.0-beta.104",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
   "license": "MIT",
   "author": "ashbuilds",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "keywords": [
     "plugin",
     "text-to-speech",
@@ -22,11 +19,29 @@
     "ai-translate",
     "ai-writing-tool"
   ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/exports/client.js",
+      "types": "./dist/exports/client.d.ts",
+      "default": "./dist/exports/client.js"
+    },
+    "./fields": {
+      "import": "./dist/exports/fields.js",
+      "types": "./dist/exports/fields.d.ts",
+      "default": "./dist/exports/fields.js"
+    },
+    "./types": {
+      "import": "./dist/exports/types.js",
+      "types": "./dist/exports/types.d.ts",
+      "default": "./dist/exports/types.js"
     }
   },
   "files": [
@@ -45,71 +60,90 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.38",
     "@ai-sdk/openai": "^0.0.43",
-    "@ai-sdk/provider-utils": "^1.0.8",
+    "@ai-sdk/provider-utils": "^1.0.17",
     "@ai-sdk/ui-utils": "^0.0.27",
     "@anthropic-ai/sdk": "^0.24.3",
-    "@langchain/core": "^0.2.15",
-    "@langchain/openai": "^0.2.1",
+    "@langchain/core": "^0.2.31",
+    "@langchain/openai": "^0.2.8",
     "@lexical/html": "^0.16.1",
-    "ai": "^3.3.3",
+    "ai": "^3.3.20",
     "elevenlabs": "^0.8.2",
+    "get-input-selection": "^1.1.4",
     "handlebars": "4.7.8",
     "handlebars-async-helpers": "^1.0.6",
-    "langchain": "^0.2.9",
-    "lexical": "^0.16.1",
+    "langchain": "^0.2.17",
+    "lexical": "^0.17.0",
     "locale-codes": "^1.3.1",
-    "openai": "^4.47.1",
+    "lodash.isequal": "^4.5.0",
+    "openai": "^4.56.1",
+    "scroll-into-view-if-needed": "^3.1.0",
+    "textarea-caret": "^3.0.2",
     "zod": "^3.23.8",
-    "zod-to-json-schema": "^3.23.1"
+    "zod-to-json-schema": "^3.23.2"
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.1",
-    "@eslint/js": "^9.9.0",
+    "@eslint/js": "^9.9.1",
     "@swc/cli": "0.4.0",
     "@types/dot-object": "2.1.6",
+    "@types/handlebars": "^4.1.0",
     "@types/react": "npm:types-react@19.0.0-beta.2",
     "@types/react-dom": "npm:types-react-dom@19.0.0-beta.2",
-    "@typescript-eslint/eslint-plugin": "^7.16.1",
-    "@typescript-eslint/parser": "^7.16.1",
-    "chokidar": "^3.6.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "copyfiles": "2.4.1",
-    "eslint": "^9.7.0",
+    "eslint": "^9.9.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-import-x": "^3.0.1",
+    "eslint-plugin-import-x": "^3.1.0",
     "eslint-plugin-jsx-a11y": "^6.9.0",
     "eslint-plugin-perfectionist": "^2.11.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-regexp": "^2.6.0",
-    "globals": "^15.8.0",
-    "payload": "3.0.0-beta.65",
+    "globals": "^15.9.0",
+    "payload": "3.0.0-beta.104",
     "prettier": "^3.3.3",
     "react": "19.0.0-rc-f994737d14-20240522",
     "react-dom": "19.0.0-rc-f994737d14-20240522",
     "rimraf": "6.0.1",
-    "typescript": "^5.5.3",
-    "typescript-eslint": "^7.16.1"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^7.18.0"
   },
   "peerDependencies": {
-    "@payloadcms/next": "3.0.0-beta.65",
-    "@payloadcms/richtext-lexical": "3.0.0-beta.65",
-    "@payloadcms/translations": "3.0.0-beta.65",
-    "@payloadcms/ui": "3.0.0-beta.65",
-    "payload": "3.0.0-beta.65"
+    "@payloadcms/richtext-lexical": "3.0.0-beta.104",
+    "@payloadcms/translations": "3.0.0-beta.104",
+    "@payloadcms/ui": "3.0.0-beta.104",
+    "payload": "3.0.0-beta.104"
   },
   "publishConfig": {
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "@ai-stack:registry": "https://registry.npmjs.org",
+    "access": "public",
+    "provenance": true,
     "exports": {
       ".": {
         "import": "./dist/index.js",
-        "require": "./dist/index.js",
-        "types": "./dist/index.d.ts"
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./types": {
+        "import": "./dist/exports/types.js",
+        "types": "./dist/exports/types.d.ts",
+        "default": "./dist/exports/types.js"
+      },
+      "./fields": {
+        "import": "./dist/exports/fields.js",
+        "types": "./dist/exports/fields.d.ts",
+        "default": "./dist/exports/fields.js"
+      },
+      "./client": {
+        "import": "./dist/exports/client.js",
+        "types": "./dist/exports/client.d.ts",
+        "default": "./dist/exports/client.js"
       }
-    },
-    "main": "./dist/index.js",
-    "@ai-stack:registry": "https://registry.npmjs.org",
-    "types": "./dist/index.d.ts",
-    "access": "public"
+    }
   }
 }

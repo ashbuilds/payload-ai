@@ -1,10 +1,10 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { openai } from '@ai-sdk/openai'
 import { streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
 import { generateRichText } from './generateRichText.js'
+import { defaultSystemPrompt } from '../../prompts.js'
 
 export const AnthropicConfig: GenerationConfig = {
   models: [
@@ -22,10 +22,10 @@ export const AnthropicConfig: GenerationConfig = {
         const streamTextResult = await streamText({
           model: anthropic(options.model),
           prompt,
-          system: options.system || 'IMPORTANT: JUST PRODUCE THE OUTPUT, DO NOT ENGAGE!',
+          system: options.system || defaultSystemPrompt,
         })
 
-        return streamTextResult.toAIStreamResponse()
+        return streamTextResult.toDataStreamResponse()
       },
       output: 'text',
       settings: {
@@ -58,7 +58,6 @@ export const AnthropicConfig: GenerationConfig = {
       name: 'Anthropic Claude',
       fields: ['richText'],
       handler: (text: string, options) => {
-        //TODO: change it to open ai text to speech api
         return generateRichText(text, options)
       },
       output: 'text',

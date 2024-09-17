@@ -1,6 +1,6 @@
 import type { Collection, Endpoint, Field, GroupField } from 'payload'
 import { CSSProperties, MouseEventHandler } from 'react'
-import { LexicalBaseNode } from './ai/editor/lexical.schema.js'
+import { LexicalBaseNode } from './ai/schemas/lexical.schema.js'
 
 export interface PluginConfig {
   collections: {
@@ -11,6 +11,7 @@ export interface PluginConfig {
   interfaceName?: string
   editorConfig?: { nodes: (typeof LexicalBaseNode)[] }
   debugging?: boolean
+  generatePromptOnInit?: boolean
 }
 
 export interface GenerationModel {

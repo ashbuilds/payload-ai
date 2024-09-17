@@ -1,0 +1,35 @@
+.autocompleteInput {
+  background-clip: padding-box;
+  border: 1px solid rgba(0,0,0,0.15);
+  bottom: auto;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+  display: block;
+  font-size: 14px;
+  list-style: none;
+  position: fixed;
+  text-align: left;
+  z-index: 20000;
+  overflow-y: auto;
+  margin-top: 1em;
+
+  padding: var(--popup-padding)
+}
+
+.autocompleteInput > li {
+  cursor: pointer;
+  padding: 4px 8px;
+  min-width: 110px;
+  color: var(--theme-elevation-800);
+}
+
+.autocompleteInput > li.active {
+  background-color: var(--theme-elevation-100);
+}
+
+.helper {
+  padding: 0.2em;
+  font-size: 12px;
+  margin-right: 0.5em;
+  background: rgb(0 255 111 / 10%);
+  border-radius: 4px;
+}

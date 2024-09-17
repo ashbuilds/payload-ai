@@ -1,7 +1,5 @@
 import type { CollectionConfig } from 'payload'
 
-import { DescriptionField } from '../fields/DescriptionField/DescriptionField.js'
-
 interface UpdateFieldsConfig {
   schemaPathMap: Record<string, string>
   updatedCollectionConfig: CollectionConfig
@@ -9,6 +7,7 @@ interface UpdateFieldsConfig {
 
 export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFieldsConfig => {
   let schemaPathMap = {}
+  let customComponentsFound = false
   function updateField(field: any, parentPath = ''): any {
     const currentPath = parentPath ? `${parentPath}.${field.name}` : field.name
     const currentSchemaPath = `${collectionConfig.slug}.${currentPath}`
@@ -32,16 +31,22 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
 
     // Inject AI actions, richText is not included here as it has to be explicitly defined by user
     if (['text', 'textarea', 'upload'].includes(field.type)) {
+      let customField = {}
+
+      // Custom fields don't fully adhere to the Payload schema, making it difficult to
+      // determine which components support injecting ComposeField as a Description.
+      if (field.admin?.components?.Field || field.admin?.components?.Description) {
+        // TODO: Do something?
+      }
+
       return {
         ...field,
         admin: {
           ...field.admin,
           components: {
             ...(field.admin?.components || {}),
-            // @ts-expect-error
-            Description: DescriptionField({
-              Description: field.admin?.components?.Description,
-            }),
+            Description: '@ai-stack/payloadcms/fields#ComposeField',
+            ...customField,
           },
         },
       }
@@ -57,10 +62,12 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
     if (field.tabs) {
       return {
         ...field,
-        tabs: field.tabs.map((tab: any) => ({
-          ...tab,
-          fields: tab.fields.map((subField: any) => updateField(subField, currentPath)),
-        })),
+        tabs: field.tabs.map((tab: any) => {
+          return {
+            ...tab,
+            fields: tab.fields.map((subField: any) => updateField(subField, tab.name)),
+          }
+        }),
       }
     }
 

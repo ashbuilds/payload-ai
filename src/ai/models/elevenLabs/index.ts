@@ -2,7 +2,6 @@ import type { Field, File } from 'payload'
 
 import type { GenerationConfig } from '../../../types.js'
 
-import { SelectField } from '../../../fields/SelectField/SelectField.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateVoice } from './generateVoice.js'
 import { getAllVoices } from './voices.js'
@@ -91,19 +90,10 @@ if (voiceOptions.length) {
   fields.unshift({
     name: 'voice_id',
     type: 'select',
-    admin: {
-      components: {
-        Field: SelectField,
-      },
-      custom: {
-        options: voiceOptions,
-      },
-    },
     defaultValue: voiceOptions[0]?.voice_id,
     label: 'Voice',
     options: fieldVoiceOptions,
     required: true,
-    validate: () => true,
   })
 }
 

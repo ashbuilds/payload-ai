@@ -1,76 +1,39 @@
 'use client'
 
-import type { TextareaFieldProps } from '@payloadcms/ui'
+import { FieldLabel, useField, useFieldProps } from '@payloadcms/ui'
+import React from 'react'
 
-import { TextareaField as InputField, useField, useFieldProps, useForm } from '@payloadcms/ui'
-import React, { useCallback, useEffect, useRef } from 'react'
+import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
+import { AutocompleteTextField } from '../../libraries/autocomplete/AutocompleteTextArea.js'
+import { TextareaFieldClientProps } from 'payload'
 
-import { useInstructions } from '../../providers/InstructionsProvider/hook.js'
-import { Floatype } from '../../ui/Floatype/Floatype.js'
-
-//TODO: Display the handlebarjs tips in description
-export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
-  const { name, path: pathFromProps, ...restProps } = props
+//NOTE: HMR does not work for plugin components anymore, I think it has to do with importMap/ string path
+export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => {
+  const { field } = props
   const { path: pathFromContext } = useFieldProps()
 
-  const elementRef = useRef<HTMLTextAreaElement>(null)
-  const { fields } = useInstructions({
-    path: pathFromProps,
+  const { setValue, value } = useField<string>({
+    path: pathFromContext,
   })
 
-  const { path, setValue } = useField<string>({
-    path: pathFromContext || pathFromProps || name,
+  const { promptEditorSuggestions } = useInstructions({
+    path: pathFromContext,
   })
-
-  const { formRef, initializing } = useForm()
-
-  useEffect(() => {
-    if (!formRef.current || elementRef.current) return
-
-    const fieldId = `#field-${path.replace(/\./g, '__')}`
-    elementRef.current = formRef.current.querySelector(fieldId)
-  }, [formRef, path])
-
-  const handleQuery = useCallback(
-    (val: string) => {
-      if (val === '{{ ') return fields
-      return fields.filter((field) => field.toLowerCase().includes(val.toLowerCase()))
-    },
-    [fields],
-  )
-
-  const handleSelect = useCallback(
-    (value: string, query: string) => {
-      if (query === '{{ ') return `${value} }}`
-      return fields.includes(value) ? value : undefined
-    },
-    [fields],
-  )
-
-  const handleUpdate = useCallback(
-    (value: string) => {
-      if (value) setValue(value)
-    },
-    [setValue],
-  )
-
-  const CustomDescription = !initializing ? (
-    <Floatype
-      options={{
-        onQuery: handleQuery,
-        onSelect: handleSelect,
-        onUpdate: handleUpdate,
-      }}
-      ref={elementRef}
-    />
-  ) : null
 
   return (
-    <InputField
-      {...restProps}
-      CustomDescription={CustomDescription}
-      name={name}
-      path={pathFromProps}
-    />
+    <div className="field-type textarea">
+      <FieldLabel field={field} label={field.label} />
+      <AutocompleteTextField
+        changeOnSelect={(trigger, selected) => {
+          return trigger + selected + ' }}'
+        }}
+        onChange={(val: string) => {
+          setValue(val)
+        }}
+        options={promptEditorSuggestions}
+        trigger={['{{ ']}
+        value={value}
+      />
+    </div>
   )
 }

@@ -1,9 +1,9 @@
-import type { ClientCollectionConfig, ClientFieldConfig, CollectionConfig, Field } from 'payload'
+import type { ClientCollectionConfig, CollectionConfig, Field } from 'payload'
 
 export const getFieldBySchemaPath = (
   collectionConfig: ClientCollectionConfig | CollectionConfig,
   schemaPath: string, // e.g., "posts.content"
-): ClientFieldConfig | Field | null => {
+): Field | null => {
   const pathParts = schemaPath.split('.')
   const targetFieldName = pathParts[pathParts.length - 1]
 

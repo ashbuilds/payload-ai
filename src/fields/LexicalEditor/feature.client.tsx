@@ -2,12 +2,12 @@
 
 import { createClientFeature } from '@payloadcms/richtext-lexical/client'
 
-import { ActionsFeatureComponent } from './ActionsFeatureComponent.js'
+import { ComposeFeatureComponent } from './ComposeFeatureComponent.js'
 
 export const LexicalEditorFeatureClient = createClientFeature({
   plugins: [
     {
-      Component: ActionsFeatureComponent,
+      Component: ComposeFeatureComponent,
       position: 'belowContainer',
     },
   ],

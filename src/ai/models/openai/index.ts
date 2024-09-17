@@ -10,6 +10,7 @@ import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.j
 import { generateImage } from './generateImage.js'
 import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
+import { defaultSystemPrompt } from '../../prompts.js'
 
 //TODO: Simplify this file by moving the handlers to separate files and remove duplicate code
 export const OpenAIConfig: GenerationConfig = {
@@ -25,10 +26,10 @@ export const OpenAIConfig: GenerationConfig = {
         const streamTextResult = await streamText({
           model: openai(options.model),
           prompt,
-          system: options.system,
+          system: options.system || defaultSystemPrompt,
         })
 
-        return streamTextResult.toAIStreamResponse()
+        return streamTextResult.toDataStreamResponse()
       },
       output: 'text',
       settings: {
