@@ -38,6 +38,7 @@ The Payload AI Plugin is an advanced extension that integrates modern AI capabil
 - ✅ **Fact Checking** (Coming Soon)
 - 🔄 **Automated Content Workflows** (Coming Soon)
 - 🌍 **Internationalization Support** (Coming Soon)
+- 🌍 **Editor AI suggestions** (Coming Soon)
 - 💬 **AI Chat Support** (Coming Soon)
 
 ## 📚 Table of Contents
@@ -108,6 +109,15 @@ OPENAI_API_KEY=your-openai-api-key
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ```
+
+### Enabling AI for Custom Components
+
+> **⚠️ Note:** Custom fields don't fully adhere to the Payload schema, making it difficult to determine which components support injecting ComposeField as a Description.
+> If AI enabled fields don't display Compose settings, please manually add the following component path:
+>
+> `@ai-stack/payloadcms/fields#ComposeField`
+>
+> To view AI enabled fields, enable the `debugging` flag in your plugin config or check your server startup logs.
 
 
 ## 👥 Contributing

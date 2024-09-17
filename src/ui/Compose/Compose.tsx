@@ -8,9 +8,10 @@ import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
 import { PluginIcon } from '../Icons/Icons.js'
 import { UndoRedoActions } from './UndoRedoActions.js'
-import styles from './actions.module.scss'
+import styles from './compose.module.scss'
 import { useMenu } from './hooks/menu/useMenu.js'
 import { useGenerate } from './hooks/useGenerate.js'
+import { FieldDescriptionClientProps } from 'payload'
 
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
@@ -27,9 +28,14 @@ function findParentWithClass(element, className) {
   return findParentWithClass(element.parentElement, className)
 }
 
-export const Actions = ({ descriptionProps = {}, instructionId }) => {
+type ComposeProps = {
+  descriptionProps?: FieldDescriptionClientProps
+  instructionId: string
+}
+
+export const Compose = (props: ComposeProps) => {
   const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
-    id: instructionId,
+    id: props.instructionId,
     collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
   })
 
@@ -120,7 +126,7 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
       })
     },
     onTranslate: async (data) => {
-      console.log('Translating...', data)
+      console.log('Translating...')
       await generate({
         action: 'Translate',
         params: data,
@@ -128,11 +134,11 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
     },
   })
 
-  const { setValue, value } = useField<string>({
+  const { setValue } = useField<string>({
     path: pathFromContext,
   })
 
-  const setIfValueIsLexicalState = useCallback((val) => {
+  const setIfValueIsLexicalState = useCallback((val: any) => {
     if (val.root && lexicalEditor) {
       setSafeLexicalState(JSON.stringify(val), lexicalEditor)
     }
@@ -163,9 +169,12 @@ export const Actions = ({ descriptionProps = {}, instructionId }) => {
           }}
         />
       </label>
-      {/*<div>*/}
-      {/*  <FieldDescription {...descriptionProps} />*/}
-      {/*</div>*/}
+      {/*Render incoming description field*/}
+      {props.descriptionProps ? (
+        <div>
+          <FieldDescription {...props.descriptionProps} />
+        </div>
+      ) : null}
     </React.Fragment>
   )
 }

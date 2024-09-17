@@ -32,10 +32,22 @@ export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void
 
   return (
     <>
-      <button onClick={undoHistoryValue} type="button" disabled={!canUndo}>
+      <button
+        onClick={undoHistoryValue}
+        type="button"
+        disabled={!canUndo}
+        className={`btn btn--size-small btn--style-secondary ${!canUndo && 'btn--disabled'}`}
+        style={{ marginBlock: 0 }}
+      >
         Undo
       </button>
-      <button onClick={redoHistoryValue} type="button" disabled={!canRedo}>
+      <button
+        onClick={redoHistoryValue}
+        type="button"
+        disabled={!canRedo}
+        className={`btn btn--size-small btn--style-secondary ${!canRedo && 'btn--disabled'}`}
+        style={{ marginBlock: 0 }}
+      >
         Redo
       </button>
     </>

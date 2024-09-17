@@ -13,9 +13,8 @@ type ActionPrompt = {
   system: (options: ActionPromptOptions) => string
 }
 
-export const defaultSystemPrompt = `
-IMPORTANT: JUST PRODUCE THE OUTPUT WITHOUT QUOTES AND DO NOT ENGAGE!
-`
+//TODO: This is a temporary solution make use of structured object in API
+export const defaultSystemPrompt = `IMPORTANT: JUST PRODUCE THE OUTPUT WITHOUT QUOTES AND DO NOT ENGAGE!`
 
 export const defaultPrompts: ActionPrompt[] = [
   {

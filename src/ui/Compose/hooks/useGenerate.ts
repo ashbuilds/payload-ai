@@ -192,7 +192,7 @@ export const useGenerate = () => {
       .catch((error) => {
         console.error('Error generating your upload', error)
       })
-  }, [getData, localFromContext?.code, instructionId, setValue])
+  }, [getData, localFromContext?.code, instructionId])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {

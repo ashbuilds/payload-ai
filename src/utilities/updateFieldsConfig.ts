@@ -32,8 +32,11 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
     // Inject AI actions, richText is not included here as it has to be explicitly defined by user
     if (['text', 'textarea', 'upload'].includes(field.type)) {
       let customField = {}
+
+      // Custom fields don't fully adhere to the Payload schema, making it difficult to
+      // determine which components support injecting ComposeField as a Description.
       if (field.admin?.components?.Field || field.admin?.components?.Description) {
-        customComponentsFound = true
+        // TODO: Do something?
       }
 
       return {
@@ -42,7 +45,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
           ...field.admin,
           components: {
             ...(field.admin?.components || {}),
-            Description: '@ai-stack/payloadcms/fields#DescriptionField',
+            Description: '@ai-stack/payloadcms/fields#ComposeField',
             ...customField,
           },
         },
@@ -86,15 +89,6 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
   const updatedCollectionConfig = {
     ...collectionConfig,
     fields: collectionConfig.fields.map((field) => updateField(field)),
-  }
-
-  if (customComponentsFound) {
-    console.warn(
-      `\n— AI Plugin Alert 🚨:
-  Uh-oh, custom component(s) spotted! We might not be able to inject the AI Composer automatically for these components 🤖.
-  No worries, though! You can add it manually using below path:
-  '@ai-stack/payloadcms/fields#DescriptionField'.\n`,
-    )
   }
 
   return {
