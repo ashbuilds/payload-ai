@@ -1,7 +1,7 @@
 # Payload AI Plugin
 
 <p align="center">
-  <img alt="Payload AI Plugin" src="assets/payloadcms-ai-v1.gif" width="100%" />
+  <img alt="Payload AI Plugin" src="assets/payloadcms-ai.gif" width="100%" />
 </p>
 
 ## 🌟 Supercharge Your [Payload CMS](https://payloadcms.com) with AI-Powered Content Creation
