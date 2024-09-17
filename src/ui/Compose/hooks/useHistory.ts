@@ -37,7 +37,9 @@ export const useHistory = () => {
   }, [])
 
   const saveToLocalStorage = useCallback((newGlobalHistory: HistoryState) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+    }
   }, [])
 
   // Clear previous history

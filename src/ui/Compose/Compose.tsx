@@ -2,7 +2,7 @@
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
@@ -33,7 +33,7 @@ type ComposeProps = {
   instructionId: string
 }
 
-export const Compose = (props: ComposeProps) => {
+export const Compose: FC<ComposeProps> = (props) => {
   const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: props.instructionId,
     collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,

@@ -14,7 +14,11 @@ type ActionPrompt = {
 }
 
 //TODO: This is a temporary solution make use of structured object in API
-export const defaultSystemPrompt = `IMPORTANT: JUST PRODUCE THE OUTPUT WITHOUT QUOTES AND DO NOT ENGAGE!`
+export const defaultSystemPrompt = `IMPORTANT INSTRUCTION:
+Produce only the requested output text.
+Do not add any explanations, comments, or engagement.
+Do not use quotation marks in the response.
+BEGIN OUTPUT:`
 
 export const defaultPrompts: ActionPrompt[] = [
   {
