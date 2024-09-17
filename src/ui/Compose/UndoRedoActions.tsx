@@ -1,5 +1,5 @@
 import { useHistory } from './hooks/useHistory.js'
-import React, { MouseEventHandler, useCallback } from 'react'
+import React, { MouseEventHandler, useCallback, useEffect, useState } from 'react'
 
 export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void }) => {
   const { canRedo, canUndo, redo, undo } = useHistory()
@@ -28,7 +28,14 @@ export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void
     [undo],
   )
 
-  if (!canUndo && !canRedo) return null
+  // Delay rendering until the client-side hydration is complete
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted || (!canUndo && !canRedo)) return null
 
   return (
     <>

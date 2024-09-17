@@ -1,6 +1,6 @@
 'use client'
 
-import type { OptionObject, SelectFieldProps } from 'payload'
+import type { OptionObject, SelectFieldClientProps } from 'payload'
 
 import { SelectInput, useField, useFieldProps } from '@payloadcms/ui'
 import React, { useEffect, useState } from 'react'
@@ -10,7 +10,7 @@ export const SelectField = (
   props: {
     filterByField: string
     options: { fields: string[]; label: string; value: string }[]
-  } & SelectFieldProps,
+  } & SelectFieldClientProps,
 ) => {
   const { field, filterByField, options } = props
   const { path } = useFieldProps()

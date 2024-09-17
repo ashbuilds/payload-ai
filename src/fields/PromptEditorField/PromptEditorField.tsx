@@ -1,15 +1,14 @@
 'use client'
 
-import type { TextareaFieldProps } from 'payload'
-
 import { FieldLabel, useField, useFieldProps } from '@payloadcms/ui'
 import React from 'react'
 
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { AutocompleteTextField } from '../../libraries/autocomplete/AutocompleteTextArea.js'
+import { TextareaFieldClientProps } from 'payload'
 
 //NOTE: HMR does not work for plugin components anymore, I think it has to do with importMap/ string path
-export const PromptEditorField: React.FC<TextareaFieldProps> = (props) => {
+export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => {
   const { field } = props
   const { path: pathFromContext } = useFieldProps()
 
