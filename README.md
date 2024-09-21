@@ -12,7 +12,11 @@ The Payload AI Plugin is an advanced extension that integrates modern AI capabil
 >
 > To give it a try, we recommend using [Payload's website template](https://github.com/payloadcms/payload/tree/v3.0.0-beta.104/templates/website).
 
+---
+
 ### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
+Want to dive deeper?  
+### 🎥 [Explore More in Our Extended Demo](https://youtu.be/LEsuHbKalNY)
 
 
 ## ✨ Supported Fields and Features
