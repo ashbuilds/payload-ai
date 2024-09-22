@@ -13,6 +13,7 @@ import { init } from './init.js'
 import { translations } from './translations/index.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
+import { Automations } from './collections/Automations.js'
 
 const defaultPluginConfig: PluginConfig = {
   generatePromptOnInit: true,

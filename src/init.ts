@@ -1,10 +1,11 @@
 import type { Payload } from 'payload'
 
+import type { PluginConfig } from './types.js'
+
 import { GenerationModels } from './ai/models/index.js'
 import { seedPrompts } from './ai/prompts.js'
 import { generateSeedPrompt } from './ai/utils/generateSeedPrompt.js'
 import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
-import type { PluginConfig } from './types.js'
 
 export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: PluginConfig) => {
   payload.logger.info(`— AI Plugin: Initializing...`)
@@ -16,6 +17,10 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
     const path = paths[i]
     const { type: fieldType, label: fieldLabel } = fieldSchemaPaths[path]
     //TODO: if global is broken the plugin doesn't know and does not run reindexing
+
+    //TODO: next - add endpoint for cron job
+    // start implementation of job and tasks logic
+    // Automation -> Add new job -> Add new task -> select condition
     const entry = await payload.find({
       collection: PLUGIN_INSTRUCTIONS_TABLE,
       where: {

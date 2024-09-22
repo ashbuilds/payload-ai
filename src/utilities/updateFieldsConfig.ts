@@ -7,7 +7,7 @@ interface UpdateFieldsConfig {
 
 export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFieldsConfig => {
   let schemaPathMap = {}
-  let customComponentsFound = false
+  // let customComponentsFound = false
   function updateField(field: any, parentPath = ''): any {
     const currentPath = parentPath ? `${parentPath}.${field.name}` : field.name
     const currentSchemaPath = `${collectionConfig.slug}.${currentPath}`
@@ -31,7 +31,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
 
     // Inject AI actions, richText is not included here as it has to be explicitly defined by user
     if (['text', 'textarea', 'upload'].includes(field.type)) {
-      let customField = {}
+      // let customField = {}
 
       // Custom fields don't fully adhere to the Payload schema, making it difficult to
       // determine which components support injecting ComposeField as a Description.
@@ -46,7 +46,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
           components: {
             ...(field.admin?.components || {}),
             Description: '@ai-stack/payloadcms/fields#ComposeField',
-            ...customField,
+            // ...customField,
           },
         },
       }

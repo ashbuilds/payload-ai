@@ -1,21 +1,17 @@
 import { openai } from '@ai-sdk/openai'
-import { streamObject } from 'ai'
+import { generateObject, streamObject } from 'ai'
 
 import { exampleOutput } from '../example.js'
 
 export const generateRichText = async (text: string, options: any) => {
-  const streamResult = await streamObject({
+  const params = {
     model: openai(options.model),
     prompt: text,
-    schema: options.editorSchema,
+    schema: options.schema,
     system: `${options.system}
 
 RULES:
-- Generate original and unique content based on the given topic.
 - Strictly adhere to the specified layout and formatting instructions.
-- Utilize the provided rich text editor tools for appropriate formatting.
-- Ensure the output follows the structure of the sample output object.
-- Produce valid JSON with no undefined or null values.
 
 LAYOUT INSTRUCTIONS:
 ${options.layout}
@@ -26,13 +22,14 @@ RICH TEXT EDITOR TOOLS:
 - Utilize bullet points or numbered lists as required by the layout.
 
 SAMPLE OUTPUT OBJECT:
-${JSON.stringify(exampleOutput)}
+${JSON.stringify(exampleOutput)}`,
+  }
 
-ADDITIONAL GUIDELINES:
-- Ensure coherence and logical flow between all sections.
-- Maintain a consistent tone and style throughout the content.
-- Use clear and concise language appropriate for the target audience.
-- Double-check that all JSON fields are properly filled and formatted.`,
-  })
-  return streamResult.toTextStreamResponse()
+  if (options.stream) {
+    const streamResult = await streamObject(params)
+    return streamResult.toTextStreamResponse()
+  }
+
+  const generateResult = await generateObject(params)
+  return Response.json({text: generateResult.object})
 }
