@@ -1,14 +1,12 @@
 import type { DataFromCollectionSlug, Payload } from 'payload'
 
-import dot from 'dot-object'
-import { z } from 'zod'
-
 import { GenerationModels } from '../ai/models/index.js'
 import { lexicalSchema } from '../ai/schemas/lexical.schema.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
-import { inferSchema } from '../utilities/inferSchema.js'
 import { assignPrompt } from './assignPrompt.js'
+
+import { inferSchema } from '../utilities/inferSchema.js'
 
 export const textareaHandler = async ({
   doc,

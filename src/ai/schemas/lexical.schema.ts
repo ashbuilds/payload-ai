@@ -95,13 +95,13 @@ export const lexicalSchema = (customNodes?: (typeof LexicalBaseNode)[]) => {
   })
 
   const ListItemNode = BaseNode.extend({
-    type: z.literal('listitem', { description: 'Use to refer HTML li(list item) tag' }),
+    type: z.literal('listitem',{description:'Use to refer HTML li(list item) tag'}),
     checked: z.boolean().optional(),
     value: z.number(),
   })
 
   const ListNode = BaseNode.extend({
-    type: z.literal('list', { description: 'Use to refer HTML unordered list and ordered list' }),
+    type: z.literal('list',{ description: 'Use to refer HTML unordered list and ordered list' }),
     listType: z.enum(['check', 'number', 'bullet']),
     start: z.number(),
     tag: z.enum(['ul', 'ol']),
