@@ -29,6 +29,7 @@ export const Instructions: CollectionConfig = {
   },
   admin: {
     hidden: true,
+    useAsTitle: 'schema-path'
   },
   fields: [
     {
