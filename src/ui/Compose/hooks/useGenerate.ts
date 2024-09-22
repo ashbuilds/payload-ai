@@ -29,9 +29,13 @@ export const useGenerate = () => {
     serverURL,
   } = config
 
-  const { setValue } = useField<string>({
+  const { setValue, value } = useField<string>({
     path: pathFromContext,
   })
+  if(editor){
+    console.log('value: ', { value })
+  }
+
 
   const { set: setHistory } = useHistory()
   const { id: instructionId } = useInstructions({

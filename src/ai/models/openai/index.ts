@@ -2,7 +2,7 @@ import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
 import { openai } from '@ai-sdk/openai'
-import { streamText } from 'ai'
+import { generateObject, generateText, streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
@@ -14,6 +14,8 @@ import { generateVoice } from './generateVoice.js'
 
 const MODEL_KEY = 'Oai'
 
+
+
 //TODO: Simplify this file by moving the handlers to separate files and remove duplicate code
 export const OpenAIConfig: GenerationConfig = {
   models: [
@@ -23,15 +25,30 @@ export const OpenAIConfig: GenerationConfig = {
       fields: ['text', 'textarea'],
       handler: async (
         prompt: string,
-        options: { locale: string; model: string; system: string },
+        options: {
+          locale: string
+          model: string
+          schema: ZodSchema
+          stream?: boolean
+          system: string
+        },
       ) => {
-        const streamTextResult = await streamText({
+        const params = {
           model: openai(options.model),
           prompt,
+          schema: options.schema,
           system: options.system || defaultSystemPrompt,
-        })
+        }
 
-        return streamTextResult.toDataStreamResponse()
+        if (options.stream) {
+          const streamTextResult = await streamText(params)
+
+          return streamTextResult.toDataStreamResponse()
+        }
+
+        const generateObjectResult = await generateObject(params)
+
+        return Response.json({ text: generateObjectResult.object })
       },
       output: 'text',
       settings: {

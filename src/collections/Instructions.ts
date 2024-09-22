@@ -40,43 +40,43 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
       ...defaultAdminConfig,
       ...options?.admin,
       group: 'Plugins',
+    useAsTitle: 'schema-path'
+  },
+  fields: [
+    {
+      name: 'schema-path',
+      type: 'text',
+      admin: {
+        readOnly: true,
+      },
+      unique: true,
     },
-    fields: [
-      {
-        name: 'schema-path',
-        type: 'text',
-        admin: {
-          readOnly: true,
-        },
-        unique: true,
+    {
+      name: 'field-type',
+      type: 'select',
+      admin: {
+        readOnly: true,
       },
-      {
-        name: 'field-type',
-        type: 'select',
-        admin: {
-          readOnly: true,
+      defaultValue: 'text',
+      label: 'Field type',
+      options: [
+        {
+          label: 'text',
+          value: 'text',
         },
-        defaultValue: 'text',
-        label: 'Field type',
-        options: [
-          {
-            label: 'text',
-            value: 'text',
-          },
-          {
-            label: 'textarea',
-            value: 'textarea',
-          },
-          {
-            label: 'upload',
-            value: 'upload',
-          },
-          {
-            label: 'richText',
-            value: 'richText',
-          },
-        ],
-      },
+        {
+          label: 'textarea',
+          value: 'textarea',
+        },
+        {
+          label: 'upload',
+          value: 'upload',
+        },
+        {
+          label: 'richText',
+          value: 'richText',
+        },
+      ],},
       {
         name: 'relation-to',
         type: 'text',
