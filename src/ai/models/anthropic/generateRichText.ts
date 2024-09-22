@@ -1,20 +1,17 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { streamObject } from 'ai'
+import { generateObject, generateText, streamObject } from 'ai'
+
 import { exampleOutput } from '../example.js'
 
 export const generateRichText = async (text: string, options: any) => {
-  const streamResult = await streamObject({
+  const params = {
     model: anthropic(options.model),
     prompt: text,
-    schema: options.editorSchema,
+    schema: options.schema,
     system: `${options.system}
 
 RULES:
-- Generate original and unique content based on the given topic.
 - Strictly adhere to the specified layout and formatting instructions.
-- Utilize the provided rich text editor tools for appropriate formatting.
-- Ensure the output follows the structure of the sample output object.
-- Produce valid JSON with no undefined or null values.
 
 LAYOUT INSTRUCTIONS:
 ${options.layout}
@@ -25,14 +22,16 @@ RICH TEXT EDITOR TOOLS:
 - Utilize bullet points or numbered lists as required by the layout.
 
 SAMPLE OUTPUT OBJECT:
-${JSON.stringify(exampleOutput)}
+${JSON.stringify(exampleOutput)}`,
+  }
 
-ADDITIONAL GUIDELINES:
-- Ensure coherence and logical flow between all sections.
-- Maintain a consistent tone and style throughout the content.
-- Use clear and concise language appropriate for the target audience.
-- Double-check that all JSON fields are properly filled and formatted.`,
-  })
+  if(options.stream) {
+    const streamResult = await streamObject(params)
+    return streamResult.toTextStreamResponse()
+  }
 
-  return streamResult.toTextStreamResponse()
+  const generateResult = await generateObject(params)
+  console.log("generateResult : ", generateResult);
+
+  return Response.json({text: generateResult.object})
 }

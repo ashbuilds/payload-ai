@@ -1,5 +1,6 @@
 export const PLUGIN_NAME = 'plugin-ai'
 export const PLUGIN_INSTRUCTIONS_TABLE = `${PLUGIN_NAME}-instructions`
+export const PLUGIN_AUTOMATIONS_TABLE = `${PLUGIN_NAME}-automations`
 export const PLUGIN_INSTRUCTIONS_MAP_GLOBAL = `${PLUGIN_INSTRUCTIONS_TABLE}-map`
 export const PLUGIN_LEXICAL_EDITOR_FEATURE = `${PLUGIN_NAME}-actions-feature`
 

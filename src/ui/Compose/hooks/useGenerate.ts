@@ -36,9 +36,13 @@ export const useGenerate = () => {
 
   const { docConfig } = useDocumentInfo()
 
-  const { setValue } = useField<string>({
+  const { setValue, value } = useField<string>({
     path: pathFromContext,
   })
+  if(editor){
+    console.log('value: ', { value })
+  }
+
 
   const { set: setHistory } = useHistory()
   const { id: instructionId } = useInstructions({
