@@ -1,6 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
 import { generateObject, generateText, streamObject, jsonSchema } from 'ai'
-
 import { exampleOutput } from '../example.js'
 
 export const generateRichText = async (text: string, options: any) => {

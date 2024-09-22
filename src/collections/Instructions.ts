@@ -40,7 +40,7 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
       ...defaultAdminConfig,
       ...options?.admin,
       group: 'Plugins',
-    useAsTitle: 'schema-path'
+      useAsTitle: 'schema-path'
   },
   fields: [
     {
