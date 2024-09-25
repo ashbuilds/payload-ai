@@ -1,4 +1,61 @@
+import { Schema } from 'ai'
 import { z } from 'zod'
+
+// Example of custom node - wip
+// const MediaNode = BaseNode.extend({
+//   type: z.literal('block'),
+//   version: z.literal(2),
+//   fields: z.object({
+//     id: z.string(),
+//     media: z.string(),
+//     position: z.enum(['fullscreen', 'default']),
+//     blockName: z.string(),
+//     blockType: z.literal('mediaBlock'),
+//   }),
+// })
+
+export const LexicalSchemaMap = {
+  heading: {
+    type: 'heading',
+    children: ['text'],
+    variants: ['h1', 'h2', 'h3', 'h4'],
+  },
+  horizontalrule: {
+    type: 'horizontalrule',
+    children: [],
+  },
+  link: {
+    type: 'link',
+    children: ['text'],
+  },
+  list: {
+    type: 'list',
+    children: ['listItem'],
+    variants: ['ul', 'ol'],
+  },
+  listItem: {
+    type: 'listItem',
+    children: ['heading','paragraph', 'list'], // Allows nesting
+  },
+  paragraph: {
+    type: 'paragraph',
+    children: ['text', 'link'],
+  },
+  quote: {
+    type: 'quote',
+    children: ['paragraph'],
+  },
+  root: {
+    type: 'root',
+    children: ['paragraph', 'heading', 'list', 'quote', 'horizontalrule'],
+  },
+  text: {
+    type: 'text',
+    children: [],
+  },
+}
+
+
 
 export const LexicalBaseNode = z.object({
   type: z.string(),
@@ -27,8 +84,8 @@ export const lexicalSchema = (customNodes?: (typeof LexicalBaseNode)[]) => {
 
   const LinkNode = BaseNode.extend({
     id: z.string(),
-    type: z.literal('link',{
-      description: 'Use to refer HTML anchor tag'
+    type: z.literal('link', {
+      description: 'Use to refer HTML anchor tag',
     }),
     fields: z.object({
       linkType: z.string(),
@@ -38,35 +95,24 @@ export const lexicalSchema = (customNodes?: (typeof LexicalBaseNode)[]) => {
   })
 
   const ListItemNode = BaseNode.extend({
-    type: z.literal('listitem',{description:'Use to refer HTML li(list item) tag'}),
+    type: z.literal('listitem', { description: 'Use to refer HTML li(list item) tag' }),
     checked: z.boolean().optional(),
     value: z.number(),
   })
 
   const ListNode = BaseNode.extend({
-    type: z.literal('list',{ description: 'Use to refer HTML unordered list and ordered list' }),
+    type: z.literal('list', { description: 'Use to refer HTML unordered list and ordered list' }),
     listType: z.enum(['check', 'number', 'bullet']),
     start: z.number(),
     tag: z.enum(['ul', 'ol']),
   })
 
   const HeadingNode = BaseNode.extend({
-    type: z.literal('heading',{ description: 'Use to refer HTML heading tags, such as h1, h2, h3, h4 '}),
+    type: z.literal('heading', {
+      description: 'Use to refer HTML heading tags, such as h1, h2, h3, h4 ',
+    }),
     tag: z.enum(['h1', 'h2', 'h3', 'h4']),
   })
-
-  // Example of custom node - wip
-  // const MediaNode = BaseNode.extend({
-  //   type: z.literal('block'),
-  //   version: z.literal(2),
-  //   fields: z.object({
-  //     id: z.string(),
-  //     media: z.string(),
-  //     position: z.enum(['fullscreen', 'default']),
-  //     blockName: z.string(),
-  //     blockType: z.literal('mediaBlock'),
-  //   }),
-  // })
 
   const Node = z.union([
     TextNode,
