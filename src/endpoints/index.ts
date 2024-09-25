@@ -35,7 +35,7 @@ export const endpoints: Endpoints = {
       return textareaHandler({
         doc: data.doc,
         instructions,
-        options: data.options,
+        options: { ...data.options, stream: true },
         payload: req.payload,
       })
     },
