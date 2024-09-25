@@ -15,8 +15,8 @@ import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
 const defaultPluginConfig: PluginConfig = {
-  generatePromptOnInit: true,
   collections: {},
+  generatePromptOnInit: true,
 }
 
 const payloadAiPlugin =
@@ -58,14 +58,23 @@ const payloadAiPlugin =
       const collections = [...(incomingConfig.collections ?? []), Instructions]
       const { collections: collectionSlugs = [] } = pluginConfig
 
-      incomingConfig.admin.components.providers = [
-        ...(incomingConfig.admin.components.providers ?? []),
+      const { components: { providers = [] } = {} } = incomingConfig.admin || {}
+      const updatedProviders = [
+        ...(providers ?? []),
         {
           clientProps: {},
           path: '@ai-stack/payloadcms/client#InstructionsProvider',
           serverProps: {},
         },
       ]
+
+      incomingConfig.admin = {
+        ...(incomingConfig.admin || {}),
+        components: {
+          ...(incomingConfig.admin?.components ?? {}),
+          providers: updatedProviders,
+        },
+      }
 
       updatedConfig = {
         ...incomingConfig,
@@ -101,7 +110,7 @@ const payloadAiPlugin =
           },
         ],
         i18n: {
-          ...incomingConfig.i18n,
+          ...(incomingConfig.i18n || {}),
           translations: {
             ...deepMerge(translations, incomingConfig.i18n?.translations),
           },
