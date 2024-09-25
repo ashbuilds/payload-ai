@@ -8,11 +8,21 @@ import { generateObject, generateText, streamText } from 'ai'
 import type { GenerationConfig } from '../../../types.js'
 
 import { defaultSystemPrompt } from '../../prompts.js'
+import { LexicalSchemaMap } from '../../schemas/lexical.schema.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateImage } from './generateImage.js'
 import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
 
+const variants = Object.keys(LexicalSchemaMap)
+  .flatMap((a) => LexicalSchemaMap[a].variants)
+  .filter((v) => !!v)
+
+const Lchildren = Object.keys(LexicalSchemaMap)
+  .flatMap((a) => LexicalSchemaMap[a].children)
+  .filter((v) => !!v)
+
+console.log(' Object.keys(LexicalSchemaMap).flatMap(a=>LexicalSchemaMap[a].variants) : ', variants)
 //TODO: Simplify this file by moving the handlers to separate files and remove duplicate code
 export const OpenAIConfig: GenerationConfig = {
   models: [
@@ -239,15 +249,69 @@ informative and accurate but also captivating and beautifully structured.`,
              *  - user can select previously added layout
              */
             name: 'layout',
-            type: 'textarea',
-            defaultValue: `[paragraph] - Write a concise introduction (2-3 sentences) that outlines the main topic.
-[horizontalrule] - Insert a horizontal rule to separate the introduction from the main content.
-[list] - Create a list with 3-5 items. Each list item should contain:
-   a. [heading] - A brief, descriptive heading (up to 5 words)
-   b. [paragraph] - A short explanation or elaboration (1-2 sentences)
-[horizontalrule] - Insert another horizontal rule to separate the main content from the conclusion.
-[paragraph] - Compose a brief conclusion (2-3 sentences) summarizing the key points.
-[quote] - Include a relevant quote from a famous person, directly related to the topic. Format: "Quote text." - Author Name`,
+            type: 'array',
+            fields: [
+              {
+                name: 'component',
+                type: 'select',
+                options: Object.keys(LexicalSchemaMap),
+              },
+              {
+                name: 'variants',
+                type: 'group',
+                admin: {
+                  condition: (_, data) => {
+                    if (!data?.component) false
+
+                    return LexicalSchemaMap[data.component]?.variants?.length
+                  },
+                },
+                fields: [
+                  {
+                    name: 'variants',
+                    type: 'select',
+                    options: variants,
+                  },
+                ],
+                label: '',
+              },
+              {
+                name: 'children',
+                type: 'group',
+                admin: {
+                  condition: (_, data) => {
+                    if (!data?.component) false
+
+                    return LexicalSchemaMap[data.component]?.children?.length
+                  },
+                },
+                fields: [
+                  {
+                    name: 'contains',
+                    type: 'select',
+                    // admin: {
+                    //   condition: (_, data) => {
+                    //     return true
+                    //   },
+                    // },
+                    options: Lchildren,
+                  },
+                ],
+                label: '',
+              },
+              {
+                name: 'description',
+                type: 'text',
+              },
+            ],
+            //             defaultValue: `[paragraph] - Write a concise introduction (2-3 sentences) that outlines the main topic.
+            // [horizontalrule] - Insert a horizontal rule to separate the introduction from the main content.
+            // [list] - Create a list with 3-5 items. Each list item should contain:
+            //    a. [heading] - A brief, descriptive heading (up to 5 words)
+            //    b. [paragraph] - A short explanation or elaboration (1-2 sentences)
+            // [horizontalrule] - Insert another horizontal rule to separate the main content from the conclusion.
+            // [paragraph] - Compose a brief conclusion (2-3 sentences) summarizing the key points.
+            // [quote] - Include a relevant quote from a famous person, directly related to the topic. Format: "Quote text." - Author Name`,
             label: 'Layout',
           },
         ],

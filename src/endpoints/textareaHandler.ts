@@ -1,13 +1,14 @@
 import type { DataFromCollectionSlug, Payload } from 'payload'
 
+import dot from 'dot-object'
+import { z } from 'zod'
+
 import { GenerationModels } from '../ai/models/index.js'
 import { lexicalSchema } from '../ai/schemas/lexical.schema.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
-import { assignPrompt } from './assignPrompt.js'
-import dot from 'dot-object'
-import { z } from 'zod'
 import { inferSchema } from '../utilities/inferSchema.js'
+import { assignPrompt } from './assignPrompt.js'
 
 export const textareaHandler = async ({
   doc,
@@ -20,7 +21,7 @@ export const textareaHandler = async ({
   options: any
   payload: Payload
 }) => {
-  const { action, actionParams, context, locale } = options
+  const { action, actionParams, context, locale, stream } = options
   const { collections } = payload.config
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const schemaPath = instructions['schema-path'] as string
@@ -35,7 +36,7 @@ export const textareaHandler = async ({
       console.error('editorSchema:', e)
     }
   } else {
-    zodSchema = inferSchema({ [schemaPath]: "" } as Record<string, unknown>)
+    zodSchema = inferSchema({ [schemaPath]: '' } as Record<string, unknown>)
   }
 
   const { prompt: promptTemplate = '' } = instructions
@@ -76,11 +77,12 @@ export const textareaHandler = async ({
   console.log('Running handler with fieldName:', fieldName)
   return model
     .handler?.(prompts.prompt, {
-      ...modelOptions,
-      ...opt,
       layout: prompts.layout,
       schema: zodSchema,
+      stream,
       system: prompts.system,
+      ...modelOptions,
+      ...opt,
     })
     .catch((error) => {
       console.error('Error: endpoint - generating text:', error)

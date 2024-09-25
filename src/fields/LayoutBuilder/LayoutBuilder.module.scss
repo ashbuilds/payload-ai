@@ -1,0 +1,18 @@
+.builder {
+  padding: 1rem;
+ margin: 0.5rem 0;
+  border: 1px solid #585858;
+}
+
+.inputWrapper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 2px;
+  align-items: center;
+  justify-content: center;
+}
+
+.select {
+  flex-grow: 1;
+  width: 100%;
+}
