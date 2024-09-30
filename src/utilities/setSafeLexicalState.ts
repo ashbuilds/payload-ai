@@ -1,8 +1,6 @@
-import { LexicalEditor } from 'lexical'
+import type { LexicalEditor } from 'lexical'
 
-import { $getRoot } from 'lexical'
-
-type EditorAction = 'update' | 'replace'
+type EditorAction = 'replace' | 'update'
 
 export const setSafeLexicalState = (
   state,
@@ -11,20 +9,12 @@ export const setSafeLexicalState = (
 ) => {
   try {
     const editorState = editorInstance.parseEditorState(state)
-    if (editorState.isEmpty()) return
+    if (editorState.isEmpty()) {
+      return
+    }
 
-    editorInstance.update(
-      () => {
-        const root = $getRoot()
-        root.clear() //TODO: this is hack to prevent reconciliation error - find a way
-        editorInstance.setEditorState(editorState)
-      },
-      {
-        discrete: true,
-      },
-    )
+    editorInstance.setEditorState(editorState)
   } catch (e) {
-    // console.error('Error setting object:', e)
-    // setValue(object) //TODO: This breaks the editor find a better way to handle objects that are not valid
+    // console.error('Shh....:', e)
   }
 }
