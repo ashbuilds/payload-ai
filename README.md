@@ -106,7 +106,8 @@ fields: [
 
 ## ⚙️ Configuration
 
-The plugin uses environment variables for configuration. Create a .env file in your project root and add the following variables:
+Choose your AI model by providing one or more of the following environment variables.
+Create a .env file in your project root and add any of the following variables:
 
 ```
 OPENAI_API_KEY=your-openai-api-key
