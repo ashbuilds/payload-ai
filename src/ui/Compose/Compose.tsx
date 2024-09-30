@@ -1,8 +1,11 @@
 'use client'
 
+import type { FieldDescriptionClientProps } from 'payload'
+import type { FC} from 'react';
+
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
@@ -11,7 +14,6 @@ import { UndoRedoActions } from './UndoRedoActions.js'
 import styles from './compose.module.scss'
 import { useMenu } from './hooks/menu/useMenu.js'
 import { useGenerate } from './hooks/useGenerate.js'
-import { FieldDescriptionClientProps } from 'payload'
 
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
@@ -148,7 +150,12 @@ export const Compose: FC<ComposeProps> = (props) => {
 
   return (
     <React.Fragment>
-      <label className={`${styles.actions}`} onClick={(e) => e.preventDefault()} ref={actionsRef}>
+      <label
+        className={`${styles.actions}`}
+        onClick={(e) => e.preventDefault()}
+        ref={actionsRef}
+        role="presentation"
+      >
         <DocumentDrawer
           onSave={() => {
             closeDrawer()
