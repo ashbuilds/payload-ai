@@ -97,10 +97,12 @@ if (voiceOptions.length) {
   })
 }
 
+const MODEL_KEY = '11Labs'
+
 export const ElevenLabsConfig: GenerationConfig = {
   models: [
     {
-      id: 'elevenlabs/multilingual-v2',
+      id: `${MODEL_KEY}-m-v2`,
       name: 'ElevenLabs Multilingual v2',
       fields: ['upload'],
       handler: async (text: string, options) => {
@@ -119,11 +121,11 @@ export const ElevenLabsConfig: GenerationConfig = {
       },
       output: 'audio',
       settings: {
-        name: 'elevenlabs-multilingual-v2-settings',
+        name: `${MODEL_KEY}-settings`,
         type: 'group',
         admin: {
           condition: (data) => {
-            return data['model-id'] === 'elevenlabs/multilingual-v2'
+            return data['model-id'] === `${MODEL_KEY}-m-v2`
           },
         },
         fields,

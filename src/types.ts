@@ -85,37 +85,3 @@ export type BaseItemProps<T = any> = {
   onMouseLeave?: MouseEventHandler<T> | undefined
   style?: CSSProperties | undefined
 }
-
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "plugin-ai-instructions".
- */
-export interface PluginAiInstruction {
-  createdAt: string
-  'dalle-e-settings'?: {
-    'enable-prompt-optimization'?: boolean | null
-    size?: ('256x256' | '512x512' | '1024x1024' | '1024x1792' | '1792x1024') | null
-    style?: ('natural' | 'vivid') | null
-    version?: ('dall-e-2' | 'dall-e-3') | null
-  }
-  'field-type'?: ('richText' | 'text' | 'textarea' | 'upload') | null
-  id: string
-  'model-id'?: ('dall-e' | 'openai-gpt-object' | 'openai-gpt-text' | 'tts') | null
-  'openai-gpt-object-settings'?: {
-    layout?: null | string
-    model?: ('gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-2024-08-06' | 'gpt-4o-mini') | null
-    system?: null | string
-  }
-  'openai-gpt-text-settings'?: {
-    model?: ('gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini') | null
-  }
-  'openai-tts-settings'?: {
-    model?: ('tts-1' | 'tts-1-hd') | null
-    response_format?: ('aac' | 'flac' | 'mp3' | 'opus' | 'pcm' | 'wav') | null
-    speed?: null | number
-    voice?: ('alloy' | 'echo' | 'fable' | 'nova' | 'onyx' | 'shimmer') | null
-  }
-  prompt?: null | string
-  'schema-path'?: null | string
-  updatedAt: string
-}

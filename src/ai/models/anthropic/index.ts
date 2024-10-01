@@ -6,10 +6,12 @@ import type { GenerationConfig } from '../../../types.js'
 import { defaultSystemPrompt } from '../../prompts.js'
 import { generateRichText } from './generateRichText.js'
 
+const MODEL_KEY = 'ANTH-C'
+
 export const AnthropicConfig: GenerationConfig = {
   models: [
     {
-      id: 'anthropic-claude-text',
+      id: `${MODEL_KEY}-text`,
       name: 'Anthropic Claude',
       fields: ['text', 'textarea'],
       handler: async (
@@ -32,11 +34,11 @@ export const AnthropicConfig: GenerationConfig = {
       },
       output: 'text',
       settings: {
-        name: 'anthropic-claude-text-settings',
+        name: `${MODEL_KEY}-text-settings`,
         type: 'group',
         admin: {
           condition(data) {
-            return data['model-id'] === 'anthropic-claude-text'
+            return data['model-id'] === `${MODEL_KEY}-text`
           },
         },
         fields: [
@@ -57,7 +59,7 @@ export const AnthropicConfig: GenerationConfig = {
       },
     },
     {
-      id: 'anthropic-claude-object',
+      id: `${MODEL_KEY}-object`,
       name: 'Anthropic Claude',
       fields: ['richText'],
       handler: (text: string, options) => {
@@ -65,11 +67,11 @@ export const AnthropicConfig: GenerationConfig = {
       },
       output: 'text',
       settings: {
-        name: 'anthropic-claude-object-settings',
+        name: `${MODEL_KEY}-object-settings`,
         type: 'group',
         admin: {
           condition(data) {
-            return data['model-id'] === 'anthropic-claude-object'
+            return data['model-id'] === `${MODEL_KEY}-object`
           },
         },
         fields: [
