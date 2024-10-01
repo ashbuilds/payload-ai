@@ -6,17 +6,19 @@ import { streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
+import { defaultSystemPrompt } from '../../prompts.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateImage } from './generateImage.js'
 import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
-import { defaultSystemPrompt } from '../../prompts.js'
+
+const MODEL_KEY = 'Oai'
 
 //TODO: Simplify this file by moving the handlers to separate files and remove duplicate code
 export const OpenAIConfig: GenerationConfig = {
   models: [
     {
-      id: 'openai-gpt-text',
+      id: `${MODEL_KEY}-text`,
       name: 'OpenAI GPT Text',
       fields: ['text', 'textarea'],
       handler: async (
@@ -33,11 +35,11 @@ export const OpenAIConfig: GenerationConfig = {
       },
       output: 'text',
       settings: {
-        name: 'openai-gpt-text-settings',
+        name: `${MODEL_KEY}-text-settings`,
         type: 'group',
         admin: {
           condition(data) {
-            return data['model-id'] === 'openai-gpt-text'
+            return data['model-id'] === `${MODEL_KEY}-text`
           },
         },
         fields: [
@@ -136,7 +138,7 @@ export const OpenAIConfig: GenerationConfig = {
       },
       output: 'audio',
       settings: {
-        name: 'openai-tts-settings',
+        name: `${MODEL_KEY}-tts-settings`,
         type: 'group',
         admin: {
           condition(data) {
@@ -182,7 +184,7 @@ export const OpenAIConfig: GenerationConfig = {
       },
     },
     {
-      id: 'openai-gpt-object',
+      id: `${MODEL_KEY}-object`,
       name: 'OpenAI GPT',
       fields: ['richText'],
       handler: (text: string, options) => {
@@ -190,11 +192,11 @@ export const OpenAIConfig: GenerationConfig = {
       },
       output: 'text',
       settings: {
-        name: 'openai-gpt-object-settings',
+        name: `${MODEL_KEY}-object-settings`,
         type: 'group',
         admin: {
           condition(data) {
-            return data['model-id'] === 'openai-gpt-object'
+            return data['model-id'] === `${MODEL_KEY}-object`
           },
         },
         fields: [
