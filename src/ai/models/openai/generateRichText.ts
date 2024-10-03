@@ -31,5 +31,5 @@ ${JSON.stringify(exampleOutput)}`,
   }
 
   const generateResult = await generateObject(params)
-  return Response.json({text: generateResult.object})
+  return Response.json({ text: generateResult.object })
 }
