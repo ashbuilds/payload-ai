@@ -9,8 +9,9 @@ import {
   useForm,
   useLocale,
 } from '@payloadcms/ui'
+import { jsonSchema } from 'ai'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
@@ -18,10 +19,10 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   PLUGIN_INSTRUCTIONS_TABLE,
+  PLUGIN_NAME,
 } from '../../../defaults.js'
 import { useInstructions } from '../../../providers/InstructionsProvider/useInstructions.js'
 import { getFieldBySchemaPath } from '../../../utilities/getFieldBySchemaPath.js'
-import { jsonSchemaToZod } from '../../../utilities/jsonToZod.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
@@ -51,9 +52,11 @@ export const useGenerate = () => {
     config: { collections },
   } = useConfig()
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
-  const { custom: { editorConfig } = {} } = collection.admin
-  const { schema: DocumentSchema = {} } = editorConfig || {}
-  const lexicalZodSchema = jsonSchemaToZod(DocumentSchema)
+
+  const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
+  const { schema: editorSchema = {} } = editorConfig
+
+  const memoizedSchema = useMemo(() => jsonSchema(editorSchema), [editorSchema])
 
   const {
     isLoading: loadingObject,
@@ -73,7 +76,7 @@ export const useGenerate = () => {
         console.log('onFinish: result ', result)
       }
     },
-    schema: lexicalZodSchema,
+    schema: memoizedSchema,
   })
 
   useEffect(() => {

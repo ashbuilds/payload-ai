@@ -7,7 +7,7 @@ interface UpdateFieldsConfig {
 
 export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFieldsConfig => {
   let schemaPathMap = {}
-  let customComponentsFound = false
+
   function updateField(field: any, parentPath = ''): any {
     const currentPath = parentPath ? `${parentPath}.${field.name}` : field.name
     const currentSchemaPath = `${collectionConfig.slug}.${currentPath}`
@@ -37,6 +37,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
       // determine which components support injecting ComposeField as a Description.
       if (field.admin?.components?.Field || field.admin?.components?.Description) {
         // TODO: Do something?
+        customField = {}
       }
 
       return {

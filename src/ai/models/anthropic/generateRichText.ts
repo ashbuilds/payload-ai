@@ -1,12 +1,13 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { streamObject } from 'ai'
+import { jsonSchema, streamObject } from 'ai'
+
 import { exampleOutput } from '../example.js'
 
 export const generateRichText = async (text: string, options: any) => {
   const streamResult = await streamObject({
     model: anthropic(options.model),
     prompt: text,
-    schema: options.editorSchema,
+    schema: jsonSchema(options.editorSchema),
     system: `${options.system}
 
 RULES:

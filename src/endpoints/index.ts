@@ -2,9 +2,9 @@ import type { PayloadRequest } from 'payload'
 
 import type { ActionMenuItems, Endpoints } from '../types.js'
 
-import { lexicalSchema } from '../ai/schemas/lexical.schema.js'
 import { GenerationModels } from '../ai/models/index.js'
 import { defaultPrompts } from '../ai/prompts.js'
+import { lexicalJsonSchema } from '../ai/schemas/lexicalJsonSchema.js'
 import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
@@ -37,6 +37,7 @@ const assignPrompt = async (
 ) => {
   const prompt = await replacePlaceholders(template, context)
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
+  console.log('systemPrompt for every input : ', systemPrompt)
   const assignedPrompts = {
     layout,
     prompt,
@@ -95,9 +96,8 @@ export const endpoints: Endpoints = {
         (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
       )
 
-      const { editorConfig: { schema: editorSchema = lexicalSchema() } = {} } =
-        collection.custom || {}
-
+      const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
+      const { schema: editorSchema = {} } = editorConfig
       const { prompt: promptTemplate = '' } = instructions
 
       const schemaPath = instructions['schema-path'] as string
@@ -115,23 +115,19 @@ export const endpoints: Endpoints = {
       //TODO: remove this
       const opt = {
         locale: localeInfo,
-        modelId: instructions['model-id'],
       }
 
-      const model = GenerationModels.find((model) => model.id === opt.modelId)
+      const model = GenerationModels.find((model) => model.id === instructions['model-id'])
       const settingsName = model.settings?.name
-      const modelOptions = instructions[settingsName] as {
-        layout: string
-        system: string
-      }
+      const modelOptions = instructions[settingsName] || {}
 
       const prompts = await assignPrompt(action, {
         type: instructions['field-type'] as string,
         actionParams,
         context: contextData,
         field: fieldName,
-        layout: modelOptions.layout,
-        systemPrompt: modelOptions.system,
+        layout: instructions.layout,
+        systemPrompt: instructions.system,
         template: promptTemplate as string,
       })
 
