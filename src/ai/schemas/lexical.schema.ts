@@ -1,4 +1,3 @@
-import { Schema } from 'ai'
 import { z } from 'zod'
 
 // Example of custom node - wip

@@ -251,61 +251,14 @@ informative and accurate but also captivating and beautifully structured.`,
              *  - user can select previously added layout
              */
             name: 'layout',
-            type: 'array',
-            fields: [
-              {
-                name: 'component',
-                type: 'select',
-                options: Object.keys(LexicalSchemaMap),
-              },
-              {
-                name: 'variants',
-                type: 'group',
-                admin: {
-                  condition: (_, data) => {
-                    if (!data?.component) false
-
-                    return LexicalSchemaMap[data.component]?.variants?.length
-                  },
+            type: 'json',
+            admin: {
+              components: {
+                Field: {
+                  path: '@ai-stack/payloadcms/fields#LayoutBuilder',
                 },
-                fields: [
-                  {
-                    name: 'variants',
-                    type: 'select',
-                    options: variants,
-                  },
-                ],
-                label: '',
               },
-              {
-                name: 'children',
-                type: 'group',
-                admin: {
-                  condition: (_, data) => {
-                    if (!data?.component) false
-
-                    return LexicalSchemaMap[data.component]?.children?.length
-                  },
-                },
-                fields: [
-                  {
-                    name: 'contains',
-                    type: 'select',
-                    // admin: {
-                    //   condition: (_, data) => {
-                    //     return true
-                    //   },
-                    // },
-                    options: Lchildren,
-                  },
-                ],
-                label: '',
-              },
-              {
-                name: 'description',
-                type: 'text',
-              },
-            ],
+            },
             //             defaultValue: `[paragraph] - Write a concise introduction (2-3 sentences) that outlines the main topic.
             // [horizontalrule] - Insert a horizontal rule to separate the introduction from the main content.
             // [list] - Create a list with 3-5 items. Each list item should contain:

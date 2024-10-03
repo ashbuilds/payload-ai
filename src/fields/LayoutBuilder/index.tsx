@@ -1,273 +1,300 @@
-// @ts-nocheck
 'use client'
 
-
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
-import React, { useCallback, useState } from 'react'
-import { PlusCircle, Trash2, GripVertical } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button, Select } from '@payloadcms/ui'
+import { Button, Popup, useField, useFieldProps } from '@payloadcms/ui'
+import { PlusCircle, SquareMinus, SquarePlus, Trash2 } from 'lucide-react'
+import Tree, { TreeNode } from 'rc-tree'
+import 'rc-tree/assets/index.css'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import styles from './LayoutBuilder.module.scss'
+import { LexicalSchemaMenu } from './Menu.js'
+import { LexicalSchemaMap } from './schema.js'
+import './tree.scss'
+import { JSONFieldClientProps } from 'payload'
 
-type BaseNodeType = {
-  type: string;
-  children?: LayoutNodeType[];
-  direction?: 'ltr' | null;
-  format?: string;
-  indent?: number;
-  version?: number;
-};
+type LayoutNodeType = {
+  children?: LayoutNodeType[]
+  description?: string
+  key: string
+  title: string
+  type: string
+}
 
-type HeadingNodeType = BaseNodeType & {
-  type: 'heading';
-  tag: 'h1' | 'h2' | 'h3' | 'h4';
-};
+const LayoutBuilder: React.FC = (props: JSONFieldClientProps) => {
+  const { path } = useFieldProps()
+  const { setValue, value, ...restFieldInfo } = useField({
+    path,
+  })
 
-type HorizontalRuleNodeType = BaseNodeType & {
-  type: 'horizontalrule';
-};
+  const [treeData, setTreeData] = useState<LayoutNodeType[]>(value as LayoutNodeType[] || [])
+  const [expandedKeys, setExpandedKeys] = useState<string[]>([])
+  const nodeIdCounter = useRef(0)
 
-type LinkNodeType = BaseNodeType & {
-  type: 'link';
-  id: string;
-  fields: {
-    linkType: string;
-    newTab: boolean;
-    url: string;
-  };
-};
-
-type ParagraphNodeType = BaseNodeType & {
-  type: 'paragraph';
-};
-
-type QuoteNodeType = BaseNodeType & {
-  type: 'quote';
-};
-
-type TextNodeType = BaseNodeType & {
-  type: 'text';
-  format?: number;
-  text: string;
-};
-
-type ListNodeType = BaseNodeType & {
-  type: 'list';
-  listType: 'check' | 'number' | 'bullet';
-  start: number;
-  tag: 'ul' | 'ol';
-};
-
-type ListItemNodeType = BaseNodeType & {
-  type: 'listitem';
-  checked?: boolean;
-  value: number;
-};
-
-type LayoutNodeType =
-  | HeadingNodeType
-  | HorizontalRuleNodeType
-  | LinkNodeType
-  | ParagraphNodeType
-  | QuoteNodeType
-  | TextNodeType
-  | ListNodeType
-  | ListItemNodeType;
-
-// The rest of the component code remains the same
-const nodeTypes = [
-  'heading',
-  'horizontalrule',
-  'link',
-  'paragraph',
-  'quote',
-  'text',
-  'list',
-  'listitem',
-]
-
-
-const LayoutBuilder = () => {
-  const [layout, setLayout] = useState<LayoutNodeType[]>([])
-
-  const addNode = useCallback((parentPath = []) => {
-    const prevLayout = [...layout];
-
-    const newLayout = [...prevLayout];
-    let current = newLayout
-    for (const index of parentPath) {
-      if(current[index].children){
-        current = current[index].children
-      }
-    }
-
-    current.push({ type: 'paragraph', children: [] });
-
-    setLayout(newLayout);
-  },[layout]);
-
-
-
-  const updateNode = (path: number[], updates: Partial<LayoutNodeType>) => {
-    setLayout(prevLayout => {
-      const newLayout = [...prevLayout]
-      let current = newLayout
-      for (let i = 0; i < path.length - 1; i++) {
-        current = current[path[i]].children || []
-      }
-      const lastPath = path[path.length - 1];
-      // @ts-ignore
-      current[lastPath] = { ...current[lastPath], ...updates }
-      return newLayout
-    })
+  const onChange = (treeObject) => {
+   requestAnimationFrame(()=>{
+     setValue(treeObject)
+   })
   }
 
-  const removeNode = (path: number[]) => {
-    setLayout(prevLayout => {
-      const newLayout = [...prevLayout]
-      let current = newLayout
-      for (let i = 0; i < path.length - 1; i++) {
-        current = current[path[i]].children || []
+  useEffect(() => {
+    console.log('props - >', props)
+    console.log('field - >', restFieldInfo)
+  }, [treeData])
+
+  const generateKey = useCallback(() => {
+    nodeIdCounter.current += 1
+    return `node-${nodeIdCounter.current}`
+  }, [nodeIdCounter])
+
+  const addNode = useCallback(
+    (parentKey: null | string, selected: string, parent?: Partial<LayoutNodeType>) => {
+      setTreeData((prevTreeData) => {
+        const createNode = (type: string, children?: LayoutNodeType[]): LayoutNodeType => ({
+          type,
+          children,
+          description: '',
+          key: generateKey(),
+          title: type,
+        })
+
+        let newNode: LayoutNodeType
+
+        if (parent?.type) {
+          // Handle nested structures like list -> listitem
+          newNode = createNode(parent.type)
+          newNode.children = (parent.children as any)?.map((childType) => {
+            const { children } = LexicalSchemaMap[childType]
+            return createNode(
+              childType?.type || childType,
+              children ? [createNode(children[0])] : undefined,
+            )
+          })
+        } else {
+          newNode = createNode(selected)
+        }
+
+        const addNodeToTree = (nodes: LayoutNodeType[]): LayoutNodeType[] => {
+          return nodes.map((node) => {
+            if (node.key === parentKey) {
+              return {
+                ...node,
+                children: [...(node.children || []), newNode],
+              }
+            } else if (node.children) {
+              return {
+                ...node,
+                children: addNodeToTree(node.children),
+              }
+            }
+            return node
+          })
+        }
+        const mutatedNodes = parentKey ? addNodeToTree(prevTreeData) : [...prevTreeData, newNode]
+        onChange(mutatedNodes)
+
+        return mutatedNodes
+      })
+    },
+    [generateKey],
+  )
+
+  const updateNode = useCallback((key: string, updates: Partial<LayoutNodeType>) => {
+    setTreeData((prevTreeData) => {
+      const updateNodeInTree = (nodes: LayoutNodeType[]): LayoutNodeType[] => {
+        return nodes.map((node) => {
+          if (node.key === key) {
+            return { ...node, ...updates }
+          } else if (node.children) {
+            return {
+              ...node,
+              children: updateNodeInTree(node.children),
+            }
+          }
+          return node
+        })
       }
-      current.splice(path[path.length - 1], 1)
-      return newLayout
+      const mutatedNodes = updateNodeInTree(prevTreeData)
+      onChange(mutatedNodes)
+
+      return mutatedNodes
     })
-  }
+  }, [])
 
-  const onDragEnd = useCallback((result) => {
-    if (!result.destination) return;
+  const removeNode = useCallback((key: string) => {
+    setTreeData((prevTreeData) => {
+      const removeNodeFromTree = (nodes: LayoutNodeType[]): LayoutNodeType[] => {
+        return nodes.filter((node) => {
+          if (node.key === key) {
+            return false
+          } else if (node.children) {
+            node.children = removeNodeFromTree(node.children)
+          }
+          return true
+        })
+      }
+      const mutatedNodes = removeNodeFromTree(prevTreeData)
+      onChange(mutatedNodes)
 
-    const sourcePath = result.source.droppableId.split('-').slice(1).map(Number);
-    const destPath = result.destination.droppableId.split('-').slice(1).map(Number);
+      return mutatedNodes
+    })
+  }, [])
 
-    setLayout((prevLayout) => {
-      const newLayout = JSON.parse(JSON.stringify(prevLayout));
+  const onDragDrop = useCallback((info: any) => {
+    const { dragNode, dropPosition, dropToGap, node: dropNode } = info
 
-      // Helper function to get node by path
-      const getNodeByPath = (layout, path) => {
-        return path.reduce((acc, index) => acc[index]?.children || acc[index], layout);
-      };
+    setTreeData((prevTreeData) => {
+      const loop = (
+        data: LayoutNodeType[],
+        key: React.Key,
+        callback: (node: LayoutNodeType, index: number, arr: LayoutNodeType[]) => void,
+      ) => {
+        data.forEach((item, index, arr) => {
+          if (item.key === key) {
+            callback(item, index, arr)
+            return
+          }
+          if (item.children) {
+            loop(item.children, key, callback)
+          }
+        })
+      }
 
-      // Remove the dragged item from its original position
-      const sourceParent = getNodeByPath(newLayout, sourcePath);
-      const [removed] = sourceParent.splice(result.source.index, 1);
+      const data = [...prevTreeData]
+      let dragObj: LayoutNodeType | undefined
 
-      // Insert the item in its new position
-      const destParent = getNodeByPath(newLayout, destPath);
-      destParent?.splice(result.destination.index, 0, removed);
+      loop(data, dragNode.key, (item, index, arr) => {
+        arr.splice(index, 1)
+        dragObj = item
+      })
 
-      return newLayout;
-    });
-  }, []);
+      if (!dragObj) {
+        console.error('Dragged node not found')
+        return prevTreeData
+      }
 
-  const renderNode = (node: LayoutNodeType, path: number[]) => {
+      if (!dropNode) {
+        // Dropping at root level
+        return dropPosition < 0 ? [dragObj, ...data] : [...data, dragObj]
+      }
 
-    const nodes = node.children?.map((child, index) =>
-      renderNode(child, [...path, index]),
-    )
+      if (dropToGap) {
+        let ar: LayoutNodeType[] | undefined
+        let i: number | undefined
+        loop(data, dropNode.key, (item, index, arr) => {
+          ar = arr
+          i = index
+        })
 
-    const draggable = node.children && (
-        <Droppable droppableId={`droppable-${path.join('-')}`} direction="vertical">
-          {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              {nodes}
-              {provided.placeholder}
-            </div>
+        if (ar && typeof i === 'number') {
+          if (dropPosition === -1) {
+            ar.splice(i, 0, dragObj)
+          } else {
+            ar.splice(i + 1, 0, dragObj)
+          }
+        }
+      } else {
+        loop(data, dropNode.key, (item) => {
+          item.children = item.children || []
+          item.children.unshift(dragObj)
+        })
+      }
+
+      onChange(data)
+
+      return data
+    })
+  }, [])
+
+  const popup = useCallback(
+    (node, button = <PlusCircle className="h-4 w-4" size={12} />) => {
+      return (
+        <Popup
+          button={button}
+          render={({ close }) => (
+            <LexicalSchemaMenu
+              onSelect={(selected, parent) => {
+                addNode(node.key, selected, parent)
+                close()
+              }}
+            />
           )}
-        </Droppable>
+          verticalAlign="bottom"
+        />
       )
+    },
+    [addNode],
+  )
 
-    return (
-      <Draggable key={path.join('-')} draggableId={`draggable-${path.join('-')}`} index={path[path.length - 1]}
-      >
-        {(provided) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            className={styles.builder}
-          >
-            <div className={styles.inputWrapper}>
-              <div {...provided.dragHandleProps}>
-                <GripVertical className="h-5 w-5 text-gray-400" />
-              </div>
-              <Select
-                className={styles.select}
-                value={node.type}
-                onChange={(value) => updateNode(path, { type: value })}
-                options={nodeTypes.map(type => ({
-                  label: type,
-                  value: type,
-                }))}
-              >
-              </Select>
-              <Button onClick={() => addNode(path)} size="icon" variant="outline">
-                <PlusCircle className="h-4 w-4" />
-              </Button>
-              <Button onClick={() => removeNode(path)} size="icon" variant="outline">
-                <Trash2 className="h-4 w-4" />
-              </Button>
+  const renderTreeNodes = (nodes: LayoutNodeType[] = []): React.ReactNode => {
+    return nodes.map((node) => (
+      <TreeNode
+        icon={<span />}
+        key={node.key}
+        selectable={false}
+        switcherIcon={
+          <span>
+            <SquarePlus className="rc-lb-open" size="16px" />
+            <SquareMinus className="rc-lb-close" size="16px" />
+          </span>
+        }
+        title={
+          <div className={styles.nodeWrapper}>
+            <div className={styles.item}>
+              {node.type !== 'horizontalrule' ? (
+                <React.Fragment>
+                  <span className={styles.nodeType}>{node.type}</span>
+                  <div
+                    className={styles.contentEditable}
+                    contentEditable
+                    dangerouslySetInnerHTML={{ __html: node.description || '' }}
+                    onBlur={(e) =>
+                      updateNode(node.key, { description: e.currentTarget.textContent || '' })
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        addNode(node.key, 'paragraph')
+                      }
+                    }}
+                  />
+                </React.Fragment>
+              ) : (
+                <hr className={styles.horizontalrule} />
+              )}
             </div>
-            {node.type === 'text' && (
-              <Input
-                value={(node as TextNodeType).text || ''}
-                onChange={(e) => updateNode(path, { text: e.target.value } as Partial<TextNodeType>)}
-                placeholder="Enter text"
-                className="mb-2"
-              />
-            )}
-            {draggable}
+            {popup(node)}
+            <Button
+              buttonStyle="none"
+              className={styles.removeNodeButton}
+              onClick={() => removeNode(node.key)}
+            >
+              <Trash2 className="h-4 w-4" size={12} />
+            </Button>
           </div>
-        )}
-      </Draggable>
-    )
-  }
-
-  const generateLayoutJSON = () => {
-    const addDescription = (node: LayoutNodeType) => {
-      let description = `A ${node.type} node`
-      if (node.type === 'heading') {
-        description += ' (HTML heading tag)'
-      } else if (node.type === 'link') {
-        description += ' (HTML anchor tag)'
-      } else if (node.type === 'list') {
-        description += ' (HTML unordered or ordered list)'
-      } else if (node.type === 'listitem') {
-        description += ' (HTML list item tag)'
-      }
-      return { ...node, description }
-    }
-
-    const processNode = (node: LayoutNodeType): LayoutNodeType => {
-      const processedNode = addDescription(node)
-      if (node.children) {
-        processedNode.children = node.children.map(processNode)
-      }
-      return processedNode
-    }
-
-    return layout.map(processNode)
+        }
+      >
+        {node.children && renderTreeNodes(node.children)}
+      </TreeNode>
+    ))
   }
 
   return (
-    <div className="p-4">
+    <div className={styles.wrapper}>
       <h1 className="text-2xl font-bold mb-4">Layout Builder</h1>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="root" isDropDisabled={true}>
-          {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              {layout.map((node, index) => renderNode(node, [index]))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-      <Button onClick={() => addNode()} className="mt-4">Add Root Node</Button>
+      {/* @ts-expect-error */}
+      <Tree
+        className={styles.rcTree}
+        draggable
+        expandedKeys={expandedKeys}
+        onDrop={onDragDrop}
+        onExpand={(keys) => setExpandedKeys(keys as string[])}
+      >
+        {renderTreeNodes(treeData)}
+      </Tree>
+      {popup([], <Button className="mt-4">Add Root Node</Button>)}
       <div className="mt-4">
         <h2 className="text-xl font-semibold mb-2">Generated Layout JSON:</h2>
-        <pre className="bg-gray-100 p-4 rounded">
-          {JSON.stringify(generateLayoutJSON(), null, 2)}
-        </pre>
+        <pre className="bg-gray-100 p-4 rounded">{JSON.stringify(treeData, null, 2)}</pre>
       </div>
     </div>
   )
