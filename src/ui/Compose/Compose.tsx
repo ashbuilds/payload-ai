@@ -1,7 +1,7 @@
 'use client'
 
 import type { FieldDescriptionClientProps } from 'payload'
-import type { FC} from 'react';
+import type { FC } from 'react'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
@@ -35,9 +35,12 @@ type ComposeProps = {
   instructionId: string
 }
 
-export const Compose: FC<ComposeProps> = (props) => {
+export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) => {
+  // Disable Component if no instructionId is provided
+  if (!instructionId) return null
+
   const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
-    id: props.instructionId,
+    id: instructionId,
     collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
   })
 
@@ -177,9 +180,9 @@ export const Compose: FC<ComposeProps> = (props) => {
         />
       </label>
       {/*Render incoming description field*/}
-      {props.descriptionProps ? (
+      {descriptionProps ? (
         <div>
-          <FieldDescription {...props.descriptionProps} />
+          <FieldDescription {...descriptionProps} />
         </div>
       ) : null}
     </React.Fragment>

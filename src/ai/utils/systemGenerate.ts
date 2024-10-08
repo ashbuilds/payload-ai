@@ -4,7 +4,7 @@ import { generateText } from 'ai'
 
 import { PLUGIN_DEFAULT_ANTHROPIC_MODEL, PLUGIN_DEFAULT_OPENAI_MODEL } from '../../defaults.js'
 
-export const generateSeedPrompt = async (data: { prompt: string; system: string }) => {
+export const systemGenerate = async (data: { prompt: string; system: string }) => {
   const { prompt, system } = data
   let model = null
 

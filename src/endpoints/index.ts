@@ -2,7 +2,6 @@ import type { PayloadRequest } from 'payload'
 
 import type { ActionMenuItems, Endpoints } from '../types.js'
 
-import { lexicalSchema } from '../ai/schemas/lexical.schema.js'
 import { GenerationModels } from '../ai/models/index.js'
 import { defaultPrompts } from '../ai/prompts.js'
 import {
@@ -37,10 +36,12 @@ const assignPrompt = async (
 ) => {
   const prompt = await replacePlaceholders(template, context)
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
+
   const assignedPrompts = {
-    layout,
+    layout: type === 'richText' ? layout : undefined,
     prompt,
-    system: systemPrompt,
+    //TODO: Define only once on a collection level
+    system: type === 'richText' ? systemPrompt : undefined,
   }
 
   if (action === 'Compose') {
@@ -95,9 +96,8 @@ export const endpoints: Endpoints = {
         (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
       )
 
-      const { editorConfig: { schema: editorSchema = lexicalSchema() } = {} } =
-        collection.custom || {}
-
+      const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
+      const { schema: editorSchema = {} } = editorConfig
       const { prompt: promptTemplate = '' } = instructions
 
       const schemaPath = instructions['schema-path'] as string
@@ -112,26 +112,17 @@ export const endpoints: Endpoints = {
 
       const localeInfo = localeData?.label[defaultLocale] || locale
 
-      //TODO: remove this
-      const opt = {
-        locale: localeInfo,
-        modelId: instructions['model-id'],
-      }
-
-      const model = GenerationModels.find((model) => model.id === opt.modelId)
+      const model = GenerationModels.find((model) => model.id === instructions['model-id'])
       const settingsName = model.settings?.name
-      const modelOptions = instructions[settingsName] as {
-        layout: string
-        system: string
-      }
+      const modelOptions = instructions[settingsName] || {}
 
       const prompts = await assignPrompt(action, {
         type: instructions['field-type'] as string,
         actionParams,
         context: contextData,
         field: fieldName,
-        layout: modelOptions.layout,
-        systemPrompt: modelOptions.system,
+        layout: instructions.layout,
+        systemPrompt: instructions.system,
         template: promptTemplate as string,
       })
 
@@ -139,9 +130,9 @@ export const endpoints: Endpoints = {
       return model
         .handler?.(prompts.prompt, {
           ...modelOptions,
-          ...opt,
           editorSchema,
           layout: prompts.layout,
+          locale: localeInfo,
           system: prompts.system,
         })
         .catch((error) => {
@@ -157,7 +148,7 @@ export const endpoints: Endpoints = {
       const data = await req.json?.()
 
       const { options } = data
-      const { instructionId, uploadCollectionSlug } = options
+      const { instructionId } = options
       const contextData = data.doc
 
       let instructions = { 'model-id': '', prompt: '' }
@@ -177,12 +168,11 @@ export const endpoints: Endpoints = {
 
       const text = await replacePlaceholders(promptTemplate, contextData)
       const modelId = instructions['model-id']
-      console.log('prompt text:', text)
+      const uploadCollectionSlug = instructions['relation-to']
 
       const model = GenerationModels.find((model) => model.id === modelId)
       const settingsName = model.settings?.name
       const modelOptions = instructions[settingsName] || {}
-      console.log('modelOptions', modelOptions)
 
       const result = await model.handler?.(text, modelOptions)
 

@@ -1,10 +1,11 @@
 import type { Payload } from 'payload'
 
+import type { PluginConfig } from './types.js'
+
 import { GenerationModels } from './ai/models/index.js'
 import { seedPrompts } from './ai/prompts.js'
-import { generateSeedPrompt } from './ai/utils/generateSeedPrompt.js'
-import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
-import type { PluginConfig } from './types.js'
+import { systemGenerate } from './ai/utils/systemGenerate.js'
+import { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
 
 export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: PluginConfig) => {
   payload.logger.info(`— AI Plugin: Initializing...`)
@@ -14,10 +15,10 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
   const fieldInstructionsMap = {}
   for (let i = 0; i < paths.length; i++) {
     const path = paths[i]
-    const { type: fieldType, label: fieldLabel } = fieldSchemaPaths[path]
-    //TODO: if global is broken the plugin doesn't know and does not run reindexing
+    const { type: fieldType, label: fieldLabel, relationTo } = fieldSchemaPaths[path]
     const entry = await payload.find({
       collection: PLUGIN_INSTRUCTIONS_TABLE,
+      pagination: false,
       where: {
         'field-type': {
           equals: fieldType,
@@ -38,7 +39,7 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
 
       let generatedPrompt = '{{ title }}'
       if (pluginConfig.generatePromptOnInit) {
-        generatedPrompt = await generateSeedPrompt({
+        generatedPrompt = await systemGenerate({
           prompt,
           system,
         })
@@ -56,12 +57,13 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
               return a.fields.includes(fieldType)
             })?.id,
             prompt: generatedPrompt,
+            'relation-to': relationTo,
             'schema-path': path,
           },
         })
         .then((a) => a)
-        .catch((a) => {
-          console.log('err-', a)
+        .catch((err) => {
+          console.log('— AI Plugin: Error creating Compose settings-', err)
         })
 
       // @ts-expect-error
@@ -80,16 +82,11 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
     }
   }
 
-  payload.logger.info(
-    `— AI Plugin: Enabled fieldMap: ${JSON.stringify(fieldInstructionsMap, null, 2)}`,
-  )
-  await payload.updateGlobal({
-    slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL, // required
-    data: {
-      map: fieldInstructionsMap,
-    },
-    depth: 2,
-  })
+  if (pluginConfig.debugging) {
+    payload.logger.info(
+      `— AI Plugin: Enabled fields map: ${JSON.stringify(fieldInstructionsMap, null, 2)}`,
+    )
+  }
 
   payload.logger.info(`— AI Plugin: Initialized!`)
   if (pluginConfig.generatePromptOnInit) {
