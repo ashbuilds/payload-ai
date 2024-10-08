@@ -177,5 +177,6 @@ informative and accurate but also captivating and beautifully structured.`,
     ],
     labels: {
       plural: 'Compose Settings',
+      singular: 'Compose Setting',
     },
   }

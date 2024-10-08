@@ -12,7 +12,13 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
     const currentPath = parentPath ? `${parentPath}.${field.name}` : field.name
     const currentSchemaPath = `${collectionConfig.slug}.${currentPath}`
 
-    if (field.admin?.disabled || field.admin?.readOnly || field.admin?.hidden) {
+    // Disabled fields/ field types
+    if (
+      field.admin?.disabled ||
+      field.admin?.readOnly ||
+      field.admin?.hidden ||
+      field.type === 'row'
+    ) {
       return field
     }
 
