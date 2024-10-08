@@ -1,5 +1,6 @@
 'use client'
 
+import { useConfig } from '@payloadcms/ui'
 import { getPayload } from 'payload'
 import React, { createContext, useEffect, useState } from 'react'
 
@@ -16,10 +17,16 @@ export const InstructionsContext = createContext(initialContext)
 export const InstructionsProvider: React.FC = ({ children }: { children: React.ReactNode }) => {
   const [instructions, setInstructionsState] = useState({})
 
+  const { config } = useConfig()
+  const {
+    routes: { api },
+    serverURL,
+  } = config
+
   // This is here because each field have separate instructions and
   // their ID is needed to edit them for Drawer
   useEffect(() => {
-    fetch(`api/${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
+    fetch(`${serverURL}${api}${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
       .then(async (res) => {
         await res.json().then((data) => {
           setInstructionsState(data)

@@ -23,6 +23,12 @@ export const useGenerate = () => {
   const editorConfigContext = useEditorConfigContext()
   const { editor } = editorConfigContext
 
+  const { config } = useConfig()
+  const {
+    routes: { api },
+    serverURL,
+  } = config
+
   const { setValue } = useField<string>({
     path: pathFromContext,
   })
@@ -37,8 +43,8 @@ export const useGenerate = () => {
   const {
     config: { collections },
   } = useConfig()
-  const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
 
+  const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
   const { schema: editorSchema = {} } = editorConfig
 
@@ -84,7 +90,7 @@ export const useGenerate = () => {
     completion,
     isLoading: loadingCompletion,
   } = useCompletion({
-    api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
+    api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
       console.error('Error generating text:', error)
     },
@@ -144,7 +150,7 @@ export const useGenerate = () => {
   const generateUpload = useCallback(async () => {
     const doc = getData()
 
-    return fetch(`/api${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
+    return fetch(`${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
       body: JSON.stringify({
         doc,
         locale: localFromContext?.code,
