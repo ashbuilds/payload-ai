@@ -1,8 +1,11 @@
 'use client'
 
+import { getPayload } from 'payload'
 import React, { createContext, useEffect, useState } from 'react'
 
-import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL } from '../../defaults.js'
+import type { GenerateTextarea } from '../../types.js'
+
+import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
 
 const initialContext = {
   instructions: undefined,
@@ -14,13 +17,12 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
   const [instructions, setInstructionsState] = useState({})
 
   // This is here because each field have separate instructions and
-  // their ID is needed to edit them for Drawer, so instead of fetching it
-  // one by one its map is saved in globals during build
+  // their ID is needed to edit them for Drawer
   useEffect(() => {
-    fetch(`/api/globals/${PLUGIN_INSTRUCTIONS_MAP_GLOBAL}`)
-      .then((res) => {
-        res.json().then((data) => {
-          setInstructionsState(data.map)
+    fetch(`api/${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
+      .then(async (res) => {
+        await res.json().then((data) => {
+          setInstructionsState(data)
         })
       })
       .catch((err) => {

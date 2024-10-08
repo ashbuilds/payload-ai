@@ -80,12 +80,12 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
       {
         name: 'relation-to',
         type: 'text',
-        admin:{
-          condition: (_, current) =>{
-            return current['field-type'] === "upload"
-          }
+        admin: {
+          condition: (_, current) => {
+            return current['field-type'] === 'upload'
+          },
         },
-        label: 'Relation to'
+        label: 'Relation to',
       },
       {
         name: 'model-id',
@@ -135,6 +135,11 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
               {
                 name: 'system',
                 type: 'textarea',
+                admin: {
+                  condition: (_, current) => {
+                    return current['field-type'] === 'richText'
+                  },
+                },
                 defaultValue: `INSTRUCTIONS:
 You are a highly skilled and professional blog writer,
 renowned for crafting engaging and well-organized articles.

@@ -1,4 +1,5 @@
 import { useFieldProps } from '@payloadcms/ui'
+import React from 'react'
 
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { Compose } from '../../ui/Compose/Compose.js'

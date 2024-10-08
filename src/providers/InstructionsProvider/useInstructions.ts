@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 
-import { InstructionsContext } from './InstructionsProvider.js'
 import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
+import { InstructionsContext } from './InstructionsProvider.js'
 
 export const useInstructions = ({ path }) => {
   const context = useContext(InstructionsContext)

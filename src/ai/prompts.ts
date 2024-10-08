@@ -13,7 +13,7 @@ type ActionPrompt = {
   system: (options: ActionPromptOptions) => string
 }
 
-//TODO: This is a temporary solution make use of structured object in API
+//TODO: This is a temporary solution make use of structured output
 export const defaultSystemPrompt = `IMPORTANT INSTRUCTION:
 Produce only the requested output text.
 Do not add any explanations, comments, or engagement.

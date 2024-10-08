@@ -40,7 +40,8 @@ const assignPrompt = async (
   const assignedPrompts = {
     layout: type === 'richText' ? layout : undefined,
     prompt,
-    system: systemPrompt,
+    //TODO: Define only once on a collection level
+    system: type === 'richText' ? systemPrompt : undefined,
   }
 
   if (action === 'Compose') {

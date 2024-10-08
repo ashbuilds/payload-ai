@@ -6,7 +6,8 @@ import type { PluginConfig } from './types.js'
 
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { instructionsCollection } from './collections/Instructions.js'
-import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_NAME } from './defaults.js'
+import { PLUGIN_NAME } from './defaults.js'
+import { fetchFields } from './endpoints/fetchFields.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
 import { translations } from './translations/index.js'
@@ -79,24 +80,11 @@ const payloadAiPlugin =
 
           return collection
         }),
-        endpoints: [...(incomingConfig.endpoints ?? []), endpoints.textarea, endpoints.upload],
-        globals: [
-          ...(incomingConfig.globals || []),
-          {
-            slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL,
-            access: {
-              read: () => true,
-            },
-            admin: {
-              hidden: !pluginConfig.debugging,
-            },
-            fields: [
-              {
-                name: 'map',
-                type: 'json',
-              },
-            ],
-          },
+        endpoints: [
+          ...(incomingConfig.endpoints ?? []),
+          endpoints.textarea,
+          endpoints.upload,
+          fetchFields,
         ],
         i18n: {
           ...(incomingConfig.i18n || {}),
