@@ -2,7 +2,7 @@ import type { Payload } from 'payload'
 
 import { GenerationModels } from './ai/models/index.js'
 import { seedPrompts } from './ai/prompts.js'
-import { generateSeedPrompt } from './ai/utils/generateSeedPrompt.js'
+import { systemGenerate } from './ai/utils/systemGenerate.js'
 import { PLUGIN_INSTRUCTIONS_MAP_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
 import type { PluginConfig } from './types.js'
 
@@ -38,7 +38,7 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
 
       let generatedPrompt = '{{ title }}'
       if (pluginConfig.generatePromptOnInit) {
-        generatedPrompt = await generateSeedPrompt({
+        generatedPrompt = await systemGenerate({
           prompt,
           system,
         })
@@ -84,7 +84,7 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
     `— AI Plugin: Enabled fieldMap: ${JSON.stringify(fieldInstructionsMap, null, 2)}`,
   )
   await payload.updateGlobal({
-    slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL, // required
+    slug: PLUGIN_INSTRUCTIONS_MAP_GLOBAL,
     data: {
       map: fieldInstructionsMap,
     },

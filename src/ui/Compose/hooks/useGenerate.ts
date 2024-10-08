@@ -28,7 +28,7 @@ import { useHistory } from './useHistory.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
 
-//TODO: DONATION IDEA - Add a url to donate in cli when user installs the plugin and uses it for couple of times.
+
 export const useGenerate = () => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
 

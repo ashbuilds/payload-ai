@@ -32,12 +32,6 @@ const defaultAdminConfig = {
 export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
   <CollectionConfig>{
     slug: PLUGIN_INSTRUCTIONS_TABLE,
-    labels: {
-      plural: 'A.I Instructions',
-      singular: 'A.I Instruction',
-    },
-
-    // TODO: Revisit permissions, better if end user can provide this
     access: {
       ...defaultAccessConfig,
       ...options?.access,
@@ -106,6 +100,7 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
         }),
       },
       {
+        id: 'ai-prompts-tabs',
         type: 'tabs',
         tabs: [
           {
@@ -122,7 +117,7 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
                 label: '',
               },
             ],
-            label: 'Prompt'
+            label: 'Prompt',
           },
           {
             description: 'This will appear within the tab above the fields. sys',
@@ -141,6 +136,13 @@ informative and accurate but also captivating and beautifully structured.`,
             label: 'System prompt',
           },
           {
+            // Note: Update when tabs PR is merged: https://github.com/payloadcms/payload/pull/8406
+            // admin: {
+            //   condition: (_, current) => {
+            //     console.log('condition in tab', current)
+            //     return current['field-type'] === 'richText'
+            //   },
+            // },
             description: 'This will appear within the tab above the fields. Layout',
             fields: [
               {
@@ -153,7 +155,7 @@ informative and accurate but also captivating and beautifully structured.`,
                 type: 'textarea',
                 admin: {
                   condition: (_, current) => {
-                    return current['model-id'].includes('-object')
+                    return current['field-type'] === 'richText'
                   },
                 },
                 defaultValue: `[paragraph] - Write a concise introduction (2-3 sentences) that outlines the main topic.
@@ -173,15 +175,7 @@ informative and accurate but also captivating and beautifully structured.`,
       },
       ...groupSettings,
     ],
-    hooks: {
-      beforeChange: [
-        (req) => {
-          if (req.data['openai-gpt-object-settings']?.layout?.length === 0) {
-            // TODO: why??
-            req.data['openai-gpt-object-settings'].layout = ''
-          }
-          return req.data
-        },
-      ],
+    labels: {
+      plural: 'Compose Settings',
     },
   }

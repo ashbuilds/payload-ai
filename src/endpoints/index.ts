@@ -4,7 +4,6 @@ import type { ActionMenuItems, Endpoints } from '../types.js'
 
 import { GenerationModels } from '../ai/models/index.js'
 import { defaultPrompts } from '../ai/prompts.js'
-import { lexicalJsonSchema } from '../ai/schemas/lexicalJsonSchema.js'
 import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
@@ -37,9 +36,9 @@ const assignPrompt = async (
 ) => {
   const prompt = await replacePlaceholders(template, context)
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
-  console.log('systemPrompt for every input : ', systemPrompt)
+
   const assignedPrompts = {
-    layout,
+    layout: type === 'richText' ? layout : undefined,
     prompt,
     system: systemPrompt,
   }
@@ -112,11 +111,6 @@ export const endpoints: Endpoints = {
 
       const localeInfo = localeData?.label[defaultLocale] || locale
 
-      //TODO: remove this
-      const opt = {
-        locale: localeInfo,
-      }
-
       const model = GenerationModels.find((model) => model.id === instructions['model-id'])
       const settingsName = model.settings?.name
       const modelOptions = instructions[settingsName] || {}
@@ -135,9 +129,9 @@ export const endpoints: Endpoints = {
       return model
         .handler?.(prompts.prompt, {
           ...modelOptions,
-          ...opt,
           editorSchema,
           layout: prompts.layout,
+          locale: localeInfo,
           system: prompts.system,
         })
         .catch((error) => {
@@ -173,12 +167,10 @@ export const endpoints: Endpoints = {
 
       const text = await replacePlaceholders(promptTemplate, contextData)
       const modelId = instructions['model-id']
-      console.log('prompt text:', text)
 
       const model = GenerationModels.find((model) => model.id === modelId)
       const settingsName = model.settings?.name
       const modelOptions = instructions[settingsName] || {}
-      console.log('modelOptions', modelOptions)
 
       const result = await model.handler?.(text, modelOptions)
 
