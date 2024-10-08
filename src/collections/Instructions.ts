@@ -78,6 +78,16 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
         ],
       },
       {
+        name: 'relation-to',
+        type: 'text',
+        admin:{
+          condition: (_, current) =>{
+            return current['field-type'] === "upload"
+          }
+        },
+        label: 'Relation to'
+      },
+      {
         name: 'model-id',
         type: 'select',
         admin: {

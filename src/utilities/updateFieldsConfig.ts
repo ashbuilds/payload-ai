@@ -31,6 +31,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFi
         [currentSchemaPath]: {
           type: field.type,
           label: field.label || field.name,
+          relationTo: field.relationTo,
         },
       }
     }

@@ -147,7 +147,7 @@ export const endpoints: Endpoints = {
       const data = await req.json?.()
 
       const { options } = data
-      const { instructionId, uploadCollectionSlug } = options
+      const { instructionId } = options
       const contextData = data.doc
 
       let instructions = { 'model-id': '', prompt: '' }
@@ -167,6 +167,7 @@ export const endpoints: Endpoints = {
 
       const text = await replacePlaceholders(promptTemplate, contextData)
       const modelId = instructions['model-id']
+      const uploadCollectionSlug = instructions['relation-to']
 
       const model = GenerationModels.find((model) => model.id === modelId)
       const settingsName = model.settings?.name

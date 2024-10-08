@@ -1,14 +1,5 @@
-import type { ClientCollectionConfig, UploadField } from 'payload'
-
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import {
-  useConfig,
-  useDocumentInfo,
-  useField,
-  useFieldProps,
-  useForm,
-  useLocale,
-} from '@payloadcms/ui'
+import { useConfig, useField, useFieldProps, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { useCallback, useEffect, useMemo } from 'react'
@@ -22,20 +13,15 @@ import {
   PLUGIN_NAME,
 } from '../../../defaults.js'
 import { useInstructions } from '../../../providers/InstructionsProvider/useInstructions.js'
-import { getFieldBySchemaPath } from '../../../utilities/getFieldBySchemaPath.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
 
-
 export const useGenerate = () => {
   const { type, path: pathFromContext, schemaPath } = useFieldProps()
-
   const editorConfigContext = useEditorConfigContext()
   const { editor } = editorConfigContext
-
-  const { docConfig } = useDocumentInfo()
 
   const { setValue } = useField<string>({
     path: pathFromContext,
@@ -158,18 +144,12 @@ export const useGenerate = () => {
   const generateUpload = useCallback(async () => {
     const doc = getData()
 
-    const fieldInfo = getFieldBySchemaPath(
-      docConfig as ClientCollectionConfig,
-      schemaPath,
-    ) as UploadField
-
     return fetch(`/api${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
       body: JSON.stringify({
         doc,
         locale: localFromContext?.code,
         options: {
           instructionId,
-          uploadCollectionSlug: fieldInfo.relationTo || 'media',
         },
       } satisfies Parameters<GenerateTextarea>[0]),
       credentials: 'include',
