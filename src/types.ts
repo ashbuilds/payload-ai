@@ -1,5 +1,5 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
-import type { Endpoint, Field, GroupField } from 'payload'
+import type { Collection, Endpoint, Field, GroupField } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
 
 
