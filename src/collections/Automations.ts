@@ -4,7 +4,7 @@ import type { CollectionConfig, GroupField } from 'payload'
 // import { RunButton } from '@/components/RunButton/RunButton'
 
 import { GenerationModels } from '../ai/models/index.js'
-import { PLUGIN_AUTOMATIONS_TABLE } from '../defaults.js'
+import { PLUGIN_AUTOMATIONS_TABLE, PLUGIN_NAME } from '../defaults.js'
 
 const textModels = GenerationModels.filter((model) => {
   return model.fields.includes('text')
@@ -44,13 +44,7 @@ export const Automations: CollectionConfig = {
     components: {
       edit: {
         PreviewButton: {
-          path: '@/components/RunButton#RunButton',
-          // clientProps: {
-          //   children: "Run",
-          //   buttonStyle: "secondary",
-          // },
-          // serverProps: {
-          // }
+          path: '@ai-stack/payloadcms/client#RunButton',
         },
       },
     },
@@ -163,7 +157,7 @@ export const Automations: CollectionConfig = {
                   ],
                 },
                 {
-                  slug: 'sentiment-analysis',
+                  slug: 's-analysis',
                   fields: [
                     {
                       name: 'description',
@@ -187,6 +181,11 @@ export const Automations: CollectionConfig = {
                         {
                           name: 'response',
                           type: 'code',
+                          admin: {
+                            style: {
+                              minHeight: '200px',
+                            },
+                          },
                           label: '',
                         },
                       ],
@@ -194,13 +193,19 @@ export const Automations: CollectionConfig = {
                     },
                   ],
                   interfaceName: 'Sentiment Analysis',
+                  labels: {
+                    plural: 'Sentiment Analysis',
+                    singular: 'Sentiments Analysis',
+                  },
                 },
                 {
                   slug: 'text-classification',
+                  dbName: `${PLUGIN_NAME}-text-classify`,
                   fields: [
                     {
                       name: 'model-id',
                       type: 'select',
+                      dbName: `${PLUGIN_NAME}-models`,
                       label: 'Model',
                       options: textModels.map((v) => ({ label: v.name, value: v.id })),
                     },
@@ -238,6 +243,11 @@ export const Automations: CollectionConfig = {
                         {
                           name: 'response',
                           type: 'code',
+                          admin: {
+                            style: {
+                              minHeight: '200px',
+                            },
+                          },
                           label: '',
                         },
                       ],
@@ -245,6 +255,10 @@ export const Automations: CollectionConfig = {
                     },
                   ],
                   interfaceName: 'Text Classification',
+                  labels: {
+                    plural: 'Text Classifications',
+                    singular: 'Text Classification',
+                  },
                 },
                 {
                   slug: 'compose',

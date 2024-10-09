@@ -14,6 +14,7 @@ import { translations } from './translations/index.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 import { Automations } from './collections/Automations.js'
+import { jobTrigger } from './endpoints/jobTrigger.js'
 
 const defaultPluginConfig: PluginConfig = {
   collections: {},
@@ -46,7 +47,7 @@ const payloadAiPlugin =
         },
       }
 
-      const collections = [...(incomingConfig.collections ?? []), Instructions]
+      const collections = [...(incomingConfig.collections ?? []), Instructions, Automations]
       const { collections: collectionSlugs = [] } = pluginConfig
 
       const { components: { providers = [] } = {} } = incomingConfig.admin || {}
@@ -86,6 +87,7 @@ const payloadAiPlugin =
           endpoints.textarea,
           endpoints.upload,
           fetchFields,
+          jobTrigger,
         ],
         i18n: {
           ...(incomingConfig.i18n || {}),
