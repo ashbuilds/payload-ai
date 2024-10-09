@@ -1,0 +1,32 @@
+.rc-tree{
+  .rc-tree-list-holder-inner {
+    gap: 20px
+  }
+  .rc-tree-treenode {
+    display: flex;
+    align-items: center;
+
+    .rc-tree-node-content-wrapper{
+      height: auto;
+    }
+
+    .rc-tree-switcher {
+      .rc-lb-close, .rc-lb-open {
+        display: none;
+      }
+
+      &.rc-tree-switcher_open {
+        background-image: none;
+        .rc-lb-close{
+          display: block;
+        }
+      }
+      &.rc-tree-switcher_close {
+        background-image: none;
+        .rc-lb-open{
+          display: block
+        }
+      }
+    }
+  }
+}
