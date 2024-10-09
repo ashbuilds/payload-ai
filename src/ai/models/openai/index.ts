@@ -2,7 +2,7 @@ import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
 import { openai } from '@ai-sdk/openai'
-import { generateObject, generateText, streamText } from 'ai'
+import { generateObject, jsonSchema, streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
@@ -28,7 +28,7 @@ export const OpenAIConfig: GenerationConfig = {
         options: {
           locale: string
           model: string
-          schema: ZodSchema
+          schema: any
           stream?: boolean
           system: string
         },
@@ -36,7 +36,7 @@ export const OpenAIConfig: GenerationConfig = {
         const params = {
           model: openai(options.model),
           prompt,
-          schema: options.schema,
+          schema: jsonSchema(options.schema),
           system: options.system || defaultSystemPrompt,
         }
 

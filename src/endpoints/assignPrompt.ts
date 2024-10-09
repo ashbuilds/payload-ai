@@ -34,19 +34,22 @@ export const assignPrompt = async (
   //   `
   // }
 
-  if(context){
-    systemPrompt = systemPrompt + `
-    -----
-    CONTEXT: ${context}\n
-    `
-  }
+  // if(context){
+  //   systemPrompt = systemPrompt + `
+  //   -----
+  //   CONTEXT: ${context}\n
+  //   `
+  // }
 
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
+
   const assignedPrompts = {
-    layout,
+    layout: type === 'richText' ? layout : undefined,
     prompt,
-    system: systemPrompt,
+    //TODO: Define only once on a collection level
+    system: type === 'richText' ? systemPrompt : undefined,
   }
+
 
   if (action === 'Compose') {
     return assignedPrompts

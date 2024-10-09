@@ -1,12 +1,9 @@
 import type { DataFromCollectionSlug, Payload } from 'payload'
 
 import { GenerationModels } from '../ai/models/index.js'
-import { lexicalSchema } from '../ai/schemas/lexical.schema.js'
-import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
+import { PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../defaults.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { assignPrompt } from './assignPrompt.js'
-
-import { inferSchema } from '../utilities/inferSchema.js'
 
 export const textareaHandler = async ({
   doc,
@@ -26,15 +23,18 @@ export const textareaHandler = async ({
   const fieldType = instructions['field-type'] as string
   const fieldName = schemaPath?.split('.').pop()
 
-  let zodSchema
+  let outputSchema
   if (fieldType === 'richText') {
     try {
-      ;({ editorConfig: { schema: zodSchema = lexicalSchema() } = {} } = collection.custom || {})
+      const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
+      const { schema: editorSchema = {} } = editorConfig
+      outputSchema = editorSchema
     } catch (e) {
       console.error('editorSchema:', e)
     }
   } else {
-    zodSchema = inferSchema({ [schemaPath]: '' } as Record<string, unknown>)
+    // todo use valid json schema
+    outputSchema = { [schemaPath]: '' }
   }
 
   const { prompt: promptTemplate = '' } = instructions
@@ -48,18 +48,9 @@ export const textareaHandler = async ({
 
   const localeInfo = localeData?.label[defaultLocale] || locale
 
-  //TODO: remove this
-  const opt = {
-    locale: localeInfo,
-    modelId: instructions['model-id'],
-  }
-
-  const model = GenerationModels.find((model) => model.id === opt.modelId)
+  const model = GenerationModels.find((model) => model.id === instructions['model-id'])
   const settingsName = model.settings?.name
-  const modelOptions = instructions[settingsName] as {
-    layout: string
-    system: string
-  }
+  const modelOptions = instructions[settingsName] || {}
 
   const prompts = await assignPrompt(action, {
     type: fieldType,
@@ -67,20 +58,20 @@ export const textareaHandler = async ({
     context,
     doc,
     field: fieldName,
-    layout: modelOptions.layout,
-    systemPrompt: modelOptions.system,
+    layout: instructions.layout,
+    systemPrompt: instructions.system,
     template: promptTemplate,
   })
 
   console.log('Running handler with fieldName:', fieldName)
   return model
     .handler?.(prompts.prompt, {
+      ...modelOptions,
       layout: prompts.layout,
-      schema: zodSchema,
+      locale: localeInfo,
+      schema: outputSchema,
       stream,
       system: prompts.system,
-      ...modelOptions,
-      ...opt,
     })
     .catch((error) => {
       console.error('Error: endpoint - generating text:', error)

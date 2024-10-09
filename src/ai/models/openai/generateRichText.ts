@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai'
-import { jsonSchema, streamObject, generateObject } from 'ai'
+import { generateObject, jsonSchema, streamObject } from 'ai'
 
 import { exampleOutput } from '../example.js'
 
@@ -7,7 +7,7 @@ export const generateRichText = async (text: string, options: any) => {
   const params = {
     model: openai(options.model),
     prompt: text,
-    schema: jsonSchema(options.editorSchema),
+    schema: jsonSchema(options.schema),
     system: `${options.system}
 
 RULES:

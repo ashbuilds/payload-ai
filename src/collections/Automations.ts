@@ -1,8 +1,9 @@
 import type { CollectionConfig, GroupField } from 'payload'
 
-import { GenerationModels } from '@ai-stack/payloadcms'
+// import { GenerationModels } from '@ai-stack/payloadcms'
 // import { RunButton } from '@/components/RunButton/RunButton'
 
+import { GenerationModels } from '../ai/models/index.js'
 import { PLUGIN_AUTOMATIONS_TABLE } from '../defaults.js'
 
 const textModels = GenerationModels.filter((model) => {
