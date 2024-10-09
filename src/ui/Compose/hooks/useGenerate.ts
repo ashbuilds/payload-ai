@@ -29,12 +29,9 @@ export const useGenerate = () => {
     serverURL,
   } = config
 
-  const { setValue, value } = useField<string>({
+  const { setValue } = useField<string>({
     path: pathFromContext,
   })
-  if(editor){
-    console.log('value: ', { value })
-  }
 
 
   const { set: setHistory } = useHistory()
