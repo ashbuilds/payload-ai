@@ -46,7 +46,7 @@ export const useHistory = () => {
   const clearHistory = useCallback(() => {
     const latestHistory = { ...getLatestHistory() }
     Object.keys(latestHistory).forEach((k) => {
-      if (!k.startsWith(id.toString())) {
+      if (!k.startsWith(id?.toString())) {
         delete latestHistory[k]
       }
     })
