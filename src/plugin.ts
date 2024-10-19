@@ -14,7 +14,7 @@ import { translations } from './translations/index.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 import { Automations } from './collections/Automations.js'
-import { jobTrigger } from './endpoints/jobTrigger.js'
+import { runner } from './endpoints/runner.js'
 
 const defaultPluginConfig: PluginConfig = {
   collections: {},
@@ -87,7 +87,7 @@ const payloadAiPlugin =
           endpoints.textarea,
           endpoints.upload,
           fetchFields,
-          jobTrigger,
+          runner,
         ],
         i18n: {
           ...(incomingConfig.i18n || {}),

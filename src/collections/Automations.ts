@@ -1,7 +1,4 @@
-import type { CollectionConfig, GroupField } from 'payload'
-
-// import { GenerationModels } from '@ai-stack/payloadcms'
-// import { RunButton } from '@/components/RunButton/RunButton'
+import type { Block, CollectionConfig, GroupField } from 'payload'
 
 import { GenerationModels } from '../ai/models/index.js'
 import { PLUGIN_AUTOMATIONS_TABLE, PLUGIN_NAME } from '../defaults.js'
@@ -32,6 +29,201 @@ const modelSettings: GroupField[] = modelsMain.map((model: GroupField) => {
     },
   }
 })
+
+const requestBlock: Block = {
+  slug: 'request',
+  fields: [
+    {
+      name: 'api-url',
+      type: 'text',
+      label: 'API URL',
+    },
+    {
+      name: 'method',
+      type: 'select',
+      defaultValue: 'GET',
+      label: 'HTTP Method',
+      options: ['GET', 'POST', 'PUT', 'DELETE'],
+    },
+    {
+      name: 'headers',
+      type: 'array',
+      fields: [
+        {
+          name: 'key',
+          type: 'text',
+          label: 'Key',
+        },
+        {
+          name: 'value',
+          type: 'text',
+          label: 'Value',
+        },
+      ],
+      label: '',
+      labels: {
+        plural: 'headers',
+        singular: 'header',
+      },
+    },
+    {
+      type: 'collapsible',
+      admin: {
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'response',
+          type: 'code',
+          label: '',
+        },
+      ],
+      label: 'Response',
+    },
+  ],
+}
+
+const sentimentAnalysisBlock: Block = {
+  slug: 's-analysis',
+  fields: [
+    {
+      name: 'description',
+      type: 'text',
+    },
+    {
+      name: 'analysisDepth',
+      type: 'select',
+      options: ['basic', 'detailed'],
+    },
+    {
+      name: 'includeKeyAspects',
+      type: 'checkbox',
+    },
+    {
+      type: 'collapsible',
+      admin: {
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'response',
+          type: 'code',
+          admin: {
+            style: {
+              minHeight: '200px',
+            },
+          },
+          label: '',
+        },
+      ],
+      label: 'Response',
+    },
+  ],
+  interfaceName: 'Sentiment Analysis',
+  labels: {
+    plural: 'Sentiment Analysis',
+    singular: 'Sentiments Analysis',
+  },
+}
+
+const textClassificationBlock: Block = {
+  slug: 'text-classification',
+  dbName: `${PLUGIN_NAME}-text-classify`,
+  fields: [
+    {
+      name: 'model-id',
+      type: 'select',
+      dbName: `${PLUGIN_NAME}-models`,
+      label: 'Model',
+      options: textModels.map((v) => ({ label: v.name, value: v.id })),
+    },
+    ...modelSettings,
+    {
+      name: 'description',
+      type: 'text',
+    },
+    {
+      name: 'categories',
+      type: 'array',
+      fields: [
+        {
+          name: 'category',
+          type: 'text',
+        },
+      ],
+    },
+    {
+      name: 'maxCategories',
+      type: 'number',
+      max: 5,
+      min: 1,
+    },
+    {
+      name: 'includeConfidence',
+      type: 'checkbox',
+    },
+    {
+      type: 'collapsible',
+      admin: {
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'response',
+          type: 'code',
+          admin: {
+            style: {
+              minHeight: '200px',
+            },
+          },
+          label: '',
+        },
+      ],
+      label: 'Response',
+    },
+  ],
+  interfaceName: 'Text Classification',
+  labels: {
+    plural: 'Text Classifications',
+    singular: 'Text Classification',
+  },
+}
+
+const composeBlock: Block = {
+  slug: 'compose',
+  fields: [
+    {
+      name: 'collection',
+      type: 'select',
+      options: ['posts'],
+    },
+    {
+      name: 'prompt',
+      type: 'textarea',
+    },
+    {
+      name: 'fields',
+      type: 'relationship',
+      filterOptions: (dat) => {
+        // this will be based on selection collection
+        // console.log('filterOptions - > ',dat)
+
+        return true
+      },
+      hasMany: true,
+      relationTo: 'plugin-ai-instructions',
+    },
+    {
+      name: 'style-reference',
+      type: 'textarea',
+    },
+    {
+      name: 'include-images',
+      type: 'checkbox',
+      label: 'Include source images',
+    },
+  ],
+}
 
 export const Automations: CollectionConfig = {
   slug: PLUGIN_AUTOMATIONS_TABLE,
@@ -104,197 +296,10 @@ export const Automations: CollectionConfig = {
               name: 'tasks',
               type: 'blocks',
               blocks: [
-                {
-                  slug: 'request',
-                  fields: [
-                    {
-                      name: 'api-url',
-                      type: 'text',
-                      label: 'API URL',
-                    },
-                    {
-                      name: 'method',
-                      type: 'select',
-                      defaultValue: 'GET',
-                      label: 'HTTP Method',
-                      options: ['GET', 'POST', 'PUT', 'DELETE'],
-                    },
-                    {
-                      name: 'headers',
-                      type: 'array',
-                      fields: [
-                        {
-                          name: 'key',
-                          type: 'text',
-                          label: 'Key',
-                        },
-                        {
-                          name: 'value',
-                          type: 'text',
-                          label: 'Value',
-                        },
-                      ],
-                      label: '',
-                      labels: {
-                        plural: 'headers',
-                        singular: 'header',
-                      },
-                    },
-                    {
-                      type: 'collapsible',
-                      admin: {
-                        initCollapsed: false,
-                      },
-                      fields: [
-                        {
-                          name: 'response',
-                          type: 'code',
-                          label: '',
-                        },
-                      ],
-                      label: 'Response',
-                    },
-                  ],
-                },
-                {
-                  slug: 's-analysis',
-                  fields: [
-                    {
-                      name: 'description',
-                      type: 'text',
-                    },
-                    {
-                      name: 'analysisDepth',
-                      type: 'select',
-                      options: ['basic', 'detailed'],
-                    },
-                    {
-                      name: 'includeKeyAspects',
-                      type: 'checkbox',
-                    },
-                    {
-                      type: 'collapsible',
-                      admin: {
-                        initCollapsed: false,
-                      },
-                      fields: [
-                        {
-                          name: 'response',
-                          type: 'code',
-                          admin: {
-                            style: {
-                              minHeight: '200px',
-                            },
-                          },
-                          label: '',
-                        },
-                      ],
-                      label: 'Response',
-                    },
-                  ],
-                  interfaceName: 'Sentiment Analysis',
-                  labels: {
-                    plural: 'Sentiment Analysis',
-                    singular: 'Sentiments Analysis',
-                  },
-                },
-                {
-                  slug: 'text-classification',
-                  dbName: `${PLUGIN_NAME}-text-classify`,
-                  fields: [
-                    {
-                      name: 'model-id',
-                      type: 'select',
-                      dbName: `${PLUGIN_NAME}-models`,
-                      label: 'Model',
-                      options: textModels.map((v) => ({ label: v.name, value: v.id })),
-                    },
-                    ...modelSettings,
-                    {
-                      name: 'description',
-                      type: 'text',
-                    },
-                    {
-                      name: 'categories',
-                      type: 'array',
-                      fields: [
-                        {
-                          name: 'category',
-                          type: 'text',
-                        },
-                      ],
-                    },
-                    {
-                      name: 'maxCategories',
-                      type: 'number',
-                      max: 5,
-                      min: 1,
-                    },
-                    {
-                      name: 'includeConfidence',
-                      type: 'checkbox',
-                    },
-                    {
-                      type: 'collapsible',
-                      admin: {
-                        initCollapsed: false,
-                      },
-                      fields: [
-                        {
-                          name: 'response',
-                          type: 'code',
-                          admin: {
-                            style: {
-                              minHeight: '200px',
-                            },
-                          },
-                          label: '',
-                        },
-                      ],
-                      label: 'Response',
-                    },
-                  ],
-                  interfaceName: 'Text Classification',
-                  labels: {
-                    plural: 'Text Classifications',
-                    singular: 'Text Classification',
-                  },
-                },
-                {
-                  slug: 'compose',
-                  fields: [
-                    {
-                      name: 'collection',
-                      type: 'select',
-                      options: ['posts'],
-                    },
-                    {
-                      name: 'prompt',
-                      type: 'textarea',
-                    },
-                    {
-                      name: 'fields',
-                      type: 'relationship',
-                      filterOptions: (dat) => {
-                        // this will be based on selection collection
-                        // console.log('filterOptions - > ',dat)
-
-                        return true
-                      },
-                      hasMany: true,
-                      relationTo: 'plugin-ai-instructions',
-                    },
-                    {
-                      name: 'style-reference',
-                      type: 'textarea',
-                    },
-                    {
-                      name: 'include-images',
-                      type: 'checkbox',
-                      label: 'Include source images',
-                    },
-                  ],
-                },
+                requestBlock,
+                textClassificationBlock,
+                sentimentAnalysisBlock,
+                composeBlock,
                 // {
                 //   slug: 'writing-style-reference', //TODO add this when you will work on content generation block
                 // }

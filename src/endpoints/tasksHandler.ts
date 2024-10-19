@@ -44,6 +44,7 @@ import { generateObject } from 'ai'
 import * as process from 'node:process'
 
 import { GenerationModels } from '../ai/models/index.js'
+import { textareaHandler } from './textareaHandler.js'
 
 const analyse = async (params: any) => {
   try {
@@ -74,7 +75,7 @@ const analyse = async (params: any) => {
   }
 }
 
-export const TasksHandler = {
+export const tasksHandler = {
   compose: async (params: any, payload: Payload) => {
     const apiUrl = payload.getAPIURL()
 
@@ -85,26 +86,21 @@ export const TasksHandler = {
       const fieldType = doc['field-type']
       const instructionId = doc.id
 
+      console.log("params : ", params);
       if (fieldType && ['richText', 'text', 'textarea'].includes(fieldType)) {
-        const result = await fetch(
-          process.env.NEXT_PUBLIC_SERVER_URL + `${apiUrl}/plugin-ai/generate`,
-          {
-            body: JSON.stringify({
-              doc: updatedDocument[params.collection],
-              options: {
-                action: 'Compose',
-                context: params.previousResult,
-                instructionId,
-              },
-            }),
-            headers: {
-              contentType: 'application/json',
-            },
-            method: 'POST',
+        const result = await textareaHandler({
+          doc: updatedDocument[params.collection],
+          instructions: doc,
+          options: {
+            action: 'Compose',
+            context: params.previousResult,
+            instructionId,
+            system: `SYSTEM: ${params.prompt}`,
           },
-        )
-        const { text } = await result.json()
+          payload,
+        })
 
+        const { text } = await result.json()
         if (schemaPath) {
           generated[schemaPath] = text[schemaPath] ? text[schemaPath] : text
           updatedDocument = dot.object(generated)
@@ -147,6 +143,7 @@ export const TasksHandler = {
       .create({
         collection: params.collection,
         data: updatedDocument[params.collection],
+        draft: true,
       })
       .then((data: any) => {
         console.log('done -> ', data)

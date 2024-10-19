@@ -1,9 +1,9 @@
 import type { Endpoint } from 'payload'
 
-import { TasksHandler } from './tasksHandler.js'
 import { PLUGIN_AUTOMATIONS_TABLE } from '../defaults.js'
+import { tasksHandler } from './tasksHandler.js'
 
-export const jobTrigger: Endpoint = {
+export const runner: Endpoint = {
   handler: async (req) => {
     const { payload } = req
 
@@ -32,7 +32,7 @@ export const jobTrigger: Endpoint = {
 
       let previousResult: any
       for (const task of tasks) {
-        const handler = TasksHandler[task.blockType]
+        const handler = tasksHandler[task.blockType]
         if (typeof handler === 'function') {
           task['response'] = await handler({ ...task, previousResult }, payload)
           previousResult = task['response']

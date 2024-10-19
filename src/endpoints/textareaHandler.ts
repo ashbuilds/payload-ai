@@ -16,14 +16,25 @@ export const textareaHandler = async ({
   options: any
   payload: Payload
 }) => {
-  const { action, actionParams, context, locale, stream } = options
+  const { action, actionParams, context, locale, stream, system } = options
   const { collections } = payload.config
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const schemaPath = instructions['schema-path'] as string
   const fieldType = instructions['field-type'] as string
   const fieldName = schemaPath?.split('.').pop()
 
-  let outputSchema
+  let outputSchema = {
+    type: 'object',
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    additionalProperties: false,
+    properties: {
+      [schemaPath]: {
+        type: 'string',
+      },
+    },
+    required: [schemaPath],
+  }
+
   if (fieldType === 'richText') {
     try {
       const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
@@ -32,9 +43,6 @@ export const textareaHandler = async ({
     } catch (e) {
       console.error('editorSchema:', e)
     }
-  } else {
-    // todo use valid json schema
-    outputSchema = { [schemaPath]: '' }
   }
 
   const { prompt: promptTemplate = '' } = instructions
@@ -52,6 +60,7 @@ export const textareaHandler = async ({
   const settingsName = model.settings?.name
   const modelOptions = instructions[settingsName] || {}
 
+  console.log('system : ', system)
   const prompts = await assignPrompt(action, {
     type: fieldType,
     actionParams,
@@ -59,15 +68,14 @@ export const textareaHandler = async ({
     doc,
     field: fieldName,
     layout: instructions.layout,
-    systemPrompt: instructions.system,
+    systemPrompt: system + ' \n ' + instructions.system,
     template: promptTemplate,
   })
 
-  console.log('Running handler with fieldName:', fieldName)
+  console.log('Running handler for field:', schemaPath)
   return model
     .handler?.(prompts.prompt, {
       ...modelOptions,
-      layout: prompts.layout,
       locale: localeInfo,
       schema: outputSchema,
       stream,

@@ -1,9 +1,16 @@
 import type { ActionMenuItems } from '../types.js'
 
+import { exampleOutput } from '../ai/models/example.js'
 import { defaultPrompts } from '../ai/prompts.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
-
+// `${options.system}
+//
+// LAYOUT INSTRUCTIONS:
+// ${options.layout}
+//
+// SAMPLE OUTPUT OBJECT:
+// ${JSON.stringify(exampleOutput)}`
 export const assignPrompt = async (
   action: ActionMenuItems,
   {
@@ -14,7 +21,7 @@ export const assignPrompt = async (
     field,
     layout,
     systemPrompt = '',
-    template
+    template,
   }: {
     actionParams: Record<any, any>
     context?: string
@@ -27,29 +34,32 @@ export const assignPrompt = async (
   },
 ) => {
   const prompt = await replacePlaceholders(template, doc)
-  // if(typeof context === 'string') {
-  //   prompt = `${template}
-  //
-  //   REFERENCE FOR CONTEXT: ${context}\n
-  //   `
-  // }
 
-  // if(context){
-  //   systemPrompt = systemPrompt + `
-  //   -----
-  //   CONTEXT: ${context}\n
-  //   `
-  // }
+  if (context) {
+    systemPrompt = `${systemPrompt}
+    -----
+    CONTEXT: ${JSON.stringify(context)}\n
+    `
+  }
+
+  if (type === 'richText') {
+    systemPrompt = `${systemPrompt}
+    
+    LAYOUT INSTRUCTIONS:
+    ${layout}
+    
+    SAMPLE OUTPUT OBJECT:
+    ${JSON.stringify(exampleOutput)}`
+  }
 
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
-
+  // console.log("systemPrompt : ", systemPrompt);
   const assignedPrompts = {
     layout: type === 'richText' ? layout : undefined,
     prompt,
     //TODO: Define only once on a collection level
-    system: type === 'richText' ? systemPrompt : undefined,
+    system: context || type === 'richText' ? systemPrompt : undefined,
   }
-
 
   if (action === 'Compose') {
     return assignedPrompts
@@ -61,6 +71,7 @@ export const assignPrompt = async (
 
   let updatedLayout = layout
   if (getLayout) {
+    //TODO: add this, for other functionalities
     updatedLayout = getLayout()
   }
 
@@ -71,7 +82,6 @@ export const assignPrompt = async (
   })
 
   return {
-    layout: updatedLayout,
     // TODO: revisit this toLexicalHTML
     prompt: await replacePlaceholders(`{{${toLexicalHTML} ${field}}}`, doc),
     system,
