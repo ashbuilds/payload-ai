@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { streamText } from 'ai'
+import { generateText, streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
@@ -16,15 +16,21 @@ export const AnthropicConfig: GenerationConfig = {
       fields: ['text', 'textarea'],
       handler: async (
         prompt: string,
-        options: { locale: string; model: string; system: string },
+        options: { locale: string; model: string; stream?: boolean; system: string },
       ) => {
-        const streamTextResult = await streamText({
+        const params = {
           model: anthropic(options.model),
           prompt,
           system: options.system || defaultSystemPrompt,
-        })
+        }
 
-        return streamTextResult.toDataStreamResponse()
+        if (options.stream) {
+          const streamTextResult = await streamText(params)
+          return streamTextResult.toDataStreamResponse()
+        }
+
+        const generateTextResult = await generateText(params)
+        return generateTextResult.text
       },
       output: 'text',
       settings: {

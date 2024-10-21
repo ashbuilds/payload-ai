@@ -33,6 +33,7 @@ export const useGenerate = () => {
     path: pathFromContext,
   })
 
+
   const { set: setHistory } = useHistory()
   const { id: instructionId } = useInstructions({
     path: schemaPath,
