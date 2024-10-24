@@ -1,52 +1,17 @@
-# Commercial License Agreement
+# Commercial License
 
-## Overview
+This software is available under a Commercial License for organizations or individuals using it in commercial contexts or whose annual revenue exceeds $1 million. Commercial use is defined as any use of the software:
 
-This Commercial License Agreement ("Agreement") is between you (the "Licensee") and Ashish Mishra (the "Licensor") for the use of the `@ai-stack/payloadcms` plugin for [Payload](https://payloadcms.com/).
+- In a production environment for commercial gain (e.g., SaaS products, internal business applications, etc.).
+- By any company or organization with over $1 million in annual revenue.
+- Where the software is integrated into commercial products sold or licensed to third parties.
 
-## Grant of License
+## Pricing and Terms
 
-Subject to the terms and conditions of this Agreement, the Licensor grants the Licensee a non-exclusive, non-transferable license to use, modify, and distribute the Plugin for commercial purposes.
+To use this software commercially, please contact [ashish.mishra41191@gmail.com](mailto:ashish.mishra41191@gmail.com) to obtain pricing information and a commercial license agreement.
 
-## Commercial Use
+## Transitioning from MIT License
 
-The Plugin may be used in commercial applications under this Agreement. Commercial use includes, but is not limited to, integration into proprietary software, use in a business-critical environment, or distribution as part of a commercial product.
+If you began using this software under the MIT License and now require a Commercial License due to changes in your usage (e.g., revenue growth or production use), please contact us to transition to the Commercial License. Past usage under the MIT License is permitted, but future versions will require adherence to the commercial terms.
 
-## Fees
-
-The fees for a commercial license are determined based on usage and company requirements. Please contact the author for detailed pricing information and to discuss your specific needs.
-
-- **Contact for Pricing:** Ashish Mishra
-- **Email:** [ashish.mishra41191@gmail.com](mailto:ashish.mishra41191@gmail.com)
-
-## Support and Maintenance
-
-The commercial license includes support for bug fixes related to the Plugin. The scope of support, including response times and additional maintenance requirements, will be determined based on the specific needs of the Licensee and will be agreed upon in a separate agreement if necessary.
-
-For more extensive support or custom maintenance, please contact the author to discuss your requirements and receive a customized support plan.
-
-## Restrictions
-
-Any redistribution or sale of the Plugin or derivative works thereof must comply with the terms of the MIT License if distributed under the MIT License. However, for commercial purposes including reselling or embedding in a proprietary product, the commercial license must be obtained.
-
-
-## Termination
-
-This Agreement may be terminated by either party if the other party breaches any of its terms. Upon termination, the Licensee must cease all use of the Plugin and destroy all copies in its possession.
-
-## Contact Information
-
-For any inquiries or to obtain a commercial license, please contact:
-
-- **Author:** Ashish Mishra
-- **GitHub:** [ashbuilds](https://github.com/ashbuilds)
-- **Email:** [ashish.mishra41191@gmail.com](mailto:ashish.mishra41191@gmail.com)
-
-## Governing Law
-
-The governing law for this Agreement will be determined upon mutual agreement between the parties.
-
-## Acknowledgment
-
-By using the Plugin under this Commercial License Agreement, you acknowledge that you have read, understood, and agree to the terms and conditions of this Agreement.
-
+By continuing to use this software in a commercial context without a valid license, you are in violation of the terms of this agreement.

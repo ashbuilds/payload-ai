@@ -1,10 +1,10 @@
 {
   "name": "@ai-stack/payloadcms",
-  "version": "3.0.0-beta.111.1",
+  "version": "3.0.0-beta.111.2",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
-  "license": "MIT",
+  "license": "(MIT AND COMMERCIAL)",
   "author": "ashbuilds",
   "keywords": [
     "plugin",
