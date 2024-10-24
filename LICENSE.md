@@ -1,6 +1,6 @@
 # License
 
-This project is licensed under a dual-license model:
+This project is licensed under a dual-license model: The MIT License applies for personal, non-commercial use, or for businesses with revenue under $1 million annually. For commercial use by larger organizations or projects, a commercial license must be obtained.
 
 ## 1. MIT License (for open-source use)
 
