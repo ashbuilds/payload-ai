@@ -131,12 +131,15 @@ Innovators: welcome! We're always excited to expand our community. Connect with 
 
 ## Licensing
 
-This plugin is available under dual licensing:
+This project is dual-licensed under the **MIT License** and a **Commercial License**. Please read carefully to determine which license applies to you:
 
-- ### Open-Source License
+1. **MIT License** (For open-source projects, individual use, and organizations with revenue under $1 million):
+  - This license allows free use, modification, and distribution as long as the original copyright notice is included.
+  - This license does not apply to companies or organizations that generate revenue above $1 million annually.
 
-  This plugin is available under the [MIT License](LICENSE.md). You can use, modify, and distribute it freely under the terms of this license.
+2. **Commercial License** (For commercial organizations or companies with revenue over $1 million):
+  - If you are using this project in a commercial context or your organization’s annual revenue exceeds $1 million, you must obtain a commercial license.
+  - The commercial license includes additional rights for enterprise-level use, support, and feature requests.
+  - To inquire about a commercial license, contact [ashish.mishra41191@gmail.com](mailto:ashish.mishra41191@gmail.com).
 
-- ### Commercial License
-
-  For companies or individuals who wish to use the plugin in a commercial context, require additional features, or need support, please refer to the [Commercial License Agreement](COMMERCIAL-LICENSE.md) for more details.
+For any questions or concerns about licensing, feel free to reach out!

@@ -1,4 +1,8 @@
-# MIT License
+# License
+
+This project is licensed under a dual-license model: The MIT License applies for personal, non-commercial use, or for businesses with revenue under $1 million annually. For commercial use by larger organizations or projects, a commercial license must be obtained.
+
+## 1. MIT License (for open-source use)
 
 Copyright (c) 2024 Ashish Mishra
 
@@ -19,3 +23,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## 2. Commercial License (for commercial use)
+
+If you are using this project in a commercial context or your organization’s revenue exceeds $1 million annually, you must obtain a commercial license. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) for full terms.
+
+By using this project, you agree to the terms of the license applicable to your use case.
