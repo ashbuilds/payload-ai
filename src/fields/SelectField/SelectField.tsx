@@ -2,7 +2,7 @@
 
 import type { OptionObject, SelectFieldClientProps } from 'payload'
 
-import { SelectInput, useField, useFieldProps } from '@payloadcms/ui'
+import { SelectInput, useField } from '@payloadcms/ui'
 import React, { useEffect, useState } from 'react'
 
 // Use to filter model options in settings based on field types
@@ -10,10 +10,10 @@ export const SelectField = (
   props: {
     filterByField: string
     options: { fields: string[]; label: string; value: string }[]
+    path: string
   } & SelectFieldClientProps,
 ) => {
-  const { field, filterByField, options } = props
-  const { path } = useFieldProps()
+  const { field, filterByField, options, path } = props
   const { value: relatedField } = useField<string>({
     path: filterByField,
   })

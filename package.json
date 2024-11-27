@@ -1,10 +1,10 @@
 {
   "name": "@ai-stack/payloadcms",
-  "version": "3.0.0-beta.111.2",
+  "version": "3.2.1-beta",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
-  "license": "(MIT AND COMMERCIAL)",
+  "license": "MIT",
   "author": "ashbuilds",
   "keywords": [
     "plugin",
@@ -65,14 +65,14 @@
     "@anthropic-ai/sdk": "^0.24.3",
     "@langchain/core": "^0.2.31",
     "@langchain/openai": "^0.2.8",
-    "@lexical/html": "^0.16.1",
+    "@lexical/html": "0.20.0",
     "ai": "^3.3.20",
     "elevenlabs": "^0.8.2",
     "get-input-selection": "^1.1.4",
     "handlebars": "4.7.8",
     "handlebars-async-helpers": "^1.0.6",
     "langchain": "^0.2.17",
-    "lexical": "^0.17.0",
+    "lexical": "^0.20.0",
     "locale-codes": "^1.3.1",
     "lodash.isequal": "^4.5.0",
     "openai": "^4.56.1",
@@ -109,10 +109,10 @@
     "typescript-eslint": "^7.18.0"
   },
   "peerDependencies": {
-    "@payloadcms/richtext-lexical": "3.0.0-beta.111",
-    "@payloadcms/translations": "3.0.0-beta.111",
-    "@payloadcms/ui": "3.0.0-beta.111",
-    "payload": "3.0.0-beta.111"
+    "@payloadcms/richtext-lexical": "^3.2.1",
+    "@payloadcms/translations": "^3.2.1",
+    "@payloadcms/ui": "^3.2.1",
+    "payload": "^3.2.1"
   },
   "publishConfig": {
     "main": "./dist/index.js",

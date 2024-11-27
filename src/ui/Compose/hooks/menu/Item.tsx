@@ -6,7 +6,7 @@ import { ArrowIcon } from '../../../Icons/Icons.js'
 import styles from './menu.module.scss'
 
 export const Item: React.FC<BaseItemProps> = memo(
-  ({ children, disabled, onClick, isActive, ...rest }) => (
+  ({ children, disabled, isActive, onClick, ...rest }) => (
     <span
       className={styles.generate_button + ' ' + (isActive ? styles.active : '')}
       data-disabled={disabled}
@@ -21,7 +21,7 @@ export const Item: React.FC<BaseItemProps> = memo(
 )
 
 export const createMenuItem = (IconComponent, initialText) =>
-  memo(({ children, disabled, hideIcon, onClick, isMenu, ...rest }: BaseItemProps) => (
+  memo(({ children, disabled, hideIcon, isMenu, onClick, ...rest }: BaseItemProps) => (
     <Item disabled={disabled} onClick={onClick} {...rest}>
       {hideIcon || <IconComponent size={18} />}
       {children || <span className={styles.text}>{initialText}</span>}

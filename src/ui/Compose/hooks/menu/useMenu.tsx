@@ -1,6 +1,6 @@
 'use client'
 
-import { useField, useFieldProps } from '@payloadcms/ui'
+import { useField } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import type { ActionMenuItems, UseMenuEvents } from '../../../../types.js'
@@ -8,6 +8,7 @@ import type { ActionMenuItems, UseMenuEvents } from '../../../../types.js'
 import { Compose, Proofread, Rephrase } from './items.js'
 import { menuItemsMap } from './itemsMap.js'
 import styles from './menu.module.scss'
+import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
 
 const getActiveComponent = (ac) => {
   switch (ac) {

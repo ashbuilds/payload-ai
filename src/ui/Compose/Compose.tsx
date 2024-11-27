@@ -1,10 +1,10 @@
 'use client'
 
-import type { FieldDescriptionClientProps } from 'payload'
+import type { FieldDescriptionServerProps } from 'payload'
 import type { FC } from 'react'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { FieldDescription, Popup, useDocumentDrawer, useField, useFieldProps } from '@payloadcms/ui'
+import { FieldDescription, Popup, useDocumentDrawer, useField } from '@payloadcms/ui'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
@@ -31,20 +31,21 @@ function findParentWithClass(element, className) {
 }
 
 type ComposeProps = {
-  descriptionProps?: FieldDescriptionClientProps
+  descriptionProps?: FieldDescriptionServerProps
   instructionId: string
 }
 
 export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) => {
-  // Disable Component if no instructionId is provided
-  if (!instructionId) return null
-
   const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: instructionId,
     collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
   })
 
-  const { type: fieldType, path: pathFromContext, schemaPath } = useFieldProps()
+  const {
+    field: { type: fieldType },
+    path: pathFromContext,
+    schemaPath,
+  } = descriptionProps || {} as FieldDescriptionServerProps
   const { editor: lexicalEditor, editorContainerRef } = useEditorConfigContext()
 
   // Below snippet is used to show/hide the actions menu on AI enabled fields
@@ -87,7 +88,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
   }, [input, actionsRef])
 
   const [isProcessing, setIsProcessing] = useState(false)
-  const { generate, isLoading } = useGenerate()
+  const { generate, isLoading } = useGenerate({instructionId})
 
   const { ActiveComponent, Menu } = useMenu({
     onCompose: async () => {

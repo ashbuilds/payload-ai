@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
 import locales from 'locale-codes'
+import React, { useState } from 'react'
 
-import { Translate } from './items.js'
 import { Item } from './Item.js'
+import { Translate } from './items.js'
 import styles from './menu.module.scss'
 
 export const TranslateMenu = ({ onClick }) => {
@@ -25,28 +25,26 @@ export const TranslateMenu = ({ onClick }) => {
       }}
     >
       <Translate
+        isActive={show}
+        isMenu
         onClick={() => {
           setShow(!show)
         }}
         onMouseEnter={() => setShow(true)}
-        isMenu={true}
-        isActive={show}
-      ></Translate>
+       />
       <div className={styles.hoverMenu} data-show={show}>
         <div className={`${styles.menu} ${styles.subMenu}`}>
           <Item
             onClick={() => {}}
             style={{
+              background: 'transparent',
+              padding: '0 0 5px 0',
               position: 'sticky',
               top: 0,
-              padding: '0 0 5px 0',
-              background: 'transparent',
             }}
           >
             <input
               className={styles.menuInput}
-              placeholder={'Search...'}
-              onFocus={() => setInputFocus(true)}
               onBlur={() => setInputFocus(false)}
               onChange={(event) => {
                 const value = event.target.value
@@ -61,6 +59,8 @@ export const TranslateMenu = ({ onClick }) => {
                   }),
                 )
               }}
+              onFocus={() => setInputFocus(true)}
+              placeholder="Search..."
             />
           </Item>
           {languages.map((locale) => {

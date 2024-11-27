@@ -1,9 +1,9 @@
-import React from 'react'
+import type React from 'react'
 
 import type { ActionMenuItems, BaseItemProps } from '../../../../types.js'
 
-import { Compose, Expand, Proofread, Rephrase, Settings, Simplify, Summarize } from './items.js'
 import { TranslateMenu } from './TranslateMenu.js'
+import { Compose, Expand, Proofread, Rephrase, Settings, Simplify, Summarize } from './items.js'
 
 type MenuItemsMapType = {
   component: React.FC<BaseItemProps>
