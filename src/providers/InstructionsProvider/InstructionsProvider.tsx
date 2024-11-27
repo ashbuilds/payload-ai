@@ -1,15 +1,22 @@
 'use client'
 
-import { useConfig } from '@payloadcms/ui'
-import { getPayload } from 'payload'
-import React, { createContext, useEffect, useState } from 'react'
+import type { Field } from 'payload'
 
-import type { GenerateTextarea } from '../../types.js'
+import { useConfig } from '@payloadcms/ui'
+import React, { createContext, useEffect, useState } from 'react'
 
 import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
 
-const initialContext = {
+const initialContext: {
+  field?: Field
+  instructions: Record<string, any>
+  path?: string
+  schemaPath?: unknown
+} = {
+  field: undefined,
   instructions: undefined,
+  path: '',
+  schemaPath: '',
 }
 
 export const InstructionsContext = createContext(initialContext)

@@ -51,7 +51,6 @@ Want to dive deeper?
 - [Usage](#-usage)
 - [Configuration](#%EF%B8%8F-configuration)
 - [Contributing](#-contributing)
-- [License](#licensing)
 
 ## 📦 Installation
 
@@ -128,18 +127,3 @@ ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ## 👥 Contributing
 
 Innovators: welcome! We're always excited to expand our community. Connect with us on [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) to get started.
-
-## Licensing
-
-This project is dual-licensed under the **MIT License** and a **Commercial License**. Please read carefully to determine which license applies to you:
-
-1. **MIT License** (For open-source projects, individual use, and organizations with revenue under $1 million):
-  - This license allows free use, modification, and distribution as long as the original copyright notice is included.
-  - This license does not apply to companies or organizations that generate revenue above $1 million annually.
-
-2. **Commercial License** (For commercial organizations or companies with revenue over $1 million):
-  - If you are using this project in a commercial context or your organization’s annual revenue exceeds $1 million, you must obtain a commercial license.
-  - The commercial license includes additional rights for enterprise-level use, support, and feature requests.
-  - To inquire about a commercial license, contact [ashish.mishra41191@gmail.com](mailto:ashish.mishra41191@gmail.com).
-
-For any questions or concerns about licensing, feel free to reach out!

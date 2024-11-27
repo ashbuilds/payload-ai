@@ -1,5 +1,5 @@
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { useConfig, useField, useFieldProps, useForm, useLocale } from '@payloadcms/ui'
+import { useConfig, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { useCallback, useEffect, useMemo } from 'react'
@@ -12,14 +12,14 @@ import {
   PLUGIN_INSTRUCTIONS_TABLE,
   PLUGIN_NAME,
 } from '../../../defaults.js'
-import { useInstructions } from '../../../providers/InstructionsProvider/useInstructions.js'
+import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
 
-export const useGenerate = () => {
-  const { type, path: pathFromContext, schemaPath } = useFieldProps()
+export const useGenerate = ({ instructionId }: { instructionId: string }) => {
+  const { type, path: pathFromContext } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
   const { editor } = editorConfigContext
 
@@ -34,9 +34,6 @@ export const useGenerate = () => {
   })
 
   const { set: setHistory } = useHistory()
-  const { id: instructionId } = useInstructions({
-    path: schemaPath,
-  })
 
   const { getData } = useForm()
   const localFromContext = useLocale()

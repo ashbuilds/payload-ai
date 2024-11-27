@@ -1,9 +1,13 @@
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
 import { InstructionsContext } from './InstructionsProvider.js'
 
-export const useInstructions = ({ path }) => {
+export const useInstructions = (
+  update: {
+    schemaPath?: unknown
+  } = {},
+) => {
   const context = useContext(InstructionsContext)
 
   //Fields are used for autocompletion in PromptTextareaField
@@ -35,9 +39,17 @@ export const useInstructions = ({ path }) => {
     return acc
   }, [])
 
+  const [schemaPath, setSchemaPath] = useState(update.schemaPath as string)
+
+  useEffect(() => {
+    if(update.schemaPath !== schemaPath) {
+      setSchemaPath(update.schemaPath as string)
+    }
+  }, [schemaPath, update])
+
   return {
     ...context,
-    ...(context.instructions[path] || {}),
+    ...(context.instructions[schemaPath] || {}),
     fields,
     map: context.instructions,
     promptEditorSuggestions,

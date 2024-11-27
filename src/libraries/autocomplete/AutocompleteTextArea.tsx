@@ -454,11 +454,11 @@ export const AutocompleteTextField = (props) => {
         }
 
         return (
-          <>
+          <React.Fragment>
             {text.slice(0, highlightStart)}
             <strong>{highlightedText}</strong>
             {text.slice(highlightStart + matchLength)}
-          </>
+          </React.Fragment>
         )
       }
 

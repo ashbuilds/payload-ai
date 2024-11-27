@@ -1,9 +1,10 @@
 'use client'
 
-import { useDocumentInfo, useField, useFieldProps } from '@payloadcms/ui'
+import { useDocumentInfo, useField } from '@payloadcms/ui'
 import { useCallback, useEffect } from 'react'
 
 import { PLUGIN_NAME } from '../../../defaults.js'
+import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 
 const STORAGE_KEY = `${PLUGIN_NAME}-fields-history`
 
