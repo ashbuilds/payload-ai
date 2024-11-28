@@ -2,7 +2,7 @@
 
 By default, the Payload AI Plugin comes with minimal settings to get you started quickly. However, you can unlock its full potential by personalizing various fields and configurations. Follow the steps below for proper setup and personalization.
 
-> **📝️ Note:** This guide is based on the default settings and configurations of the Payload AI Plugin. Feel free to customize these settings to suit your needs.
+> **📝 Note: This guide is based on the default settings and configurations of the Payload AI Plugin. You have the flexibility to customize these settings to suit your specific needs. More on this below...**
 
 ---
 
@@ -44,6 +44,20 @@ Customize the style, size, and other settings to match your requirements.
   ![Banner Settings](assets/guide/banner-settings2.png)
 
 ---
+
+### Understanding Prompts and System Prompts
+The **Prompt** and **System Prompt** fields let you provide clear context to the AI model, tailoring its output to your needs.
+
+For example:
+- In the **Prompt** field, you can include product details and dynamic fields like:  
+  *"This post is about a product {{ title }}. Features include {{ featureA }} and {{ featureB }}, with benefits like {{ benefitsA }} and {{ benefitsB }}."*
+
+- In the **System Prompt**, you can define instructions such as:  
+  **"Write a quirky and fun blog post that highlights the key features and makes it sound like a must-have. Use playful comparisons and emphasize its unique selling points."**
+
+This combination ensures the AI's output is personalized and aligned with your content goals.
+
+Now, let’s explore how to apply this in the **Content Field** section.
 
 ## **3. Content Field**
 The Content Field is the core of blog/article generation. Like the Banner Field, it relies on the Title Field for context. Always ensure the title is provided before triggering the "Compose" action.
