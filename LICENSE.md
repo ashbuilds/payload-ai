@@ -1,4 +1,4 @@
-## 1. MIT License (for open-source use)
+## 1. MIT License
 
 Copyright (c) 2024 Ashish Mishra
 
