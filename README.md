@@ -84,7 +84,7 @@ export default buildConfig({
 
 
 // Add below in Lexical Editor field config
-import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms/fields'
 
 fields: [
   {
