@@ -17,7 +17,7 @@ The Payload AI Plugin is an advanced extension that integrates modern AI capabil
 ### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
 Want to dive deeper?  
 ### 🎥 [Explore More in Our Extended Demo](https://youtu.be/LEsuHbKalNY)
-### ⚙️ [Setup guide](guide,md)
+### ⚙️ [Setup guide](guide.md)
 
 
 ## ✨ Supported Fields and Features
