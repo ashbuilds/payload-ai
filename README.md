@@ -50,6 +50,7 @@ Want to dive deeper?
 - [Installation](#-installation)
 - [Usage](#-usage)
 - [Configuration](#%EF%B8%8F-configuration)
+  - [Setup Guide](guide.md)
 - [Contributing](#-contributing)
 
 ## 📦 Installation
@@ -105,14 +106,14 @@ fields: [
 
 ## ⚙️ Configuration
 
-Choose your AI model by providing one or more of the following environment variables.
-Create a .env file in your project root and add any of the following variables:
-
+To get started, choose your preferred AI model by setting one or more of the following environment variables. Create a .env file in your project root and add any of the following keys:
 ```
 OPENAI_API_KEY=your-openai-api-key
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ```
+For detailed guidance on personalizing and configuring the plugin to match your needs, check out the **[Complete Guide](guide.md)**. It walks you through every step, from setting up fields to generating amazing content!
+
 
 ### Enabling AI for Custom Components
 
