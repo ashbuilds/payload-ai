@@ -79,8 +79,11 @@ The Content Field is the core of blog/article generation. Like the Banner Field,
   ![RichText System Prompt](assets/guide/richtext-system-prompt.png)
 
 3. **Layout Tab**:
-Customize the structure of your content by adding headings, paragraphs, or lists.  
-  Example: Include introductory paragraphs, headings, and quotes for consistency.
+### Layout Tab
+
+The **Layout Tab** defines the structure of your content, allowing you to organize headings, paragraphs, lists, and more. It ensures AI-generated content follows a clear, consistent format tailored to your needs.
+
+**Example**: Start with an introduction, followed by a heading for features, a bullet list of key points, and a closing quote for emphasis. Please refer the image below: 
 ![RichText Layout](assets/guide/richtext-layout.png)
 ---
 
