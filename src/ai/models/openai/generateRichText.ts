@@ -1,11 +1,16 @@
 import { openai } from '@ai-sdk/openai'
 import { jsonSchema, streamObject } from 'ai'
 
-import { exampleOutput } from '../example.js'
-
-export const generateRichText = async (text: string, options: any) => {
+export const generateRichText = async (text: string, options: any = {}) => {
+  console.log('Running handler with prompts:', options.editorSchema)
   const streamResult = await streamObject({
-    model: openai(options.model),
+    maxTokens: options.maxTokens || 5000,
+    model: openai(options.model,{
+      structuredOutputs: true,
+    }),
+    onFinish: (result) => {
+      console.log('Finished generating rich text:', { options, rawResponse: result.rawResponse, result })
+    },
     prompt: text,
     schema: jsonSchema(options.editorSchema),
     system: `${options.system}
@@ -25,14 +30,11 @@ RICH TEXT EDITOR TOOLS:
 - Apply correct heading levels (h1, h2, h3) for hierarchical structure.
 - Utilize bullet points or numbered lists as required by the layout.
 
-SAMPLE OUTPUT OBJECT:
-${JSON.stringify(exampleOutput)}
-
 ADDITIONAL GUIDELINES:
 - Ensure coherence and logical flow between all sections.
 - Maintain a consistent tone and style throughout the content.
 - Use clear and concise language appropriate for the target audience.
-- Double-check that all JSON fields are properly filled and formatted.`,
+`,
   })
   return streamResult.toTextStreamResponse()
 }

@@ -5,10 +5,10 @@ import React, { useEffect, useMemo, useState } from 'react'
 
 import type { ActionMenuItems, UseMenuEvents } from '../../../../types.js'
 
+import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
 import { Compose, Proofread, Rephrase } from './items.js'
 import { menuItemsMap } from './itemsMap.js'
 import styles from './menu.module.scss'
-import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
 
 const getActiveComponent = (ac) => {
   switch (ac) {
@@ -49,11 +49,27 @@ export const useMenu = (menuEvents: UseMenuEvents) => {
   }, [initialValue, value, fieldType])
 
   const MemoizedActiveComponent = useMemo(() => {
-    return ({ isLoading }) => {
+    return ({ isLoading, stop }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
       const activeItem = menuItemsMap.find((i) => i.name === activeComponent)
       return (
-        <ActiveComponent disabled={isLoading} hideIcon onClick={menuEvents[`on${activeComponent}`]}>
+        <ActiveComponent
+          hideIcon
+          onClick={(data) => {
+            console.log('isLoading...', isLoading, activeComponent)
+            if (!isLoading) {
+              const trigger = menuEvents[`on${activeComponent}`]
+              if (typeof trigger === 'function') {
+                trigger(data)
+              } else {
+                console.error('No trigger found for', activeComponent)
+              }
+            } else {
+              stop()
+            }
+          }}
+          title={isLoading ? 'Click to stop' : activeItem.name}
+        >
           {isLoading && activeItem.loadingText}
         </ActiveComponent>
       )

@@ -15,6 +15,6 @@ export const setSafeLexicalState = (
 
     editorInstance.setEditorState(editorState)
   } catch (e) {
-    // console.error('Shh....:', e)
+    console.error('Shh....:', e)
   }
 }

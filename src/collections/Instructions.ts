@@ -113,7 +113,7 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
         id: 'ai-prompts-tabs',
         type: 'tabs',
         tabs: [
-          {
+          { // TODO: Add some info about the field to guide user
             description: 'This will appear within the tab above the fields.',
             fields: [
               {

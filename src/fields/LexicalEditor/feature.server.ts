@@ -5,6 +5,8 @@ import { isPluginActivated } from '../../utilities/isPluginActivated.js'
 
 const isActivated = isPluginActivated()
 
+
+console.log("isActivated : ", isActivated)
 export const PayloadAiPluginLexicalEditorFeature = createServerFeature({
   feature: {
     ClientFeature: isActivated ? '@ai-stack/payloadcms/client#LexicalEditorFeatureClient' : null,
