@@ -8,12 +8,12 @@
   max-height: 100px;
   opacity: 1;
   align-items: center;
+}
 
-  &_hidden {
-    max-height: 0;
-    overflow: hidden;
-    padding: 0 5px;
-    margin: 0;
-    opacity: 0;
-  }
+.actions_hidden {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 5px;
+  margin: 0;
+  opacity: 0;
 }

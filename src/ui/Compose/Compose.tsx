@@ -11,10 +11,9 @@ import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
 import { PluginIcon } from '../Icons/Icons.js'
 import { UndoRedoActions } from './UndoRedoActions.js'
-import styles from './compose.module.scss'
+import styles from './compose.module.css'
 import { useMenu } from './hooks/menu/useMenu.js'
 import { useGenerate } from './hooks/useGenerate.js'
-import { Item } from './hooks/menu/Item.js'
 
 function findParentWithClass(element, className) {
   // Base case: if the element is null or we've reached the top of the DOM
