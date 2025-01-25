@@ -99,7 +99,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
     requestAnimationFrame(() => {
       const validateObject = memoizedSchema.validate(object)
-      console.log('validating object...', { ...validateObject })
       if (validateObject?.success) {
         setSafeLexicalState(object, editor)
       }
@@ -201,7 +200,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return uploadResponse
       })
       .catch((error) => {
-        console.error('Error generating your upload', error)
+        console.error('Error generating or setting your upload, please set it manually if its saved in your media files: ', error)
       })
   }, [getData, localFromContext?.code, instructionId])
 

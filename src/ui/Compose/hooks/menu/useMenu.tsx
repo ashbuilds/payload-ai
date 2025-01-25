@@ -56,7 +56,6 @@ export const useMenu = (menuEvents: UseMenuEvents) => {
         <ActiveComponent
           hideIcon
           onClick={(data) => {
-            console.log('isLoading...', isLoading, activeComponent)
             if (!isLoading) {
               const trigger = menuEvents[`on${activeComponent}`]
               if (typeof trigger === 'function') {
