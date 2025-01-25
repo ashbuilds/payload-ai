@@ -87,7 +87,7 @@ export default buildConfig({
 
 
 // Add below in Lexical Editor field config
-import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms/fields'
+import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 
 fields: [
   {
@@ -97,7 +97,13 @@ fields: [
       features: ({ rootFeatures }) => {
         return [
           // ... your existing features
-          PayloadAiPluginLexicalEditorFeature()
+          HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+          InlineToolbarFeature(),
+          HorizontalRuleFeature(),
+          OrderedListFeature(),
+          UnorderedListFeature(),
+          BlockquoteFeature(),      
+          PayloadAiPluginLexicalEditorFeature() // Add this line
         ]
       },
     }),
