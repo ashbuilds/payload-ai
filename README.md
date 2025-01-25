@@ -79,6 +79,7 @@ export default buildConfig({
         [Posts.slug]: true,
       },
       debugging: false,
+      disableSponsorMessage: false
     }),
   ],
   // ... your existing Payload configuration
