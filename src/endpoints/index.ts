@@ -72,7 +72,7 @@ const assignPrompt = async (
 }
 
 export const endpoints: Endpoints = {
-  textarea: {
+  textarea: { //TODO:  This is the main endpoint for generating content - its just needs to be renamed to 'generate' or something.
     handler: async (req: PayloadRequest) => {
       const data = await req.json?.()
 

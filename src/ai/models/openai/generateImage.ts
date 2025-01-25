@@ -15,7 +15,6 @@ export const generateImage = async (
   } = {},
 ) => {
   const openaiAPI = new OpenAI()
-  console.log('generateImage: ', size, style, version, prompt)
   const response = await openaiAPI.images.generate({
     model: version,
     n: 1,

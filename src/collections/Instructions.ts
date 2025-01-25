@@ -113,8 +113,8 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
         id: 'ai-prompts-tabs',
         type: 'tabs',
         tabs: [
-          {
-            description: 'This will appear within the tab above the fields.',
+          { // TODO: Add some info about the field to guide user
+            description: 'The Prompt field allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
             fields: [
               {
                 name: 'prompt',
@@ -130,7 +130,7 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
             label: 'Prompt',
           },
           {
-            description: 'This will appear within the tab above the fields. sys',
+            description: '',
             fields: [
               {
                 name: 'system',
@@ -158,7 +158,7 @@ informative and accurate but also captivating and beautifully structured.`,
             //     return current['field-type'] === 'richText'
             //   },
             // },
-            description: 'This will appear within the tab above the fields. Layout',
+            description: '',
             fields: [
               {
                 /**TODO's:

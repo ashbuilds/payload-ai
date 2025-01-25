@@ -11,7 +11,7 @@ import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
 import { PluginIcon } from '../Icons/Icons.js'
 import { UndoRedoActions } from './UndoRedoActions.js'
-import styles from './compose.module.scss'
+import styles from './compose.module.css'
 import { useMenu } from './hooks/menu/useMenu.js'
 import { useGenerate } from './hooks/useGenerate.js'
 
@@ -45,7 +45,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
     field: { type: fieldType },
     path: pathFromContext,
     schemaPath,
-  } = descriptionProps || {} as FieldDescriptionServerProps
+  } = descriptionProps || ({} as FieldDescriptionServerProps)
   const { editor: lexicalEditor, editorContainerRef } = useEditorConfigContext()
 
   // Below snippet is used to show/hide the actions menu on AI enabled fields
@@ -88,7 +88,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
   }, [input, actionsRef])
 
   const [isProcessing, setIsProcessing] = useState(false)
-  const { generate, isLoading } = useGenerate({instructionId})
+  const { generate, isLoading, stop } = useGenerate({ instructionId })
 
   const { ActiveComponent, Menu } = useMenu({
     onCompose: async () => {
@@ -172,7 +172,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
           }}
           verticalAlign="bottom"
         />
-        <ActiveComponent isLoading={isProcessing || isLoading} />
+        <ActiveComponent isLoading={isProcessing || isLoading} stop={stop} />
         <UndoRedoActions
           onChange={(val) => {
             setValue(val)

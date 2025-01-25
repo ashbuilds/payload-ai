@@ -13,6 +13,7 @@ import {
   PLUGIN_NAME,
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
+import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
@@ -21,6 +22,7 @@ type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
 export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { type, path: pathFromContext } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
+
   const { editor } = editorConfigContext
 
   const { config } = useConfig()
@@ -45,12 +47,36 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
   const { schema: editorSchema = {} } = editorConfig
 
-  const memoizedSchema = useMemo(() => jsonSchema(editorSchema), [editorSchema])
+  const memoizedValidator = useMemo(() => {
+    return editorSchemaValidator(editorSchema)
+  }, [editorSchema])
+
+  const memoizedSchema = useMemo(
+    () =>
+      jsonSchema(editorSchema, {
+        validate: (value) => {
+          const isValid = memoizedValidator(value)
+
+          if (isValid) {
+            return {
+              success: true,
+              value,
+            }
+          } else {
+            return {
+              error: new Error('Invalid schema'),
+              success: false,
+            }
+          }
+        },
+      }),
+    [memoizedValidator],
+  )
 
   const {
     isLoading: loadingObject,
     object,
-    stop, // TODO: Implement this function
+    stop: objectStop,
     submit,
   } = useObject({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
@@ -72,20 +98,18 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     if (!object) return
 
     requestAnimationFrame(() => {
-      if (!editor) {
-        setValue(object)
-        return
+      const validateObject = memoizedSchema.validate(object)
+      if (validateObject?.success) {
+        setSafeLexicalState(object, editor)
       }
-
-      // Currently this is being used as setValue for RichText component does not render new changes right away.
-      setSafeLexicalState(object, editor)
     })
-  }, [object])
+  }, [object, editorSchema])
 
   const {
     complete,
     completion,
     isLoading: loadingCompletion,
+    stop: completionStop,
   } = useCompletion({
     api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
@@ -176,7 +200,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return uploadResponse
       })
       .catch((error) => {
-        console.error('Error generating your upload', error)
+        console.error('Error generating or setting your upload, please set it manually if its saved in your media files: ', error)
       })
   }, [getData, localFromContext?.code, instructionId])
 
@@ -197,8 +221,15 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     [generateUpload, streamObject, streamText, type],
   )
 
+  const stop = useCallback(() => {
+    console.log('Stopping...')
+    objectStop()
+    completionStop()
+  }, [objectStop, completionStop])
+
   return {
     generate,
     isLoading: loadingCompletion || loadingObject,
+    stop
   }
 }

@@ -84,4 +84,5 @@ export type BaseItemProps<T = any> = {
   onMouseEnter?: MouseEventHandler<T> | undefined
   onMouseLeave?: MouseEventHandler<T> | undefined
   style?: CSSProperties | undefined
+  title?: string
 }
