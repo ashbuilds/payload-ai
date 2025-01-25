@@ -17,7 +17,7 @@ The Payload AI Plugin is an advanced extension that integrates modern AI capabil
 ### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
 Want to dive deeper?  
 ### 🎥 [Explore More in Our Extended Demo](https://youtu.be/LEsuHbKalNY)
-### ⚙️ [Setup guide](guide.md)
+### ⚙️ [Guide to Personalize](guide.md)
 
 
 ## ✨ Supported Fields and Features
@@ -128,4 +128,8 @@ For detailed guidance on personalizing and configuring the plugin to match your 
 
 ## 👥 Contributing
 
-Innovators: welcome! We're always excited to expand our community. Connect with us on [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) to get started.
+Innovators: welcome! We're always excited to expand our community and hear fresh ideas. Whether you’re here to share feedback, suggest features, or contribute code, we’d love to have you on board.  
+
+Feel free to create a pull request with your ideas, improvements, or bug fixes. No contribution is too small, and every bit helps us grow!  
+
+Join the conversation on Payload's [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) and let’s build something amazing together! 🚀✨  

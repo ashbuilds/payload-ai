@@ -6,7 +6,7 @@ By default, the Payload AI Plugin comes with minimal settings to get you started
 
 ---
 
-## **1. Title Field**
+## **1. Title (Text field)**
 Titles are essential as they form the foundation for other fields. Users must input an initial phrase or wording, based on which the AI model will suggest or refine the title.
 
 Open the **Title Field** and enter a phrase or idea for the title. For example:  
@@ -25,7 +25,7 @@ Explore the **Title Settings** to configure how the AI generates or refines titl
 
 ---
 
-## **2. Banner Field**
+## **2. Banner (Upload field)**
 The Banner Field depends on the Title Field for meaningful output. If the title is empty, this field might produce random results or fail entirely. Ensure the title is set before working on the banner.
 
 Access the **Banner Field** and see how it dynamically generates content based on the title input.  
@@ -59,7 +59,7 @@ This combination ensures the AI's output is personalized and aligned with your c
 
 Now, let’s explore how to apply this in the **Content Field** section.
 
-## **3. Content Field**
+## **3. Content (RichText field)**
 The Content Field is the core of blog/article generation. Like the Banner Field, it relies on the Title Field for context. Always ensure the title is provided before triggering the "Compose" action.
 
 ### **Key Features**
@@ -79,15 +79,14 @@ The Content Field is the core of blog/article generation. Like the Banner Field,
   ![RichText System Prompt](assets/guide/richtext-system-prompt.png)
 
 3. **Layout Tab**:
-### Layout Tab
-
-The **Layout Tab** defines the structure of your content, allowing you to organize headings, paragraphs, lists, and more. It ensures AI-generated content follows a clear, consistent format tailored to your needs.
-
-**Example**: Start with an introduction, followed by a heading for features, a bullet list of key points, and a closing quote for emphasis. Please refer the image below: 
+-  The **Layout Tab** defines the structure of your content, allowing you to organize headings, paragraphs, lists, and more. It ensures AI-generated content follows a clear, consistent format tailored to your needs.
+For example, Start with an introduction, followed by a heading for features, a bullet list of key points, and a closing quote for emphasis. Please refer the image below: 
 ![RichText Layout](assets/guide/richtext-layout.png)
+
+> **📝 Note: System prompt and Layout prompt are only available for richText field**
 ---
 
-## **4. Voice Over Field**
+## **4. Voice Over (Upload field)**
 The Voice Over Field transforms your content into audio, powered by OpenAI or ElevenLabs voice models. This field depends on the Content Field, so generate content first.
 
 ### **Setup Instructions**
@@ -97,7 +96,7 @@ The Voice Over Field transforms your content into audio, powered by OpenAI or El
 
    ![Voice Over Settings](assets/guide/voice-over-settings1.png)
 
-3. Configure voice settings for the selected model to fine-tune the output.  
+3. Configure voice settings for the selected model to fine-tune the output.
 
 
    ![Voice Over Settings](assets/guide/voice-over-settings2.png)
