@@ -38,8 +38,7 @@ const sponsorMessage = `
 ║                                                               ║
 ║  Thank you again, and happy building!                         ║
 ╚═══════════════════════════════════════════════════════════════╝
-`;
-
+`
 
 const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
@@ -109,7 +108,7 @@ const payloadAiPlugin =
         i18n: {
           ...(incomingConfig.i18n || {}),
           translations: {
-            ...deepMerge(translations, incomingConfig.i18n?.translations),
+            ...deepMerge(translations, incomingConfig.i18n?.translations ?? {}),
           },
         },
       }
