@@ -126,7 +126,7 @@ export const endpoints: Endpoints = {
         template: promptTemplate as string,
       })
 
-      console.log('Running handler with prompts:', prompts)
+      // console.log('Running handler with prompts:', prompts)
       return model
         .handler?.(prompts.prompt, {
           ...modelOptions,
