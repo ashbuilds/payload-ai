@@ -46,7 +46,7 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
         name: 'schema-path',
         type: 'text',
         admin: {
-          readOnly: true,
+          description: "Please don’t change this unless you're sure of what you're doing",
         },
         unique: true,
       },
@@ -54,7 +54,7 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
         name: 'field-type',
         type: 'select',
         admin: {
-          readOnly: true,
+          description: "Please don’t change this unless you're sure of what you're doing",
         },
         defaultValue: 'text',
         label: 'Field type',
@@ -113,8 +113,10 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
         id: 'ai-prompts-tabs',
         type: 'tabs',
         tabs: [
-          { // TODO: Add some info about the field to guide user
-            description: 'The Prompt field allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
+          {
+            // TODO: Add some info about the field to guide user
+            description:
+              'The Prompt field allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
             fields: [
               {
                 name: 'prompt',

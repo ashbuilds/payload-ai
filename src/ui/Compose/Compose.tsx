@@ -1,6 +1,6 @@
 'use client'
 
-import type { FieldDescriptionServerProps } from 'payload'
+import type { ClientField } from 'payload'
 import type { FC } from 'react'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
@@ -31,7 +31,11 @@ function findParentWithClass(element, className) {
 }
 
 type ComposeProps = {
-  descriptionProps?: FieldDescriptionServerProps
+  descriptionProps?: {
+    field: ClientField
+    path: string
+    schemaPath: string
+  }
   instructionId: string
 }
 
@@ -45,7 +49,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
     field: { type: fieldType },
     path: pathFromContext,
     schemaPath,
-  } = descriptionProps || ({} as FieldDescriptionServerProps)
+  } = descriptionProps || {}
   const { editor: lexicalEditor, editorContainerRef } = useEditorConfigContext()
 
   // Below snippet is used to show/hide the actions menu on AI enabled fields

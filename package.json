@@ -105,12 +105,12 @@
     "typescript-eslint": "^7.18.0"
   },
   "peerDependencies": {
-    "@payloadcms/richtext-lexical": "latest",
-    "@payloadcms/translations": "latest",
-    "@payloadcms/ui": "latest",
-    "payload": "latest",
-    "@lexical/html": "^0.21.0",
-    "lexical": "^0.21.0"
+    "@payloadcms/richtext-lexical": "^3.31.0",
+    "@payloadcms/translations": "^3.31.0",
+    "@payloadcms/ui": "^3.31.0",
+    "payload": "^3.31.0",
+    "@lexical/html": "^0.28.0",
+    "lexical": "^0.28.0"
   },
   "publishConfig": {
     "main": "./dist/index.js",
@@ -140,5 +140,6 @@
         "default": "./dist/exports/client.js"
       }
     }
-  }
+  },
+  "packageManager": "pnpm@10.3.0+sha512.ee592eda8815a8a293c206bb0917c4bb0ff274c50def7cbc17be05ec641fc2d1b02490ce660061356bd0d126a4d7eb2ec8830e6959fb8a447571c631d5a2442d"
 }
