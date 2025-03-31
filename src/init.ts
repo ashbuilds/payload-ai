@@ -2,7 +2,7 @@ import type { Payload } from 'payload'
 
 import type { PluginConfig } from './types.js'
 
-import { GenerationModels } from './ai/models/index.js'
+import { defaultGenerationModels } from './ai/models/index.js'
 import { seedPrompts } from './ai/prompts.js'
 import { systemGenerate } from './ai/utils/systemGenerate.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
@@ -53,7 +53,7 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
           collection: PLUGIN_INSTRUCTIONS_TABLE,
           data: {
             'field-type': fieldType,
-            'model-id': GenerationModels.find((a) => {
+            'model-id': pluginConfig.generationModels(defaultGenerationModels).find((a) => {
               return a.fields.includes(fieldType)
             })?.id,
             prompt: generatedPrompt,

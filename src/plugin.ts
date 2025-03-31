@@ -18,6 +18,9 @@ const defaultPluginConfig: PluginConfig = {
   collections: {},
   disableSponsorMessage: false,
   generatePromptOnInit: true,
+  generationModels(defaultModels) {
+    return defaultModels
+  },
 }
 
 const sponsorMessage = `
@@ -48,7 +51,7 @@ const payloadAiPlugin =
     let updatedConfig: Config = { ...incomingConfig }
     let collectionsFieldPathMap = {}
     if (isActivated) {
-      const Instructions = instructionsCollection()
+      const Instructions = instructionsCollection(pluginConfig)
       // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit
       const lexicalSchema = lexicalJsonSchema(pluginConfig.editorConfig?.nodes)
 
@@ -85,6 +88,7 @@ const payloadAiPlugin =
         },
       }
 
+      const pluginEndpoints = endpoints(pluginConfig)
       updatedConfig = {
         ...incomingConfig,
         collections: collections.map((collection) => {
@@ -101,8 +105,8 @@ const payloadAiPlugin =
         }),
         endpoints: [
           ...(incomingConfig.endpoints ?? []),
-          endpoints.textarea,
-          endpoints.upload,
+          pluginEndpoints.textarea,
+          pluginEndpoints.upload,
           fetchFields,
         ],
         i18n: {
