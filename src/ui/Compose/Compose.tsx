@@ -1,7 +1,7 @@
 'use client'
 
 import type { ClientField } from 'payload'
-import type { FC } from 'react'
+import { FC, useMemo } from 'react'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { FieldDescription, Popup, useDocumentDrawer, useField } from '@payloadcms/ui'
@@ -76,7 +76,9 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
     if (!input || !actionsRef.current) return
 
     actionsRef.current.classList.add(styles.actions_hidden)
-    input.addEventListener('click', (event) => {
+
+    // Create the handler function
+    const clickHandler = (event) => {
       document.querySelectorAll('.ai-plugin-active')?.forEach((element) => {
         const actionElement = element.querySelector(`.${styles.actions}`)
         if (actionElement) {
@@ -87,8 +89,18 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
 
       actionsRef.current.classList.remove(styles.actions_hidden)
       const parentWithClass = findParentWithClass(event.target, 'field-type')
-      parentWithClass.classList.add('ai-plugin-active')
-    })
+      if (parentWithClass) {
+        parentWithClass.classList.add('ai-plugin-active')
+      }
+    }
+
+    // Add the event listener
+    input.addEventListener('click', clickHandler)
+
+    // Clean up the event listener when the component unmounts or input changes
+    return () => {
+      input.removeEventListener('click', clickHandler)
+    }
   }, [input, actionsRef])
 
   const [isProcessing, setIsProcessing] = useState(false)
@@ -156,6 +168,23 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
     // DO NOT PROVIDE lexicalEditor as a dependency, it freaks out and does not update the editor after first undo/redo
   }, [])
 
+  const popupRender = useCallback(
+    ({ close }) => {
+      return <Menu isLoading={isProcessing || isLoading} onClose={close} />
+    },
+    [isProcessing, isLoading, Menu],
+  )
+
+  const memoizedPopup = useMemo(() => {
+    return (
+      <Popup
+        button={<PluginIcon isLoading={isProcessing || isLoading} />}
+        render={popupRender}
+        verticalAlign="bottom"
+      />
+    )
+  }, [popupRender, isProcessing, isLoading])
+
   return (
     <React.Fragment>
       <label
@@ -169,13 +198,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
             closeDrawer()
           }}
         />
-        <Popup
-          button={<PluginIcon isLoading={isProcessing || isLoading} />}
-          render={({ close }) => {
-            return <Menu isLoading={isProcessing || isLoading} onClose={close} />
-          }}
-          verticalAlign="bottom"
-        />
+        {memoizedPopup}
         <ActiveComponent isLoading={isProcessing || isLoading} stop={stop} />
         <UndoRedoActions
           onChange={(val) => {

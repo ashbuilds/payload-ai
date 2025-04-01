@@ -235,6 +235,7 @@ export const documentSchema = {
       type: 'object',
       additionalProperties: false,
       properties: {
+        indent: { type: 'number', enum: [0, 1] },
         type: { type: 'string', enum: ['listitem'] },
         children: {
           type: 'array',
@@ -243,7 +244,7 @@ export const documentSchema = {
           },
         },
       },
-      required: ['type', 'children'],
+      required: ['indent', 'type', 'children'],
     },
     // List Node
     ListNode: {
