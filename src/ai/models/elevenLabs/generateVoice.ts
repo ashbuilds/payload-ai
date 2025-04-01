@@ -1,11 +1,11 @@
-import type * as ElevenLabs from 'elevenlabs/api'
+import type { TextToSpeechWithTimstampsRequest } from 'elevenlabs/api'
 
 import { ElevenLabsClient } from 'elevenlabs'
 
 type ElevenLabsTextToSpeechOptions = {
   voice_id: string
 } & Pick<
-  ElevenLabs.TextToSpeechWithTimstampsRequest,
+  TextToSpeechWithTimstampsRequest,
   'model_id' | 'next_text' | 'previous_text' | 'seed' | 'voice_settings'
 >
 
