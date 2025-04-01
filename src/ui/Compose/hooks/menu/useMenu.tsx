@@ -73,7 +73,7 @@ export const useMenu = (menuEvents: UseMenuEvents) => {
         </ActiveComponent>
       )
     }
-  }, [activeComponent, menuEvents])
+  }, [activeComponent])
 
   const filteredMenuItems = useMemo(
     () =>
@@ -105,7 +105,7 @@ export const useMenu = (menuEvents: UseMenuEvents) => {
         })}
       </div>
     )
-  }, [filteredMenuItems, menuEvents])
+  }, [filteredMenuItems])
 
   return {
     ActiveComponent: MemoizedActiveComponent,

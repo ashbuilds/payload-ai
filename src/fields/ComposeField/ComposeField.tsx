@@ -1,14 +1,13 @@
 'use client'
 
-import type { FieldDescriptionServerProps } from 'payload'
-
 import React from 'react'
 
 import { FieldProvider } from '../../providers/FieldProvider/FieldProvider.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { Compose } from '../../ui/Compose/Compose.js'
 
-export const ComposeField = (props: FieldDescriptionServerProps) => {
+export const ComposeField = (props) => {
+
   const { id: instructionId } = useInstructions({
     schemaPath: props?.schemaPath,
   })
@@ -21,7 +20,7 @@ export const ComposeField = (props: FieldDescriptionServerProps) => {
         schemaPath: props?.schemaPath,
       }}
     >
-      <Compose descriptionProps={props as any} instructionId={instructionId} />
+      <Compose descriptionProps={props} instructionId={instructionId} />
     </FieldProvider>
   )
 }

@@ -1,6 +1,6 @@
 {
   "name": "@ai-stack/payloadcms",
-  "version": "3.2.6-beta",
+  "version": "3.2.7-beta",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
@@ -105,12 +105,12 @@
     "typescript-eslint": "^7.18.0"
   },
   "peerDependencies": {
-    "@payloadcms/richtext-lexical": "latest",
-    "@payloadcms/translations": "latest",
-    "@payloadcms/ui": "latest",
-    "payload": "latest",
-    "@lexical/html": "^0.21.0",
-    "lexical": "^0.21.0"
+    "@payloadcms/richtext-lexical": "^3.31.0",
+    "@payloadcms/translations": "^3.31.0",
+    "@payloadcms/ui": "^3.31.0",
+    "payload": "^3.31.0",
+    "@lexical/html": "^0.28.0",
+    "lexical": "^0.28.0"
   },
   "publishConfig": {
     "main": "./dist/index.js",

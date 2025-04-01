@@ -2,7 +2,7 @@ import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { useConfig, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCompletion, experimental_useObject as useObject } from 'ai/react'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
@@ -20,6 +20,14 @@ import { useHistory } from './useHistory.js'
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
 
 export const useGenerate = ({ instructionId }: { instructionId: string }) => {
+  // Create a ref to hold the current instructionId
+  const instructionIdRef = useRef(instructionId)
+
+  // Update the ref whenever instructionId changes
+  useEffect(() => {
+    instructionIdRef.current = instructionId
+  }, [instructionId])
+
   const { type, path: pathFromContext } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
 
@@ -103,7 +111,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         setSafeLexicalState(object, editor)
       }
     })
-  }, [object, editorSchema])
+  }, [object, editor])
 
   const {
     complete,
@@ -132,10 +140,13 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
       const doc = getData()
+
+      const currentInstructionId = instructionIdRef.current
+
       const options = {
         action,
         actionParams: params,
-        instructionId,
+        instructionId: currentInstructionId,
       }
 
       submit({
@@ -144,17 +155,18 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         options,
       })
     },
-    [getData, localFromContext?.code, instructionId],
+    [localFromContext?.code, instructionIdRef],
   )
 
   const streamText = useCallback(
     async ({ action = 'Compose', params }: ActionCallbackParams) => {
       const doc = getData()
+      const currentInstructionId = instructionIdRef.current
 
       const options = {
         action,
         actionParams: params,
-        instructionId,
+        instructionId: currentInstructionId,
       }
 
       await complete('', {
@@ -165,18 +177,19 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         },
       })
     },
-    [getData, localFromContext?.code, instructionId],
+    [getData, localFromContext?.code, instructionIdRef, complete],
   )
 
   const generateUpload = useCallback(async () => {
     const doc = getData()
+    const currentInstructionId = instructionIdRef.current
 
     return fetch(`${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
       body: JSON.stringify({
         doc,
         locale: localFromContext?.code,
         options: {
-          instructionId,
+          instructionId: currentInstructionId,
         },
       } satisfies Parameters<GenerateTextarea>[0]),
       credentials: 'include',
@@ -192,6 +205,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
           setValue(result?.id)
           setHistory(result?.id)
+          console.log('Image updated...', result)
         } else {
           const { errors = [] } = await uploadResponse.json()
           const errStr = errors.map((error) => error.message).join(', ')
@@ -200,9 +214,12 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return uploadResponse
       })
       .catch((error) => {
-        console.error('Error generating or setting your upload, please set it manually if its saved in your media files: ', error)
+        console.error(
+          'Error generating or setting your upload, please set it manually if its saved in your media files: ',
+          error,
+        )
       })
-  }, [getData, localFromContext?.code, instructionId])
+  }, [getData, localFromContext?.code, instructionIdRef, setValue])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {
@@ -230,6 +247,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   return {
     generate,
     isLoading: loadingCompletion || loadingObject,
-    stop
+    stop,
   }
 }
