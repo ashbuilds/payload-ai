@@ -120,6 +120,10 @@ OPENAI_API_KEY=your-openai-api-key
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ```
+
+> **⚠️ Important:** Once you've configured or installed this plugin, a server restart is required to activate the changes.
+
+
 For detailed guidance on personalizing and configuring the plugin to match your needs, check out the **[Complete Guide](guide.md)**. It walks you through every step, from setting up fields to generating amazing content!
 
 
