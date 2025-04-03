@@ -107,6 +107,88 @@ The Voice Over Field transforms your content into audio, powered by OpenAI or El
 
 ---
 
+## **5. Add custom model**
+
+The Payload Ai plugin supports model from openai, anthropic and elevenlabs but you can add your own custom model.
+
+### **Setup Instructions**
+
+1. Implement the custom model
+Your custom model should implement the `GenerationModel` interface.
+
+The simplest way to do this is to check the existing models in the `src/ai/models` folder and copy the `openai` or `anthropic` model and rename it to your custom model name.
+
+This is an example of using `openrouter` provider.
+
+```javascript
+import { openrouter } from '@openrouter/ai-sdk-provider'
+
+const openrouterTextModel: GenerationModel = {
+    id: `openrouter-text`,
+    name: 'OpenRouter',
+    fields: ['text', 'textarea'],
+    handler: async (
+      prompt: string,
+      options: { locale: string; model: string; system: string },
+    ) => {
+      const streamTextResult = await streamText({
+        model: openrouter(options.model),
+        prompt,
+        system: options.system || defaultSystemPrompt,
+      })
+
+      return streamTextResult.toDataStreamResponse()
+    },
+    output: 'text',
+    settings: {
+      name: `openrouter-text-settings`,
+      type: 'group',
+      admin: {
+        condition(data) {
+          return data['model-id'] === `openrouter-text`
+        },
+      },
+      fields: [
+        {
+          name: 'model',
+          type: 'select',
+          defaultValue: 'google/gemini-2.0-flash-001',
+          label: 'Model',
+          options: [
+            // You can find more models here: https://openrouter.ai/models
+            'meta-llama/llama-3.3-70b-instruct',
+            'openai/gpt-4o-mini',
+            'anthropic/claude-3.5-sonnet',
+            'google/gemini-2.0-flash-001',
+          ],
+        },
+      ],
+      label: 'OpenRouter Settings',
+    },
+  }
+```
+
+2. Add the custom model to the `generationModels` array in the `payload.config.ts` file.
+
+```javascript
+export default buildConfig({
+  plugins: [
+    payloadAiPlugin({
+      collections: {
+        [Posts.slug]: true,
+      },
+      generationModels: (defaultGenerationModels) => [
+        ...defaultGenerationModels,
+        openrouterTextModel,
+      ],
+    }),
+  ],
+  // ... your existing Payload configuration
+})
+```
+
+---
+
 ### Final Note
 Follow the correct sequence for optimal results:
 Title → Banner → Content → Voice Over
