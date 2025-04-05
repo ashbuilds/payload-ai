@@ -8,6 +8,7 @@ export const systemGenerate = async (data: { prompt: string; system: string }) =
   const { prompt, system } = data
   let model = null
 
+  // TODO: still need OPENAI_API_KEY or ANTHROPIC_API_KEY to initialize
   if (process.env.OPENAI_API_KEY) {
     model = openai(PLUGIN_DEFAULT_OPENAI_MODEL)
   } else if (process.env.ANTHROPIC_API_KEY) {

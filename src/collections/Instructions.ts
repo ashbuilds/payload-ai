@@ -1,22 +1,25 @@
 import type { CollectionConfig, GroupField } from 'payload'
+import type { PluginConfig } from 'src/types.js'
 
-import { GenerationModels } from '../ai/models/index.js'
+import { getGenerationModels } from '../utilities/getGenerationModels.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 
-const groupSettings = GenerationModels.reduce((fields, model) => {
-  if (model.settings) {
-    fields.push(model.settings)
-  }
-  return fields
-}, [] as GroupField[])
+const groupSettings = (pluginConfig: PluginConfig) =>
+  getGenerationModels(pluginConfig).reduce((fields, model) => {
+    if (model.settings) {
+      fields.push(model.settings)
+    }
+    return fields
+  }, [] as GroupField[])
 
-const modelOptions = GenerationModels.map((model) => {
-  return {
-    fields: model.fields,
-    label: model.name,
-    value: model.id,
-  }
-})
+const modelOptions = (pluginConfig: PluginConfig) =>
+  getGenerationModels(pluginConfig).map((model) => {
+    return {
+      fields: model.fields,
+      label: model.name,
+      value: model.id,
+    }
+  })
 
 const defaultAccessConfig = {
   create: () => true,
@@ -29,7 +32,10 @@ const defaultAdminConfig = {
   hidden: true,
 }
 
-export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
+export const instructionsCollection = (
+  pluginConfig: PluginConfig,
+  options?: Partial<CollectionConfig>,
+) =>
   <CollectionConfig>{
     slug: PLUGIN_INSTRUCTIONS_TABLE,
     access: {
@@ -95,14 +101,14 @@ export const instructionsCollection = (options?: Partial<CollectionConfig>) =>
             Field: {
               clientProps: {
                 filterByField: 'field-type',
-                options: modelOptions,
+                options: modelOptions(pluginConfig),
               },
               path: '@ai-stack/payloadcms/fields#SelectField',
             },
           },
         },
         label: 'Model',
-        options: modelOptions.map((option) => {
+        options: modelOptions(pluginConfig).map((option) => {
           return {
             label: option.label,
             value: option.value,
@@ -190,7 +196,7 @@ informative and accurate but also captivating and beautifully structured.`,
           },
         ],
       },
-      ...groupSettings,
+      ...groupSettings(pluginConfig),
     ],
     labels: {
       plural: 'Compose Settings',

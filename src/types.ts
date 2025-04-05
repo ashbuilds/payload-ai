@@ -11,6 +11,7 @@ export interface PluginConfig {
   editorConfig?: { nodes: JSONSchema[] }
   fields?: Field[]
   generatePromptOnInit?: boolean
+  generationModels?: ((defaultModels: GenerationModel[]) => GenerationModel[]) | GenerationModel[]
   globals?: string[]
   interfaceName?: string
 }
