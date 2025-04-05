@@ -122,6 +122,14 @@ This is an example of using `openrouter` provider.
 
 ```javascript
 import { openrouter } from '@openrouter/ai-sdk-provider'
+import { GenerationModel } from '@ai-stack/payloadcms/types'
+import { streamText } from 'ai'
+
+const defaultSystemPrompt = `IMPORTANT INSTRUCTION:
+Produce only the requested output text.
+Do not add any explanations, comments, or engagement.
+Do not use quotation marks in the response.
+BEGIN OUTPUT:`
 
 const openrouterTextModel: GenerationModel = {
     id: `openrouter-text`,
@@ -186,6 +194,8 @@ export default buildConfig({
   // ... your existing Payload configuration
 })
 ```
+
+Full example can be found [here](https://github.com/nvti/payload-ai-demo-custom-model)
 
 ---
 
