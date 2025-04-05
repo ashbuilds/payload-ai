@@ -2,7 +2,6 @@ import type { PayloadRequest } from 'payload'
 
 import type { ActionMenuItems, Endpoints, PluginConfig } from '../types.js'
 
-import { defaultGenerationModels } from '../ai/models/index.js'
 import { defaultPrompts } from '../ai/prompts.js'
 import {
   PLUGIN_API_ENDPOINT_GENERATE,
@@ -13,6 +12,7 @@ import {
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
 const assignPrompt = async (
   action: ActionMenuItems,
@@ -114,8 +114,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
         const localeInfo = localeData?.label[defaultLocale] || locale
 
-        const model = pluginConfig
-          .generationModels(defaultGenerationModels)
+        const model = getGenerationModels(pluginConfig)
           .find((model) => model.id === instructions['model-id'])
         const settingsName = model.settings?.name
         const modelOptions = instructions[settingsName] || {}
@@ -174,8 +173,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         const modelId = instructions['model-id']
         const uploadCollectionSlug = instructions['relation-to']
 
-        const model = pluginConfig
-          .generationModels(defaultGenerationModels)
+        const model = getGenerationModels(pluginConfig)
           .find((model) => model.id === modelId)
         const settingsName = model.settings?.name
         const modelOptions = instructions[settingsName] || {}

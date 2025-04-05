@@ -13,14 +13,14 @@ import { init } from './init.js'
 import { translations } from './translations/index.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
+import { defaultGenerationModels } from './ai/models/index.js'
+import { getGenerationModels } from './utilities/getGenerationModels.js'
 
 const defaultPluginConfig: PluginConfig = {
   collections: {},
   disableSponsorMessage: false,
   generatePromptOnInit: true,
-  generationModels(defaultModels) {
-    return defaultModels
-  },
+  generationModels: defaultGenerationModels
 }
 
 const sponsorMessage = `
@@ -47,7 +47,8 @@ const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
     pluginConfig = { ...defaultPluginConfig, ...pluginConfig }
-    const isActivated = isPluginActivated()
+    pluginConfig.generationModels = getGenerationModels(pluginConfig)
+    const isActivated = isPluginActivated(pluginConfig)
     let updatedConfig: Config = { ...incomingConfig }
     let collectionsFieldPathMap = {}
     if (isActivated) {

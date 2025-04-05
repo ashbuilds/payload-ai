@@ -1,11 +1,11 @@
 import type { CollectionConfig, GroupField } from 'payload'
 import type { PluginConfig } from 'src/types.js'
 
-import { defaultGenerationModels } from '../ai/models/index.js'
+import { getGenerationModels } from '../utilities/getGenerationModels.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 
 const groupSettings = (pluginConfig: PluginConfig) =>
-  pluginConfig.generationModels(defaultGenerationModels).reduce((fields, model) => {
+  getGenerationModels(pluginConfig).reduce((fields, model) => {
     if (model.settings) {
       fields.push(model.settings)
     }
@@ -13,7 +13,7 @@ const groupSettings = (pluginConfig: PluginConfig) =>
   }, [] as GroupField[])
 
 const modelOptions = (pluginConfig: PluginConfig) =>
-  pluginConfig.generationModels(defaultGenerationModels).map((model) => {
+  getGenerationModels(pluginConfig).map((model) => {
     return {
       fields: model.fields,
       label: model.name,
