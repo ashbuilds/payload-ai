@@ -1,11 +1,12 @@
-import { openai } from '@ai-sdk/openai'
 import { jsonSchema, streamObject } from 'ai'
+
+import { openai } from './openai.js'
 
 export const generateRichText = async (text: string, options: any = {}) => {
   // console.log('Running handler with prompts:', options.editorSchema)
   const streamResult = await streamObject({
     maxTokens: options.maxTokens || 5000,
-    model: openai(options.model,{
+    model: openai(options.model, {
       structuredOutputs: true,
     }),
     // onFinish: (result) => {

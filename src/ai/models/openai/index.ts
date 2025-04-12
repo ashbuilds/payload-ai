@@ -1,7 +1,6 @@
 import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
-import { openai } from '@ai-sdk/openai'
 import { streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
@@ -11,6 +10,7 @@ import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.j
 import { generateImage } from './generateImage.js'
 import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
+import { openai } from './openai.js'
 
 const MODEL_KEY = 'Oai'
 
