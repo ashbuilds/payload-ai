@@ -1,8 +1,8 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 
 import { PLUGIN_DEFAULT_ANTHROPIC_MODEL, PLUGIN_DEFAULT_OPENAI_MODEL } from '../../defaults.js'
+import { openai } from '../models/openai/openai.js'
 
 export const systemGenerate = async (data: { prompt: string; system: string }) => {
   const { prompt, system } = data
