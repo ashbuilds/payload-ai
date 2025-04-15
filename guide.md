@@ -186,8 +186,8 @@ export default buildConfig({
         [Posts.slug]: true,
       },
       generationModels: (defaultGenerationModels) => [
-        ...defaultGenerationModels,
         openrouterTextModel,
+        ...defaultGenerationModels,
       ],
     }),
   ],
@@ -196,6 +196,24 @@ export default buildConfig({
 ```
 
 Full example can be found [here](https://github.com/nvti/payload-ai-demo-custom-model)
+
+### **Note**
+
+We provide a feature to generate prompt for you automatically at initialization. You can disable this feature by setting `generatePromptOnInit` to `false` in the plugin config.
+
+If you want to use this feature, you have 2 options:
+1. Provide a `generateText` function in your custom model. Example:
+```javascript
+generateText: async (prompt: string, system: string) => {
+  return generateText({
+    model: openrouter("google/gemini-2.0-flash-001"),
+    prompt,
+    system,
+  })
+}
+```
+
+2. Provide OPENAI_API_KEY or ANTHROPIC_API_KEY in the `.env` file. If no `generateText` function is provided, the plugin will try to use OpenAI or Anthropic to generate the prompt.
 
 ---
 

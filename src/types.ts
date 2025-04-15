@@ -18,12 +18,13 @@ export interface PluginConfig {
 
 export interface GenerationModel {
   fields: string[]
-  handler?: (payload: any, options: any) => Promise<any>
+  handler?: (prompt: string, options: any) => Promise<any>
   id: string
   name: string
   output: 'audio' | 'file' | 'image' | 'json' | 'text' | 'video'
   settings?: GroupField
   supportsPromptOptimization?: boolean
+  generateText?: (prompt: string, system: string) => Promise<string>
 }
 
 export interface GenerationConfig {

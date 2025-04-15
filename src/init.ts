@@ -39,10 +39,15 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
 
       let generatedPrompt = '{{ title }}'
       if (pluginConfig.generatePromptOnInit) {
-        generatedPrompt = await systemGenerate({
-          prompt,
-          system,
-        })
+        // find the model that has the generateText function
+        const model = getGenerationModels(pluginConfig).find((model) => model.generateText)
+        generatedPrompt = await systemGenerate(
+          {
+            prompt,
+            system,
+          },
+          model?.generateText,
+        )
         payload.logger.info(
           `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
         )
