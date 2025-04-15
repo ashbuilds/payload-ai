@@ -205,11 +205,13 @@ If you want to use this feature, you have 2 options:
 1. Provide a `generateText` function in your custom model. Example:
 ```javascript
 generateText: async (prompt: string, system: string) => {
-  return generateText({
-    model: openrouter("google/gemini-2.0-flash-001"),
+  const { text } = await generateText({
+    model: openrouter('google/gemini-2.0-flash-001'),
     prompt,
-    system,
+    system: system,
   })
+
+  return text
 }
 ```
 
