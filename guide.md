@@ -202,7 +202,7 @@ Full example can be found [here](https://github.com/nvti/payload-ai-demo-custom-
 We provide a feature to generate prompt for you automatically at initialization. You can disable this feature by setting `generatePromptOnInit` to `false` in the plugin config.
 
 If you want to use this feature, you have 2 options:
-1. Provide a `generateText` function in your custom model. Example:
+1. If you're using a **custom model**, make sure to provide a `generateText` function. Example:
 ```javascript
 generateText: async (prompt: string, system: string) => {
   const { text } = await generateText({
