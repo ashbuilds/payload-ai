@@ -2,10 +2,10 @@ import type { Payload } from 'payload'
 
 import type { PluginConfig } from './types.js'
 
-import { GenerationModels } from './ai/models/index.js'
 import { seedPrompts } from './ai/prompts.js'
 import { systemGenerate } from './ai/utils/systemGenerate.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
+import { getGenerationModels } from './utilities/getGenerationModels.js'
 
 export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: PluginConfig) => {
   payload.logger.info(`— AI Plugin: Initializing...`)
@@ -39,10 +39,15 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
 
       let generatedPrompt = '{{ title }}'
       if (pluginConfig.generatePromptOnInit) {
-        generatedPrompt = await systemGenerate({
-          prompt,
-          system,
-        })
+        // find the model that has the generateText function
+        const model = getGenerationModels(pluginConfig).find((model) => model.generateText)
+        generatedPrompt = await systemGenerate(
+          {
+            prompt,
+            system,
+          },
+          model?.generateText,
+        )
         payload.logger.info(
           `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
         )
@@ -53,7 +58,7 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
           collection: PLUGIN_INSTRUCTIONS_TABLE,
           data: {
             'field-type': fieldType,
-            'model-id': GenerationModels.find((a) => {
+            'model-id': getGenerationModels(pluginConfig).find((a) => {
               return a.fields.includes(fieldType)
             })?.id,
             prompt: generatedPrompt,

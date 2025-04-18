@@ -13,11 +13,14 @@ import { init } from './init.js'
 import { translations } from './translations/index.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
+import { defaultGenerationModels } from './ai/models/index.js'
+import { getGenerationModels } from './utilities/getGenerationModels.js'
 
 const defaultPluginConfig: PluginConfig = {
   collections: {},
   disableSponsorMessage: false,
   generatePromptOnInit: true,
+  generationModels: defaultGenerationModels
 }
 
 const sponsorMessage = `
@@ -44,11 +47,12 @@ const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
     pluginConfig = { ...defaultPluginConfig, ...pluginConfig }
-    const isActivated = isPluginActivated()
+    pluginConfig.generationModels = getGenerationModels(pluginConfig)
+    const isActivated = isPluginActivated(pluginConfig)
     let updatedConfig: Config = { ...incomingConfig }
     let collectionsFieldPathMap = {}
     if (isActivated) {
-      const Instructions = instructionsCollection()
+      const Instructions = instructionsCollection(pluginConfig)
       // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit
       const lexicalSchema = lexicalJsonSchema(pluginConfig.editorConfig?.nodes)
 
@@ -85,6 +89,7 @@ const payloadAiPlugin =
         },
       }
 
+      const pluginEndpoints = endpoints(pluginConfig)
       updatedConfig = {
         ...incomingConfig,
         collections: collections.map((collection) => {
@@ -101,8 +106,8 @@ const payloadAiPlugin =
         }),
         endpoints: [
           ...(incomingConfig.endpoints ?? []),
-          endpoints.textarea,
-          endpoints.upload,
+          pluginEndpoints.textarea,
+          pluginEndpoints.upload,
           fetchFields,
         ],
         i18n: {
