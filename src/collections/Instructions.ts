@@ -131,6 +131,7 @@ export const instructionsCollection = (
                   components: {
                     Field: '@ai-stack/payloadcms/fields#PromptEditorField',
                   },
+                  description: "Click 'Compose' to run this custom prompt and generate content",
                 },
                 label: '',
               },

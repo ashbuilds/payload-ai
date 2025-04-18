@@ -2,7 +2,7 @@
 
 import type { TextareaFieldClientProps } from 'payload'
 
-import { FieldLabel, useField } from '@payloadcms/ui'
+import { FieldDescription, FieldLabel, useField } from '@payloadcms/ui'
 import React from 'react'
 
 import { AutocompleteTextField } from '../../libraries/autocomplete/AutocompleteTextArea.js'
@@ -32,6 +32,7 @@ export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => 
         trigger={['{{ ']}
         value={value}
       />
+      <FieldDescription description={field?.admin?.description} path="" />
     </div>
   )
 }
