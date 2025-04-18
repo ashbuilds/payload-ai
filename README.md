@@ -123,6 +123,13 @@ ELEVENLABS_API_KEY=your-elevenlabs-api-key
 
 > **⚠️ Important:** Once you've configured or installed this plugin, a server restart is required to activate the changes.
 
+### OpenAI Endpoint
+
+If you want to use a custom endpoint for the OpenAI provider, set your base URL like this:
+```
+OPENAI_BASE_URL=https://api.openai.com/v1
+```
+If not specified, the [default](src/ai/models/openai/openai.ts) OpenAI endpoint will be used.
 
 For detailed guidance on personalizing and configuring the plugin to match your needs, check out the **[Complete Guide](guide.md)**. It walks you through every step, from setting up fields to generating amazing content!
 
