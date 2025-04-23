@@ -1,8 +1,8 @@
-import type { CollectionConfig, GroupField } from 'payload'
+import type { CollectionConfig, GroupField, PayloadRequest } from 'payload'
 import type { PluginConfig } from 'src/types.js'
 
-import { getGenerationModels } from '../utilities/getGenerationModels.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
+import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
 const groupSettings = (pluginConfig: PluginConfig) =>
   getGenerationModels(pluginConfig).reduce((fields, model) => {
@@ -139,16 +139,16 @@ export const instructionsCollection = (
             label: 'Prompt',
           },
           {
+            admin: {
+              condition: (_, current) => {
+                return current['field-type'] === 'richText'
+              },
+            },
             description: '',
             fields: [
               {
                 name: 'system',
                 type: 'textarea',
-                admin: {
-                  condition: (_, current) => {
-                    return current['field-type'] === 'richText'
-                  },
-                },
                 defaultValue: `INSTRUCTIONS:
 You are a highly skilled and professional blog writer,
 renowned for crafting engaging and well-organized articles.
@@ -161,12 +161,11 @@ informative and accurate but also captivating and beautifully structured.`,
           },
           {
             // Note: Update when tabs PR is merged: https://github.com/payloadcms/payload/pull/8406
-            // admin: {
-            //   condition: (_, current) => {
-            //     console.log('condition in tab', current)
-            //     return current['field-type'] === 'richText'
-            //   },
-            // },
+            admin: {
+              condition: (_, current) => {
+                return current['field-type'] === 'richText'
+              },
+            },
             description: '',
             fields: [
               {
