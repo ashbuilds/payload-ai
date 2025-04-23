@@ -160,7 +160,6 @@ informative and accurate but also captivating and beautifully structured.`,
             label: 'System prompt',
           },
           {
-            // Note: Update when tabs PR is merged: https://github.com/payloadcms/payload/pull/8406
             admin: {
               condition: (_, current) => {
                 return current['field-type'] === 'richText'
