@@ -1,11 +1,11 @@
 'use client'
 
 import type { ClientField } from 'payload'
-import { FC, useMemo } from 'react'
+import type { FC } from 'react'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { FieldDescription, Popup, useDocumentDrawer, useField } from '@payloadcms/ui'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
@@ -37,9 +37,10 @@ type ComposeProps = {
     schemaPath: string
   }
   instructionId: string
+  isConfigAllowed: boolean
 }
 
-export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) => {
+export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isConfigAllowed }) => {
   const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
     id: instructionId,
     collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
@@ -134,7 +135,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
         action: 'Rephrase',
       })
     },
-    onSettings: openDrawer,
+    onSettings: isConfigAllowed ? openDrawer : undefined,
     onSimplify: async () => {
       console.log('Simplifying...')
       await generate({
@@ -154,6 +155,8 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId }) =
         params: data,
       })
     },
+  },{
+    isConfigAllowed
   })
 
   const { setValue } = useField<string>({

@@ -235,6 +235,9 @@ export const documentSchema = {
       type: 'object',
       additionalProperties: false,
       properties: {
+        // NOTE: Do not change the position of "indent", models like gpt generate properties as they are
+        //  defined in schema, moving the position of property "indent"
+        //  can cause issue with schema validation while streaming generated json to lexical editor
         indent: { type: 'number', enum: [0, 1] },
         type: { type: 'string', enum: ['listitem'] },
         children: {
@@ -356,14 +359,16 @@ export const documentSchema = {
 }
 
 export const lexicalJsonSchema = (customNodes = []) => {
-  const schema = JSON.parse(JSON.stringify(documentSchema))
+  const schema = structuredClone(documentSchema)
 
-  // Add custom nodes to the Node definition
-  if (customNodes.length > 0) {
-    customNodes.forEach((customNode, index) => {
-      const customNodeName = `CustomNode${index + 1}`
-      schema.definitions[customNodeName] = customNode
-      schema.definitions.Node.oneOf.push({ $ref: `#/definitions/${customNodeName}` })
+  if (Array.isArray(customNodes) && customNodes.length > 0) {
+    customNodes.forEach((nodeObj) => {
+      for (const [nodeName, nodeDefinition] of Object.entries(nodeObj)) {
+        schema.definitions[nodeName] = nodeDefinition
+        const anyOfList = schema?.definitions?.RootNode?.properties?.children?.items?.anyOf
+
+        anyOfList.push({ $ref: `#/definitions/${nodeName}` })
+      }
     })
   }
 

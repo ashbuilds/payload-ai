@@ -3,7 +3,7 @@
 import { useField } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
 
-import type { ActionMenuItems, UseMenuEvents } from '../../../../types.js'
+import { ActionMenuItems, UseMenuEvents, UseMenuOptions } from '../../../../types.js'
 
 import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
 import { Compose, Proofread, Rephrase } from './items.js'
@@ -23,7 +23,7 @@ const getActiveComponent = (ac) => {
   }
 }
 
-export const useMenu = (menuEvents: UseMenuEvents) => {
+export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
   const { type: fieldType, path: pathFromContext } = useFieldProps()
   const field = useField({ path: pathFromContext })
   const [activeComponent, setActiveComponent] = useState<ActionMenuItems>('Rephrase')
@@ -77,9 +77,12 @@ export const useMenu = (menuEvents: UseMenuEvents) => {
 
   const filteredMenuItems = useMemo(
     () =>
-      menuItemsMap.filter((i) => i.name !== activeComponent && !i.excludedFor?.includes(fieldType)),
-    [activeComponent, fieldType],
-  )
+      menuItemsMap.filter((i) => {
+        if (i.name === 'Settings' && !options.isConfigAllowed) return false; // Disable settings if a user role is not permitted
+        return i.name !== activeComponent && !i.excludedFor?.includes(fieldType);
+      }),
+    [activeComponent, fieldType, options.isConfigAllowed],
+  );
 
   const MemoizedMenu = useMemo(() => {
     return ({ isLoading, onClose }) => (
@@ -95,7 +98,7 @@ export const useMenu = (menuEvents: UseMenuEvents) => {
                   setActiveComponent(i.name)
                 }
 
-                menuEvents[`on${i.name}`](data)
+                menuEvents[`on${i.name}`]?.(data)
                 onClose()
               }}
             >

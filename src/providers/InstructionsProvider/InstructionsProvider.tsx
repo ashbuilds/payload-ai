@@ -2,7 +2,7 @@
 
 import type { Field } from 'payload'
 
-import { useConfig } from '@payloadcms/ui'
+import { useAuth, useConfig } from '@payloadcms/ui'
 import React, { createContext, useEffect, useState } from 'react'
 
 import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
@@ -10,11 +10,13 @@ import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
 const initialContext: {
   field?: Field
   instructions: Record<string, any>
+  isConfigAllowed: boolean
   path?: string
   schemaPath?: unknown
 } = {
   field: undefined,
   instructions: undefined,
+  isConfigAllowed: true,
   path: '',
   schemaPath: '',
 }
@@ -23,6 +25,10 @@ export const InstructionsContext = createContext(initialContext)
 
 export const InstructionsProvider: React.FC = ({ children }: { children: React.ReactNode }) => {
   const [instructions, setInstructionsState] = useState({})
+  const [isConfigAllowed, setIsConfigAllowed] = useState(false)
+  const {
+    user
+  } = useAuth();
 
   const { config } = useConfig()
   const {
@@ -36,15 +42,16 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
     fetch(`${serverURL}${api}${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
       .then(async (res) => {
         await res.json().then((data) => {
-          setInstructionsState(data)
+          setIsConfigAllowed(data?.isConfigAllowed)
+          setInstructionsState(data?.fields)
         })
       })
       .catch((err) => {
         console.error('InstructionsProvider:', err)
       })
-  }, [])
+  }, [user])
 
   return (
-    <InstructionsContext.Provider value={{ instructions }}>{children}</InstructionsContext.Provider>
+    <InstructionsContext.Provider value={{ instructions, isConfigAllowed }}>{children}</InstructionsContext.Provider>
   )
 }

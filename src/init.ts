@@ -8,7 +8,9 @@ import { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
 import { getGenerationModels } from './utilities/getGenerationModels.js'
 
 export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: PluginConfig) => {
-  payload.logger.info(`— AI Plugin: Initializing...`)
+  if (pluginConfig.debugging) {
+    payload.logger.info(`— AI Plugin: Initializing...`)
+  }
 
   const paths = Object.keys(fieldSchemaPaths)
 
@@ -68,7 +70,7 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
         })
         .then((a) => a)
         .catch((err) => {
-          console.log('— AI Plugin: Error creating Compose settings-', err)
+          payload.logger.error('— AI Plugin: Error creating Compose settings-', err)
         })
 
       // @ts-expect-error
@@ -91,9 +93,9 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
     payload.logger.info(
       `— AI Plugin: Enabled fields map: ${JSON.stringify(fieldInstructionsMap, null, 2)}`,
     )
+    payload.logger.info(`— AI Plugin: Initialized!`)
   }
 
-  payload.logger.info(`— AI Plugin: Initialized!`)
   if (pluginConfig.generatePromptOnInit) {
     payload.logger.info(
       '\n\n-AI Plugin: Example prompts are added to get you started, Now go break some code 🚀🚀🚀\n\n',

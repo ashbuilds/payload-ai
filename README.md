@@ -39,6 +39,7 @@ Want to dive deeper?
 ### Other Features
 - 🔌 **Bring your own model** ([Setup guide](https://github.com/ashbuilds/payload-ai/blob/main/guide.md#5-add-custom-model))
 - 🎛️ **Field-level Prompt Customization**
+- 🔐 **Access Control Support**
 - 🧠 **Prompt Editor** (Beta)
 - 📊 **Document Analyzer** (Coming Soon)
 - ✅ **Fact Checking** (Coming Soon)
@@ -80,7 +81,15 @@ export default buildConfig({
         [Posts.slug]: true,
       },
       debugging: false,
-      disableSponsorMessage: false
+      disableSponsorMessage: false,
+
+     /* Enable to restrict access to AI plugin settings only to admin users
+      access: {
+        settings: ({ req }: { req: PayloadRequest }) => {
+          return req.user?.role === 'admin';
+        },
+      },
+      */
     }),
   ],
   // ... your existing Payload configuration
@@ -133,7 +142,6 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 If not specified, the [default](src/ai/models/openai/openai.ts) OpenAI endpoint will be used.
 
 For detailed guidance on personalizing and configuring the plugin to match your needs, check out the **[Complete Guide](guide.md)**. It walks you through every step, from setting up fields to generating amazing content!
-
 
 ### Enabling AI for Custom Components
 

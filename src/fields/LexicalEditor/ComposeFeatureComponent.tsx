@@ -5,7 +5,7 @@ import { useInstructions } from '../../providers/InstructionsProvider/useInstruc
 import { Compose } from '../../ui/Compose/Compose.js'
 
 export const ComposeFeatureComponent = (props: any) => {
-  const { id: instructionId } = useInstructions({
+  const { id: instructionId, isConfigAllowed } = useInstructions({
     schemaPath: props?.clientProps?.schemaPath,
   })
 
@@ -25,6 +25,7 @@ export const ComposeFeatureComponent = (props: any) => {
           ...props?.clientProps,
         }}
         instructionId={instructionId}
+        isConfigAllowed={isConfigAllowed}
       />
     </FieldProvider>
   )

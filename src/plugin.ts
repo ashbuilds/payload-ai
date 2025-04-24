@@ -4,6 +4,7 @@ import { deepMerge } from 'payload/shared'
 
 import type { PluginConfig } from './types.js'
 
+import { defaultGenerationModels } from './ai/models/index.js'
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
@@ -11,16 +12,15 @@ import { fetchFields } from './endpoints/fetchFields.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
 import { translations } from './translations/index.js'
+import { getGenerationModels } from './utilities/getGenerationModels.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
-import { defaultGenerationModels } from './ai/models/index.js'
-import { getGenerationModels } from './utilities/getGenerationModels.js'
 
 const defaultPluginConfig: PluginConfig = {
   collections: {},
   disableSponsorMessage: false,
   generatePromptOnInit: true,
-  generationModels: defaultGenerationModels
+  generationModels: defaultGenerationModels,
 }
 
 const sponsorMessage = `
@@ -108,7 +108,7 @@ const payloadAiPlugin =
           ...(incomingConfig.endpoints ?? []),
           pluginEndpoints.textarea,
           pluginEndpoints.upload,
-          fetchFields,
+          fetchFields(pluginConfig.access),
         ],
         i18n: {
           ...(incomingConfig.i18n || {}),

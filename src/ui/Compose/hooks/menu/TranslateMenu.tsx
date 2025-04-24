@@ -33,7 +33,10 @@ export const TranslateMenu = ({ onClick }) => {
         onMouseEnter={() => setShow(true)}
        />
       <div className={styles.hoverMenu} data-show={show}>
-        <div className={`${styles.menu} ${styles.subMenu}`}>
+        <div className={`${styles.menu} ${styles.subMenu}`} style={{
+          background: "var(--popup-bg)",
+          minHeight: "300px"
+        }}>
           <Item
             onClick={() => {}}
             style={{

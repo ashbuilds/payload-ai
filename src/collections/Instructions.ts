@@ -1,8 +1,8 @@
 import type { CollectionConfig, GroupField } from 'payload'
 import type { PluginConfig } from 'src/types.js'
 
-import { getGenerationModels } from '../utilities/getGenerationModels.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
+import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
 const groupSettings = (pluginConfig: PluginConfig) =>
   getGenerationModels(pluginConfig).reduce((fields, model) => {
@@ -120,7 +120,6 @@ export const instructionsCollection = (
         type: 'tabs',
         tabs: [
           {
-            // TODO: Add some info about the field to guide user
             description:
               'The Prompt field allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
             fields: [
@@ -139,16 +138,16 @@ export const instructionsCollection = (
             label: 'Prompt',
           },
           {
+            admin: {
+              condition: (_, current) => {
+                return current['field-type'] === 'richText'
+              },
+            },
             description: '',
             fields: [
               {
                 name: 'system',
                 type: 'textarea',
-                admin: {
-                  condition: (_, current) => {
-                    return current['field-type'] === 'richText'
-                  },
-                },
                 defaultValue: `INSTRUCTIONS:
 You are a highly skilled and professional blog writer,
 renowned for crafting engaging and well-organized articles.
@@ -160,20 +159,18 @@ informative and accurate but also captivating and beautifully structured.`,
             label: 'System prompt',
           },
           {
-            // Note: Update when tabs PR is merged: https://github.com/payloadcms/payload/pull/8406
-            // admin: {
-            //   condition: (_, current) => {
-            //     console.log('condition in tab', current)
-            //     return current['field-type'] === 'richText'
-            //   },
-            // },
+            admin: {
+              condition: (_, current) => {
+                return current['field-type'] === 'richText'
+              },
+            },
             description: '',
             fields: [
               {
-                /**TODO's:
+                /** TODO:
                  *  - Layouts can be saved in as an array
-                 *  - user can add their own layout to collections and use it later for generate specific rich text
-                 *  - user can select previously added layout
+                 *  - User can add their own layout to collections and use it later for generate specific rich text
+                 *  - User can select previously added layout
                  */
                 name: 'layout',
                 type: 'textarea',

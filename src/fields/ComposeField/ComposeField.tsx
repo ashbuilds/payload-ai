@@ -8,7 +8,7 @@ import { Compose } from '../../ui/Compose/Compose.js'
 
 export const ComposeField = (props) => {
 
-  const { id: instructionId } = useInstructions({
+  const { id: instructionId, isConfigAllowed } = useInstructions({
     schemaPath: props?.schemaPath,
   })
 
@@ -20,7 +20,7 @@ export const ComposeField = (props) => {
         schemaPath: props?.schemaPath,
       }}
     >
-      <Compose descriptionProps={props} instructionId={instructionId} />
+      <Compose descriptionProps={props} instructionId={instructionId} isConfigAllowed={isConfigAllowed} />
     </FieldProvider>
   )
 }

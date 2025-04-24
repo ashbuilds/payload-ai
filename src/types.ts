@@ -1,8 +1,15 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
-import type { Endpoint, Field, GroupField } from 'payload'
+import type { Endpoint, Field, GroupField, PayloadRequest } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
 
+export interface PluginConfigAccess {
+  settings?: ({ req }: {
+    req: PayloadRequest;
+  }) => Promise<boolean> | boolean;
+}
+
 export interface PluginConfig {
+  access?: PluginConfigAccess
   collections: {
     [key: string]: boolean
   }
@@ -18,13 +25,13 @@ export interface PluginConfig {
 
 export interface GenerationModel {
   fields: string[]
+  generateText?: (prompt: string, system: string) => Promise<string>
   handler?: (prompt: string, options: any) => Promise<any>
   id: string
   name: string
   output: 'audio' | 'file' | 'image' | 'json' | 'text' | 'video'
   settings?: GroupField
   supportsPromptOptimization?: boolean
-  generateText?: (prompt: string, system: string) => Promise<string>
 }
 
 export interface GenerationConfig {
@@ -74,6 +81,10 @@ export type ActionMenuEvents =
 
 export type UseMenuEvents = {
   [key in ActionMenuEvents]?: (data?: unknown) => void
+}
+
+export type UseMenuOptions = {
+  isConfigAllowed: boolean
 }
 
 export type BaseItemProps<T = any> = {
