@@ -37,6 +37,7 @@ Want to dive deeper?
 - 🖼️ **Image Generation** powered by OpenAI
 
 ### Other Features
+- 🔌 **Bring your own model** ([Setup guide](https://github.com/ashbuilds/payload-ai/blob/main/guide.md#5-add-custom-model))
 - 🎛️ **Field-level Prompt Customization**
 - 🔐 **Access Control Support**
 - 🧠 **Prompt Editor** (Beta)
