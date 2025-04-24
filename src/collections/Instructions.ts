@@ -1,4 +1,4 @@
-import type { CollectionConfig, GroupField, PayloadRequest } from 'payload'
+import type { CollectionConfig, GroupField } from 'payload'
 import type { PluginConfig } from 'src/types.js'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
@@ -120,7 +120,6 @@ export const instructionsCollection = (
         type: 'tabs',
         tabs: [
           {
-            // TODO: Add some info about the field to guide user
             description:
               'The Prompt field allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
             fields: [
@@ -168,10 +167,10 @@ informative and accurate but also captivating and beautifully structured.`,
             description: '',
             fields: [
               {
-                /**TODO's:
+                /** TODO:
                  *  - Layouts can be saved in as an array
-                 *  - user can add their own layout to collections and use it later for generate specific rich text
-                 *  - user can select previously added layout
+                 *  - User can add their own layout to collections and use it later for generate specific rich text
+                 *  - User can select previously added layout
                  */
                 name: 'layout',
                 type: 'textarea',
