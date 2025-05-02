@@ -150,6 +150,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       }
 
       submit({
+        allowedEditorNodes: Array.from(editor?._nodes?.keys() || []),
         doc,
         locale: localFromContext?.code,
         options,

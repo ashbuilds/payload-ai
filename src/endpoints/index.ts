@@ -3,6 +3,7 @@ import type { PayloadRequest } from 'payload'
 import type { ActionMenuItems, Endpoints, PluginConfig } from '../types.js'
 
 import { defaultPrompts } from '../ai/prompts.js'
+import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
 import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
@@ -78,7 +79,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
       handler: async (req: PayloadRequest) => {
         const data = await req.json?.()
 
-        const { locale = 'en', options } = data
+        const { allowedEditorNodes = [], locale = 'en', options } = data
         const { action, actionParams, instructionId } = options
         const contextData = data.doc
 
@@ -102,6 +103,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         const { schema: editorSchema = {} } = editorConfig
         const { prompt: promptTemplate = '' } = instructions
 
+        const allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
+
         const schemaPath = instructions['schema-path'] as string
         const fieldName = schemaPath?.split('.').pop()
 
@@ -114,8 +117,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
         const localeInfo = localeData?.label[defaultLocale] || locale
 
-        const model = getGenerationModels(pluginConfig)
-          .find((model) => model.id === instructions['model-id'])
+        const model = getGenerationModels(pluginConfig).find(
+          (model) => model.id === instructions['model-id'],
+        )
         const settingsName = model.settings?.name
         const modelOptions = instructions[settingsName] || {}
 
@@ -133,7 +137,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         return model
           .handler?.(prompts.prompt, {
             ...modelOptions,
-            editorSchema,
+            editorSchema: allowedEditorSchema,
             layout: prompts.layout,
             locale: localeInfo,
             system: prompts.system,
@@ -173,8 +177,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         const modelId = instructions['model-id']
         const uploadCollectionSlug = instructions['relation-to']
 
-        const model = getGenerationModels(pluginConfig)
-          .find((model) => model.id === modelId)
+        const model = getGenerationModels(pluginConfig).find((model) => model.id === modelId)
         const settingsName = model.settings?.name
         const modelOptions = instructions[settingsName] || {}
 

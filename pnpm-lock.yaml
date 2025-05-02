@@ -90,6 +90,9 @@ importers:
       '@types/handlebars':
         specifier: ^4.1.0
         version: 4.1.0
+      '@types/json-schema':
+        specifier: ^7.0.15
+        version: 7.0.15
       '@types/react':
         specifier: npm:types-react@19.0.0-beta.2
         version: types-react@19.0.0-beta.2
