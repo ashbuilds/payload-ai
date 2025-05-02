@@ -127,6 +127,10 @@ fields: [
 To get started, choose your preferred AI model by setting one or more of the following environment variables. Create a .env file in your project root and add any of the following keys:
 ```
 OPENAI_API_KEY=your-openai-api-key
+
+## OPENAI_ORG_ID is required if you use gpt-image-1 model
+OPENAI_ORG_ID=your-org-id  
+
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ```

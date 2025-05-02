@@ -171,6 +171,8 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
     // DO NOT PROVIDE lexicalEditor as a dependency, it freaks out and does not update the editor after first undo/redo
   }, [])
 
+  console.log("lexicalEditor: ", lexicalEditor)
+
   const popupRender = useCallback(
     ({ close }) => {
       return <Menu isLoading={isProcessing || isLoading} onClose={close} />

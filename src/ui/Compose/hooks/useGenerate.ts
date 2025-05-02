@@ -214,10 +214,10 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return uploadResponse
       })
       .catch((error) => {
-        console.error(
-          'Error generating or setting your upload, please set it manually if its saved in your media files: ',
-          error,
+        console.warn(
+          'Error generating or setting your upload, please set it manually if its saved in your media files.',
         )
+        console.error(error)
       })
   }, [getData, localFromContext?.code, instructionIdRef, setValue])
 

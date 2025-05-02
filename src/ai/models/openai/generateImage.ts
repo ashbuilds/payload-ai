@@ -15,13 +15,19 @@ export const generateImage = async (
   } = {},
 ) => {
   const openaiAPI = new OpenAI()
+
+  const options = {}
+  if (version?.startsWith('dall')) {
+    options['response_format'] = 'b64_json'
+    options['style'] = style
+  }
+
   const response = await openaiAPI.images.generate({
     model: version,
     n: 1,
     prompt,
-    response_format: 'b64_json',
     size,
-    style,
+    ...options,
   })
 
   const { b64_json, revised_prompt } = response.data[0] || {}
