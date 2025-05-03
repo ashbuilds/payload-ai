@@ -1,5 +1,7 @@
 import type { PayloadRequest } from 'payload'
 
+import * as process from 'node:process'
+
 import type { ActionMenuItems, Endpoints, PluginConfig } from '../types.js'
 
 import { defaultPrompts } from '../ai/prompts.js'
@@ -103,7 +105,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         const { schema: editorSchema = {} } = editorConfig
         const { prompt: promptTemplate = '' } = instructions
 
-        const allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
+        let allowedEditorSchema = editorSchema
+        if (allowedEditorNodes.length) {
+          allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
+        }
 
         const schemaPath = instructions['schema-path'] as string
         const fieldName = schemaPath?.split('.').pop()
@@ -133,19 +138,18 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           template: promptTemplate as string,
         })
 
-        // console.log('Running handler with prompts:', prompts)
-        return model
-          .handler?.(prompts.prompt, {
+        try {
+          return model.handler?.(prompts.prompt, {
             ...modelOptions,
             editorSchema: allowedEditorSchema,
             layout: prompts.layout,
             locale: localeInfo,
             system: prompts.system,
           })
-          .catch((error) => {
-            console.error('Error: endpoint - generating text:', error)
-            return new Response(JSON.stringify(error.message), { status: 500 })
-          })
+        } catch (error) {
+          req.payload.logger.error('Error generating content: ', error)
+          return new Response(JSON.stringify(error.message), { status: 500 })
+        }
       },
       method: 'post',
       path: PLUGIN_API_ENDPOINT_GENERATE,
@@ -158,7 +162,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         const { instructionId } = options
         const contextData = data.doc
 
-        let instructions = { 'model-id': '', prompt: '' }
+        let instructions = { images: [], 'model-id': '', prompt: '' }
 
         if (instructionId) {
           // @ts-expect-error
@@ -168,7 +172,39 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           })
         }
 
-        const { prompt: promptTemplate = '' } = instructions
+        const { images = [], prompt: promptTemplate = '' } = instructions
+        const editImages = []
+        for (const img of images) {
+          try {
+            const serverURL =
+              req.payload.config?.serverURL ||
+              process.env.SERVER_URL ||
+              process.env.NEXT_PUBLIC_SERVER_URL
+
+            const response = await fetch(`${serverURL}${img.image.url}`, {
+              headers: {
+                //TODO: Further testing needed
+                Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
+              },
+              method: 'GET',
+            })
+
+            const blob = await response.blob()
+            editImages.push({
+              name: img.image.name,
+              type: img.image.type,
+              data: blob,
+              size: blob.size,
+              url: `${serverURL}${img.image.url}`,
+            })
+          } catch (e) {
+            req.payload.logger.error('Error fetching reference images:', e)
+            throw Error(
+              "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
+            )
+          }
+        }
+
         const schemaPath = instructions['schema-path']
 
         registerEditorHelper(req.payload, schemaPath)
@@ -179,7 +215,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
         const model = getGenerationModels(pluginConfig).find((model) => model.id === modelId)
         const settingsName = model.settings?.name
-        const modelOptions = instructions[settingsName] || {}
+        let modelOptions = instructions[settingsName] || {}
+        modelOptions = {
+          ...modelOptions,
+          images: editImages,
+        }
 
         const result = await model.handler?.(text, modelOptions)
 

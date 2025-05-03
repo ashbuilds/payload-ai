@@ -21,12 +21,15 @@ export const OpenAIConfig: GenerationConfig = {
       id: `${MODEL_KEY}-text`,
       name: 'OpenAI GPT Text',
       fields: ['text', 'textarea'],
-      handler: async (
-        prompt: string,
-        options: { locale: string; model: string; system: string },
-      ) => {
-        const streamTextResult = await streamText({
+      handler: (prompt: string, options: { locale: string; model: string; system: string }) => {
+        const streamTextResult = streamText({
           model: openai(options.model),
+          onError: (ee) => {
+            console.log('streamText : error : ', ee)
+          },
+          onFinish: (stepResult) => {
+            console.log('streamText : finish : ', stepResult)
+          },
           prompt,
           system: options.system || defaultSystemPrompt,
         })
@@ -149,7 +152,7 @@ export const OpenAIConfig: GenerationConfig = {
             name: 'version',
             type: 'select',
             defaultValue: 'gpt-image-1',
-            label: 'version',
+            label: 'Version',
             options: ['gpt-image-1'],
           },
           {
@@ -300,9 +303,9 @@ export const OpenAIConfig: GenerationConfig = {
           {
             name: 'model',
             type: 'select',
-            defaultValue: 'gpt-4o-2024-08-06',
+            defaultValue: 'gpt-4o',
             label: 'Model',
-            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-4o-2024-08-06'],
+            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-4.1', 'o4-mini'],
           },
         ],
         label: 'OpenAI GPT Settings',

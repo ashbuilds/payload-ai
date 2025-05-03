@@ -140,6 +140,32 @@ export const instructionsCollection = (
           {
             admin: {
               condition: (_, current) => {
+                return current['field-type'] === 'upload' && current['model-id'] === 'gpt-image-1'
+              },
+            },
+            description:
+              'These images will be used to generate new visuals in a similar style, layout, or content. You can combine multiple references for more controlled results.',
+            fields: [
+              {
+                name: 'images',
+                type: 'array',
+                fields: [
+                  {
+                    name: 'image',
+                    type: 'upload',
+                    admin: {
+                      description: "Please make sure the image is publicly accessible.",
+                    },
+                    relationTo: 'media',
+                  },
+                ],
+              },
+            ],
+            label: 'Sample Images',
+          },
+          {
+            admin: {
+              condition: (_, current) => {
                 return current['field-type'] === 'richText'
               },
             },

@@ -1,7 +1,7 @@
+import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { useConfig, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
-import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'

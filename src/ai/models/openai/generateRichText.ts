@@ -2,16 +2,22 @@ import { jsonSchema, streamObject } from 'ai'
 
 import { openai } from './openai.js'
 
-export const generateRichText = async (text: string, options: any = {}) => {
-  // console.log('Running handler with prompts:', options.editorSchema)
-  const streamResult = await streamObject({
+export const generateRichText = (text: string, options: any = {}) => {
+  const streamResult = streamObject({
     maxTokens: options.maxTokens || 5000,
     model: openai(options.model, {
       structuredOutputs: true,
     }),
-    // onFinish: (result) => {
-    //   console.log('Finished generating rich text:', { options, rawResponse: result.rawResponse, result })
-    // },
+    onError: (error) => {
+      console.log('onError generating rich text:', {
+        error
+      })
+    },
+    onFinish: (result) => {
+      console.log('Finished generating rich text:', {
+        result,
+      })
+    },
     prompt: text,
     schema: jsonSchema(options.editorSchema),
     system: `${options.system}

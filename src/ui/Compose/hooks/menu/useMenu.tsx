@@ -3,7 +3,7 @@
 import { useField } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { ActionMenuItems, UseMenuEvents, UseMenuOptions } from '../../../../types.js'
+import type { ActionMenuItems, UseMenuEvents, UseMenuOptions } from '../../../../types.js'
 
 import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
 import { Compose, Proofread, Rephrase } from './items.js'
@@ -78,11 +78,11 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
   const filteredMenuItems = useMemo(
     () =>
       menuItemsMap.filter((i) => {
-        if (i.name === 'Settings' && !options.isConfigAllowed) return false; // Disable settings if a user role is not permitted
-        return i.name !== activeComponent && !i.excludedFor?.includes(fieldType);
+        if (i.name === 'Settings' && !options.isConfigAllowed) return false // Disable settings if a user role is not permitted
+        return i.name !== activeComponent && !i.excludedFor?.includes(fieldType)
       }),
     [activeComponent, fieldType, options.isConfigAllowed],
-  );
+  )
 
   const MemoizedMenu = useMemo(() => {
     return ({ isLoading, onClose }) => (

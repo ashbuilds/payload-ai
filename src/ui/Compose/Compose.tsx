@@ -16,7 +16,7 @@ import { useMenu } from './hooks/menu/useMenu.js'
 import { useGenerate } from './hooks/useGenerate.js'
 
 function findParentWithClass(element, className) {
-  // Base case: if the element is null or we've reached the top of the DOM
+  // Base case: if the element is null, or we've reached the top of the DOM
   if (!element || element === document.body) {
     return null
   }
@@ -53,7 +53,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   } = descriptionProps || {}
   const { editor: lexicalEditor, editorContainerRef } = useEditorConfigContext()
 
-  // Below snippet is used to show/hide the actions menu on AI enabled fields
+  // The below snippet is used to show/hide the action menu on AI-enabled fields
   const [input, setInput] = useState(null)
   const actionsRef = useRef(null)
 
@@ -171,8 +171,6 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
     // DO NOT PROVIDE lexicalEditor as a dependency, it freaks out and does not update the editor after first undo/redo
   }, [])
 
-  console.log("lexicalEditor: ", lexicalEditor)
-
   const popupRender = useCallback(
     ({ close }) => {
       return <Menu isLoading={isProcessing || isLoading} onClose={close} />
@@ -212,7 +210,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
           }}
         />
       </label>
-      {/*Render incoming description field*/}
+      {/*Render the incoming description field*/}
       {descriptionProps ? (
         <div>
           <FieldDescription {...descriptionProps} />
