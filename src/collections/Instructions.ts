@@ -121,7 +121,7 @@ export const instructionsCollection = (
         tabs: [
           {
             description:
-              'Below prompt editor allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
+              'Define dynamic templates using {{ fieldName }}. Type { to see available field suggestions.',
             fields: [
               {
                 name: 'prompt',
@@ -154,7 +154,7 @@ export const instructionsCollection = (
                     name: 'image',
                     type: 'upload',
                     admin: {
-                      description: "Please make sure the image is publicly accessible.",
+                      description: 'Please make sure the image is publicly accessible.',
                     },
                     relationTo: 'media',
                   },

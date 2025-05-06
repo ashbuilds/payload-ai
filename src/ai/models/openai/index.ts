@@ -24,12 +24,14 @@ export const OpenAIConfig: GenerationConfig = {
       handler: (prompt: string, options: { locale: string; model: string; system: string }) => {
         const streamTextResult = streamText({
           model: openai(options.model),
-          onError: (ee) => {
-            console.log('streamText : error : ', ee)
+          onError: (error) => {
+            console.error(`${MODEL_KEY}-text: `, error)
           },
-          onFinish: (stepResult) => {
-            console.log('streamText : finish : ', stepResult)
-          },
+
+          // TODO: Implement billing/token consumption
+          // onFinish: (stepResult) => {
+          //   console.log('streamText : finish : ', stepResult)
+          // },
           prompt,
           system: options.system || defaultSystemPrompt,
         })
