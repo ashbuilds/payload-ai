@@ -4,6 +4,9 @@ import { jsonSchema, streamObject } from 'ai'
 export const generateRichText = (text: string, options: any) => {
   const streamResult = streamObject({
     model: anthropic(options.model),
+    onError: (error) => {
+      console.error(`generateRichText: `, error)
+    },
     prompt: text,
     schema: jsonSchema(options.editorSchema),
     system: `${options.system}

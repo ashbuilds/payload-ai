@@ -9,14 +9,7 @@ export const generateRichText = (text: string, options: any = {}) => {
       structuredOutputs: true,
     }),
     onError: (error) => {
-      console.log('onError generating rich text:', {
-        error
-      })
-    },
-    onFinish: (result) => {
-      console.log('Finished generating rich text:', {
-        result,
-      })
+      console.error(`generateRichText: `, error)
     },
     prompt: text,
     schema: jsonSchema(options.editorSchema),

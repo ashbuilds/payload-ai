@@ -20,9 +20,6 @@ export const AnthropicConfig: GenerationConfig = {
           onError: (error) => {
             console.error(`${MODEL_KEY}-text: `, error)
           },
-          // onFinish: (stepResult) => {
-          //   console.log('streamText : finish : ', stepResult)
-          // },
           prompt,
           system: options.system || defaultSystemPrompt,
         })
