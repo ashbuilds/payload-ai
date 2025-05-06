@@ -235,6 +235,7 @@ export const documentSchema: LexicalNodeSchema = {
               { $ref: '#/definitions/LinkNode' },
               { $ref: '#/definitions/CodeNode' },
               { $ref: '#/definitions/LineBreakNode' },
+              { $ref: '#/definitions/TabNode' },
             ],
           },
         },
@@ -242,7 +243,12 @@ export const documentSchema: LexicalNodeSchema = {
           type: ['string', 'null'],
           enum: ['ltr', null],
         },
-        format: { type: 'string', enum: ['start', 'center', 'right'] },
+        format: {
+          type: 'string',
+          description:
+            'Format alignment based on content. Prioritize "start", then "center", and use "right" only when appropriate.',
+          enum: ['start', 'center', 'right'],
+        },
         indent: { type: 'number' },
         textFormat: { type: 'number' },
         textStyle: {
