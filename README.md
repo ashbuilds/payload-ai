@@ -39,7 +39,7 @@ Want to dive deeper?
 
 - 🎙️ **Voice Generation** powered by ElevenLabs, OpenAI
 - 🖼️ **Image Generation** powered by OpenAI
-  - Now also supports **[GPT-Image-1](https://platform.openai.com/docs/guides/image-generation?image-generation-model=gpt-image-1)** Model
+  - Now also supports **[GPT-Image-1](https://github.com/ashbuilds/payload-ai/pull/82)** Model
 
 ### Other Features
 
