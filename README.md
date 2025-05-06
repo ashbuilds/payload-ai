@@ -15,14 +15,17 @@ The Payload AI Plugin is an advanced extension that integrates modern AI capabil
 ---
 
 ### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
-Want to dive deeper?  
-### 🎥 [Explore More in Our Extended Demo](https://youtu.be/LEsuHbKalNY)
-### ⚙️ [Guide to Personalize](guide.md)
 
+Want to dive deeper?
+
+### 🎥 [Explore More in Our Extended Demo](https://youtu.be/LEsuHbKalNY)
+
+### ⚙️ [Guide to Personalize](guide.md)
 
 ## ✨ Supported Fields and Features
 
 ### Text and RichText Field
+
 - 📝 **Text Generation**
   - [x] **Compose** masterpieces effortlessly
   - [x] **Proofread** with precision (Beta)
@@ -33,11 +36,14 @@ Want to dive deeper?
   - [x] **Rephrase** for maximum impact (Beta)
 
 ### Upload Field
+
 - 🎙️ **Voice Generation** powered by ElevenLabs, OpenAI
 - 🖼️ **Image Generation** powered by OpenAI
+  - Now also supports **[GPT-Image-1](https://github.com/ashbuilds/payload-ai/pull/82)** Model
 
 ### Other Features
-- 🔌 **Bring your own model** ([Setup guide](https://github.com/ashbuilds/payload-ai/blob/main/guide.md#5-add-custom-model))
+
+- 🔌 **Bring Your Own Model** ([Setup guide](https://github.com/ashbuilds/payload-ai/blob/main/guide.md#5-add-custom-model))
 - 🎛️ **Field-level Prompt Customization**
 - 🔐 **Access Control Support**
 - 🧠 **Prompt Editor** (Beta)
@@ -66,13 +72,12 @@ pnpm add @ai-stack/payloadcms
 
 ## 🛠 Usage
 
-Config with ease: 
+Config with ease:
 
 ```javascript
-
 // Add below in payload.config.ts
-import { buildConfig } from 'payload/config';
-import { payloadAiPlugin } from '@ai-stack/payloadcms';
+import { buildConfig } from 'payload/config'
+import { payloadAiPlugin } from '@ai-stack/payloadcms'
 
 export default buildConfig({
   plugins: [
@@ -82,8 +87,10 @@ export default buildConfig({
       },
       debugging: false,
       disableSponsorMessage: false,
+      
+      generatePromptOnInit: process.env.NODE_ENV !== 'production',
 
-     /* Enable to restrict access to AI plugin settings only to admin users
+      /* Enable to restrict access to AI plugin settings only to admin users
       access: {
         settings: ({ req }: { req: PayloadRequest }) => {
           return req.user?.role === 'admin';
@@ -93,12 +100,15 @@ export default buildConfig({
     }),
   ],
   // ... your existing Payload configuration
-});
+})
+```
 
+Configure your richText fields:
 
-// Add below in Lexical Editor field config
+```javascript
 import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 
+// Add below in Lexical Editor field config
 fields: [
   {
     name: 'content',
@@ -108,25 +118,26 @@ fields: [
         return [
           // ... your existing features
           HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-          InlineToolbarFeature(),
-          HorizontalRuleFeature(),
-          OrderedListFeature(),
-          UnorderedListFeature(),
-          BlockquoteFeature(),      
-          PayloadAiPluginLexicalEditorFeature() // Add this line
+
+          // Please add below
+          PayloadAiPluginLexicalEditorFeature(),
         ]
       },
     }),
   },
 ]
-
 ```
 
 ## ⚙️ Configuration
 
 To get started, choose your preferred AI model by setting one or more of the following environment variables. Create a .env file in your project root and add any of the following keys:
+
 ```
 OPENAI_API_KEY=your-openai-api-key
+
+## OPENAI_ORG_ID is required if you use gpt-image-1 model
+OPENAI_ORG_ID=your-org-id
+
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ```
@@ -136,9 +147,11 @@ ELEVENLABS_API_KEY=your-elevenlabs-api-key
 ### OpenAI Endpoint
 
 If you want to use a custom endpoint for the OpenAI provider, set your base URL like this:
+
 ```
 OPENAI_BASE_URL=https://api.openai.com/v1
 ```
+
 If not specified, the [default](src/ai/models/openai/openai.ts) OpenAI endpoint will be used.
 
 For detailed guidance on personalizing and configuring the plugin to match your needs, check out the **[Complete Guide](guide.md)**. It walks you through every step, from setting up fields to generating amazing content!
@@ -152,11 +165,10 @@ For detailed guidance on personalizing and configuring the plugin to match your 
 >
 > To view AI enabled fields, enable the `debugging` flag in your plugin config or check your server startup logs.
 
-
 ## 👥 Contributing
 
-Innovators: welcome! We're always excited to expand our community and hear fresh ideas. Whether you’re here to share feedback, suggest features, or contribute code, we’d love to have you on board.  
+Innovators: welcome! We're always excited to expand our community and hear fresh ideas. Whether you’re here to share feedback, suggest features, or contribute code, we’d love to have you on board.
 
-Feel free to create a pull request with your ideas, improvements, or bug fixes. No contribution is too small, and every bit helps us grow!  
+Feel free to create a pull request with your ideas, improvements, or bug fixes. No contribution is too small, and every bit helps us grow!
 
-Join the conversation on Payload's [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) and let’s build something amazing together! 🚀✨  
+Join the conversation on Payload's [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) and let’s build something amazing together! 🚀✨

@@ -1,11 +1,12 @@
 import { anthropic } from '@ai-sdk/anthropic'
 import { jsonSchema, streamObject } from 'ai'
 
-import { exampleOutput } from '../example.js'
-
-export const generateRichText = async (text: string, options: any) => {
-  const streamResult = await streamObject({
+export const generateRichText = (text: string, options: any) => {
+  const streamResult = streamObject({
     model: anthropic(options.model),
+    onError: (error) => {
+      console.error(`generateRichText: `, error)
+    },
     prompt: text,
     schema: jsonSchema(options.editorSchema),
     system: `${options.system}
@@ -24,9 +25,6 @@ RICH TEXT EDITOR TOOLS:
 - Use appropriate formatting tools such as bold, italic, or underline for emphasis where needed.
 - Apply correct heading levels (h1, h2, h3) for hierarchical structure.
 - Utilize bullet points or numbered lists as required by the layout.
-
-SAMPLE OUTPUT OBJECT:
-${JSON.stringify(exampleOutput)}
 
 ADDITIONAL GUIDELINES:
 - Ensure coherence and logical flow between all sections.

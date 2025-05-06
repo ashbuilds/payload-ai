@@ -121,7 +121,7 @@ export const instructionsCollection = (
         tabs: [
           {
             description:
-              'The Prompt field allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
+              'Define dynamic templates using {{ fieldName }}. Type { to see available field suggestions.',
             fields: [
               {
                 name: 'prompt',
@@ -136,6 +136,32 @@ export const instructionsCollection = (
               },
             ],
             label: 'Prompt',
+          },
+          {
+            admin: {
+              condition: (_, current) => {
+                return current['field-type'] === 'upload' && current['model-id'] === 'gpt-image-1'
+              },
+            },
+            description:
+              'These images will be used to generate new visuals in a similar style, layout, or content. You can combine multiple references for more controlled results.',
+            fields: [
+              {
+                name: 'images',
+                type: 'array',
+                fields: [
+                  {
+                    name: 'image',
+                    type: 'upload',
+                    admin: {
+                      description: 'Please make sure the image is publicly accessible.',
+                    },
+                    relationTo: 'media',
+                  },
+                ],
+              },
+            ],
+            label: 'Sample Images',
           },
           {
             admin: {

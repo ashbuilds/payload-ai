@@ -3,35 +3,70 @@
 import type { TextareaFieldClientProps } from 'payload'
 
 import { FieldDescription, FieldLabel, useField } from '@payloadcms/ui'
-import React from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Mention, MentionsInput } from 'react-mentions/dist/react-mentions.cjs.js'
 
-import { AutocompleteTextField } from '../../libraries/autocomplete/AutocompleteTextArea.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
+import { defaultStyle } from './defaultStyle.js'
 
-//NOTE: HMR does not work for plugin components anymore, I think it has to do with importMap/ string path
 export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => {
   const { field, path: pathFromContext } = props
-
-  const { setValue, value } = useField<string>({
+  const { setValue, value: payloadValue } = useField<string>({
     path: pathFromContext,
   })
 
+  const [localValue, setLocalValue] = useState(payloadValue || '')
+  const hasInitialized = useRef(false)
+
   const { promptEditorSuggestions } = useInstructions()
+
+  const suggestions = useMemo(
+    () =>
+      promptEditorSuggestions.map((suggestion) => ({
+        id: suggestion,
+        display: suggestion,
+      })),
+    [promptEditorSuggestions],
+  )
+
+  useEffect(() => {
+    if (!hasInitialized.current || payloadValue === '') {
+      setLocalValue(payloadValue || '')
+      hasInitialized.current = true
+    }
+  }, [payloadValue])
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setLocalValue(e.target.value)
+  }, [])
+
+  const handleBlur = useCallback(() => {
+    setValue(localValue)
+  }, [localValue, setValue])
+
+  const displayTransform = useCallback((id: string) => `{{ ${id} }}`, [])
 
   return (
     <div className="field-type textarea">
       <FieldLabel label={field.label} />
-      <AutocompleteTextField
-        changeOnSelect={(trigger, selected) => {
-          return trigger + selected + ' }}'
-        }}
-        onChange={(val: string) => {
-          setValue(val)
-        }}
-        options={promptEditorSuggestions}
-        trigger={['{{ ']}
-        value={value}
-      />
+      <MentionsInput
+        onBlur={handleBlur}
+        onChange={handleChange}
+        placeholder="Type your prompt using {{ fieldName }} variables..."
+        style={defaultStyle}
+        value={localValue}
+      >
+        <Mention
+          data={suggestions}
+          displayTransform={displayTransform}
+          markup="{{__id__}}"
+          style={{
+            backgroundColor: 'var(--theme-elevation-100)',
+            padding: "2px 0"
+          }}
+          trigger="{"
+        />
+      </MentionsInput>
       <FieldDescription description={field?.admin?.description} path="" />
     </div>
   )

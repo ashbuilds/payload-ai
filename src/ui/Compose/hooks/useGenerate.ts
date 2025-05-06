@@ -1,7 +1,7 @@
+import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { useConfig, useField, useForm, useLocale } from '@payloadcms/ui'
+import { useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
-import { useCompletion, experimental_useObject as useObject } from 'ai/react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
@@ -46,6 +46,8 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { set: setHistory } = useHistory()
 
   const { getData } = useForm()
+  const { id: documentId, collectionSlug } = useDocumentInfo()
+
   const localFromContext = useLocale()
   const {
     config: { collections },
@@ -150,6 +152,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       }
 
       submit({
+        allowedEditorNodes: Array.from(editor?._nodes?.keys() || []),
         doc,
         locale: localFromContext?.code,
         options,
@@ -186,7 +189,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
     return fetch(`${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
       body: JSON.stringify({
+        collectionSlug,
         doc,
+        documentId,
         locale: localFromContext?.code,
         options: {
           instructionId: currentInstructionId,
@@ -214,12 +219,12 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return uploadResponse
       })
       .catch((error) => {
-        console.error(
-          'Error generating or setting your upload, please set it manually if its saved in your media files: ',
-          error,
+        console.warn(
+          'Error generating or setting your upload, please set it manually if its saved in your media files.',
         )
+        console.error(error)
       })
-  }, [getData, localFromContext?.code, instructionIdRef, setValue])
+  }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {

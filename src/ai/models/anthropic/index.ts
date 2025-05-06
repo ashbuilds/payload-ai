@@ -14,12 +14,12 @@ export const AnthropicConfig: GenerationConfig = {
       id: `${MODEL_KEY}-text`,
       name: 'Anthropic Claude',
       fields: ['text', 'textarea'],
-      handler: async (
-        prompt: string,
-        options: { locale: string; model: string; system: string },
-      ) => {
-        const streamTextResult = await streamText({
+      handler: (prompt: string, options: { locale: string; model: string; system: string }) => {
+        const streamTextResult = streamText({
           model: anthropic(options.model),
+          onError: (error) => {
+            console.error(`${MODEL_KEY}-text: `, error)
+          },
           prompt,
           system: options.system || defaultSystemPrompt,
         })
@@ -39,13 +39,13 @@ export const AnthropicConfig: GenerationConfig = {
           {
             name: 'model',
             type: 'select',
-            defaultValue: 'claude-3-5-sonnet-20240620',
+            defaultValue: 'claude-3-5-sonnet-latest',
             label: 'Model',
             options: [
-              'claude-3-haiku-20240307',
-              'claude-3-sonnet-20240229',
-              'claude-3-opus-20240229',
-              'claude-3-5-sonnet-20240620',
+              'claude-3-opus-latest',
+              'claude-3-5-haiku-latest',
+              'claude-3-5-sonnet-latest',
+              'claude-3-7-sonnet-latest',
             ],
           },
         ],
@@ -72,13 +72,13 @@ export const AnthropicConfig: GenerationConfig = {
           {
             name: 'model',
             type: 'select',
-            defaultValue: 'claude-3-5-sonnet-20240620',
+            defaultValue: 'claude-3-5-sonnet-latest',
             label: 'Model',
             options: [
-              'claude-3-haiku-20240307',
-              'claude-3-sonnet-20240229',
-              'claude-3-opus-20240229',
-              'claude-3-5-sonnet-20240620',
+              'claude-3-opus-latest',
+              'claude-3-5-haiku-latest',
+              'claude-3-5-sonnet-latest',
+              'claude-3-7-sonnet-latest',
             ],
           },
         ],

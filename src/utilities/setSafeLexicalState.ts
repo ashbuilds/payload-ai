@@ -14,7 +14,7 @@ export const setSafeLexicalState = (
     }
 
     editorInstance.setEditorState(editorState)
-  } catch (e) {
-    console.error('Error setting editor state: ', e)
+  } catch (error) {
+    console.error('Error setting editor state: ', { error, state })
   }
 }

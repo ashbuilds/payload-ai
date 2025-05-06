@@ -1,11 +1,10 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
+import type { ImageGenerateParams } from 'openai/resources/images'
 import type { Endpoint, Field, GroupField, PayloadRequest } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
 
 export interface PluginConfigAccess {
-  settings?: ({ req }: {
-    req: PayloadRequest;
-  }) => Promise<boolean> | boolean;
+  settings?: ({ req }: { req: PayloadRequest }) => Promise<boolean> | boolean
 }
 
 export interface PluginConfig {
@@ -26,7 +25,7 @@ export interface PluginConfig {
 export interface GenerationModel {
   fields: string[]
   generateText?: (prompt: string, system: string) => Promise<string>
-  handler?: (prompt: string, options: any) => Promise<any>
+  handler?: (prompt: string, options: any) => Promise<any> | Response
   id: string
   name: string
   output: 'audio' | 'file' | 'image' | 'json' | 'text' | 'video'
@@ -40,7 +39,9 @@ export interface GenerationConfig {
 }
 
 export type GenerateTextarea<T = any> = (args: {
+  collectionSlug: string
   doc: T
+  documentId?: number | string
   locale?: string
   options?: any
 }) => Promise<string> | string
@@ -98,4 +99,19 @@ export type BaseItemProps<T = any> = {
   onMouseLeave?: MouseEventHandler<T> | undefined
   style?: CSSProperties | undefined
   title?: string
+}
+
+export type ImageReference = {
+  data: Blob
+  name: string
+  size: number
+  type: string
+  url: string
+}
+
+export type GenerateImageParams = {
+  images?: ImageReference[]
+  size?: ImageGenerateParams['size']
+  style?: ImageGenerateParams['style']
+  version?: ImageGenerateParams['model']
 }

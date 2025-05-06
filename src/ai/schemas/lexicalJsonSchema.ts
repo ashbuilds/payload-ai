@@ -1,8 +1,50 @@
-export const documentSchema = {
+import type { JSONSchema7 } from 'json-schema'
+
+import { isObjectSchema } from '../utils/isObjectSchema.js'
+
+export interface LexicalNodeSchema extends JSONSchema7 {
+  additionalProperties?: boolean
+  properties: {
+    [key: string]: any
+    children?: {
+      items: {
+        $ref?: string
+        anyOf?: { $ref: string }[]
+      }
+      type: 'array'
+    }
+    type?: {
+      enum: string[]
+      type: 'string'
+    }
+  }
+  required?: string[]
+  type: 'object'
+}
+
+export const documentSchema: LexicalNodeSchema = {
   type: 'object',
   $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   definitions: {
+    LineBreakNode: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        type: { type: 'string', enum: ['linebreak'] },
+        version: { type: 'number' },
+      },
+      required: ['type', 'version'],
+    },
+    TabNode: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        type: { type: 'string', enum: ['tab'] },
+        version: { type: 'number' },
+      },
+      required: ['type', 'version'],
+    },
     // Text Node (Leaf Node)
     TextNode: {
       type: 'object',
@@ -161,7 +203,12 @@ export const documentSchema = {
         children: {
           type: 'array',
           items: {
-            anyOf: [{ $ref: '#/definitions/TextNode' }, { $ref: '#/definitions/LinkNode' }],
+            anyOf: [
+              { $ref: '#/definitions/TextNode' },
+              { $ref: '#/definitions/LinkNode' },
+              { $ref: '#/definitions/LineBreakNode' },
+              { $ref: '#/definitions/TabNode' },
+            ],
           },
         },
         direction: {
@@ -187,6 +234,8 @@ export const documentSchema = {
               { $ref: '#/definitions/TextNode' },
               { $ref: '#/definitions/LinkNode' },
               { $ref: '#/definitions/CodeNode' },
+              { $ref: '#/definitions/LineBreakNode' },
+              { $ref: '#/definitions/TabNode' },
             ],
           },
         },
@@ -194,7 +243,12 @@ export const documentSchema = {
           type: ['string', 'null'],
           enum: ['ltr', null],
         },
-        format: { type: 'string', enum: ['start', 'center', 'right'] },
+        format: {
+          type: 'string',
+          description:
+            'Format alignment based on content. Prioritize "start", then "center", and use "right" only when appropriate.',
+          enum: ['start', 'center', 'right'],
+        },
         indent: { type: 'number' },
         textFormat: { type: 'number' },
         textStyle: {
@@ -239,11 +293,16 @@ export const documentSchema = {
         //  defined in schema, moving the position of property "indent"
         //  can cause issue with schema validation while streaming generated json to lexical editor
         indent: { type: 'number', enum: [0, 1] },
+
         type: { type: 'string', enum: ['listitem'] },
         children: {
           type: 'array',
           items: {
-            anyOf: [{ $ref: '#/definitions/ParagraphNode' }, { $ref: '#/definitions/ListNode' }],
+            anyOf: [
+              { $ref: '#/definitions/ParagraphNode' },
+              { $ref: '#/definitions/ListNode' },
+              { $ref: '#/definitions/LineBreakNode' },
+            ],
           },
         },
       },
@@ -274,7 +333,12 @@ export const documentSchema = {
         children: {
           type: 'array',
           items: {
-            anyOf: [{ $ref: '#/definitions/TextNode' }, { $ref: '#/definitions/ParagraphNode' }],
+            anyOf: [
+              { $ref: '#/definitions/TextNode' },
+              { $ref: '#/definitions/ParagraphNode' },
+              { $ref: '#/definitions/LineBreakNode' },
+              { $ref: '#/definitions/TabNode' },
+            ],
           },
         },
       },
@@ -365,9 +429,17 @@ export const lexicalJsonSchema = (customNodes = []) => {
     customNodes.forEach((nodeObj) => {
       for (const [nodeName, nodeDefinition] of Object.entries(nodeObj)) {
         schema.definitions[nodeName] = nodeDefinition
-        const anyOfList = schema?.definitions?.RootNode?.properties?.children?.items?.anyOf
 
-        anyOfList.push({ $ref: `#/definitions/${nodeName}` })
+        const rootNode = schema.definitions['RootNode']
+        if (isObjectSchema(rootNode)) {
+          const children = rootNode.properties?.children
+          const items = children?.items
+          const anyOfList = (items as any)?.anyOf
+
+          if (Array.isArray(anyOfList)) {
+            anyOfList.push({ $ref: `#/definitions/${nodeName}` })
+          }
+        }
       }
     })
   }

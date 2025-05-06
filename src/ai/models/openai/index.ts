@@ -21,12 +21,17 @@ export const OpenAIConfig: GenerationConfig = {
       id: `${MODEL_KEY}-text`,
       name: 'OpenAI GPT Text',
       fields: ['text', 'textarea'],
-      handler: async (
-        prompt: string,
-        options: { locale: string; model: string; system: string },
-      ) => {
-        const streamTextResult = await streamText({
+      handler: (prompt: string, options: { locale: string; model: string; system: string }) => {
+        const streamTextResult = streamText({
           model: openai(options.model),
+          onError: (error) => {
+            console.error(`${MODEL_KEY}-text: `, error)
+          },
+
+          // TODO: Implement billing/token consumption
+          // onFinish: (stepResult) => {
+          //   console.log('streamText : finish : ', stepResult)
+          // },
           prompt,
           system: options.system || defaultSystemPrompt,
         })
@@ -118,6 +123,103 @@ export const OpenAIConfig: GenerationConfig = {
       },
     },
     {
+      id: 'gpt-image-1',
+      name: 'OpenAI GPT Image 1',
+      fields: ['upload'],
+      handler: async (prompt: string, options) => {
+        const imageData = await generateImage(prompt, options)
+        return {
+          data: {
+            alt: imageData.alt,
+          },
+          file: {
+            name: `image_${generateFileNameByPrompt(imageData.alt || prompt)}.png`,
+            data: imageData.buffer,
+            mimetype: 'image/png',
+            size: imageData.buffer.byteLength,
+          } as File,
+        }
+      },
+      output: 'image',
+      settings: {
+        name: 'gpt-image-1-settings',
+        type: 'group',
+        admin: {
+          condition(data) {
+            return data['model-id'] === 'gpt-image-1'
+          },
+        },
+        fields: [
+          {
+            name: 'version',
+            type: 'select',
+            defaultValue: 'gpt-image-1',
+            label: 'Version',
+            options: ['gpt-image-1'],
+          },
+          {
+            type: 'row',
+            fields: [
+              {
+                name: 'size',
+                type: 'select',
+                defaultValue: 'auto',
+                label: 'Size',
+                options: ['1024x1024', '1024x1536', '1536x1024', 'auto'],
+              },
+              {
+                name: 'quality',
+                type: 'select',
+                defaultValue: 'auto',
+                label: 'Quality',
+                options: ['low', 'medium', 'high', 'auto'],
+              },
+            ],
+          },
+          {
+            name: 'output_format',
+            type: 'select',
+            defaultValue: 'png',
+            label: 'Output Format',
+            options: ['png', 'jpeg', 'webp'],
+          },
+          {
+            name: 'output_compression',
+            type: 'number',
+            admin: {
+              condition(data) {
+                return data.output_format === 'jpeg' || data.output_format === 'webp'
+              },
+            },
+            defaultValue: 100,
+            label: 'Output Compression',
+            max: 100,
+            min: 0,
+          },
+          {
+            name: 'background',
+            type: 'select',
+            admin: {
+              condition(data) {
+                return data.output_format === 'png' || data.output_format === 'webp'
+              },
+            },
+            defaultValue: 'white',
+            label: 'Background',
+            options: ['white', 'transparent'],
+          },
+          {
+            name: 'moderation',
+            type: 'select',
+            defaultValue: 'auto',
+            label: 'Moderation',
+            options: ['auto', 'low'],
+          },
+        ],
+        label: 'OpenAI GPT Image 1 Settings',
+      },
+    },
+    {
       id: 'tts',
       name: 'OpenAI Text-to-Speech',
       fields: ['upload'],
@@ -203,9 +305,9 @@ export const OpenAIConfig: GenerationConfig = {
           {
             name: 'model',
             type: 'select',
-            defaultValue: 'gpt-4o-2024-08-06',
+            defaultValue: 'gpt-4o',
             label: 'Model',
-            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-4o-2024-08-06'],
+            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-4.1', 'o4-mini'],
           },
         ],
         label: 'OpenAI GPT Settings',
