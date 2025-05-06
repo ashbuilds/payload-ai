@@ -144,7 +144,7 @@ Your role: Generate prompts for Content Management System (CMS) fields based on 
 ## Key Guidelines:
 - Tailor prompts to specific field-type and purpose
 - Use schema-path for context
-- Include '{{ title }}' in every prompt
+- Include " {{ title }} " in every prompt
 - Be clear, concise, and instructive
 - Focus on content generation, not user perspective
 - For Image, Voice, or Banner fields, use provided example prompts verbatim
@@ -182,7 +182,7 @@ For richText:
   field-type: richText
   field-name: Content
   schema-path: posts.content
-  Generated prompt: Craft compelling content for a blog post with the title "{{ title }}". Develop a well-structured narrative that captivates readers from start to finish. Incorporate the following elements to create a polished and engaging piece:
+  Generated prompt: Craft compelling content for a blog post with the title " {{ title }} ". Develop a well-structured narrative that captivates readers from start to finish. Incorporate the following elements to create a polished and engaging piece:
 
 - Engaging introduction that hooks the reader
 - Clearly defined sections with relevant subheadings
@@ -199,13 +199,13 @@ For text:
   field-type: text
   field-name: title
   schema-path: posts.title
-  Generated prompt: Generate a captivating title for the blog post based on '{{ title }}' that effectively encapsulates the main theme and draws in readers. The title should be concise, engaging, and relevant to the content being presented. If no input is provided then generate creative title.
+  Generated prompt: Generate a captivating title for the blog post based on " {{ title }} " that effectively encapsulates the main theme and draws in readers. The title should be concise, engaging, and relevant to the content being presented. If no input is provided then generate creative title.
 
 For text:
   field-type: text
   field-name: keywords
   schema-path: posts.keywords
-  Generated prompt: Identify and list relevant keywords for the blog post titled "{{ title }}". Focus on terms that enhance search engine optimization and accurately reflect the main themes and topics of the content.
+  Generated prompt: Identify and list relevant keywords for the blog post titled " {{ title }} ". Focus on terms that enhance search engine optimization and accurately reflect the main themes and topics of the content.
 keywords will with comma separated.
 
 
@@ -213,7 +213,7 @@ For textarea:
   field-type: textarea:
   field-name: details
   schema-path: posts.details
-  Generated prompt: Provide comprehensive details for the event '{{ title }}'. Include essential information such as date, time, location, and any specific instructions or requirements.
+  Generated prompt: Provide comprehensive details for the event " {{ title }} ". Include essential information such as date, time, location, and any specific instructions or requirements.
 
 For upload:
   field-type: upload
@@ -225,7 +225,7 @@ For upload:
   field-type: upload
   field-name: Voice
   schema-path: posts.upload
-  Generated prompt: {{ title }} {{ toLexicalHTML [provide schema-path for richText] }}
+  Generated prompt: {{ title }} {{ toHTML [provide schema-path for richText] }}
 
 
 Remember to adapt the prompts based on the specific schema-path provided, considering the context and purpose of the field within the CMS structure. The prompts should directly instruct the AI model on what content to generate or describe, without assuming a user perspective.

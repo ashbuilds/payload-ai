@@ -121,7 +121,7 @@ export const instructionsCollection = (
         tabs: [
           {
             description:
-              'The Prompt field allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
+              'Below prompt editor allows you to define dynamic templates using placeholders (e.g., {{ fieldName }}) to customize output based on your data fields.',
             fields: [
               {
                 name: 'prompt',

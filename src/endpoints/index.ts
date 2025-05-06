@@ -15,6 +15,7 @@ import {
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { extractImageData } from '../utilities/extractImageData.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
 const assignPrompt = async (
@@ -158,9 +159,18 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
       handler: async (req: PayloadRequest) => {
         const data = await req.json?.()
 
-        const { options } = data
+        const { collectionSlug, documentId, options } = data
         const { instructionId } = options
-        const contextData = data.doc
+
+        const docData = await req.payload.findByID({
+          id: documentId,
+          collection: collectionSlug,
+          draft: true,
+        })
+        const contextData = {
+          ...data.doc,
+          ...docData,
+        }
 
         let instructions = { images: [], 'model-id': '', prompt: '' }
 
@@ -172,7 +182,17 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           })
         }
 
-        const { images = [], prompt: promptTemplate = '' } = instructions
+        const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
+        const schemaPath = instructions['schema-path']
+
+        registerEditorHelper(req.payload, schemaPath)
+
+        const text = await replacePlaceholders(promptTemplate, contextData)
+        const modelId = instructions['model-id']
+        const uploadCollectionSlug = instructions['relation-to']
+
+        const images = [...extractImageData(text), ...sampleImages]
+
         const editImages = []
         for (const img of images) {
           try {
@@ -183,7 +203,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
             const response = await fetch(`${serverURL}${img.image.url}`, {
               headers: {
-                //TODO: Further testing needed
+                //TODO: Further testing needed or so find a proper way.
                 Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
               },
               method: 'GET',
@@ -198,20 +218,13 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               url: `${serverURL}${img.image.url}`,
             })
           } catch (e) {
-            req.payload.logger.error('Error fetching reference images:', e)
+            req.payload.logger.error('Error fetching reference images!')
+            console.error(e)
             throw Error(
               "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
             )
           }
         }
-
-        const schemaPath = instructions['schema-path']
-
-        registerEditorHelper(req.payload, schemaPath)
-
-        const text = await replacePlaceholders(promptTemplate, contextData)
-        const modelId = instructions['model-id']
-        const uploadCollectionSlug = instructions['relation-to']
 
         const model = getGenerationModels(pluginConfig).find((model) => model.id === modelId)
         const settingsName = model.settings?.name

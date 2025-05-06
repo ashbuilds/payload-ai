@@ -1,6 +1,6 @@
 import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { useConfig, useField, useForm, useLocale } from '@payloadcms/ui'
+import { useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
@@ -46,6 +46,8 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { set: setHistory } = useHistory()
 
   const { getData } = useForm()
+  const { id: documentId, collectionSlug } = useDocumentInfo()
+
   const localFromContext = useLocale()
   const {
     config: { collections },
@@ -187,7 +189,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
     return fetch(`${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
       body: JSON.stringify({
+        collectionSlug,
         doc,
+        documentId,
         locale: localFromContext?.code,
         options: {
           instructionId: currentInstructionId,
@@ -220,7 +224,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         )
         console.error(error)
       })
-  }, [getData, localFromContext?.code, instructionIdRef, setValue])
+  }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {

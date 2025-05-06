@@ -1,12 +1,10 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
+import type { ImageGenerateParams } from 'openai/resources/images'
 import type { Endpoint, Field, GroupField, PayloadRequest } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
-import type { ImageGenerateParams } from 'openai/resources/images'
 
 export interface PluginConfigAccess {
-  settings?: ({ req }: {
-    req: PayloadRequest;
-  }) => Promise<boolean> | boolean;
+  settings?: ({ req }: { req: PayloadRequest }) => Promise<boolean> | boolean
 }
 
 export interface PluginConfig {
@@ -41,7 +39,9 @@ export interface GenerationConfig {
 }
 
 export type GenerateTextarea<T = any> = (args: {
+  collectionSlug: string
   doc: T
+  documentId?: number | string
   locale?: string
   options?: any
 }) => Promise<string> | string
@@ -100,7 +100,6 @@ export type BaseItemProps<T = any> = {
   style?: CSSProperties | undefined
   title?: string
 }
-
 
 export type ImageReference = {
   data: Blob

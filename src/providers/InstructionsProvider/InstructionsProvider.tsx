@@ -8,11 +8,13 @@ import React, { createContext, useEffect, useState } from 'react'
 import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
 
 const initialContext: {
+  activeCollection?: string
   field?: Field
   instructions: Record<string, any>
   isConfigAllowed: boolean
   path?: string
   schemaPath?: unknown
+  setActiveCollection?: (val: unknown) => void
 } = {
   field: undefined,
   instructions: undefined,
@@ -25,10 +27,9 @@ export const InstructionsContext = createContext(initialContext)
 
 export const InstructionsProvider: React.FC = ({ children }: { children: React.ReactNode }) => {
   const [instructions, setInstructionsState] = useState({})
+  const [activeCollection, setActiveCollection] = useState('')
   const [isConfigAllowed, setIsConfigAllowed] = useState(false)
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth()
 
   const { config } = useConfig()
   const {
@@ -52,6 +53,10 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
   }, [user])
 
   return (
-    <InstructionsContext.Provider value={{ instructions, isConfigAllowed }}>{children}</InstructionsContext.Provider>
+    <InstructionsContext.Provider
+      value={{ activeCollection, instructions, isConfigAllowed, setActiveCollection }}
+    >
+      {children}
+    </InstructionsContext.Provider>
   )
 }

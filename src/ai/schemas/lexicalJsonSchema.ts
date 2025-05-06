@@ -235,7 +235,6 @@ export const documentSchema: LexicalNodeSchema = {
               { $ref: '#/definitions/LinkNode' },
               { $ref: '#/definitions/CodeNode' },
               { $ref: '#/definitions/LineBreakNode' },
-              { $ref: '#/definitions/TabNode' },
             ],
           },
         },
