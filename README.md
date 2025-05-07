@@ -90,6 +90,9 @@ export default buildConfig({
       
       generatePromptOnInit: process.env.NODE_ENV !== 'production',
 
+      // Publicly accessible upload collection for gpt-image-1 model, for reference images. Defaults to "media".
+      uploadCollectionSlug: "media"
+
       /* Enable to restrict access to AI plugin settings only to admin users
       access: {
         settings: ({ req }: { req: PayloadRequest }) => {
