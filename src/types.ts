@@ -20,6 +20,7 @@ export interface PluginConfig {
   generationModels?: ((defaultModels: GenerationModel[]) => GenerationModel[]) | GenerationModel[]
   globals?: string[]
   interfaceName?: string
+  uploadCollectionSlug?: string
 }
 
 export interface GenerationModel {

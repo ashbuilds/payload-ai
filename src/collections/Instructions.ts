@@ -156,7 +156,9 @@ export const instructionsCollection = (
                     admin: {
                       description: 'Please make sure the image is publicly accessible.',
                     },
-                    relationTo: 'media',
+                    relationTo: pluginConfig.uploadCollectionSlug
+                      ? pluginConfig.uploadCollectionSlug
+                      : 'media',
                   },
                 ],
               },
