@@ -8,9 +8,9 @@
 
 The Payload AI Plugin is an advanced extension that integrates modern AI capabilities into your Payload CMS, streamlining content creation and management.
 
-> **⚠️ Important:** This plugin is in active development. We're doing our best to improve its features and functionality. Please be prepared for regular updates; at the moment, the plugin has only been tested with Payload version v3.31.0.
+> **⚠️ Important:** This plugin is in active development. We're doing our best to improve its features and functionality. Please be prepared for regular updates; The plugin has been tested with Payload version v3.38.0.
 >
-> To give it a try, we recommend using [Payload's website template](https://github.com/payloadcms/payload/tree/v3.31.0/templates/website).
+> To give it a try, we recommend using [Payload's website template](https://github.com/payloadcms/payload/tree/main/templates/website).
 
 ---
 
@@ -59,12 +59,12 @@ Want to dive deeper?
 - [Installation](#-installation)
 - [Usage](#-usage)
 - [Configuration](#%EF%B8%8F-configuration)
-  - [Setup Guide](guide.md)
+- [Setup Guide](guide.md)
 - [Contributing](#-contributing)
 
 ## 📦 Installation
 
-Rock your Payload project with a single command:
+After PayloadCMS has been installed, run this command:
 
 ```bash
 pnpm add @ai-stack/payloadcms
@@ -75,8 +75,7 @@ pnpm add @ai-stack/payloadcms
 Config with ease:
 
 ```javascript
-// Add below in payload.config.ts
-import { buildConfig } from 'payload/config'
+// Add below in src/payload.config.ts
 import { payloadAiPlugin } from '@ai-stack/payloadcms'
 
 export default buildConfig({
@@ -111,7 +110,7 @@ Configure your richText fields:
 ```javascript
 import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 
-// Add below in Lexical Editor field config
+// Add below in the Lexical Editor field config of you Collection or Plugin (e.g. src/collections/Posts/index.ts)
 fields: [
   {
     name: 'content',
