@@ -46,7 +46,7 @@ Want to dive deeper?
 - 🔌 **Bring Your Own Model** ([Setup guide](https://github.com/ashbuilds/payload-ai/blob/main/guide.md#5-add-custom-model))
 - 🎛️ **Field-level Prompt Customization**
 - 🔐 **Access Control Support**
-- 🧠 **Prompt Editor** (Beta)
+- 🧠 **Prompt Editor**
 - 📊 **Document Analyzer** (Coming Soon)
 - ✅ **Fact Checking** (Coming Soon)
 - 🔄 **Automated Content Workflows** (Coming Soon)
@@ -161,11 +161,25 @@ For detailed guidance on personalizing and configuring the plugin to match your 
 ### Enabling AI for Custom Components
 
 > **⚠️ Note:** Custom fields don't fully adhere to the Payload schema, making it difficult to determine which components support injecting ComposeField as a Description.
-> If AI enabled fields don't display Compose settings, please manually add the following component path:
+> If AI enabled fields don't display Compose settings, manually add the following component path:
 >
 > `@ai-stack/payloadcms/fields#ComposeField`
 >
 > To view AI enabled fields, enable the `debugging` flag in your plugin config or check your server startup logs.
+
+---
+
+## 🤝 Support Development
+I build and maintain this in my free time because I love seeing the community benefit from it.
+Keeping it alive takes real hours and real money (those AI credits aren’t free 😄).
+
+If this project has saved you time or made your work easier, why not fuel my next coding session with a coffee?
+
+<a href="https://www.buymeacoffee.com/ashbuilds" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;"></a>
+
+**Any support means the world to me. Thank you for even considering it!**
+
+---
 
 ## 👥 Contributing
 
