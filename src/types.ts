@@ -1,6 +1,6 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
 import type { ImageGenerateParams } from 'openai/resources/images'
-import type { Endpoint, Field, GroupField, PayloadRequest } from 'payload'
+import type { CollectionSlug, DataFromCollectionSlug, Endpoint, Field, File, GroupField, PayloadRequest } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
 
 export interface PluginConfigAccess {
@@ -13,10 +13,10 @@ export type PluginConfigMediaUploadFunction = (
     collection,
     request,
   }: {
-    collection: string
+    collection: CollectionSlug
     request: PayloadRequest
   },
-) => Promise<{ alt?: string; id: number | string }>
+) => Promise<DataFromCollectionSlug<CollectionSlug>>
 
 export interface PluginConfig {
   access?: PluginConfigAccess
