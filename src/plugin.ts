@@ -46,11 +46,14 @@ const sponsorMessage = `
 const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
+
     pluginConfig = { ...defaultPluginConfig, ...pluginConfig }
     pluginConfig.generationModels = getGenerationModels(pluginConfig)
+
     const isActivated = isPluginActivated(pluginConfig)
     let updatedConfig: Config = { ...incomingConfig }
     let collectionsFieldPathMap = {}
+
     if (isActivated) {
       const Instructions = instructionsCollection(pluginConfig)
       // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit

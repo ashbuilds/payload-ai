@@ -7,6 +7,17 @@ export interface PluginConfigAccess {
   settings?: ({ req }: { req: PayloadRequest }) => Promise<boolean> | boolean
 }
 
+export type PluginConfigMediaUploadFunction = (
+  result: { data: Record<any, any>; file: File },
+  {
+    collection,
+    request,
+  }: {
+    collection: string
+    request: PayloadRequest
+  },
+) => Promise<{ alt?: string; id: number | string }>
+
 export interface PluginConfig {
   access?: PluginConfigAccess
   collections: {
@@ -20,6 +31,7 @@ export interface PluginConfig {
   generationModels?: ((defaultModels: GenerationModel[]) => GenerationModel[]) | GenerationModel[]
   globals?: string[]
   interfaceName?: string
+  mediaUpload?: PluginConfigMediaUploadFunction
   uploadCollectionSlug?: string
 }
 

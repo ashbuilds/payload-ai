@@ -126,7 +126,13 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         const model = getGenerationModels(pluginConfig).find(
           (model) => model.id === instructions['model-id'],
         )
+
+        // @ts-expect-error
         const settingsName = model.settings?.name
+        if (!settingsName) {
+          req.payload.logger.error('— AI Plugin: Error fetching settings name!')
+        }
+
         const modelOptions = instructions[settingsName] || {}
 
         const prompts = await assignPrompt(action, {
@@ -161,12 +167,22 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
         const { collectionSlug, documentId, options } = data
         const { instructionId } = options
+        let docData = {}
 
-        const docData = await req.payload.findByID({
-          id: documentId,
-          collection: collectionSlug,
-          draft: true,
-        })
+        if (documentId) {
+          try {
+            docData = await req.payload.findByID({
+              id: documentId,
+              collection: collectionSlug,
+              draft: true,
+            })
+          } catch (e) {
+            req.payload.logger.error(
+              '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
+            )
+          }
+        }
+
         const contextData = {
           ...data.doc,
           ...docData,
@@ -227,7 +243,13 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         }
 
         const model = getGenerationModels(pluginConfig).find((model) => model.id === modelId)
+
+        // @ts-expect-error
         const settingsName = model.settings?.name
+        if (!settingsName) {
+          req.payload.logger.error('— AI Plugin: Error fetching settings name!')
+        }
+
         let modelOptions = instructions[settingsName] || {}
         modelOptions = {
           ...modelOptions,
@@ -235,12 +257,27 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         }
 
         const result = await model.handler?.(text, modelOptions)
+        let assetData: { alt?: string; id: number | string }
 
-        const assetData = await req.payload.create({
-          collection: uploadCollectionSlug,
-          data: result.data,
-          file: result.file,
-        })
+        if (typeof pluginConfig.mediaUpload === 'function') {
+          assetData = await pluginConfig.mediaUpload(result, {
+            collection: uploadCollectionSlug,
+            request: req,
+          })
+        } else {
+          assetData = await req.payload.create({
+            collection: uploadCollectionSlug,
+            data: result.data,
+            file: result.file,
+          })
+        }
+
+        if (!assetData.id) {
+          req.payload.logger.error(
+            'Error uploading generated media, is your media upload function correct?',
+          )
+          throw new Error('Error uploading generated media!')
+        }
 
         return new Response(
           JSON.stringify({
