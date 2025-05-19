@@ -139,7 +139,7 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 
 ---
 
-### Advanced Configuration
+### 👉 Advanced Configuration
 <details>
 <summary>
    🔧 Access Control, Multi-Tenant, Media Upload 
