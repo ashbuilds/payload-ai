@@ -158,13 +158,13 @@ export default buildConfig({
       // Optional: Show debug logs to list AI-enabled fields
       debugging: false,
 
-      // Optional: Disable sponsor message in the UI
+      // Optional: Disable sponsor message in the console
       disableSponsorMessage: false,
 
       // Optional: Pre-generate prompts on server start (recommended for dev only)
       generatePromptOnInit: process.env.NODE_ENV !== 'production',
 
-      // Optional: Define which media collection AI-generated files are saved to (defaults to "media")
+      // Optional: Specify the media collection used by the gpt-image-1 model to reference images (defaults to media)
       uploadCollectionSlug: "media",
 
       // Optional: Restrict plugin settings to admin users only
