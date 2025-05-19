@@ -21,7 +21,7 @@ export type PluginConfigMediaUploadFunction = (
 export interface PluginConfig {
   access?: PluginConfigAccess
   collections: {
-    [key: string]: boolean
+    [key: CollectionSlug]: boolean
   }
   debugging?: boolean
   disableSponsorMessage?: boolean
@@ -32,7 +32,7 @@ export interface PluginConfig {
   globals?: string[]
   interfaceName?: string
   mediaUpload?: PluginConfigMediaUploadFunction
-  uploadCollectionSlug?: string
+  uploadCollectionSlug?: CollectionSlug
 }
 
 export interface GenerationModel {
@@ -52,19 +52,12 @@ export interface GenerationConfig {
 }
 
 export type GenerateTextarea<T = any> = (args: {
-  collectionSlug: string
+  collectionSlug: CollectionSlug
   doc: T
   documentId?: number | string
   locale?: string
   options?: any
 }) => Promise<string> | string
-
-export interface Instructions {
-  'collection-slug': string
-  id: string
-  'model-id': string
-  prompt: string
-}
 
 export interface Endpoints {
   textarea: Omit<Endpoint, 'root'>
