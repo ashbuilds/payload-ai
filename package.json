@@ -111,11 +111,11 @@
   },
   "peerDependencies": {
     "@lexical/html": "^0.28.0",
-    "@payloadcms/richtext-lexical": "^3.31.0",
-    "@payloadcms/translations": "^3.31.0",
-    "@payloadcms/ui": "^3.31.0",
+    "@payloadcms/richtext-lexical": "^3.38.0",
+    "@payloadcms/translations": "^3.38.0",
+    "@payloadcms/ui": "^3.38.0",
     "lexical": "^0.28.0",
-    "payload": "^3.31.0"
+    "payload": "^3.38.0"
   },
   "publishConfig": {
     "main": "./dist/index.js",
@@ -145,6 +145,5 @@
         "default": "./dist/exports/client.js"
       }
     }
-  },
-  "packageManager": "pnpm@>=10.3.0"
+  }
 }
