@@ -72,10 +72,9 @@ pnpm add @ai-stack/payloadcms
 
 ## 🛠 Usage
 
-Config with ease:
+Add below in `src/payload.config.ts`
 
-```javascript
-// Add below in src/payload.config.ts
+```javascript 
 import { payloadAiPlugin } from '@ai-stack/payloadcms'
 
 export default buildConfig({
@@ -91,7 +90,7 @@ export default buildConfig({
 })
 ```
 
-Configure your richText fields:
+Add AI Plugin feature to your richText field:
 
 ```javascript
 import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
