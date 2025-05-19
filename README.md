@@ -135,8 +135,8 @@ ELEVENLABS_API_KEY=your-elevenlabs-api-key
 OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-> **⚠️ Important:** After changing your `.env` or plugin configuration, restart your server to apply changes.
-
+> **⚠️ Important:** Restart your server after updating .env or plugin settings to apply the changes.
+Also, you might want to run payload `generate:importmap` to regenerate the import map before starting the server.
 ---
 
 ### 👇 Advanced Configuration
