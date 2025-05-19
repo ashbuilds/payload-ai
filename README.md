@@ -8,7 +8,7 @@
 
 The Payload AI Plugin is an advanced extension that integrates modern AI capabilities into your Payload CMS, streamlining content creation and management.
 
-> **⚠️ Important:** This plugin is in active development. We're doing our best to improve its features and functionality. Please be prepared for regular updates; The plugin has been tested with Payload version v3.38.0.
+> **⚠️ Important:** This plugin is in active development. We're doing our best to improve its features and functionality. Please be prepared for regular updates; The plugin has been tested with a Payload version v3.38.0.
 >
 > To give it a try, we recommend using [Payload's website template](https://github.com/payloadcms/payload/tree/main/templates/website).
 
@@ -85,20 +85,6 @@ export default buildConfig({
         [Posts.slug]: true,
       },
       debugging: false,
-      disableSponsorMessage: false,
-      
-      generatePromptOnInit: process.env.NODE_ENV !== 'production',
-
-      // Publicly accessible upload collection for gpt-image-1 model, for reference images. Defaults to "media".
-      uploadCollectionSlug: "media"
-
-      /* Enable to restrict access to AI plugin settings only to admin users
-      access: {
-        settings: ({ req }: { req: PayloadRequest }) => {
-          return req.user?.role === 'admin';
-        },
-      },
-      */
     }),
   ],
   // ... your existing Payload configuration
@@ -132,19 +118,76 @@ fields: [
 
 ## ⚙️ Configuration
 
-To get started, choose your preferred AI model by setting one or more of the following environment variables. Create a .env file in your project root and add any of the following keys:
+To get started, set your API keys in a `.env` file in your project root:
 
-```
+```env
+# Required for text and image generation
 OPENAI_API_KEY=your-openai-api-key
 
-## OPENAI_ORG_ID is required if you use gpt-image-1 model
+# Required if using gpt-image-1 model
 OPENAI_ORG_ID=your-org-id
 
+# Optional: Other supported providers
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
+
+# Optional: Custom OpenAI Endpoint
+OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-> **⚠️ Important:** Once you've configured or installed this plugin, a server restart is required to activate the changes.
+> **⚠️ Important:** After changing your `.env` or plugin configuration, restart your server to apply changes.
+
+---
+
+### Advanced Configuration
+<details>
+<summary>
+   🔧 Access Control, Multi-Tenant, Media Upload 
+</summary>
+
+```typescript
+import { payloadAiPlugin } from '@ai-stack/payloadcms'
+
+export default buildConfig({
+  plugins: [
+    payloadAiPlugin({
+      collections: {
+        [Posts.slug]: true,
+      },
+
+      // Optional: Show debug logs to list AI-enabled fields
+      debugging: false,
+
+      // Optional: Disable sponsor message in the UI
+      disableSponsorMessage: false,
+
+      // Optional: Pre-generate prompts on server start (recommended for dev only)
+      generatePromptOnInit: process.env.NODE_ENV !== 'production',
+
+      // Optional: Define which media collection AI-generated files are saved to (defaults to "media")
+      uploadCollectionSlug: "media",
+
+      // Optional: Restrict plugin settings to admin users only
+      access: {
+        settings: ({ req }) => req.user?.role === 'admin',
+      },
+
+      // Optional: Custom media upload handling, useful for multi-tenant setups
+      mediaUpload: async (result, { request, collection }) => {
+        return request.payload.create({
+          collection,
+          data: result.data,
+          file: result.file,
+        })
+      },
+    }),
+  ],
+})
+```
+
+</details>
+
+---
 
 ### OpenAI Endpoint
 
