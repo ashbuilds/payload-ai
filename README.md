@@ -154,6 +154,11 @@ export default buildConfig({
         [Posts.slug]: true,
       },
 
+      // Optional
+      globals: {
+        [Home.slug]: true,
+      },
+
       // Optional: Show debug logs to list AI-enabled fields
       debugging: false,
 
