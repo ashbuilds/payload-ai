@@ -1,11 +1,11 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, GlobalConfig } from 'payload'
 
 interface UpdateFieldsConfig {
   schemaPathMap: Record<string, string>
-  updatedCollectionConfig: CollectionConfig
+  updatedCollectionConfig: CollectionConfig | GlobalConfig
 }
 
-export const updateFieldsConfig = (collectionConfig: CollectionConfig): UpdateFieldsConfig => {
+export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalConfig): UpdateFieldsConfig => {
   let schemaPathMap = {}
 
   function updateField(field: any, parentPath = ''): any {
