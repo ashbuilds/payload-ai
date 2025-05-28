@@ -1,6 +1,15 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
 import type { ImageGenerateParams } from 'openai/resources/images'
-import type { CollectionSlug, DataFromCollectionSlug, Endpoint, Field, File, GroupField, PayloadRequest } from 'payload'
+import type {
+  CollectionSlug,
+  DataFromCollectionSlug,
+  Endpoint,
+  Field,
+  File,
+  GlobalConfig,
+  GroupField,
+  PayloadRequest,
+} from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
 
 export interface PluginConfigAccess {
@@ -29,7 +38,9 @@ export interface PluginConfig {
   fields?: Field[]
   generatePromptOnInit?: boolean
   generationModels?: ((defaultModels: GenerationModel[]) => GenerationModel[]) | GenerationModel[]
-  globals?: string[]
+  globals?: {
+    [key: GlobalConfig['slug']]: boolean
+  }
   interfaceName?: string
   mediaUpload?: PluginConfigMediaUploadFunction
   uploadCollectionSlug?: CollectionSlug
