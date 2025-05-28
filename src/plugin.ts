@@ -115,7 +115,7 @@ const payloadAiPlugin =
             fetchFields(pluginConfig.access),
           ],
           globals: globals.map((global) => {
-            if (globalsSlugs.includes(global.slug)) {
+            if (globalsSlugs[global.slug]) {
               const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(global)
               collectionsFieldPathMap = {
                 ...collectionsFieldPathMap,
