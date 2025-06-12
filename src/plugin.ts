@@ -17,6 +17,10 @@ import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
 const defaultPluginConfig: PluginConfig = {
+  access: {
+    generate: ({ req }) => !!req.user,
+    settings: ({ req }) => !!req.user,
+  },
   collections: {},
   disableSponsorMessage: false,
   generatePromptOnInit: true,
@@ -43,11 +47,34 @@ const sponsorMessage = `
 ╚═══════════════════════════════════════════════════════════════╝
 `
 
+const securityMessage = `
+╔═══════════════════════════════════════════════════════════════╗
+║                    SECURITY NOTICE                            ║
+║                                                               ║
+║  The AI Plugin now requires authentication by default.        ║
+║  All AI features are restricted to authenticated users.       ║
+║                                                               ║
+║  To customize access control, configure the 'access' option   ║
+║  in your plugin settings. See documentation for details.      ║
+║                                                               ║
+║  If you need different access patterns, please configure      ║
+║  them explicitly in your plugin configuration.                ║
+╚═══════════════════════════════════════════════════════════════╝
+`
+
 const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
     (incomingConfig: Config): Config => {
 
-      pluginConfig = { ...defaultPluginConfig, ...pluginConfig }
+      pluginConfig = { 
+        ...defaultPluginConfig, 
+        ...pluginConfig,
+        access: {
+          ...defaultPluginConfig.access,
+          ...pluginConfig.access,
+        }
+      }
+      
       pluginConfig.generationModels = getGenerationModels(pluginConfig)
 
       const isActivated = isPluginActivated(pluginConfig)
@@ -149,6 +176,10 @@ const payloadAiPlugin =
             payload.logger.error(`— AI Plugin: Initialization Error: ${error}`)
           })
           .finally(() => {
+            setTimeout(() => {
+              payload.logger.info(securityMessage)
+            }, 1000)
+            
             if (!pluginConfig.disableSponsorMessage) {
               setTimeout(() => {
                 payload.logger.info(sponsorMessage)

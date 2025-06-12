@@ -18,6 +18,26 @@ import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders
 import { extractImageData } from '../utilities/extractImageData.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
+const requireAuthentication = (req: PayloadRequest) => {
+  if (!req.user) {
+    throw new Error('Authentication required. Please log in to use AI features.')
+  }
+  return true
+}
+
+const checkAccess = async (req: PayloadRequest, pluginConfig: PluginConfig) => {
+  requireAuthentication(req)
+  
+  if (pluginConfig.access?.generate) {
+    const hasAccess = await pluginConfig.access.generate({ req })
+    if (!hasAccess) {
+      throw new Error('Insufficient permissions to use AI generation features.')
+    }
+  }
+  
+  return true
+}
+
 const assignPrompt = async (
   action: ActionMenuItems,
   {
@@ -80,72 +100,77 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
     textarea: {
       //TODO:  This is the main endpoint for generating content - its just needs to be renamed to 'generate' or something.
       handler: async (req: PayloadRequest) => {
-        const data = await req.json?.()
-
-        const { allowedEditorNodes = [], locale = 'en', options } = data
-        const { action, actionParams, instructionId } = options
-        const contextData = data.doc
-
-        if (!instructionId) {
-          throw new Error(
-            `Instruction ID is required for "${PLUGIN_NAME}" to work, please check your configuration`,
-          )
-        }
-
-        const instructions = await req.payload.findByID({
-          id: instructionId,
-          collection: PLUGIN_INSTRUCTIONS_TABLE,
-        })
-
-        const { collections } = req.payload.config
-        const collection = collections.find(
-          (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
-        )
-
-        const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
-        const { schema: editorSchema = {} } = editorConfig
-        const { prompt: promptTemplate = '' } = instructions
-
-        let allowedEditorSchema = editorSchema
-        if (allowedEditorNodes.length) {
-          allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
-        }
-
-        const schemaPath = instructions['schema-path'] as string
-        const fieldName = schemaPath?.split('.').pop()
-
-        registerEditorHelper(req.payload, schemaPath)
-
-        const { defaultLocale, locales = [] } = req.payload.config.localization || {}
-        const localeData = locales.find((l) => {
-          return l.code === locale
-        })
-
-        const localeInfo = localeData?.label[defaultLocale] || locale
-
-        const model = getGenerationModels(pluginConfig).find(
-          (model) => model.id === instructions['model-id'],
-        )
-
-        // @ts-expect-error
-        const settingsName = model.settings?.name
-        if (!settingsName) {
-          req.payload.logger.error('— AI Plugin: Error fetching settings name!')
-        }
-
-        const modelOptions = instructions[settingsName] || {}
-
-        const prompts = await assignPrompt(action, {
-          type: instructions['field-type'] as string,
-          actionParams,
-          context: contextData,
-          field: fieldName,
-          layout: instructions.layout,
-          systemPrompt: instructions.system,
-          template: promptTemplate as string,
-        })
-
         try {
+          // Check authentication and authorization first
+          await checkAccess(req, pluginConfig)
+
+          const data = await req.json?.()
+
+          const { allowedEditorNodes = [], locale = 'en', options } = data
+          const { action, actionParams, instructionId } = options
+          const contextData = data.doc
+
+          if (!instructionId) {
+            throw new Error(
+              `Instruction ID is required for "${PLUGIN_NAME}" to work, please check your configuration`,
+            )
+          }
+
+          // Verify user has access to the specific instruction
+          const instructions = await req.payload.findByID({
+            id: instructionId,
+            collection: PLUGIN_INSTRUCTIONS_TABLE,
+            req, // Pass req to ensure access control is applied
+          })
+
+          const { collections } = req.payload.config
+          const collection = collections.find(
+            (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
+          )
+
+          const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
+          const { schema: editorSchema = {} } = editorConfig
+          const { prompt: promptTemplate = '' } = instructions
+
+          let allowedEditorSchema = editorSchema
+          if (allowedEditorNodes.length) {
+            allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
+          }
+
+          const schemaPath = instructions['schema-path'] as string
+          const fieldName = schemaPath?.split('.').pop()
+
+          registerEditorHelper(req.payload, schemaPath)
+
+          const { defaultLocale, locales = [] } = req.payload.config.localization || {}
+          const localeData = locales.find((l) => {
+            return l.code === locale
+          })
+
+          const localeInfo = localeData?.label[defaultLocale] || locale
+
+          const model = getGenerationModels(pluginConfig).find(
+            (model) => model.id === instructions['model-id'],
+          )
+
+          // @ts-expect-error
+          const settingsName = model.settings?.name
+          if (!settingsName) {
+            req.payload.logger.error('— AI Plugin: Error fetching settings name!')
+          }
+
+          const modelOptions = instructions[settingsName] || {}
+
+          const prompts = await assignPrompt(action, {
+            type: instructions['field-type'] as string,
+            actionParams,
+            context: contextData,
+            field: fieldName,
+            layout: instructions.layout,
+            systemPrompt: instructions.system,
+            template: promptTemplate as string,
+          })
+
           return model.handler?.(prompts.prompt, {
             ...modelOptions,
             editorSchema: allowedEditorSchema,
@@ -155,7 +180,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           })
         } catch (error) {
           req.payload.logger.error('Error generating content: ', error)
-          return new Response(JSON.stringify(error.message), { status: 500 })
+          return new Response(JSON.stringify({ error: error.message }), { 
+            headers: { 'Content-Type': 'application/json' },
+            status: error.message.includes('Authentication required') || error.message.includes('Insufficient permissions') ? 401 : 500
+          })
         }
       },
       method: 'post',
@@ -163,132 +191,148 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
     },
     upload: {
       handler: async (req: PayloadRequest) => {
-        const data = await req.json?.()
+        try {
+          // Check authentication and authorization first
+          await checkAccess(req, pluginConfig)
 
-        const { collectionSlug, documentId, options } = data
-        const { instructionId } = options
-        let docData = {}
+          const data = await req.json?.()
 
-        if (documentId) {
-          try {
-            docData = await req.payload.findByID({
-              id: documentId,
-              collection: collectionSlug,
-              draft: true,
-            })
-          } catch (e) {
-            req.payload.logger.error(
-              '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
-            )
+          const { collectionSlug, documentId, options } = data
+          const { instructionId } = options
+          let docData = {}
+
+          if (documentId) {
+            try {
+              docData = await req.payload.findByID({
+                id: documentId,
+                collection: collectionSlug,
+                draft: true,
+                req, // Pass req to ensure access control is applied
+              })
+            } catch (e) {
+              req.payload.logger.error(
+                '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
+              )
+            }
           }
-        }
 
-        const contextData = {
-          ...data.doc,
-          ...docData,
-        }
+          const contextData = {
+            ...data.doc,
+            ...docData,
+          }
 
-        let instructions = { images: [], 'model-id': '', prompt: '' }
+          let instructions = { images: [], 'model-id': '', prompt: '' }
 
-        if (instructionId) {
+          if (instructionId) {
+            // Verify user has access to the specific instruction
+            // @ts-expect-error
+            instructions = await req.payload.findByID({
+              id: instructionId,
+              collection: PLUGIN_INSTRUCTIONS_TABLE,
+              req, // Pass req to ensure access control is applied
+            })
+          }
+
+          const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
+          const schemaPath = instructions['schema-path']
+
+          registerEditorHelper(req.payload, schemaPath)
+
+          const text = await replacePlaceholders(promptTemplate, contextData)
+          const modelId = instructions['model-id']
+          const uploadCollectionSlug = instructions['relation-to']
+
+          const images = [...extractImageData(text), ...sampleImages]
+
+          const editImages = []
+          for (const img of images) {
+            try {
+              const serverURL =
+                req.payload.config?.serverURL ||
+                process.env.SERVER_URL ||
+                process.env.NEXT_PUBLIC_SERVER_URL
+
+              const response = await fetch(`${serverURL}${img.image.url}`, {
+                headers: {
+                  //TODO: Further testing needed or so find a proper way.
+                  Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
+                },
+                method: 'GET',
+              })
+
+              const blob = await response.blob()
+              editImages.push({
+                name: img.image.name,
+                type: img.image.type,
+                data: blob,
+                size: blob.size,
+                url: `${serverURL}${img.image.url}`,
+              })
+            } catch (e) {
+              req.payload.logger.error('Error fetching reference images!')
+              console.error(e)
+              throw Error(
+                "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
+              )
+            }
+          }
+
+          const model = getGenerationModels(pluginConfig).find((model) => model.id === modelId)
+
           // @ts-expect-error
-          instructions = await req.payload.findByID({
-            id: instructionId,
-            collection: PLUGIN_INSTRUCTIONS_TABLE,
-          })
-        }
-
-        const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
-        const schemaPath = instructions['schema-path']
-
-        registerEditorHelper(req.payload, schemaPath)
-
-        const text = await replacePlaceholders(promptTemplate, contextData)
-        const modelId = instructions['model-id']
-        const uploadCollectionSlug = instructions['relation-to']
-
-        const images = [...extractImageData(text), ...sampleImages]
-
-        const editImages = []
-        for (const img of images) {
-          try {
-            const serverURL =
-              req.payload.config?.serverURL ||
-              process.env.SERVER_URL ||
-              process.env.NEXT_PUBLIC_SERVER_URL
-
-            const response = await fetch(`${serverURL}${img.image.url}`, {
-              headers: {
-                //TODO: Further testing needed or so find a proper way.
-                Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
-              },
-              method: 'GET',
-            })
-
-            const blob = await response.blob()
-            editImages.push({
-              name: img.image.name,
-              type: img.image.type,
-              data: blob,
-              size: blob.size,
-              url: `${serverURL}${img.image.url}`,
-            })
-          } catch (e) {
-            req.payload.logger.error('Error fetching reference images!')
-            console.error(e)
-            throw Error(
-              "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
-            )
+          const settingsName = model.settings?.name
+          if (!settingsName) {
+            req.payload.logger.error('— AI Plugin: Error fetching settings name!')
           }
-        }
 
-        const model = getGenerationModels(pluginConfig).find((model) => model.id === modelId)
+          let modelOptions = instructions[settingsName] || {}
+          modelOptions = {
+            ...modelOptions,
+            images: editImages,
+          }
 
-        // @ts-expect-error
-        const settingsName = model.settings?.name
-        if (!settingsName) {
-          req.payload.logger.error('— AI Plugin: Error fetching settings name!')
-        }
+          const result = await model.handler?.(text, modelOptions)
+          let assetData: { alt?: string; id: number | string }
 
-        let modelOptions = instructions[settingsName] || {}
-        modelOptions = {
-          ...modelOptions,
-          images: editImages,
-        }
+          if (typeof pluginConfig.mediaUpload === 'function') {
+            assetData = await pluginConfig.mediaUpload(result, {
+              collection: uploadCollectionSlug,
+              request: req,
+            })
+          } else {
+            assetData = await req.payload.create({
+              collection: uploadCollectionSlug,
+              data: result.data,
+              file: result.file,
+              req, // Pass req to ensure access control is applied
+            })
+          }
 
-        const result = await model.handler?.(text, modelOptions)
-        let assetData: { alt?: string; id: number | string }
+          if (!assetData.id) {
+            req.payload.logger.error(
+              'Error uploading generated media, is your media upload function correct?',
+            )
+            throw new Error('Error uploading generated media!')
+          }
 
-        if (typeof pluginConfig.mediaUpload === 'function') {
-          assetData = await pluginConfig.mediaUpload(result, {
-            collection: uploadCollectionSlug,
-            request: req,
-          })
-        } else {
-          assetData = await req.payload.create({
-            collection: uploadCollectionSlug,
-            data: result.data,
-            file: result.file,
-          })
-        }
-
-        if (!assetData.id) {
-          req.payload.logger.error(
-            'Error uploading generated media, is your media upload function correct?',
+          return new Response(
+            JSON.stringify({
+              result: {
+                id: assetData.id,
+                alt: assetData.alt,
+              },
+            }),
           )
-          throw new Error('Error uploading generated media!')
+        } catch (error) {
+          req.payload.logger.error('Error generating upload: ', error)
+          return new Response(JSON.stringify({ error: error.message }), { 
+            headers: { 'Content-Type': 'application/json' },
+            status: error.message.includes('Authentication required') || error.message.includes('Insufficient permissions') ? 401 : 500
+          })
         }
-
-        return new Response(
-          JSON.stringify({
-            result: {
-              id: assetData.id,
-              alt: assetData.alt,
-            },
-          }),
-        )
       },
       method: 'post',
       path: PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
     },
   }) satisfies Endpoints
+  
