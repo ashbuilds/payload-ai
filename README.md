@@ -171,8 +171,12 @@ export default buildConfig({
       // Optional: Specify the media collection used by the gpt-image-1 model to reference images (defaults to media)
       uploadCollectionSlug: "media",
 
-      // Optional: Restrict plugin settings to admin users only
+      // Optional: Access control for AI features
       access: {
+        // Control who can generate AI content
+        generate: ({ req }) => req.user?.role === 'admin',
+        
+        // Control who can modify AI settings and prompts
         settings: ({ req }) => req.user?.role === 'admin',
       },
 
