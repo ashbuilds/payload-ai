@@ -13,6 +13,15 @@ import type {
 import type { CSSProperties, MouseEventHandler } from 'react'
 
 export interface PluginConfigAccess {
+  /**
+   * Control access to AI generation features (generate text, images, audio)
+   * @default () => !!req.user (requires authentication)
+   */
+  generate?: ({ req }: { req: PayloadRequest }) => Promise<boolean> | boolean
+  /**
+   * Control access to AI settings/configuration
+   * @default () => !!req.user (requires authentication)
+   */
   settings?: ({ req }: { req: PayloadRequest }) => Promise<boolean> | boolean
 }
 
@@ -28,6 +37,10 @@ export type PluginConfigMediaUploadFunction = (
 ) => Promise<DataFromCollectionSlug<CollectionSlug>>
 
 export interface PluginConfig {
+  /**
+   * Access control configuration for AI features
+   * By default, all AI features require authentication
+   */
   access?: PluginConfigAccess
   collections: {
     [key: CollectionSlug]: boolean

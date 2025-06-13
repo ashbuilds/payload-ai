@@ -22,9 +22,30 @@ const modelOptions = (pluginConfig: PluginConfig) =>
   })
 
 const defaultAccessConfig = {
-  create: () => true,
-  read: () => true,
-  update: () => true,
+  create: ({ req }) => {
+    if (!req.user) {
+      return false
+    }
+    return true
+  },
+  delete: ({ req }) => {
+    if (!req.user) {
+      return false
+    }
+    return true
+  },
+  read: ({ req }) => {
+    if (!req.user) {
+      return false
+    }
+    return true
+  },
+  update: ({ req }) => {
+    if (!req.user) {
+      return false
+    }
+    return true
+  },
 }
 
 const defaultAdminConfig = {
@@ -52,7 +73,7 @@ export const instructionsCollection = (
         name: 'schema-path',
         type: 'text',
         admin: {
-          description: "Please don’t change this unless you're sure of what you're doing",
+          description: "Please don't change this unless you're sure of what you're doing",
         },
         unique: true,
       },
@@ -60,7 +81,7 @@ export const instructionsCollection = (
         name: 'field-type',
         type: 'select',
         admin: {
-          description: "Please don’t change this unless you're sure of what you're doing",
+          description: "Please don't change this unless you're sure of what you're doing",
         },
         defaultValue: 'text',
         label: 'Field type',
