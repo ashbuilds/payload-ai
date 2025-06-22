@@ -27,14 +27,14 @@ const requireAuthentication = (req: PayloadRequest) => {
 
 const checkAccess = async (req: PayloadRequest, pluginConfig: PluginConfig) => {
   requireAuthentication(req)
-  
+
   if (pluginConfig.access?.generate) {
     const hasAccess = await pluginConfig.access.generate({ req })
     if (!hasAccess) {
       throw new Error('Insufficient permissions to use AI generation features.')
     }
   }
-  
+
   return true
 }
 
@@ -46,6 +46,7 @@ const assignPrompt = async (
     context,
     field,
     layout,
+    locale,
     systemPrompt = '',
     template,
   }: {
@@ -53,6 +54,7 @@ const assignPrompt = async (
     context: object
     field: string
     layout: string
+    locale: string
     systemPrompt: string
     template: string
     type: string
@@ -69,6 +71,18 @@ const assignPrompt = async (
   }
 
   if (action === 'Compose') {
+    if (locale && locale !== 'en') {
+      /**
+       * NOTE: Avoid using the "system prompt" for setting the output language,
+       * as it causes quotation marks to appear in the output (Currently only tested with openai models).
+       * Appending the language instruction directly to the prompt resolves this issue.
+       **/
+      assignedPrompts.prompt += `
+    ---  
+    OUTPUT LANGUAGE: ${locale}
+    `
+    }
+
     return assignedPrompts
   }
 
@@ -167,6 +181,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             context: contextData,
             field: fieldName,
             layout: instructions.layout,
+            locale: localeInfo,
             systemPrompt: instructions.system,
             template: promptTemplate as string,
           })
@@ -180,9 +195,13 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           })
         } catch (error) {
           req.payload.logger.error('Error generating content: ', error)
-          return new Response(JSON.stringify({ error: error.message }), { 
+          return new Response(JSON.stringify({ error: error.message }), {
             headers: { 'Content-Type': 'application/json' },
-            status: error.message.includes('Authentication required') || error.message.includes('Insufficient permissions') ? 401 : 500
+            status:
+              error.message.includes('Authentication required') ||
+              error.message.includes('Insufficient permissions')
+                ? 401
+                : 500,
           })
         }
       },
@@ -325,9 +344,13 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           )
         } catch (error) {
           req.payload.logger.error('Error generating upload: ', error)
-          return new Response(JSON.stringify({ error: error.message }), { 
+          return new Response(JSON.stringify({ error: error.message }), {
             headers: { 'Content-Type': 'application/json' },
-            status: error.message.includes('Authentication required') || error.message.includes('Insufficient permissions') ? 401 : 500
+            status:
+              error.message.includes('Authentication required') ||
+              error.message.includes('Insufficient permissions')
+                ? 401
+                : 500,
           })
         }
       },
@@ -335,4 +358,3 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
       path: PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
     },
   }) satisfies Endpoints
-  
