@@ -47,10 +47,10 @@ Want to dive deeper?
 - 🎛️ **Field-level Prompt Customization**
 - 🔐 **Access Control Support**
 - 🧠 **Prompt Editor**
+- 🌍 **Internationalization Support**
 - 📊 **Document Analyzer** (Coming Soon)
 - ✅ **Fact Checking** (Coming Soon)
 - 🔄 **Automated Content Workflows** (Coming Soon)
-- 🌍 **Internationalization Support** (Coming Soon)
 - 🌍 **Editor AI suggestions** (Coming Soon)
 - 💬 **AI Chat Support** (Coming Soon)
 
