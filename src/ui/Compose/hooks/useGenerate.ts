@@ -39,9 +39,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     serverURL,
   } = config
 
-  const { setValue } = useField<string>({
+  const { path, rows, setValue, value } = useField<string>({
     path: pathFromContext,
   })
+
+  console.log('rows : ', { path, rows, value })
 
   const { set: setHistory } = useHistory()
 
@@ -135,6 +137,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     if (!completion) return
 
     requestAnimationFrame(() => {
+      console.log("completion :", completion)
       setValue(completion)
     })
   }, [completion])

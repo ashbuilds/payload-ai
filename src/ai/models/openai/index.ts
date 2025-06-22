@@ -22,6 +22,7 @@ export const OpenAIConfig: GenerationConfig = {
       name: 'OpenAI GPT Text',
       fields: ['text', 'textarea'],
       handler: (prompt: string, options: { locale: string; model: string; system: string }) => {
+        const collectedChunks = []
         const streamTextResult = streamText({
           model: openai(options.model),
           onError: (error) => {
@@ -29,12 +30,16 @@ export const OpenAIConfig: GenerationConfig = {
           },
 
           // TODO: Implement billing/token consumption
-          // onFinish: (stepResult) => {
-          //   console.log('streamText : finish : ', stepResult)
+          onFinish: (stepResult) => {
+            console.log('streamText : finish : ', stepResult)
+          },
+          // onChunk: (token) => {
+          //   collectedChunks.push(token); // ⬅️ Collect each token
           // },
           prompt,
           system: options.system || defaultSystemPrompt,
         })
+        console.log("collectedChunks - > ", collectedChunks)
 
         return streamTextResult.toDataStreamResponse()
       },
