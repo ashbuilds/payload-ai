@@ -163,8 +163,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           const localeInfo = localeData?.label[defaultLocale] || locale
 
-          console.log('localeInfo : ', localeInfo)
-
           const model = getGenerationModels(pluginConfig).find(
             (model) => model.id === instructions['model-id'],
           )
