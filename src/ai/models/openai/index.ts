@@ -21,25 +21,17 @@ export const OpenAIConfig: GenerationConfig = {
       id: `${MODEL_KEY}-text`,
       name: 'OpenAI GPT Text',
       fields: ['text', 'textarea'],
-      handler: (prompt: string, options: { locale: string; model: string; system: string }) => {
-        const collectedChunks = []
+      handler: (prompt: string, options: { locale: string; model: string; system: string }, hooks = {}) => {
         const streamTextResult = streamText({
           model: openai(options.model),
           onError: (error) => {
             console.error(`${MODEL_KEY}-text: `, error)
           },
-
-          // TODO: Implement billing/token consumption
-          onFinish: (stepResult) => {
-            console.log('streamText : finish : ', stepResult)
-          },
-          // onChunk: (token) => {
-          //   collectedChunks.push(token); // ⬅️ Collect each token
-          // },
           prompt,
           system: options.system || defaultSystemPrompt,
+
+          ...hooks,
         })
-        console.log("collectedChunks - > ", collectedChunks)
 
         return streamTextResult.toDataStreamResponse()
       },
@@ -68,8 +60,8 @@ export const OpenAIConfig: GenerationConfig = {
       id: 'dall-e',
       name: 'OpenAI DALL-E',
       fields: ['upload'],
-      handler: async (prompt: string, options) => {
-        const imageData = await generateImage(prompt, options)
+      handler: async (prompt: string, options, hooks) => {
+        const imageData = await generateImage(prompt, { ...options, ...hooks })
         return {
           data: {
             alt: imageData.alt,
@@ -131,8 +123,8 @@ export const OpenAIConfig: GenerationConfig = {
       id: 'gpt-image-1',
       name: 'OpenAI GPT Image 1',
       fields: ['upload'],
-      handler: async (prompt: string, options) => {
-        const imageData = await generateImage(prompt, options)
+      handler: async (prompt: string, options, hooks) => {
+        const imageData = await generateImage(prompt, { ...options, ...hooks })
         return {
           data: {
             alt: imageData.alt,
@@ -294,8 +286,8 @@ export const OpenAIConfig: GenerationConfig = {
       id: `${MODEL_KEY}-object`,
       name: 'OpenAI GPT',
       fields: ['richText'],
-      handler: (text: string, options) => {
-        return generateRichText(text, options)
+      handler: (text: string, options, hooks) => {
+        return generateRichText(text, options, hooks)
       },
       output: 'text',
       settings: {

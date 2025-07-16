@@ -17,6 +17,7 @@ import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 import { extractImageData } from '../utilities/extractImageData.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
+import { generationHooks } from './generationHooks.js'
 
 const requireAuthentication = (req: PayloadRequest) => {
   if (!req.user) {
@@ -120,9 +121,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           const data = await req.json?.()
 
-          const { allowedEditorNodes = [], locale = 'en', options } = data
+          const { allowedEditorNodes = [], documentId, locale = 'en', options } = data
           const { action, actionParams, instructionId } = options
-          const contextData = data.doc
+          const documentData = data.doc
 
           if (!instructionId) {
             throw new Error(
@@ -174,11 +175,12 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           const modelOptions = instructions[settingsName] || {}
+          const modelHooks = generationHooks(req, { data: documentData, documentId, schemaPath })
 
           const prompts = await assignPrompt(action, {
             type: instructions['field-type'] as string,
             actionParams,
-            context: contextData,
+            context: documentData,
             field: fieldName,
             layout: instructions.layout,
             locale: localeInfo,
@@ -192,7 +194,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             layout: prompts.layout,
             locale: localeInfo,
             system: prompts.system,
-          })
+          }, modelHooks)
         } catch (error) {
           req.payload.logger.error('Error generating content: ', error)
           return new Response(JSON.stringify({ error: error.message }), {

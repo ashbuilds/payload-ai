@@ -1,3 +1,4 @@
+import type { StreamObjectOnFinishCallback, StreamTextOnFinishCallback, ToolSet } from 'ai'
 import type { JSONSchema } from 'openai/lib/jsonschema'
 import type { ImageGenerateParams } from 'openai/resources/images'
 import type {
@@ -59,10 +60,14 @@ export interface PluginConfig {
   uploadCollectionSlug?: CollectionSlug
 }
 
+export interface GenerationHooks {
+  onFinish?: [(params: any) => void]
+}
+
 export interface GenerationModel {
   fields: string[]
   generateText?: (prompt: string, system: string) => Promise<string>
-  handler?: (prompt: string, options: any) => Promise<any> | Response
+  handler?: (prompt: string, options: any, hooks?: GenerationHooks) => Promise<any> | Response
   id: string
   name: string
   output: 'audio' | 'file' | 'image' | 'json' | 'text' | 'video'

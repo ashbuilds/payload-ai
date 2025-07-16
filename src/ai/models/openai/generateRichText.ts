@@ -2,7 +2,7 @@ import { jsonSchema, streamObject } from 'ai'
 
 import { openai } from './openai.js'
 
-export const generateRichText = (text: string, options: any = {}) => {
+export const generateRichText = (text: string, options: any = {}, hooks = {}) => {
   const streamResult = streamObject({
     maxTokens: options.maxTokens || 5000,
     model: openai(options.model, {
@@ -35,6 +35,8 @@ ADDITIONAL GUIDELINES:
 - Maintain a consistent tone and style throughout the content.
 - Use clear and concise language appropriate for the target audience.
 `,
+
+    ...hooks,
   })
   return streamResult.toTextStreamResponse()
 }

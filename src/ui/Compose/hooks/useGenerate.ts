@@ -43,7 +43,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     path: pathFromContext,
   })
 
-  console.log('rows : ', { path, rows, value })
+  // console.log('rows : ', { path, rows, value })
 
   const { set: setHistory } = useHistory()
 
@@ -137,7 +137,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     if (!completion) return
 
     requestAnimationFrame(() => {
-      console.log("completion :", completion)
       setValue(completion)
     })
   }, [completion])
@@ -157,11 +156,12 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       submit({
         allowedEditorNodes: Array.from(editor?._nodes?.keys() || []),
         doc,
+        documentId,
         locale: localFromContext?.code,
         options,
       })
     },
-    [localFromContext?.code, instructionIdRef],
+    [localFromContext?.code, instructionIdRef, documentId],
   )
 
   const streamText = useCallback(
@@ -178,12 +178,13 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       await complete('', {
         body: {
           doc,
+          documentId,
           locale: localFromContext?.code,
           options,
         },
       })
     },
-    [getData, localFromContext?.code, instructionIdRef, complete],
+    [getData, localFromContext?.code, instructionIdRef, complete, documentId],
   )
 
   const generateUpload = useCallback(async () => {
