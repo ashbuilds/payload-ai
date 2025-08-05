@@ -181,7 +181,8 @@ export default buildConfig({
       },
 
       options: {
-        // Visit locale-codes for tags:
+        // Visit locale-codes for tags, 
+        // defaults to display all language options for Translate feature
         // https://www.npmjs.com/package/locale-codes
         enabledLanguages: ["en-US", "zh-SG", "zh-CN", "en"],
       },
