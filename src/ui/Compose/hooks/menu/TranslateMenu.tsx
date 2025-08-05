@@ -1,6 +1,7 @@
 import locales from 'locale-codes'
-import React, { useState } from 'react'
+import React, { memo, useState } from 'react'
 
+import { useInstructions } from '../../../../providers/InstructionsProvider/useInstructions.js'
 import { Item } from './Item.js'
 import { Translate } from './items.js'
 import styles from './menu.module.scss'
@@ -8,9 +9,15 @@ import styles from './menu.module.scss'
 export const TranslateMenu = ({ onClick }) => {
   const [show, setShow] = useState(false)
 
-  const filteredLocales = locales.all.filter((a) => {
+  const { enabledLanguages = [] } = useInstructions()
+
+  let filteredLocales = locales.all.filter((a) => {
     return a.tag && a.location
   })
+
+  if (enabledLanguages?.length) {
+    filteredLocales = filteredLocales.filter((a) => enabledLanguages?.includes(a.tag))
+  }
 
   const [languages, setLanguages] = useState(filteredLocales)
   const [inputFocus, setInputFocus] = useState(false)
@@ -31,12 +38,15 @@ export const TranslateMenu = ({ onClick }) => {
           setShow(!show)
         }}
         onMouseEnter={() => setShow(true)}
-       />
+      />
       <div className={styles.hoverMenu} data-show={show}>
-        <div className={`${styles.menu} ${styles.subMenu}`} style={{
-          background: "var(--popup-bg)",
-          minHeight: "300px"
-        }}>
+        <div
+          className={`${styles.menu} ${styles.subMenu}`}
+          style={{
+            background: 'var(--popup-bg)',
+            // minHeight: '300px',
+          }}
+        >
           <Item
             onClick={() => {}}
             style={{
@@ -83,3 +93,5 @@ export const TranslateMenu = ({ onClick }) => {
     </div>
   )
 }
+
+export const MemoizedTranslateMenu = memo(TranslateMenu)

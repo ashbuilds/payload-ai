@@ -180,6 +180,12 @@ export default buildConfig({
         settings: ({ req }) => req.user?.role === 'admin',
       },
 
+      options: {
+        // Visit locale-codes for tags:
+        // https://www.npmjs.com/package/locale-codes
+        enabledLanguages: ["en-US", "zh-SG", "zh-CN", "en"],
+      },
+
       // Optional: Custom media upload handling, useful for multi-tenant setups
       mediaUpload: async (result, { request, collection }) => {
         return request.payload.create({

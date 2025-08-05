@@ -9,6 +9,7 @@ import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
 
 const initialContext: {
   activeCollection?: string
+  enabledLanguages?: string[]
   field?: Field
   instructions: Record<string, any>
   isConfigAllowed: boolean
@@ -29,6 +30,7 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
   const [instructions, setInstructionsState] = useState({})
   const [activeCollection, setActiveCollection] = useState('')
   const [isConfigAllowed, setIsConfigAllowed] = useState(false)
+  const [enabledLanguages, setEnabledLanguages] = useState<string[]>()
   const { user } = useAuth()
 
   const { config } = useConfig()
@@ -44,6 +46,7 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
       .then(async (res) => {
         await res.json().then((data) => {
           setIsConfigAllowed(data?.isConfigAllowed)
+          setEnabledLanguages(data?.enabledLanguages)
           setInstructionsState(data?.fields)
         })
       })
@@ -54,7 +57,13 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
 
   return (
     <InstructionsContext.Provider
-      value={{ activeCollection, instructions, isConfigAllowed, setActiveCollection }}
+      value={{
+        activeCollection,
+        enabledLanguages,
+        instructions,
+        isConfigAllowed,
+        setActiveCollection,
+      }}
     >
       {children}
     </InstructionsContext.Provider>

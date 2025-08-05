@@ -1,10 +1,13 @@
 import type { Endpoint, PayloadRequest } from 'payload'
 
-import type { PluginConfigAccess } from '../types.js'
+import type { PluginConfigAccess, PluginOptions } from '../types.js'
 
 import { PLUGIN_FETCH_FIELDS_ENDPOINT, PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 
-export const fetchFields: (access: PluginConfigAccess) => Endpoint = (access) => {
+export const fetchFields: (access: PluginConfigAccess, options?: PluginOptions) => Endpoint = (
+  access,
+  options = {},
+) => {
   return {
     handler: async (req: PayloadRequest) => {
       const { docs = [] } = await req.payload.find({
@@ -31,6 +34,7 @@ export const fetchFields: (access: PluginConfigAccess) => Endpoint = (access) =>
       })
 
       return Response.json({
+        ...options,
         fields: fieldMap,
         isConfigAllowed,
       })
