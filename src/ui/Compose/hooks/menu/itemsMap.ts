@@ -2,7 +2,7 @@ import type React from 'react'
 
 import type { ActionMenuItems, BaseItemProps } from '../../../../types.js'
 
-import { TranslateMenu } from './TranslateMenu.js'
+import { MemoizedTranslateMenu, TranslateMenu } from './TranslateMenu.js'
 import { Compose, Expand, Proofread, Rephrase, Settings, Simplify, Summarize } from './items.js'
 
 type MenuItemsMapType = {
@@ -17,7 +17,7 @@ export const menuItemsMap: MenuItemsMapType[] = [
   { name: 'Rephrase', component: Rephrase, excludedFor: ['upload'], loadingText: 'Rephrasing' },
   {
     name: 'Translate',
-    component: TranslateMenu,
+    component: MemoizedTranslateMenu,
     excludedFor: ['upload'],
     loadingText: 'Translating',
   },

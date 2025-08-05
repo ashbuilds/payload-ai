@@ -25,6 +25,17 @@ export interface PluginConfigAccess {
   settings?: ({ req }: { req: PayloadRequest }) => Promise<boolean> | boolean
 }
 
+export interface PluginOptions {
+
+  /**
+   * Provide local tags to filter language options from the Translate Menu
+   * Check for the available local tags,
+   * visit: https://www.npmjs.com/package/locale-codes
+   * Example: ["en-US", "zh-SG", "zh-CN", "en"]
+   */
+  enabledLanguages?: string[]
+}
+
 export type PluginConfigMediaUploadFunction = (
   result: { data: Record<any, any>; file: File },
   {
@@ -56,6 +67,7 @@ export interface PluginConfig {
   }
   interfaceName?: string
   mediaUpload?: PluginConfigMediaUploadFunction
+  options?: PluginOptions
   uploadCollectionSlug?: CollectionSlug
 }
 

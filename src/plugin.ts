@@ -139,7 +139,7 @@ const payloadAiPlugin =
             ...(incomingConfig.endpoints ?? []),
             pluginEndpoints.textarea,
             pluginEndpoints.upload,
-            fetchFields(pluginConfig.access),
+            fetchFields(pluginConfig.access, pluginConfig.options),
           ],
           globals: globals.map((global) => {
             if (globalsSlugs[global.slug]) {
