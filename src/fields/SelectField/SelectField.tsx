@@ -21,10 +21,14 @@ export const SelectField = (
   const [filterOptions, setFilterOptions] = useState<OptionObject[]>([])
 
   useEffect(() => {
-    if (!Array.isArray(options)) return
+    if (!Array.isArray(options)) {
+      return
+    }
 
     const opts = options.filter((option) => {
-      if (!relatedField || !option.fields) return true
+      if (!relatedField || !option.fields) {
+        return true
+      }
 
       if (Array.isArray(option.fields)) {
         return option.fields.includes(relatedField)
@@ -39,8 +43,15 @@ export const SelectField = (
     <SelectInput
       label={field.label}
       name={path}
-      onChange={(e: OptionObject) => {
-        setValue(e.value)
+      onChange={(value) => {
+        console.log("value --- ", value)
+        if (Array.isArray(value)) {
+          setValue(value[0]?.value ?? '')
+        } else if (value && typeof value === 'object' && 'value' in value) {
+          setValue((value as OptionObject).value)
+        } else {
+          setValue('')
+        }
       }}
       options={filterOptions}
       path={path}

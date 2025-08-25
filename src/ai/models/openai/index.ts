@@ -53,7 +53,7 @@ export const OpenAIConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'gpt-4o-mini',
             label: 'Model',
-            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-3.5-turbo'],
+            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-3.5-turbo', 'gpt-4.1', 'gpt-5'],
           },
         ],
         label: 'OpenAI GPT Settings',
@@ -226,6 +226,9 @@ export const OpenAIConfig: GenerationConfig = {
       handler: async (text: string, options) => {
         //TODO: change it to open ai text to speech api
         const voiceData = await generateVoice(text, options)
+        if (!voiceData || !voiceData.buffer) {
+          throw new Error('Voice data missing')
+        }
         return {
           data: {
             alt: text,
@@ -269,9 +272,7 @@ export const OpenAIConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'mp3',
             label: 'Response Format',
-            options: ['mp3', 'opus', 'aac', 'flac', 'wav', 'pcm'] as Array<
-              SpeechCreateParams['response_format']
-            >,
+            options: ['mp3', 'opus', 'aac', 'flac', 'wav', 'pcm'],
           },
           {
             name: 'speed',
@@ -307,7 +308,7 @@ export const OpenAIConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'gpt-4o',
             label: 'Model',
-            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-4.1', 'o4-mini'],
+            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-4.1', 'o4-mini', 'gpt-4.1', 'gpt-5'],
           },
         ],
         label: 'OpenAI GPT Settings',

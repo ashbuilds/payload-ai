@@ -6,8 +6,14 @@ import { FieldProvider } from '../../providers/FieldProvider/FieldProvider.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { Compose } from '../../ui/Compose/Compose.js'
 
-export const ComposeField = (props) => {
+type ComposeFieldProps = {
+  [key: string]: any
+  field: { type: string }
+  path?: string
+  schemaPath?: string
+}
 
+export const ComposeField = (props: ComposeFieldProps) => {
   const { id: instructionId, isConfigAllowed } = useInstructions({
     schemaPath: props?.schemaPath,
   })
@@ -15,12 +21,21 @@ export const ComposeField = (props) => {
   return (
     <FieldProvider
       context={{
-        type: props?.field.type,
-        path: props?.path,
-        schemaPath: props?.schemaPath,
+        type: (props?.field as any).type,
+        path: props?.path ?? '',
+        schemaPath: props?.schemaPath ?? '',
       }}
     >
-      <Compose descriptionProps={props} instructionId={instructionId} isConfigAllowed={isConfigAllowed} />
+      <Compose
+        descriptionProps={{
+          ...props,
+          field: props?.field as any,
+          path: props?.path ?? '',
+          schemaPath: props?.schemaPath ?? '',
+        }}
+        instructionId={instructionId}
+        isConfigAllowed={isConfigAllowed}
+      />
     </FieldProvider>
   )
 }

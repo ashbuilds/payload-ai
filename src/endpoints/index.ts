@@ -86,20 +86,22 @@ const assignPrompt = async (
     return assignedPrompts
   }
 
-  const { layout: getLayout, system: getSystemPrompt } = defaultPrompts.find(
-    (p) => p.name === action,
-  )
+  const foundPrompt = defaultPrompts.find((p) => p.name === action)
+  const getLayout = foundPrompt?.layout
+  const getSystemPrompt = foundPrompt?.system
 
   let updatedLayout = layout
   if (getLayout) {
     updatedLayout = getLayout()
   }
 
-  const system = getSystemPrompt({
-    ...(actionParams || {}),
-    prompt,
-    systemPrompt,
-  })
+  const system = getSystemPrompt
+    ? getSystemPrompt({
+        ...(actionParams || {}),
+        prompt,
+        systemPrompt,
+      })
+    : ''
 
   return {
     layout: updatedLayout,
@@ -142,11 +144,18 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
           )
 
+          if (!collection) {
+            throw new Error('Collection not found')
+          }
+
           const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
           const { schema: editorSchema = {} } = editorConfig
           const { prompt: promptTemplate = '' } = instructions
 
           let allowedEditorSchema = editorSchema
+          console.log("allowedEditorNodes", allowedEditorNodes)
+          console.log("allowedEditorNodes: editorSchema ", editorSchema)
+
           if (allowedEditorNodes.length) {
             allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
           }
@@ -161,29 +170,44 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             return l.code === locale
           })
 
-          const localeInfo = localeData?.label[defaultLocale] || locale
+          let localeInfo = locale
+          if (
+            localeData &&
+            defaultLocale &&
+            localeData.label &&
+            typeof localeData.label === 'object' &&
+            defaultLocale in localeData.label
+          ) {
+            localeInfo = localeData.label[defaultLocale]
+          }
 
-          const model = getGenerationModels(pluginConfig).find(
-            (model) => model.id === instructions['model-id'],
-          )
+          const models = getGenerationModels(pluginConfig)
+          const model =
+            models && Array.isArray(models)
+              ? models.find((model) => model.id === instructions['model-id'])
+              : undefined
 
-          // @ts-expect-error
-          const settingsName = model.settings?.name
+          if (!model) {
+            throw new Error('Model not found')
+          }
+
+          // @ts-ignore
+          const settingsName = model && model.settings ? model.settings.name : undefined
           if (!settingsName) {
             req.payload.logger.error('— AI Plugin: Error fetching settings name!')
           }
 
-          const modelOptions = instructions[settingsName] || {}
+          const modelOptions = settingsName ? instructions[settingsName] || {} : {}
 
           const prompts = await assignPrompt(action, {
-            type: instructions['field-type'] as string,
+            type: String(instructions['field-type']),
             actionParams,
             context: contextData,
-            field: fieldName,
+            field: fieldName || '',
             layout: instructions.layout,
             locale: localeInfo,
             systemPrompt: instructions.system,
-            template: promptTemplate as string,
+            template: String(promptTemplate),
           })
 
           return model.handler?.(prompts.prompt, {
@@ -195,11 +219,15 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           })
         } catch (error) {
           req.payload.logger.error('Error generating content: ', error)
-          return new Response(JSON.stringify({ error: error.message }), {
+          const message =
+            error && typeof error === 'object' && 'message' in error
+              ? (error as any).message
+              : String(error)
+          return new Response(JSON.stringify({ error: message }), {
             headers: { 'Content-Type': 'application/json' },
             status:
-              error.message.includes('Authentication required') ||
-              error.message.includes('Insufficient permissions')
+              message.includes('Authentication required') ||
+              message.includes('Insufficient permissions')
                 ? 401
                 : 500,
           })
@@ -240,11 +268,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             ...docData,
           }
 
-          let instructions = { images: [], 'model-id': '', prompt: '' }
+          let instructions: Record<string, any> = { images: [], 'model-id': '', prompt: '' }
 
           if (instructionId) {
             // Verify user has access to the specific instruction
-            // @ts-expect-error
             instructions = await req.payload.findByID({
               id: instructionId,
               collection: PLUGIN_INSTRUCTIONS_TABLE,
@@ -296,15 +323,23 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
           }
 
-          const model = getGenerationModels(pluginConfig).find((model) => model.id === modelId)
+          const modelsUpload = getGenerationModels(pluginConfig)
+          const model =
+            modelsUpload && Array.isArray(modelsUpload)
+              ? modelsUpload.find((model) => model.id === modelId)
+              : undefined
 
-          // @ts-expect-error
-          const settingsName = model.settings?.name
+          if (!model) {
+            throw new Error('Model not found')
+          }
+
+          // @ts-ignore
+          const settingsName = model && model.settings ? model.settings.name : undefined
           if (!settingsName) {
             req.payload.logger.error('— AI Plugin: Error fetching settings name!')
           }
 
-          let modelOptions = instructions[settingsName] || {}
+          let modelOptions = settingsName ? instructions[settingsName] || {} : {}
           modelOptions = {
             ...modelOptions,
             images: editImages,
@@ -344,11 +379,15 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           )
         } catch (error) {
           req.payload.logger.error('Error generating upload: ', error)
-          return new Response(JSON.stringify({ error: error.message }), {
+          const message =
+            error && typeof error === 'object' && 'message' in error
+              ? (error as any).message
+              : String(error)
+          return new Response(JSON.stringify({ error: message }), {
             headers: { 'Content-Type': 'application/json' },
             status:
-              error.message.includes('Authentication required') ||
-              error.message.includes('Insufficient permissions')
+              message.includes('Authentication required') ||
+              message.includes('Insufficient permissions')
                 ? 401
                 : 500,
           })
