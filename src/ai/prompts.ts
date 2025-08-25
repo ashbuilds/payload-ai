@@ -127,7 +127,17 @@ INSTRUCTIONS:
   },
 ]
 
-export const seedPrompts = ({ fieldLabel, fieldSchemaPaths, fieldType, path }) => {
+export const seedPrompts = ({
+  fieldLabel,
+  fieldSchemaPaths,
+  fieldType,
+  path,
+}: {
+  fieldLabel: string
+  fieldSchemaPaths: any
+  fieldType: string
+  path: string
+}) => {
   return {
     prompt: `field-type: ${fieldType}
 field-name: ${fieldLabel}

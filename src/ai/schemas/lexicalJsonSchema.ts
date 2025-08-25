@@ -1,9 +1,11 @@
-import type { JSONSchema7 } from 'json-schema'
+import type { JSONSchema } from 'openai/lib/jsonschema'
 
 import { isObjectSchema } from '../utils/isObjectSchema.js'
 
-export interface LexicalNodeSchema extends JSONSchema7 {
+export interface LexicalNodeSchema extends JSONSchema {
+  $schema?: string
   additionalProperties?: boolean
+  definitions?: Record<string, any>
   properties: {
     [key: string]: any
     children?: {
@@ -422,14 +424,16 @@ export const documentSchema: LexicalNodeSchema = {
   required: ['root'],
 }
 
-export const lexicalJsonSchema = (customNodes = []) => {
+export const lexicalJsonSchema = (customNodes: JSONSchema[]) => {
   const schema = structuredClone(documentSchema)
 
   if (Array.isArray(customNodes) && customNodes.length > 0) {
     customNodes.forEach((nodeObj) => {
       for (const [nodeName, nodeDefinition] of Object.entries(nodeObj)) {
+        // @ts-ignore
         schema.definitions[nodeName] = nodeDefinition
 
+        // @ts-ignore
         const rootNode = schema.definitions['RootNode']
         if (isObjectSchema(rootNode)) {
           const children = rootNode.properties?.children

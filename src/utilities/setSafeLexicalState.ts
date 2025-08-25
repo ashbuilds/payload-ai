@@ -3,12 +3,12 @@ import type { LexicalEditor } from 'lexical'
 type EditorAction = 'replace' | 'update'
 
 export const setSafeLexicalState = (
-  state,
+  state: unknown,
   editorInstance: LexicalEditor,
   action: EditorAction = 'replace',
 ) => {
   try {
-    const editorState = editorInstance.parseEditorState(state)
+    const editorState = editorInstance.parseEditorState(state as any)
     if (editorState.isEmpty()) {
       return
     }

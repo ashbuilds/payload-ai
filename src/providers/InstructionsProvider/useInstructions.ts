@@ -18,13 +18,17 @@ export const useInstructions = (
 
   useEffect(() => {
     if (update.schemaPath !== schemaPath) {
-      setSchemaPath(update.schemaPath as string)
+      setSchemaPath((update.schemaPath as string) ?? '')
     }
   }, [update.schemaPath])
 
   useEffect(() => {
-    if (activeCollection !== collectionSlug && collectionSlug !== PLUGIN_INSTRUCTIONS_TABLE) {
-      setActiveCollection(collectionSlug)
+    if (
+      activeCollection !== collectionSlug &&
+      collectionSlug !== PLUGIN_INSTRUCTIONS_TABLE &&
+      typeof setActiveCollection === 'function'
+    ) {
+      setActiveCollection(collectionSlug ?? '')
     }
   }, [activeCollection, collectionSlug, setActiveCollection])
 
@@ -34,7 +38,9 @@ export const useInstructions = (
     for (const fullKey of Object.keys(instructions)) {
       const [collection, ...pathParts] = fullKey.split('.')
       const path = pathParts.join('.')
-      if (!result[collection]) result[collection] = []
+      if (!result[collection]) {
+        result[collection] = []
+      }
       result[collection].push(path)
     }
 
@@ -43,13 +49,15 @@ export const useInstructions = (
 
   // Suggestions for prompt editor
   const promptEditorSuggestions = useMemo(() => {
-    const activeFields = groupedFields[activeCollection] || []
+    const activeFields = groupedFields[activeCollection as string] || []
 
-    return activeFields.reduce<string[]>((acc, f) => {
+    return activeFields.reduce<string[]>((acc: string[], f: string) => {
       const fieldKey = Object.keys(instructions).find((k) => k.endsWith(f))
-      const fieldInfo = instructions[fieldKey]
+      const fieldInfo = fieldKey ? instructions[fieldKey] : undefined
 
-      if (!fieldInfo) return acc
+      if (!fieldInfo) {
+        return acc
+      }
 
       if (fieldInfo.fieldType === 'upload') {
         acc.push(`${f}.url`)
@@ -57,7 +65,7 @@ export const useInstructions = (
       }
 
       const helpers = handlebarsHelpers.filter(
-        (h) => handlebarsHelpersMap[h]?.field === fieldInfo.fieldType,
+        (h) => (handlebarsHelpersMap as Record<string, any>)[h]?.field === fieldInfo.fieldType,
       )
 
       if (helpers.length) {

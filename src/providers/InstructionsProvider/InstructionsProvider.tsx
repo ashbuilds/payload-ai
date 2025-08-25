@@ -15,10 +15,10 @@ const initialContext: {
   isConfigAllowed: boolean
   path?: string
   schemaPath?: unknown
-  setActiveCollection?: (val: unknown) => void
+  setActiveCollection?: React.Dispatch<React.SetStateAction<string>>
 } = {
   field: undefined,
-  instructions: undefined,
+  instructions: {},
   isConfigAllowed: true,
   path: '',
   schemaPath: '',
@@ -26,7 +26,7 @@ const initialContext: {
 
 export const InstructionsContext = createContext(initialContext)
 
-export const InstructionsProvider: React.FC = ({ children }: { children: React.ReactNode }) => {
+export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [instructions, setInstructionsState] = useState({})
   const [activeCollection, setActiveCollection] = useState('')
   const [isConfigAllowed, setIsConfigAllowed] = useState(false)

@@ -7,14 +7,18 @@ import { systemGenerate } from './ai/utils/systemGenerate.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
 import { getGenerationModels } from './utilities/getGenerationModels.js'
 
-export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: PluginConfig) => {
+export const init = async (
+  payload: Payload,
+  fieldSchemaPaths: Record<string, { label: string; relationTo?: string; type: string }>,
+  pluginConfig: PluginConfig,
+) => {
   if (pluginConfig.debugging) {
     payload.logger.info(`— AI Plugin: Initializing...`)
   }
 
   const paths = Object.keys(fieldSchemaPaths)
 
-  const fieldInstructionsMap = {}
+  const fieldInstructionsMap: Record<string, { fieldType: any; id: any }> = {}
   for (let i = 0; i < paths.length; i++) {
     const path = paths[i]
     const { type: fieldType, label: fieldLabel, relationTo } = fieldSchemaPaths[path]
@@ -42,7 +46,9 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
       let generatedPrompt = '{{ title }}'
       if (pluginConfig.generatePromptOnInit) {
         // find the model that has the generateText function
-        const model = getGenerationModels(pluginConfig).find((model) => model.generateText)
+        const models = getGenerationModels(pluginConfig)
+        const model =
+          models && Array.isArray(models) ? models.find((model) => model.generateText) : undefined
         generatedPrompt = await systemGenerate(
           {
             prompt,
@@ -55,14 +61,18 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
         )
       }
 
+      const modelsForId = getGenerationModels(pluginConfig)
+      const modelForId =
+        modelsForId && Array.isArray(modelsForId)
+          ? modelsForId.find((a) => a.fields.includes(fieldType))
+          : undefined
+
       const instructions = await payload
         .create({
           collection: PLUGIN_INSTRUCTIONS_TABLE,
           data: {
             'field-type': fieldType,
-            'model-id': getGenerationModels(pluginConfig).find((a) => {
-              return a.fields.includes(fieldType)
-            })?.id,
+            'model-id': modelForId?.id,
             prompt: generatedPrompt,
             'relation-to': relationTo,
             'schema-path': path,
@@ -73,7 +83,6 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
           payload.logger.error('— AI Plugin: Error creating Compose settings-', err)
         })
 
-      // @ts-expect-error
       if (instructions?.id) {
         fieldInstructionsMap[path] = {
           id: instructions.id,

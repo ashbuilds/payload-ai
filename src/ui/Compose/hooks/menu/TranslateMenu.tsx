@@ -6,7 +6,7 @@ import { Item } from './Item.js'
 import { Translate } from './items.js'
 import styles from './menu.module.scss'
 
-export const TranslateMenu = ({ onClick }) => {
+export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string }) => void }) => {
   const [show, setShow] = useState(false)
 
   const { enabledLanguages = [] } = useInstructions()
@@ -66,7 +66,7 @@ export const TranslateMenu = ({ onClick }) => {
                     const lowerCaseValue = value.toLowerCase()
                     return (
                       l.name.toLowerCase().startsWith(lowerCaseValue) ||
-                      l.location.toLowerCase().startsWith(lowerCaseValue) ||
+                      (l.location && l.location.toLowerCase().startsWith(lowerCaseValue)) ||
                       l.tag.toLowerCase().startsWith(lowerCaseValue)
                     )
                   }),

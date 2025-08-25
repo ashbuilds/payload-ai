@@ -1,6 +1,6 @@
 import ajvModule from 'ajv'
 
-export const editorSchemaValidator = (schema) => {
+export const editorSchemaValidator = (schema: unknown) => {
   const modifiedSchema = JSON.parse(JSON.stringify(schema), function (key: string, value: any) {
     if (key === 'required' && Array.isArray(value)) {
       // Safely access properties from parent

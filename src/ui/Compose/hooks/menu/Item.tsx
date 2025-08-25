@@ -10,8 +10,16 @@ export const Item: React.FC<BaseItemProps> = memo(
     <span
       className={styles.generate_button + ' ' + (isActive ? styles.active : '')}
       data-disabled={disabled}
-      onClick={!disabled ? onClick : null}
-      onKeyDown={!disabled ? onClick : null}
+      onClick={
+        !disabled && typeof onClick === 'function'
+          ? (onClick as React.MouseEventHandler<HTMLSpanElement>)
+          : undefined
+      }
+      onKeyDown={
+        !disabled && typeof onClick === 'function'
+          ? (onClick as React.KeyboardEventHandler<HTMLSpanElement>)
+          : undefined
+      }
       role="presentation"
       {...rest}
     >
@@ -20,7 +28,10 @@ export const Item: React.FC<BaseItemProps> = memo(
   ),
 )
 
-export const createMenuItem = (IconComponent, initialText) =>
+export const createMenuItem = (
+  IconComponent: React.ComponentType<{ size?: number }>,
+  initialText: string,
+) =>
   memo(({ children, disabled, hideIcon, isMenu, onClick, ...rest }: BaseItemProps) => (
     <Item disabled={disabled} onClick={onClick} {...rest}>
       {hideIcon || <IconComponent size={18} />}

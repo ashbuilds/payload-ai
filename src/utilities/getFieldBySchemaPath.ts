@@ -7,7 +7,7 @@ export const getFieldBySchemaPath = (
   const pathParts = schemaPath.split('.')
   const targetFieldName = pathParts[pathParts.length - 1]
 
-  const findField = (fields, remainingPath: string[]): Field | null => {
+  const findField = (fields: any[], remainingPath: string[]): Field | null => {
     for (const field of fields) {
       if (remainingPath.length === 1 && field.name === targetFieldName) {
         return field
@@ -15,18 +15,24 @@ export const getFieldBySchemaPath = (
 
       if (field.type === 'group' && field.fields) {
         const result = findField(field.fields, remainingPath.slice(1))
-        if (result) return result
+        if (result) {
+          return result
+        }
       }
 
       if (field.type === 'array' && field.fields) {
         const result = findField(field.fields, remainingPath.slice(1))
-        if (result) return result
+        if (result) {
+          return result
+        }
       }
 
       if (field.type === 'tabs') {
         for (const tab of field.tabs) {
           const result = findField(tab.fields, remainingPath)
-          if (result) return result
+          if (result) {
+            return result
+          }
         }
       }
 
@@ -34,7 +40,9 @@ export const getFieldBySchemaPath = (
         for (const block of field.blocks) {
           if (block.slug === remainingPath[0]) {
             const result = findField(block.fields, remainingPath.slice(1))
-            if (result) return result
+            if (result) {
+              return result
+            }
           }
         }
       }

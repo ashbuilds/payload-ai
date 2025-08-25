@@ -22,7 +22,7 @@ export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => 
 
   const suggestions = useMemo(
     () =>
-      promptEditorSuggestions.map((suggestion) => ({
+      promptEditorSuggestions.map((suggestion: string) => ({
         id: suggestion,
         display: suggestion,
       })),
@@ -62,7 +62,7 @@ export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => 
           markup="{{__id__}}"
           style={{
             backgroundColor: 'var(--theme-elevation-100)',
-            padding: "2px 0"
+            padding: '2px 0',
           }}
           trigger="{"
         />

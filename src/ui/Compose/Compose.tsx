@@ -10,12 +10,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
 import { PluginIcon } from '../Icons/Icons.js'
-import { UndoRedoActions } from './UndoRedoActions.js'
 import styles from './compose.module.css'
 import { useMenu } from './hooks/menu/useMenu.js'
 import { useGenerate } from './hooks/useGenerate.js'
+import { UndoRedoActions } from './UndoRedoActions.js'
 
-function findParentWithClass(element, className) {
+function findParentWithClass(element: HTMLElement | null, className: string): HTMLElement | null {
   // Base case: if the element is null, or we've reached the top of the DOM
   if (!element || element === document.body) {
     return null
@@ -46,125 +46,160 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
     collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
   })
 
-  const {
-    field: { type: fieldType },
-    path: pathFromContext,
-    schemaPath,
-  } = descriptionProps || {}
+  const fieldType = descriptionProps?.field?.type
+  const pathFromContext = descriptionProps?.path
+  const schemaPath = descriptionProps?.schemaPath
   const { editor: lexicalEditor, editorContainerRef } = useEditorConfigContext()
 
   // The below snippet is used to show/hide the action menu on AI-enabled fields
-  const [input, setInput] = useState(null)
-  const actionsRef = useRef(null)
+  const [input, setInput] = useState<HTMLElement | null>(null)
+  const actionsRef = useRef<HTMLLabelElement | null>(null)
 
   // Set input element for current field
   useEffect(() => {
-    if (!actionsRef.current) return
+    if (!actionsRef.current) {
+      return
+    }
+
+    if (!pathFromContext) {
+      return
+    }
 
     const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
     const inputElement = document.getElementById(fieldId)
 
     if (!inputElement && fieldType === 'richText') {
-      setInput(editorContainerRef.current)
+      setInput(editorContainerRef.current as HTMLElement | null)
     } else {
-      actionsRef.current.setAttribute('for', fieldId)
+      actionsRef.current?.setAttribute('for', fieldId)
       setInput(inputElement)
     }
-  }, [pathFromContext, schemaPath, actionsRef, editorContainerRef])
+  }, [pathFromContext, schemaPath, actionsRef, editorContainerRef, fieldType])
 
   // Show or hide actions menu on field
   useEffect(() => {
-    if (!input || !actionsRef.current) return
+    if (!input || !actionsRef.current) {
+      return
+    }
 
-    actionsRef.current.classList.add(styles.actions_hidden)
+    actionsRef.current?.classList.add(styles.actions_hidden)
 
     // Create the handler function
-    const clickHandler = (event) => {
+    const clickHandler = (event: MouseEvent) => {
       document.querySelectorAll('.ai-plugin-active')?.forEach((element) => {
-        const actionElement = element.querySelector(`.${styles.actions}`)
+        const actionElement = (element as HTMLElement).querySelector(`.${styles.actions}`)
         if (actionElement) {
           actionElement.classList.add(styles.actions_hidden)
           element.classList.remove('ai-plugin-active')
         }
       })
 
-      actionsRef.current.classList.remove(styles.actions_hidden)
-      const parentWithClass = findParentWithClass(event.target, 'field-type')
+      actionsRef.current?.classList.remove(styles.actions_hidden)
+      const parentWithClass = findParentWithClass(event.target as HTMLElement, 'field-type')
       if (parentWithClass) {
         parentWithClass.classList.add('ai-plugin-active')
       }
     }
 
     // Add the event listener
-    input.addEventListener('click', clickHandler)
+    input?.addEventListener('click', clickHandler)
 
     // Clean up the event listener when the component unmounts or input changes
     return () => {
-      input.removeEventListener('click', clickHandler)
+      input?.removeEventListener('click', clickHandler)
     }
   }, [input, actionsRef])
 
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const { generate, isLoading, stop } = useGenerate({ instructionId })
 
-  const { ActiveComponent, Menu } = useMenu({
-    onCompose: async () => {
-      console.log('Composing...')
-      setIsProcessing(true)
-      await generate({
-        action: 'Compose',
-      }).finally(() => {
-        setIsProcessing(false)
-      })
+  const { ActiveComponent, Menu } = useMenu(
+    {
+      onCompose: () => {
+        console.log('Composing...')
+        setIsProcessing(true)
+        generate({
+          action: 'Compose',
+        }).catch((reason)=>{
+          console.error("Compose : ",reason)
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onExpand:  () => {
+        console.log('Expanding...')
+         generate({
+          action: 'Expand',
+        }).catch((reason)=>{
+          console.error("Compose : ",reason)
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onProofread:  () => {
+        console.log('Proofreading...')
+         generate({
+          action: 'Proofread',
+        }).catch((reason)=>{
+          console.error("Compose : ",reason)
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onRephrase:  () => {
+        console.log('Rephrasing...')
+         generate({
+          action: 'Rephrase',
+        }).catch((reason)=>{
+          console.error("Compose : ",reason)
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onSettings: isConfigAllowed ? openDrawer : undefined,
+      onSimplify:  () => {
+        console.log('Simplifying...')
+         generate({
+          action: 'Simplify',
+        }).catch((reason)=>{
+          console.error("Compose : ",reason)
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onSummarize:  () => {
+        console.log('Summarizing...')
+         generate({
+          action: 'Summarize',
+        }).catch((reason)=>{
+          console.error("Compose : ",reason)
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
+      onTranslate:  (data) => {
+        console.log('Translating...')
+         generate({
+          action: 'Translate',
+          params: data,
+        }).catch((reason)=>{
+          console.error("Compose : ",reason)
+        }).finally(() => {
+          setIsProcessing(false)
+        })
+      },
     },
-    onExpand: async () => {
-      console.log('Expanding...')
-      await generate({
-        action: 'Expand',
-      })
+    {
+      isConfigAllowed,
     },
-    onProofread: async () => {
-      console.log('Proofreading...')
-      await generate({
-        action: 'Proofread',
-      })
-    },
-    onRephrase: async () => {
-      console.log('Rephrasing...')
-      await generate({
-        action: 'Rephrase',
-      })
-    },
-    onSettings: isConfigAllowed ? openDrawer : undefined,
-    onSimplify: async () => {
-      console.log('Simplifying...')
-      await generate({
-        action: 'Simplify',
-      })
-    },
-    onSummarize: async () => {
-      console.log('Summarizing...')
-      await generate({
-        action: 'Summarize',
-      })
-    },
-    onTranslate: async (data) => {
-      console.log('Translating...')
-      await generate({
-        action: 'Translate',
-        params: data,
-      })
-    },
-  },{
-    isConfigAllowed
-  })
+  )
 
   const { setValue } = useField<string>({
     path: pathFromContext,
   })
 
   const setIfValueIsLexicalState = useCallback((val: any) => {
-    if (val.root && lexicalEditor) {
+    if (val && typeof val === 'object' && 'root' in val && lexicalEditor) {
       setSafeLexicalState(JSON.stringify(val), lexicalEditor)
     }
 
@@ -172,7 +207,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   }, [])
 
   const popupRender = useCallback(
-    ({ close }) => {
+    ({ close }: { close: () => void }) => {
       return <Menu isLoading={isProcessing || isLoading} onClose={close} />
     },
     [isProcessing, isLoading, Menu],
