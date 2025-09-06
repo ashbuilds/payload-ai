@@ -424,7 +424,7 @@ export const documentSchema: LexicalNodeSchema = {
   required: ['root'],
 }
 
-export const lexicalJsonSchema = (customNodes: JSONSchema[]) => {
+export const lexicalJsonSchema = (customNodes: JSONSchema[] | undefined) => {
   const schema = structuredClone(documentSchema)
 
   if (Array.isArray(customNodes) && customNodes.length > 0) {

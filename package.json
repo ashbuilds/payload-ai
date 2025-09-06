@@ -6,6 +6,7 @@
   "repository": "https://github.com/ashbuilds/payload-ai",
   "license": "MIT",
   "author": "ashbuilds",
+  "type": "module",
   "keywords": [
     "payload",
     "ai",

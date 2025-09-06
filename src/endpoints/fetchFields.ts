@@ -4,7 +4,7 @@ import type { PluginConfigAccess, PluginOptions } from '../types.js'
 
 import { PLUGIN_FETCH_FIELDS_ENDPOINT, PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 
-export const fetchFields: (access: PluginConfigAccess, options?: PluginOptions) => Endpoint = (
+export const fetchFields: (access: PluginConfigAccess | undefined, options?: PluginOptions) => Endpoint = (
   access,
   options = {},
 ) => {
