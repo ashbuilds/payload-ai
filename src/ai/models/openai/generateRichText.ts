@@ -4,10 +4,8 @@ import { openai } from './openai.js'
 
 export const generateRichText = (text: string, options: any = {}) => {
   const streamResult = streamObject({
-    maxTokens: options.maxTokens || 5000,
-    model: openai(options.model, {
-      structuredOutputs: true,
-    }),
+    maxOutputTokens: options.maxTokens || 5000,
+    model: openai(options.model),
     onError: (error) => {
       console.error(`generateRichText: `, error)
     },

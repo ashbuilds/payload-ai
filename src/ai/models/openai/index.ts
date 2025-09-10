@@ -36,7 +36,7 @@ export const OpenAIConfig: GenerationConfig = {
           system: options.system || defaultSystemPrompt,
         })
 
-        return streamTextResult.toDataStreamResponse()
+        return streamTextResult.toUIMessageStreamResponse();
       },
       output: 'text',
       settings: {

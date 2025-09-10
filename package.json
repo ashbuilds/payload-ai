@@ -59,13 +59,13 @@
     "prepublishOnly": "pnpm clean && pnpm build"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^1.2.10",
-    "@ai-sdk/openai": "^1.3.21",
-    "@ai-sdk/provider-utils": "^2.2.7",
-    "@ai-sdk/react": "^1.2.11",
+    "@ai-sdk/anthropic": "^2.0.15",
+    "@ai-sdk/openai": "^2.0.28",
+    "@ai-sdk/provider-utils": "^3.0.8",
+    "@ai-sdk/react": "^2.0.39",
     "@ai-sdk/ui-utils": "^1.2.10",
-    "@anthropic-ai/sdk": "^0.40.1",
-    "ai": "^4.3.13",
+    "@anthropic-ai/sdk": "^0.62.0",
+    "ai": "^5.0.39",
     "ajv": "^8.17.1",
     "elevenlabs": "^0.8.2",
     "get-input-selection": "^1.1.4",
@@ -73,7 +73,7 @@
     "handlebars-async-helpers": "^1.0.6",
     "locale-codes": "^1.3.1",
     "lodash.isequal": "^4.5.0",
-    "openai": "^4.97.0",
+    "openai": "^5.20.1",
     "react-mentions": "^4.4.10",
     "scroll-into-view-if-needed": "^3.1.0",
     "textarea-caret": "^3.0.2"

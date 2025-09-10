@@ -24,7 +24,7 @@ export const AnthropicConfig: GenerationConfig = {
           system: options.system || defaultSystemPrompt,
         })
 
-        return streamTextResult.toDataStreamResponse()
+        return streamTextResult.toUIMessageStreamResponse();
       },
       output: 'text',
       settings: {

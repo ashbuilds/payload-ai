@@ -107,8 +107,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   useEffect(() => {
     if (!object) return
 
-    requestAnimationFrame(() => {
-      const validateObject = memoizedSchema.validate(object)
+    requestAnimationFrame(async () => {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      const validateObject = await memoizedSchema.validate(object)
       if (validateObject?.success) {
         setSafeLexicalState(object, editor)
       }
