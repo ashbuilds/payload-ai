@@ -197,5 +197,7 @@ const payloadAiPlugin =
     return updatedConfig
   }
 
+export { defaultPrompts, defaultSeedPrompts as seedPrompts } from './ai/prompts.js'
+
+export { payloadAiPlugin } from './plugin.js'
 export { PayloadAiPluginLexicalEditorFeature }
-export { payloadAiPlugin }

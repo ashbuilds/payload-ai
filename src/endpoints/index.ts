@@ -47,6 +47,7 @@ const assignPrompt = async (
     field,
     layout,
     locale,
+    pluginConfig,
     systemPrompt = '',
     template,
   }: {
@@ -55,6 +56,7 @@ const assignPrompt = async (
     field: string
     layout: string
     locale: string
+    pluginConfig: PluginConfig,
     systemPrompt: string
     template: string
     type: string
@@ -86,7 +88,8 @@ const assignPrompt = async (
     return assignedPrompts
   }
 
-  const foundPrompt = defaultPrompts.find((p) => p.name === action)
+  const prompts = [...pluginConfig.prompts || [], ...defaultPrompts]
+  const foundPrompt = prompts.find((p) => p.name === action)
   const getLayout = foundPrompt?.layout
   const getSystemPrompt = foundPrompt?.system
 
@@ -203,6 +206,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             field: fieldName || '',
             layout: instructions.layout,
             locale: localeInfo,
+            pluginConfig,
             systemPrompt: instructions.system,
             template: String(promptTemplate),
           })
