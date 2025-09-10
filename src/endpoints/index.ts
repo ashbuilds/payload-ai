@@ -153,9 +153,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const { prompt: promptTemplate = '' } = instructions
 
           let allowedEditorSchema = editorSchema
-          console.log("allowedEditorNodes", allowedEditorNodes)
-          console.log("allowedEditorNodes: editorSchema ", editorSchema)
-
           if (allowedEditorNodes.length) {
             allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
           }
@@ -218,7 +215,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             system: prompts.system,
           })
         } catch (error) {
-          req.payload.logger.error('Error generating content: ', error)
+          req.payload.logger.error(error, 'Error generating content: ')
           const message =
             error && typeof error === 'object' && 'message' in error
               ? (error as any).message
@@ -257,7 +254,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 req, // Pass req to ensure access control is applied
               })
             } catch (e) {
-              req.payload.logger.error(
+              req.payload.logger.error(e,
                 '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
               )
             }
@@ -315,8 +312,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 url: `${serverURL}${img.image.url}`,
               })
             } catch (e) {
-              req.payload.logger.error('Error fetching reference images!')
-              console.error(e)
+              req.payload.logger.error(e, 'Error fetching reference images!')
               throw Error(
                 "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
               )
@@ -378,7 +374,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }),
           )
         } catch (error) {
-          req.payload.logger.error('Error generating upload: ', error)
+          req.payload.logger.error(error, 'Error generating upload: ')
           const message =
             error && typeof error === 'object' && 'message' in error
               ? (error as any).message

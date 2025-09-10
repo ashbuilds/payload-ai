@@ -21,7 +21,7 @@ export const fetchFields: (access: PluginConfigAccess | undefined, options?: Plu
         try {
           isConfigAllowed = await access.settings({ req })
         } catch (e) {
-          req.payload.logger.error('Please check your "access.settings" for request:', req)
+          req.payload.logger.error(req, 'Please check your "access.settings" for request')
         }
       }
 
