@@ -2,7 +2,7 @@ import type { Payload } from 'payload'
 
 import type { PluginConfig } from './types.js'
 
-import { seedPrompts } from './ai/prompts.js'
+import { defaultSeedPrompts } from './ai/prompts.js'
 import { systemGenerate } from './ai/utils/systemGenerate.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
 import { getGenerationModels } from './utilities/getGenerationModels.js'
@@ -32,6 +32,7 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
     })
 
     if (!entry?.docs?.length) {
+      const seedPrompts = pluginConfig.seedPrompts || defaultSeedPrompts
       const { prompt, system } = seedPrompts({
         fieldLabel,
         fieldSchemaPaths,

@@ -47,6 +47,7 @@ const assignPrompt = async (
     field,
     layout,
     locale,
+    pluginConfig,
     systemPrompt = '',
     template,
   }: {
@@ -55,10 +56,11 @@ const assignPrompt = async (
     field: string
     layout: string
     locale: string
+    pluginConfig: PluginConfig,
     systemPrompt: string
     template: string
     type: string
-  },
+  },  
 ) => {
   const prompt = await replacePlaceholders(template, context)
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
@@ -86,7 +88,8 @@ const assignPrompt = async (
     return assignedPrompts
   }
 
-  const { layout: getLayout, system: getSystemPrompt } = defaultPrompts.find(
+  const prompts = [...pluginConfig.prompts || [], ...defaultPrompts]
+  const { layout: getLayout, system: getSystemPrompt } = prompts.find(
     (p) => p.name === action,
   )
 
@@ -182,6 +185,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             field: fieldName,
             layout: instructions.layout,
             locale: localeInfo,
+            pluginConfig,
             systemPrompt: instructions.system,
             template: promptTemplate as string,
           })
