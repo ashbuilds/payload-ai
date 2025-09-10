@@ -152,8 +152,10 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "sharp",
+      "@swc/core",
       "esbuild",
+      "mongodb-memory-server",
+      "sharp",
       "unrs-resolver"
     ]
   },
