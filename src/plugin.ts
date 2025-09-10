@@ -172,8 +172,7 @@ const payloadAiPlugin =
 
         await init(payload, collectionsFieldPathMap, pluginConfig)
           .catch((error) => {
-            console.error(error)
-            payload.logger.error(`— AI Plugin: Initialization Error: ${error}`)
+            payload.logger.error(error, `— AI Plugin: Initialization Error`)
           })
           .finally(() => {
             setTimeout(() => {

@@ -70,7 +70,7 @@ export const init = async (payload: Payload, fieldSchemaPaths, pluginConfig: Plu
         })
         .then((a) => a)
         .catch((err) => {
-          payload.logger.error('— AI Plugin: Error creating Compose settings-', err)
+          payload.logger.error(err, '— AI Plugin: Error creating Compose settings-')
         })
 
       // @ts-expect-error
