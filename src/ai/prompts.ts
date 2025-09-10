@@ -1,17 +1,4 @@
-import type { ActionMenuItems } from '../types.js'
-
-type ActionPromptOptions = {
-  layout?: string
-  locale?: string
-  prompt?: string
-  systemPrompt?: string
-}
-
-type ActionPrompt = {
-  layout?: (options?: ActionPromptOptions) => string
-  name: ActionMenuItems
-  system: (options: ActionPromptOptions) => string
-}
+import type { ActionPrompt, SeedPromptFunction } from '../types.js'
 
 //TODO: This is a temporary solution make use of structured output
 export const defaultSystemPrompt = `IMPORTANT INSTRUCTION:
@@ -127,7 +114,7 @@ INSTRUCTIONS:
   },
 ]
 
-export const seedPrompts = ({ fieldLabel, fieldSchemaPaths, fieldType, path }) => {
+export const defaultSeedPrompts: SeedPromptFunction = ({ fieldLabel, fieldSchemaPaths, fieldType, path }) => {
   return {
     prompt: `field-type: ${fieldType}
 field-name: ${fieldLabel}

@@ -68,6 +68,18 @@ export interface PluginConfig {
   interfaceName?: string
   mediaUpload?: PluginConfigMediaUploadFunction
   options?: PluginOptions
+  /**
+   * Custom action prompts for AI text generation
+   * If not provided, uses default prompts
+   * You can access default prompts by importing { defaultPrompts } from '@ai-stack/payloadcms'
+   */
+  prompts?: ActionPrompt[]
+  /**
+   * Custom seed prompt function for generating field-specific prompts
+   * If not provided, uses default seed prompt function
+   * You can access default seed prompts by importing { defaultSeedPrompts } from '@ai-stack/payloadcms'
+  */
+  seedPrompts?: SeedPromptFunction
   uploadCollectionSlug?: CollectionSlug
 }
 
@@ -110,6 +122,31 @@ export type ActionMenuItems =
   | 'Summarize'
   | 'Tone'
   | 'Translate'
+
+export type ActionPromptOptions = {
+  layout?: string
+  locale?: string
+  prompt?: string
+  systemPrompt?: string
+}
+
+export type ActionPrompt = {
+  layout?: (options?: ActionPromptOptions) => string
+  name: ActionMenuItems
+  system: (options: ActionPromptOptions) => string
+}
+
+export type SeedPromptOptions = {
+  fieldLabel: string
+  fieldSchemaPaths: Record<string, any>
+  fieldType: string
+  path: string
+}
+
+export type SeedPromptFunction = (options: SeedPromptOptions) => {
+  prompt: string
+  system: string
+}
 
 export type ActionMenuEvents =
   | 'onCompose'
