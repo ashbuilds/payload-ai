@@ -12,7 +12,7 @@ export const useInstructions = (
 ) => {
   const context = useContext(InstructionsContext)
   const { collectionSlug } = useDocumentInfo()
-  const { activeCollection, instructions, setActiveCollection } = context
+  const { activeCollection, instructions, promptFields, setActiveCollection } = context
 
   const [schemaPath, setSchemaPath] = useState(update.schemaPath as string)
 
@@ -45,15 +45,18 @@ export const useInstructions = (
   const promptEditorSuggestions = useMemo(() => {
     const activeFields = groupedFields[activeCollection] || []
 
-    return activeFields.reduce<string[]>((acc, f) => {
+    const suggestions = []
+    
+    activeFields.forEach((f) => {
       const fieldKey = Object.keys(instructions).find((k) => k.endsWith(f))
       const fieldInfo = instructions[fieldKey]
 
-      if (!fieldInfo) return acc
+
+      if (!fieldInfo) return
 
       if (fieldInfo.fieldType === 'upload') {
-        acc.push(`${f}.url`)
-        return acc
+        suggestions.push(`${f}.url`)
+        return
       }
 
       const helpers = handlebarsHelpers.filter(
@@ -62,15 +65,21 @@ export const useInstructions = (
 
       if (helpers.length) {
         for (const helper of helpers) {
-          acc.push(`${helper} ${f}`)
+          suggestions.push(`${helper} ${f}`)
         }
       } else {
-        acc.push(f)
+        suggestions.push(f)
       }
-
-      return acc
     }, [])
-  }, [groupedFields, activeCollection, instructions])
+
+    promptFields.forEach(({name, collections}) => {
+      if (!collections || collections.includes(activeCollection)) {
+        suggestions.push(name)
+      }
+    })
+
+    return suggestions
+  }, [groupedFields, activeCollection, instructions, promptFields])
 
   return {
     ...context,

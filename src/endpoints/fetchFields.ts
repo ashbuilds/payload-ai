@@ -1,13 +1,13 @@
 import type { Endpoint, PayloadRequest } from 'payload'
 
-import type { PluginConfigAccess, PluginOptions } from '../types.js'
+import type { PluginConfig, SerializedPromptField } from '../types.js'
 
 import { PLUGIN_FETCH_FIELDS_ENDPOINT, PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 
-export const fetchFields: (access: PluginConfigAccess, options?: PluginOptions) => Endpoint = (
-  access,
-  options = {},
+export const fetchFields: (config: PluginConfig) => Endpoint = (
+  config
 ) => {
+  const {access, options = {}, promptFields = []} = config
   return {
     handler: async (req: PayloadRequest) => {
       const { docs = [] } = await req.payload.find({
@@ -37,6 +37,9 @@ export const fetchFields: (access: PluginConfigAccess, options?: PluginOptions) 
         ...options,
         fields: fieldMap,
         isConfigAllowed,
+        promptFields: promptFields.map(({getter: _getter, ...field}): SerializedPromptField => {
+          return field
+        }),
       })
     },
     method: 'get',
