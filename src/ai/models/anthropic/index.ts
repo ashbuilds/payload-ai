@@ -42,6 +42,9 @@ export const AnthropicConfig: GenerationConfig = {
             defaultValue: 'claude-3-5-sonnet-latest',
             label: 'Model',
             options: [
+              'claude-opus-4-1',
+              'claude-opus-4-0',
+              'claude-sonnet-4-0',
               'claude-3-opus-latest',
               'claude-3-5-haiku-latest',
               'claude-3-5-sonnet-latest',
@@ -75,6 +78,9 @@ export const AnthropicConfig: GenerationConfig = {
             defaultValue: 'claude-3-5-sonnet-latest',
             label: 'Model',
             options: [
+              'claude-opus-4-1',
+              'claude-opus-4-0',
+              'claude-sonnet-4-0',
               'claude-3-opus-latest',
               'claude-3-5-haiku-latest',
               'claude-3-5-sonnet-latest',
