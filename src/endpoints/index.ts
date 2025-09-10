@@ -82,7 +82,7 @@ const assignPrompt = async (
     systemPrompt: string
     template: string
     type: string
-  },
+  },  
 ) => {
   const extendedContext = extendContextWithPromptFields(context, {type, collection}, pluginConfig)
   const prompt = await replacePlaceholders(template, extendedContext)
@@ -111,7 +111,8 @@ const assignPrompt = async (
     return assignedPrompts
   }
 
-  const { layout: getLayout, system: getSystemPrompt } = defaultPrompts.find(
+  const prompts = [...pluginConfig.prompts || [], ...defaultPrompts]
+  const { layout: getLayout, system: getSystemPrompt } = prompts.find(
     (p) => p.name === action,
   )
 
@@ -221,7 +222,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             system: prompts.system,
           })
         } catch (error) {
-          req.payload.logger.error('Error generating content: ', error)
+          req.payload.logger.error(error, 'Error generating content: ')
           return new Response(JSON.stringify({ error: error.message }), {
             headers: { 'Content-Type': 'application/json' },
             status:
@@ -256,7 +257,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 req, // Pass req to ensure access control is applied
               })
             } catch (e) {
-              req.payload.logger.error(
+              req.payload.logger.error(e, 
                 '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
               )
             }
@@ -316,8 +317,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 url: `${serverURL}${img.image.url}`,
               })
             } catch (e) {
-              req.payload.logger.error('Error fetching reference images!')
-              console.error(e)
+              req.payload.logger.error(e, 'Error fetching reference images!')
               throw Error(
                 "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
               )
@@ -376,7 +376,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }),
           )
         } catch (error) {
-          req.payload.logger.error('Error generating upload: ', error)
+          req.payload.logger.error(error, 'Error generating upload: ')
           return new Response(JSON.stringify({ error: error.message }), {
             headers: { 'Content-Type': 'application/json' },
             status:
