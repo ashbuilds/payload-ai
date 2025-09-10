@@ -3,6 +3,7 @@ import { streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
+import { extractPromptAttachments } from '../../../utilities/extractPromptAttachments.js'
 import { defaultSystemPrompt } from '../../prompts.js'
 import { generateRichText } from './generateRichText.js'
 
@@ -14,14 +15,16 @@ export const AnthropicConfig: GenerationConfig = {
       id: `${MODEL_KEY}-text`,
       name: 'Anthropic Claude',
       fields: ['text', 'textarea'],
-      handler: (prompt: string, options: { locale: string; model: string; system: string }) => {
+      handler: (prompt: string, options: { extractAttachments: boolean; locale: string; maxTokens: number; model: string; system: string; temperature: number; }) => {
         const streamTextResult = streamText({
+          maxOutputTokens: options.maxTokens || 5000,
           model: anthropic(options.model),
           onError: (error) => {
             console.error(`${MODEL_KEY}-text: `, error)
           },
-          prompt,
+          prompt: options.extractAttachments ? extractPromptAttachments(prompt) : prompt,
           system: options.system || defaultSystemPrompt,
+          temperature: options.temperature || 0.7,
         })
 
         return streamTextResult.toUIMessageStreamResponse();
@@ -51,6 +54,27 @@ export const AnthropicConfig: GenerationConfig = {
               'claude-3-7-sonnet-latest',
             ],
           },
+          {
+            type: 'row', fields: [
+              {
+                name: 'maxTokens',
+                type: 'number',
+                defaultValue: 5000,
+              },
+              {
+                name: 'temperature',
+                type: 'number',
+                defaultValue: 0.7,
+                max: 1,
+                min: 0,
+              },
+
+            ]
+          },
+          {
+            name: 'extractAttachments',
+            type: 'checkbox',
+          }          
         ],
         label: 'Anthropic Claude Settings',
       },
@@ -87,6 +111,27 @@ export const AnthropicConfig: GenerationConfig = {
               'claude-3-7-sonnet-latest',
             ],
           },
+          {
+            type: 'row', fields: [
+              {
+                name: 'maxTokens',
+                type: 'number',
+                defaultValue: 5000,
+              },
+              {
+                name: 'temperature',
+                type: 'number',
+                defaultValue: 0.7,
+                max: 1,
+                min: 0,
+              },
+
+            ]
+          },
+          {
+            name: 'extractAttachments',
+            type: 'checkbox',
+          }
         ],
         label: 'Anthropic Claude Settings',
       },

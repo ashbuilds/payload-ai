@@ -186,6 +186,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             template: promptTemplate as string,
           })
 
+          if (pluginConfig.debugging) {
+            req.payload.logger.info({prompts}, `— AI Plugin: Executing text prompt on ${schemaPath} using ${model.id}`)
+          }
+
           return model.handler?.(prompts.prompt, {
             ...modelOptions,
             editorSchema: allowedEditorSchema,
