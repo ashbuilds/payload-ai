@@ -1,6 +1,6 @@
 import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
+import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
@@ -91,6 +91,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   } = useObject({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
+      toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating object:', error)
     },
     onFinish: (result) => {
@@ -124,6 +125,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   } = useCompletion({
     api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error) => {
+      toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating text:', error)
     },
     onFinish: (prompt, result) => {
@@ -220,10 +222,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return uploadResponse
       })
       .catch((error) => {
-        console.warn(
+        toast.error(`Failed to generate: ${error.message}`)
+        console.error(
           'Error generating or setting your upload, please set it manually if its saved in your media files.',
+          error
         )
-        console.error(error)
       })
   }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
 
