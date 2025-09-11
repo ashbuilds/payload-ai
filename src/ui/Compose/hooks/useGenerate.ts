@@ -110,12 +110,12 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       return
     }
 
-    requestAnimationFrame(async () => {
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      const validateObject = await memoizedSchema?.validate?.(object)
-      if (validateObject?.success) {
+    requestAnimationFrame(() => {
+      // TODO: Temporary disabled pre validation, sometimes it fails to validate
+      // const validateObject = await memoizedSchema?.validate?.(object)
+      // if (validateObject?.success) {
         setSafeLexicalState(object, editor)
-      }
+      // }
     })
   }, [object, editor])
 
