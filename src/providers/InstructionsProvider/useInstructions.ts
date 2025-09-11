@@ -57,7 +57,6 @@ export const useInstructions = (
       const fieldKey = Object.keys(instructions).find((k) => k.endsWith(f))
       const fieldInfo = fieldKey ? instructions[fieldKey] : undefined
 
-
       if (!fieldInfo) return
 
       if (fieldInfo.fieldType === 'upload') {
@@ -78,7 +77,9 @@ export const useInstructions = (
       }
     }, [])
 
-    promptFields.forEach(({name, collections}) => {
+    promptFields.forEach(({ name, collections }) => {
+      if (!activeCollection) return
+
       if (!collections || collections.includes(activeCollection)) {
         suggestions.push(name)
       }

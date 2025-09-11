@@ -2,7 +2,12 @@ import type { CollectionSlug, PayloadRequest } from 'payload'
 
 import * as process from 'node:process'
 
-import type { ActionMenuItems, Endpoints, PluginConfig, PromptFieldGetterContext } from '../types.js'
+import type {
+  ActionMenuItems,
+  Endpoints,
+  PluginConfig,
+  PromptFieldGetterContext,
+} from '../types.js'
 
 import { defaultPrompts } from '../ai/prompts.js'
 import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
@@ -39,21 +44,27 @@ const checkAccess = async (req: PayloadRequest, pluginConfig: PluginConfig) => {
   return true
 }
 
-const extendContextWithPromptFields = (data: object, ctx: PromptFieldGetterContext, pluginConfig: PluginConfig) => {
-  const { promptFields } = pluginConfig
+const extendContextWithPromptFields = (
+  data: object,
+  ctx: PromptFieldGetterContext,
+  pluginConfig: PluginConfig,
+) => {
+  const { promptFields = [] } = pluginConfig
   const fieldsMap = new Map(
-    promptFields.filter((f) => !f.collections || f.collections.includes(ctx.collection)).map((f) => [f.name, f])
+    promptFields
+      .filter((f) => !f.collections || f.collections.includes(ctx.collection))
+      .map((f) => [f.name, f]),
   )
   return new Proxy(data, {
-    get: (target, prop) => {
+    get: (target, prop: string) => {
       const field = fieldsMap.get(prop as string)
       if (field?.getter) {
         const value = field.getter(data, ctx)
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
       }
       // {{prop}} escapes content by default. Here we make sure it won't be escaped.
-      const value = target[prop]
-      return typeof value === "string" ? new asyncHandlebars.SafeString(value) : value
+      const value = typeof target === "object" ? (target as any)[prop] : undefined
+      return typeof value === 'string' ? new asyncHandlebars.SafeString(value) : value
     },
     // It's used by the handlebars library to determine if the property is enumerable
     getOwnPropertyDescriptor: (target, prop) => {
@@ -95,13 +106,13 @@ const assignPrompt = async (
     field: string
     layout: string
     locale: string
-    pluginConfig: PluginConfig,
+    pluginConfig: PluginConfig
     systemPrompt: string
     template: string
     type: string
   },
 ) => {
-  const extendedContext = extendContextWithPromptFields(context, {type, collection}, pluginConfig)
+  const extendedContext = extendContextWithPromptFields(context, { type, collection }, pluginConfig)
   const prompt = await replacePlaceholders(template, extendedContext)
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
 
@@ -128,7 +139,7 @@ const assignPrompt = async (
     return assignedPrompts
   }
 
-  const prompts = [...pluginConfig.prompts || [], ...defaultPrompts]
+  const prompts = [...(pluginConfig.prompts || []), ...defaultPrompts]
   const foundPrompt = prompts.find((p) => p.name === action)
   const getLayout = foundPrompt?.layout
   const getSystemPrompt = foundPrompt?.system
@@ -253,7 +264,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           })
 
           if (pluginConfig.debugging) {
-            req.payload.logger.info({prompts}, `— AI Plugin: Executing text prompt on ${schemaPath} using ${model.id}`)
+            req.payload.logger.info(
+              { prompts },
+              `— AI Plugin: Executing text prompt on ${schemaPath} using ${model.id}`,
+            )
           }
 
           return model.handler?.(prompts.prompt, {
@@ -303,7 +317,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 req, // Pass req to ensure access control is applied
               })
             } catch (e) {
-              req.payload.logger.error(e,
+              req.payload.logger.error(
+                e,
                 '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
               )
             }
@@ -330,7 +345,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           registerEditorHelper(req.payload, schemaPath)
 
-          const extendedContext = extendContextWithPromptFields(contextData, {type: instructions['field-type'], collection: collectionSlug}, pluginConfig)
+          const extendedContext = extendContextWithPromptFields(
+            contextData,
+            { type: instructions['field-type'], collection: collectionSlug },
+            pluginConfig,
+          )
           const text = await replacePlaceholders(promptTemplate, extendedContext)
           const modelId = instructions['model-id']
           const uploadCollectionSlug = instructions['relation-to']
@@ -392,9 +411,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           if (pluginConfig.debugging) {
-            req.payload.logger.info({text}, `— AI Plugin: Executing image prompt using ${model.id}`)
+            req.payload.logger.info(
+              { text },
+              `— AI Plugin: Executing image prompt using ${model.id}`,
+            )
           }
-
 
           const result = await model.handler?.(text, modelOptions)
           let assetData: { alt?: string; id: number | string }
