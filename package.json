@@ -110,7 +110,7 @@
     "graphql": "^16.8.1",
     "lexical": "0.35.0",
     "mongodb-memory-server": "10.1.4",
-    "next": "15.4.4",
+    "next": "15.4.5",
     "open": "^10.1.0",
     "payload": "^3.55.1",
     "prettier": "^3.4.2",
@@ -133,8 +133,7 @@
     "payload": "^3.55.1"
   },
   "engines": {
-    "node": "^18.20.2 || >=20.9.0",
-    "pnpm": "^9 || ^10"
+    "node": "^18.20.2 || >=20.9.0"
   },
   "publishConfig": {
     "main": "./dist/index.js",
