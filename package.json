@@ -110,7 +110,7 @@
     "graphql": "^16.8.1",
     "lexical": "0.35.0",
     "mongodb-memory-server": "10.1.4",
-    "next": "15.4.5",
+    "next": "15.4.7",
     "open": "^10.1.0",
     "payload": "^3.55.1",
     "prettier": "^3.4.2",
