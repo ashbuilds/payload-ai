@@ -187,6 +187,20 @@ export default buildConfig({
         enabledLanguages: ["en-US", "zh-SG", "zh-CN", "en"],
       },
 
+      // Optional: Additional fields that can be referenced in prompts
+      promptFields: [
+        // Expose "url" field on images collection
+        {
+          name: 'url',
+          collections: ['images'],
+        },
+        // Expose custom async function that generates markdown summary of any document
+        {
+          name: 'markdown',
+          async getter(doc, {collection}) => docToMarkdown(collection, doc)
+        }
+      ],
+
       // Optional: Custom media upload handling, useful for multi-tenant setups
       mediaUpload: async (result, { request, collection }) => {
         return request.payload.create({

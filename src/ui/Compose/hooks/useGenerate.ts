@@ -153,12 +153,15 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
       submit({
         allowedEditorNodes: Array.from(editor?._nodes?.keys() || []),
-        doc,
+        doc: {
+          ...doc,
+          id: documentId,
+        },
         locale: localFromContext?.code,
         options,
       })
     },
-    [localFromContext?.code, instructionIdRef],
+    [localFromContext?.code, instructionIdRef, documentId],
   )
 
   const streamText = useCallback(
@@ -174,13 +177,16 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
       await complete('', {
         body: {
-          doc,
+          doc: {
+            ...doc,
+            id: documentId,
+          },
           locale: localFromContext?.code,
           options,
         },
       })
     },
-    [getData, localFromContext?.code, instructionIdRef, complete],
+    [getData, localFromContext?.code, instructionIdRef, complete, documentId],
   )
 
   const generateUpload = useCallback(async () => {
