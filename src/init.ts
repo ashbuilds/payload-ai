@@ -12,6 +12,10 @@ export const init = async (
   fieldSchemaPaths: Record<string, { label: string; relationTo?: string; type: string }>,
   pluginConfig: PluginConfig,
 ) => {
+  if (!pluginConfig.generatePromptOnInit) {
+    return
+  }
+
   if (pluginConfig.debugging) {
     payload.logger.info(`— AI Plugin: Initializing...`)
   }
@@ -35,7 +39,7 @@ export const init = async (
     const path = paths[i]
     const { type: fieldType, label: fieldLabel, relationTo } = fieldSchemaPaths[path]
     let instructions = allInstructions.find(
-      (entry) => entry['field-type'] === fieldType && entry['schema-path'] === path
+      (entry) => entry['schema-path'] === path
     )
 
     if (!instructions) {
@@ -50,10 +54,15 @@ export const init = async (
       if (pluginConfig.seedPrompts) seed = await pluginConfig.seedPrompts(seedOptions)
       if (seed === undefined) seed = await defaultSeedPrompts(seedOptions)
       // Field should be ignored
-      if (!seed) continue
+      if (!seed) {
+        if (pluginConfig.debugging) {
+          payload.logger.info(`— AI Plugin: No seed prompt for ${path}, ignoring...`)
+        }
+        continue
+      }
 
       let generatedPrompt = '{{ title }}'
-      if ("prompt" in seed && pluginConfig.generatePromptOnInit) {
+      if ("prompt" in seed) {
         // find the model that has the generateText function
         const models = getGenerationModels(pluginConfig)
         const model =
@@ -65,9 +74,6 @@ export const init = async (
           },
           model?.generateText,
         )
-        payload.logger.info(
-          `\nPrompt generated for "${fieldLabel}" field:\nprompt: ${generatedPrompt}\n\n`,
-        )
       }
 
       const modelsForId = getGenerationModels(pluginConfig)
@@ -76,17 +82,27 @@ export const init = async (
           ? modelsForId.find((a) => a.fields.includes(fieldType))
           : undefined
 
+      const data = {
+'model-id': modelForId?.id,
+        prompt: generatedPrompt,
+        ...seed.data, // allow to override data, but not the one below
+        'field-type': fieldType,
+        'relation-to': relationTo,
+        'schema-path': path,
+      }
+
+      payload.logger.info({
+        'model-id': data['model-id'],
+        prompt: generatedPrompt,
+        ...seed.data,
+      },
+        `Prompt seeded for "${path}" field`,
+      )
+
       instructions = await payload
         .create({
           collection: PLUGIN_INSTRUCTIONS_TABLE,
-          data: {
-            'model-id': modelForId?.id,
-            prompt: generatedPrompt,
-            ...seed.data, // allow to override data, but not the one below
-            'field-type': fieldType,
-            'relation-to': relationTo,
-            'schema-path': path,
-          },
+          data,
         })
         .catch((err) => {
           payload.logger.error(err, '— AI Plugin: Error creating Compose settings-')
@@ -99,6 +115,18 @@ export const init = async (
         }
       }
     } else {
+      if (instructions['field-type'] !== fieldType) {
+        payload.logger.warn(`— AI Plugin: Field type mismatch for ${path}! Was "${fieldType}", it is "${instructions['field-type']}" now. Updating...`)
+        await payload.update({
+          id: instructions.id,
+          collection: PLUGIN_INSTRUCTIONS_TABLE,
+          data: {
+            'field-type': fieldType,
+          },
+        })
+        instructions['field-type'] = fieldType
+      }
+
       fieldInstructionsMap[path] = {
         id: instructions.id,
         fieldType,

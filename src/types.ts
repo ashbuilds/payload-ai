@@ -149,13 +149,15 @@ export type SeedPromptOptions = {
   path: string
 }
 
+export type SeedPromptData = Omit<TypedCollection[typeof PLUGIN_INSTRUCTIONS_TABLE], 'createdAt' | 'id' | 'updatedAt'>
+
 export type SeedPromptResult = {
-  data?: TypedCollection[typeof PLUGIN_INSTRUCTIONS_TABLE]
+  data?: SeedPromptData
   prompt: string
   system: string
 } | {
-  data?: TypedCollection[typeof PLUGIN_INSTRUCTIONS_TABLE]
-} | false | undefined
+  data?: SeedPromptData
+} | false | undefined | void
 
 export type SeedPromptFunction = (options: SeedPromptOptions) => Promise<SeedPromptResult> | SeedPromptResult
 
