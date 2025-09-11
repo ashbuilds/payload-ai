@@ -25,24 +25,29 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
     },
     "./client": {
-      "import": "./dist/exports/client.js",
-      "types": "./dist/exports/client.d.ts",
-      "default": "./dist/exports/client.js"
+      "import": "./src/exports/client.ts",
+      "types": "./src/exports/client.ts",
+      "default": "./src/exports/client.ts"
     },
-    "./fields": {
-      "import": "./dist/exports/fields.js",
-      "types": "./dist/exports/fields.d.ts",
-      "default": "./dist/exports/fields.js"
+    "./rsc": {
+      "import": "./src/exports/rsc.ts",
+      "types": "./src/exports/rsc.ts",
+      "default": "./src/exports/rsc.ts"
     },
     "./types": {
-      "import": "./dist/exports/types.js",
-      "types": "./dist/exports/types.d.ts",
-      "default": "./dist/exports/types.js"
+      "import": "./src/exports/types.ts",
+      "types": "./src/exports/types.ts",
+      "default": "./src/exports/types.ts"
+    },
+    "./fields": {
+      "import": "./src/exports/fields.ts",
+      "types": "./src/exports/fields.ts",
+      "default": "./src/exports/fields.ts"
     }
   },
   "main": "./src/index.ts",
@@ -71,13 +76,14 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
-    "@payloadcms/db-mongodb": "^3.38.0",
-    "@payloadcms/db-postgres": "^3.38.0",
-    "@payloadcms/db-sqlite": "^3.38.0",
+    "@lexical/html": "0.35.0",
+    "@payloadcms/db-mongodb": "^3.55.1",
+    "@payloadcms/db-postgres": "^3.55.1",
+    "@payloadcms/db-sqlite": "^3.55.1",
     "@payloadcms/eslint-config": "3.9.0",
-    "@payloadcms/next": "^3.38.0",
-    "@payloadcms/richtext-lexical": "^3.38.0",
-    "@payloadcms/ui": "^3.38.0",
+    "@payloadcms/next": "^3.55.1",
+    "@payloadcms/richtext-lexical": "^3.55.1",
+    "@payloadcms/ui": "^3.55.1",
     "@playwright/test": "^1.52.0",
     "@swc-node/register": "1.10.9",
     "@swc/cli": "0.6.0",
@@ -89,10 +95,11 @@
     "eslint": "^9.23.0",
     "eslint-config-next": "15.4.4",
     "graphql": "^16.8.1",
+    "lexical": "0.35.0",
     "mongodb-memory-server": "10.1.4",
     "next": "15.4.4",
     "open": "^10.1.0",
-    "payload": "^3.38.0",
+    "payload": "^3.55.1",
     "prettier": "^3.4.2",
     "qs-esm": "7.0.2",
     "react": "19.1.0",
@@ -105,12 +112,12 @@
     "vitest": "^3.1.2"
   },
   "peerDependencies": {
-    "@lexical/html": "^0.28.0",
-    "@payloadcms/richtext-lexical": "^3.38.0",
-    "@payloadcms/translations": "^3.38.0",
-    "@payloadcms/ui": "^3.38.0",
-    "lexical": "^0.28.0",
-    "payload": "^3.38.0"
+    "@lexical/html": "^0.35.0",
+    "@payloadcms/richtext-lexical": "^3.55.1",
+    "@payloadcms/translations": "^3.55.1",
+    "@payloadcms/ui": "^3.55.1",
+    "lexical": "^0.35.0",
+    "payload": "^3.55.1"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0",
