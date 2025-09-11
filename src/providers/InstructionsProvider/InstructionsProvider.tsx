@@ -1,34 +1,14 @@
 'use client'
 
-import type { Field } from 'payload'
 
 import { useAuth, useConfig } from '@payloadcms/ui'
-import React, { createContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import type { SerializedPromptField } from '../../types.js'
 
 import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
+import { InstructionsContext } from './context.js'
 
-const initialContext: {
-  activeCollection?: string
-  enabledLanguages?: string[]
-  field?: Field
-  instructions: Record<string, any>
-  isConfigAllowed: boolean
-  path?: string
-  promptFields: SerializedPromptField[]
-  schemaPath?: unknown
-  setActiveCollection?: React.Dispatch<React.SetStateAction<string>>
-} = {
-  field: undefined,
-  instructions: {},
-  isConfigAllowed: true,
-  path: '',
-  promptFields: [],
-  schemaPath: '',
-}
-
-export const InstructionsContext = createContext(initialContext)
 
 export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [instructions, setInstructionsState] = useState({})
@@ -59,7 +39,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       .catch((err) => {
         console.error('InstructionsProvider:', err)
       })
-  }, [user])
+  }, [api, serverURL, user])
 
   return (
     <InstructionsContext.Provider

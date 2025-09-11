@@ -1,5 +1,8 @@
 'use client'
 
+import type { ClientField } from 'payload'
+
+import { useDocumentInfo } from '@payloadcms/ui'
 import React from 'react'
 
 import { FieldProvider } from '../../providers/FieldProvider/FieldProvider.js'
@@ -8,14 +11,20 @@ import { Compose } from '../../ui/Compose/Compose.js'
 
 type ComposeFieldProps = {
   [key: string]: any
-  field: { type: string }
+  field: ClientField
   path?: string
   schemaPath?: string
 }
 
 export const ComposeField = (props: ComposeFieldProps) => {
+  const { collectionSlug } = useDocumentInfo()
+
+  const finalSchemaPath =
+    props?.schemaPath ??
+    (collectionSlug ? `${collectionSlug}.${props?.path ?? ''}` : (props?.path ?? ''))
+
   const { id: instructionId, isConfigAllowed } = useInstructions({
-    schemaPath: props?.schemaPath,
+    schemaPath: finalSchemaPath,
   })
 
   return (
@@ -23,15 +32,15 @@ export const ComposeField = (props: ComposeFieldProps) => {
       context={{
         type: (props?.field as any).type,
         path: props?.path ?? '',
-        schemaPath: props?.schemaPath ?? '',
+        schemaPath: finalSchemaPath,
       }}
     >
       <Compose
         descriptionProps={{
           ...props,
-          field: props?.field as any,
+          field: props?.field,
           path: props?.path ?? '',
-          schemaPath: props?.schemaPath ?? '',
+          schemaPath: finalSchemaPath,
         }}
         instructionId={instructionId}
         isConfigAllowed={isConfigAllowed}

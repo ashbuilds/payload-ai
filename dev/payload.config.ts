@@ -34,7 +34,7 @@ const buildConfigWithMemoryDB = async () => {
   return buildConfig({
     admin: {
       dependencies: {
-        aiInstructionsProvider: {
+        InstructionsProvider: {
           type: 'component',
           path: '@ai-stack/payloadcms/client#InstructionsProvider',
         },

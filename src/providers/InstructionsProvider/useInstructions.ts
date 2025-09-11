@@ -1,9 +1,9 @@
+import { InstructionsContext } from '@ai-stack/payloadcms/client'
 import { useDocumentInfo } from '@payloadcms/ui'
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
-import { InstructionsContext } from './InstructionsProvider.js'
 
 export const useInstructions = (
   update: {
@@ -57,7 +57,7 @@ export const useInstructions = (
       const fieldKey = Object.keys(instructions).find((k) => k.endsWith(f))
       const fieldInfo = fieldKey ? instructions[fieldKey] : undefined
 
-      if (!fieldInfo) return
+      if (!fieldInfo) {return}
 
       if (fieldInfo.fieldType === 'upload') {
         suggestions.push(`${f}.url`)
@@ -78,7 +78,7 @@ export const useInstructions = (
     }, [])
 
     promptFields.forEach(({ name, collections }) => {
-      if (!activeCollection) return
+      if (!activeCollection) {return}
 
       if (!collections || collections.includes(activeCollection)) {
         suggestions.push(name)
