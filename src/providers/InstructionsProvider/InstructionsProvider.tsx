@@ -16,6 +16,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [activeCollection, setActiveCollection] = useState('')
   const [isConfigAllowed, setIsConfigAllowed] = useState(false)
   const [enabledLanguages, setEnabledLanguages] = useState<string[]>()
+  const [debugging, setDebugging] = useState(false)
   const { user } = useAuth()
 
   const { config } = useConfig()
@@ -34,6 +35,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
           setEnabledLanguages(data?.enabledLanguages)
           setInstructionsState(data?.fields)
           setPromptFields(data?.promptFields)
+          setDebugging(data?.debugging)
         })
       })
       .catch((err) => {
@@ -45,7 +47,9 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     <InstructionsContext.Provider
       value={{
         activeCollection,
+        debugging,
         enabledLanguages,
+        hasInstructions: Object.keys(instructions).length > 0,
         instructions,
         isConfigAllowed,
         promptFields,

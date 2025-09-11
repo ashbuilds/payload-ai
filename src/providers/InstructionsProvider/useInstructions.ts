@@ -5,6 +5,16 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
 
+
+const warnedOnceOnNoInstructionId = new Set<string>()
+const warnOnceOnMissingInstructions = (path: string) => {
+  if (!warnedOnceOnNoInstructionId.has(path)) {
+    warnedOnceOnNoInstructionId.add(path)
+    // eslint-disable-next-line no-console
+    console.info(`[AI Plugin] There are no AI instructions for this field: ${path}. Enable "generatePromptOnInit" option to enable them.`)
+  }
+}
+
 export const useInstructions = (
   update: {
     schemaPath?: unknown
@@ -12,7 +22,7 @@ export const useInstructions = (
 ) => {
   const context = useContext(InstructionsContext)
   const { collectionSlug } = useDocumentInfo()
-  const { activeCollection, instructions, promptFields, setActiveCollection } = context
+  const { activeCollection, hasInstructions, instructions, promptFields, setActiveCollection, debugging } = context
 
   const [schemaPath, setSchemaPath] = useState(update.schemaPath as string)
 
@@ -88,9 +98,15 @@ export const useInstructions = (
     return suggestions
   }, [groupedFields, activeCollection, instructions, promptFields])
 
+  const pathInstructions = instructions[schemaPath]
+
+  if (debugging && !pathInstructions && schemaPath && hasInstructions) {
+    warnOnceOnMissingInstructions(schemaPath)
+  }
+  
   return {
     ...context,
-    ...(instructions[schemaPath] || {}),
+    ...(pathInstructions || {}),
     promptEditorSuggestions,
   }
 }

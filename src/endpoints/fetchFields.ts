@@ -35,6 +35,7 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (
 
       return Response.json({
         ...options,
+        debugging: config.debugging,
         fields: fieldMap,
         isConfigAllowed,
         promptFields: promptFields.map(({getter: _getter, ...field}): SerializedPromptField => {

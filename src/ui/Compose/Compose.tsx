@@ -224,33 +224,25 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   }, [popupRender, isProcessing, isLoading])
 
   return (
-    <React.Fragment>
-      <label
-        className={`${styles.actions}`}
-        onClick={(e) => e.preventDefault()}
-        ref={actionsRef}
-        role="presentation"
-      >
-        <DocumentDrawer
-          onSave={() => {
-            closeDrawer()
-          }}
-        />
-        {memoizedPopup}
-        <ActiveComponent isLoading={isProcessing || isLoading} stop={stop} />
-        <UndoRedoActions
-          onChange={(val) => {
-            setValue(val)
-            setIfValueIsLexicalState(val)
-          }}
-        />
-      </label>
-      {/*Render the incoming description field*/}
-      {descriptionProps ? (
-        <div>
-          <FieldDescription {...descriptionProps} />
-        </div>
-      ) : null}
-    </React.Fragment>
+    <label
+      className={`${styles.actions}`}
+      onClick={(e) => e.preventDefault()}
+      ref={actionsRef}
+      role="presentation"
+    >
+      <DocumentDrawer
+        onSave={() => {
+          closeDrawer()
+        }}
+      />
+      {memoizedPopup}
+      <ActiveComponent isLoading={isProcessing || isLoading} stop={stop} />
+      <UndoRedoActions
+        onChange={(val) => {
+          setValue(val)
+          setIfValueIsLexicalState(val)
+        }}
+      />
+    </label>
   )
 }
