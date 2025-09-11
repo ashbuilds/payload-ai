@@ -1,6 +1,6 @@
 import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
+import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
@@ -91,6 +91,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   } = useObject({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error: any) => {
+      toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating object:', error)
     },
     onFinish: (result) => {
@@ -109,8 +110,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       return
     }
 
-    requestAnimationFrame(() => {
-      const validateObject = memoizedSchema?.validate?.(object)
+    requestAnimationFrame(async () => {
+      // eslint-disable-next-line @typescript-eslint/await-thenable
+      const validateObject = await memoizedSchema?.validate?.(object)
       if (validateObject?.success) {
         setSafeLexicalState(object, editor)
       }
@@ -125,6 +127,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   } = useCompletion({
     api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error: any) => {
+      toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating text:', error)
     },
     onFinish: (prompt, result) => {
@@ -157,12 +160,15 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
       submit({
         allowedEditorNodes: Array.from(editor?._nodes?.keys() || []),
-        doc,
+        doc: {
+          ...doc,
+          id: documentId,
+        },
         locale: localFromContext?.code,
         options,
       })
     },
-    [localFromContext?.code, instructionIdRef],
+    [localFromContext?.code, instructionIdRef, documentId],
   )
 
   const streamText = useCallback(
@@ -178,13 +184,16 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
       await complete('', {
         body: {
-          doc,
+          doc: {
+            ...doc,
+            id: documentId,
+          },
           locale: localFromContext?.code,
           options,
         },
       })
     },
-    [getData, localFromContext?.code, instructionIdRef, complete],
+    [getData, localFromContext?.code, instructionIdRef, complete, documentId],
   )
 
   const generateUpload = useCallback(async () => {
@@ -225,10 +234,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return uploadResponse
       })
       .catch((error) => {
-        console.warn(
+        toast.error(`Failed to generate: ${error.message}`)
+        console.error(
           'Error generating or setting your upload, please set it manually if its saved in your media files.',
+          error
         )
-        console.error(error)
       })
   }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
 

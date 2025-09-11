@@ -5,6 +5,8 @@ import type { Field } from 'payload'
 import { useAuth, useConfig } from '@payloadcms/ui'
 import React, { createContext, useEffect, useState } from 'react'
 
+import type { SerializedPromptField } from '../../types.js'
+
 import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
 
 const initialContext: {
@@ -14,6 +16,7 @@ const initialContext: {
   instructions: Record<string, any>
   isConfigAllowed: boolean
   path?: string
+  promptFields: SerializedPromptField[]
   schemaPath?: unknown
   setActiveCollection?: React.Dispatch<React.SetStateAction<string>>
 } = {
@@ -21,6 +24,7 @@ const initialContext: {
   instructions: {},
   isConfigAllowed: true,
   path: '',
+  promptFields: [],
   schemaPath: '',
 }
 
@@ -28,6 +32,7 @@ export const InstructionsContext = createContext(initialContext)
 
 export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [instructions, setInstructionsState] = useState({})
+  const [promptFields, setPromptFields] = useState<SerializedPromptField[]>([])
   const [activeCollection, setActiveCollection] = useState('')
   const [isConfigAllowed, setIsConfigAllowed] = useState(false)
   const [enabledLanguages, setEnabledLanguages] = useState<string[]>()
@@ -48,6 +53,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
           setIsConfigAllowed(data?.isConfigAllowed)
           setEnabledLanguages(data?.enabledLanguages)
           setInstructionsState(data?.fields)
+          setPromptFields(data?.promptFields)
         })
       })
       .catch((err) => {
@@ -62,6 +68,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         enabledLanguages,
         instructions,
         isConfigAllowed,
+        promptFields,
         setActiveCollection,
       }}
     >

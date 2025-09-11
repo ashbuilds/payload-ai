@@ -1,18 +1,18 @@
 import { jsonSchema, streamObject } from 'ai'
 
+import {extractPromptAttachments} from "../../../utilities/extractPromptAttachments.js";
 import { openai } from './openai.js'
+
 
 export const generateRichText = (text: string, options: any = {}) => {
   console.log("options.layout ", options.layout)
   const streamResult = streamObject({
-    maxTokens: options.maxTokens || 5000,
-    model: openai(options.model, {
-      structuredOutputs: true,
-    }),
+    maxOutputTokens: options.maxTokens || 5000,
+    model: openai(options.model),
     onError: (error) => {
       console.error(`generateRichText: `, error)
     },
-    prompt: text,
+    prompt: options.extractAttachments ? extractPromptAttachments(text) : text,
     schema: jsonSchema(options.editorSchema),
     system: `${options.system}
 
@@ -32,6 +32,7 @@ ADDITIONAL GUIDELINES:
 - Maintain a consistent tone and style throughout the content.
 - Use clear and concise language appropriate for the target audience.
 `,
+    temperature: options.temperature || 0.7,
   })
   return streamResult.toTextStreamResponse()
 }
