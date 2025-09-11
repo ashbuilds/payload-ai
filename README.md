@@ -260,3 +260,68 @@ Innovators: welcome! We're always excited to expand our community and hear fresh
 Feel free to create a pull request with your ideas, improvements, or bug fixes. No contribution is too small, and every bit helps us grow!
 
 Join the conversation on Payload's [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) and let’s build something amazing together! 🚀✨
+
+### Local development
+
+This repo includes a minimal Payload app under `dev` to iterate on the plugin quickly.
+
+Prerequisites
+- Node.js (see `.nvmrc`) and pnpm
+- A database connection string for `DATABASE_URI` (Postgres or Mongo)
+- Optional: AI provider keys to test features (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`)
+
+1) Install dependencies
+```bash
+pnpm install
+```
+
+2) Set up the dev app environment
+```bash
+cp dev/.env.example dev/.env
+# Edit dev/.env:
+# - Set DATABASE_URI to your DB connection string
+# - Set PAYLOAD_SECRET to a strong random string
+# - Optionally set AI provider keys to exercise features
+```
+
+3) Start the dev app (admin available at http://localhost:3000)
+```bash
+pnpm dev
+```
+
+If you run into admin import-map issues, regenerate it:
+```bash
+pnpm generate:importmap
+```
+Optionally regenerate Payload types:
+```bash
+pnpm generate:types
+```
+
+4) Develop
+- Plugin source lives in `src/`; the dev app imports it locally.
+- Edit files in `src/**` and refresh the dev app to validate changes.
+
+5) Tests, linting, formatting
+```bash
+pnpm test           # runs Vitest + Playwright (see dev/int.spec.ts, dev/e2e.spec.ts)
+pnpm lint           # ESLint
+pnpm prettier --write .   # Prettier (format all files)
+```
+
+6) Build the plugin
+```bash
+pnpm build
+```
+
+7) Try the built package in another Payload project (optional)
+```bash
+pnpm pack  # creates a tarball in the repo root
+# then in your other project:
+pnpm add /path/to/ai-plugin-*.tgz
+```
+
+Project structure quick reference
+- `src/` — plugin source code
+- `dev/` — minimal Payload app wired to this plugin for local testing
+- Tests — see `dev/int.spec.ts` and `dev/e2e.spec.ts` for integration and e2e tests
