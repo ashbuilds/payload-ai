@@ -9,15 +9,19 @@ import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
 
 const initialContext: {
   activeCollection?: string
+  debugging?: boolean
   enabledLanguages?: string[]
   field?: Field
+  hasInstructions: boolean
   instructions: Record<string, any>
   isConfigAllowed: boolean
   path?: string
   schemaPath?: unknown
   setActiveCollection?: (val: unknown) => void
 } = {
+  debugging: false,
   field: undefined,
+  hasInstructions: false,
   instructions: undefined,
   isConfigAllowed: true,
   path: '',
@@ -31,6 +35,7 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
   const [activeCollection, setActiveCollection] = useState('')
   const [isConfigAllowed, setIsConfigAllowed] = useState(false)
   const [enabledLanguages, setEnabledLanguages] = useState<string[]>()
+  const [debugging, setDebugging] = useState(false)
   const { user } = useAuth()
 
   const { config } = useConfig()
@@ -48,6 +53,7 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
           setIsConfigAllowed(data?.isConfigAllowed)
           setEnabledLanguages(data?.enabledLanguages)
           setInstructionsState(data?.fields)
+          setDebugging(data?.debugging)
         })
       })
       .catch((err) => {
@@ -59,7 +65,9 @@ export const InstructionsProvider: React.FC = ({ children }: { children: React.R
     <InstructionsContext.Provider
       value={{
         activeCollection,
+        debugging,
         enabledLanguages,
+        hasInstructions: Object.keys(instructions).length > 0,
         instructions,
         isConfigAllowed,
         setActiveCollection,

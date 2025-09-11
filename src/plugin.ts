@@ -175,11 +175,10 @@ const payloadAiPlugin =
             payload.logger.error(error, `— AI Plugin: Initialization Error`)
           })
           .finally(() => {
-            setTimeout(() => {
-              payload.logger.info(securityMessage)
-            }, 1000)
-            
             if (!pluginConfig.disableSponsorMessage) {
+              setTimeout(() => {
+                payload.logger.info(securityMessage)
+              }, 1000)
               setTimeout(() => {
                 payload.logger.info(sponsorMessage)
               }, 3000)

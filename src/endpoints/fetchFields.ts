@@ -35,6 +35,7 @@ export const fetchFields: (access: PluginConfigAccess, options?: PluginOptions) 
 
       return Response.json({
         ...options,
+        debugging: config.debugging,
         fields: fieldMap,
         isConfigAllowed,
       })

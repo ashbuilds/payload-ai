@@ -55,18 +55,21 @@ const defaultAdminConfig = {
 
 export const instructionsCollection = (
   pluginConfig: PluginConfig,
-  options?: Partial<CollectionConfig>,
 ) =>
   <CollectionConfig>{
+    labels: {
+      plural: 'Compose Settings',
+      singular: 'Compose Setting',
+    },
+    ...pluginConfig.overrideInstructions,
     slug: PLUGIN_INSTRUCTIONS_TABLE,
     access: {
       ...defaultAccessConfig,
-      ...options?.access,
+      ...pluginConfig.overrideInstructions?.access,
     },
     admin: {
       ...defaultAdminConfig,
-      ...options?.admin,
-      group: 'Plugins',
+      ...pluginConfig.overrideInstructions?.admin,
     },
     fields: [
       {
@@ -245,8 +248,4 @@ informative and accurate but also captivating and beautifully structured.`,
       },
       ...groupSettings(pluginConfig),
     ],
-    labels: {
-      plural: 'Compose Settings',
-      singular: 'Compose Setting',
-    },
   }
