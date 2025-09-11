@@ -2,14 +2,14 @@ import type { LexicalNodeSchema } from '../schemas/lexicalJsonSchema.js'
 
 import { isObjectSchema } from './isObjectSchema.js'
 
-export function filterEditorSchemaByNodes(schema: LexicalNodeSchema, allowedNodes) {
+export function filterEditorSchemaByNodes(schema: LexicalNodeSchema, allowedNodes: string[]) {
   const allowedTypes = new Set(allowedNodes)
 
-  const filteredDefinitions = {}
+  const filteredDefinitions: Record<string, any> = {}
 
   // First pass: collect definitions whose "type.enum" includes an allowed type
-  for (const [key, def] of Object.entries(schema.definitions)) {
-    if(isObjectSchema(def)) {
+  for (const [key, def] of Object.entries(schema.definitions ?? {})) {
+    if (isObjectSchema(def)) {
       const typeEnum = def.properties?.type?.enum
       if (typeEnum && typeEnum.some((t) => allowedTypes.has(t))) {
         filteredDefinitions[key] = JSON.parse(JSON.stringify(def)) // Deep copy to safely mutate
@@ -18,8 +18,10 @@ export function filterEditorSchemaByNodes(schema: LexicalNodeSchema, allowedNode
   }
 
   // Helper to check if a $ref points to an allowed definition
-  const isAllowedRef = (ref) => {
-    if (typeof ref !== 'string') return false
+  const isAllowedRef = (ref: string) => {
+    if (typeof ref !== 'string') {
+      return false
+    }
     const defName = ref.replace('#/definitions/', '')
     return defName in filteredDefinitions
   }

@@ -1,9 +1,9 @@
+import { InstructionsContext } from '@ai-stack/payloadcms/client'
 import { useDocumentInfo } from '@payloadcms/ui'
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
-import { InstructionsContext } from './InstructionsProvider.js'
 
 export const useInstructions = (
   update: {
@@ -18,13 +18,17 @@ export const useInstructions = (
 
   useEffect(() => {
     if (update.schemaPath !== schemaPath) {
-      setSchemaPath(update.schemaPath as string)
+      setSchemaPath((update.schemaPath as string) ?? '')
     }
   }, [update.schemaPath])
 
   useEffect(() => {
-    if (activeCollection !== collectionSlug && collectionSlug !== PLUGIN_INSTRUCTIONS_TABLE) {
-      setActiveCollection(collectionSlug)
+    if (
+      activeCollection !== collectionSlug &&
+      collectionSlug !== PLUGIN_INSTRUCTIONS_TABLE &&
+      typeof setActiveCollection === 'function'
+    ) {
+      setActiveCollection(collectionSlug ?? '')
     }
   }, [activeCollection, collectionSlug, setActiveCollection])
 
@@ -34,7 +38,9 @@ export const useInstructions = (
     for (const fullKey of Object.keys(instructions)) {
       const [collection, ...pathParts] = fullKey.split('.')
       const path = pathParts.join('.')
-      if (!result[collection]) result[collection] = []
+      if (!result[collection]) {
+        result[collection] = []
+      }
       result[collection].push(path)
     }
 
@@ -43,16 +49,15 @@ export const useInstructions = (
 
   // Suggestions for prompt editor
   const promptEditorSuggestions = useMemo(() => {
-    const activeFields = groupedFields[activeCollection] || []
+    const activeFields = groupedFields[activeCollection as string] || []
 
-    const suggestions = []
-    
+    const suggestions: string[] = []
+
     activeFields.forEach((f) => {
       const fieldKey = Object.keys(instructions).find((k) => k.endsWith(f))
-      const fieldInfo = instructions[fieldKey]
+      const fieldInfo = fieldKey ? instructions[fieldKey] : undefined
 
-
-      if (!fieldInfo) return
+      if (!fieldInfo) {return}
 
       if (fieldInfo.fieldType === 'upload') {
         suggestions.push(`${f}.url`)
@@ -60,7 +65,7 @@ export const useInstructions = (
       }
 
       const helpers = handlebarsHelpers.filter(
-        (h) => handlebarsHelpersMap[h]?.field === fieldInfo.fieldType,
+        (h) => (handlebarsHelpersMap as Record<string, any>)[h]?.field === fieldInfo.fieldType,
       )
 
       if (helpers.length) {
@@ -72,7 +77,9 @@ export const useInstructions = (
       }
     }, [])
 
-    promptFields.forEach(({name, collections}) => {
+    promptFields.forEach(({ name, collections }) => {
+      if (!activeCollection) {return}
+
       if (!collections || collections.includes(activeCollection)) {
         suggestions.push(name)
       }

@@ -1,16 +1,17 @@
 import type { Field, File } from 'payload'
 
 import type { GenerationConfig } from '../../../types.js'
+import type { Voice } from './voices.js'
 
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateVoice } from './generateVoice.js'
 import { getAllVoices } from './voices.js'
 
-const { voices = [] } = await getAllVoices()
+const { voices = [] }: { voices: Voice[] } = await getAllVoices()
 
 const voiceOptions = voices.map((voice) => {
   return {
-    label: voice.name,
+    label: voice.name ?? '',
     value: voice.voice_id,
     ...voice,
   }
@@ -18,7 +19,7 @@ const voiceOptions = voices.map((voice) => {
 
 const fieldVoiceOptions = voiceOptions.map((option) => {
   return {
-    label: option.name,
+    label: option.name ?? '',
     value: option.voice_id,
   }
 })
@@ -107,6 +108,9 @@ export const ElevenLabsConfig: GenerationConfig = {
       fields: ['upload'],
       handler: async (text: string, options) => {
         const voiceData = await generateVoice(text, options)
+        if (!voiceData || !voiceData.buffer) {
+          throw new Error('Voice data missing')
+        }
         return {
           data: {
             alt: 'voice over',

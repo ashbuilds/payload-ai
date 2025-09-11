@@ -114,7 +114,17 @@ INSTRUCTIONS:
   },
 ]
 
-export const defaultSeedPrompts: SeedPromptFunction = ({ fieldLabel, fieldSchemaPaths, fieldType, path }) => {
+export const defaultSeedPrompts: SeedPromptFunction = ({
+  fieldLabel,
+  fieldSchemaPaths,
+  fieldType,
+  path,
+}: {
+  fieldLabel: string
+  fieldSchemaPaths: any
+  fieldType: string
+  path: string
+}) => {
   return {
     prompt: `field-type: ${fieldType}
 field-name: ${fieldLabel}
@@ -212,7 +222,7 @@ For upload:
   field-type: upload
   field-name: Voice
   schema-path: posts.upload
-  Generated prompt: {{ title }} {{ toHTML [provide schema-path for richText] }}
+  Generated prompt: {{ title }} {{ toHTML schema-path here... }}
 
 
 Remember to adapt the prompts based on the specific schema-path provided, considering the context and purpose of the field within the CMS structure. The prompts should directly instruct the AI model on what content to generate or describe, without assuming a user perspective.

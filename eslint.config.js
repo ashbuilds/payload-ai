@@ -1,4 +1,6 @@
-import payloadEsLintConfig from './eslint-config/index.mjs'
+// @ts-check
+
+import payloadEsLintConfig from '@payloadcms/eslint-config'
 
 export const defaultESLintIgnores = [
   '**/.temp',
@@ -8,7 +10,7 @@ export const defaultESLintIgnores = [
   '**/.pnp.*',
   '**/.svn',
   '**/playwright.config.ts',
-  '**/jest.config.js',
+  '**/vitest.config.js',
   '**/tsconfig.tsbuildinfo',
   '**/README.md',
   '**/eslint.config.js',
@@ -20,33 +22,25 @@ export const defaultESLintIgnores = [
   '**/temp/',
 ]
 
-/** @typedef {import('eslint').Linter.FlatConfig} */
-let FlatConfig
-
-export const rootParserOptions = {
-  EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
-  EXPERIMENTAL_useProjectService: {
-    allowDefaultProjectForFiles: ['./src/*.ts', './src/*.tsx'],
-  },
-  sourceType: 'module',
-  ecmaVersion: 'latest',
-}
-
-/** @type {FlatConfig[]} */
-export const rootEslintConfig = [
+export default [
   ...payloadEsLintConfig,
   {
-    ignores: [...defaultESLintIgnores],
+    rules: {
+      'no-restricted-exports': 'off',
+    },
   },
   {
     languageOptions: {
       parserOptions: {
-        project: './tsconfig.json',
-        tsconfigDirName: import.meta.dirname,
-        ...rootParserOptions,
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        projectService: {
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 40,
+          allowDefaultProject: ['scripts/*.ts', '*.js', '*.mjs', '*.spec.ts', '*.d.ts'],
+        },
+        // projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
   },
 ]
-
-export default rootEslintConfig

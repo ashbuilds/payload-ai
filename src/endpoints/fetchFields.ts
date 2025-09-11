@@ -25,7 +25,7 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (
         }
       }
 
-      const fieldMap = {}
+      const fieldMap: Record<string, { fieldType: any; id: any }> = {}
       docs.forEach((doc) => {
         fieldMap[doc['schema-path']] = {
           id: doc.id,

@@ -43,7 +43,8 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
       // Custom fields don't fully adhere to the Payload schema, making it difficult to
       // determine which components support injecting ComposeField as a Description.
       if (field.admin?.components?.Field || field.admin?.components?.Description) {
-        // TODO: Do something?
+        // TODO: If a field already provides its own Description, we still inject our ComposeField
+        // by overriding Description. If you need both, consider composing your own wrapper.
         customField = {}
       }
 
@@ -53,7 +54,12 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
           ...field.admin,
           components: {
             ...(field.admin?.components || {}),
-            Description: '@ai-stack/payloadcms/fields#ComposeField',
+            Description: {
+              clientProps: {
+                schemaPath: currentSchemaPath,
+              },
+              path: '@ai-stack/payloadcms/fields#ComposeField',
+            },
             ...customField,
           },
         },
@@ -73,7 +79,8 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
         tabs: field.tabs.map((tab: any) => {
           return {
             ...tab,
-            fields: tab.fields.map((subField: any) => updateField(subField, tab.name)),
+            // Tabs are a UI construct and should not add to the schema path
+            fields: (tab.fields || []).map((subField: any) => updateField(subField, parentPath)),
           }
         }),
       }

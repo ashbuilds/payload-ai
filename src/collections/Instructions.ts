@@ -5,7 +5,7 @@ import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
 const groupSettings = (pluginConfig: PluginConfig) =>
-  getGenerationModels(pluginConfig).reduce((fields, model) => {
+  (getGenerationModels(pluginConfig) ?? []).reduce((fields, model) => {
     if (model.settings) {
       fields.push(model.settings)
     }
@@ -13,7 +13,7 @@ const groupSettings = (pluginConfig: PluginConfig) =>
   }, [] as GroupField[])
 
 const modelOptions = (pluginConfig: PluginConfig) =>
-  getGenerationModels(pluginConfig).map((model) => {
+  (getGenerationModels(pluginConfig) ?? []).map((model) => {
     return {
       fields: model.fields,
       label: model.name,
@@ -22,25 +22,25 @@ const modelOptions = (pluginConfig: PluginConfig) =>
   })
 
 const defaultAccessConfig = {
-  create: ({ req }) => {
+  create: ({ req }: { req: { user?: any } }) => {
     if (!req.user) {
       return false
     }
     return true
   },
-  delete: ({ req }) => {
+  delete: ({ req }: { req: { user?: any } }) => {
     if (!req.user) {
       return false
     }
     return true
   },
-  read: ({ req }) => {
+  read: ({ req }: { req: { user?: any } }) => {
     if (!req.user) {
       return false
     }
     return true
   },
-  update: ({ req }) => {
+  update: ({ req }: { req: { user?: any } }) => {
     if (!req.user) {
       return false
     }

@@ -10,14 +10,14 @@ import { Compose, Proofread, Rephrase } from './items.js'
 import { menuItemsMap } from './itemsMap.js'
 import styles from './menu.module.scss'
 
-const getActiveComponent = (ac) => {
+const getActiveComponent = (ac: ActionMenuItems) => {
   switch (ac) {
+    case 'Compose':
+      return Compose
     case 'Proofread':
       return Proofread
     case 'Rephrase':
       return Rephrase
-    case 'Compose':
-      return Compose
     default:
       return Rephrase
   }
@@ -25,7 +25,7 @@ const getActiveComponent = (ac) => {
 
 export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
   const { type: fieldType, path: pathFromContext } = useFieldProps()
-  const field = useField({ path: pathFromContext })
+  const field = useField({ path: pathFromContext ?? '' })
   const [activeComponent, setActiveComponent] = useState<ActionMenuItems>('Rephrase')
 
   const { initialValue, value } = field
@@ -36,7 +36,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
       return
     }
 
-    if (menuItemsMap.some((i) => i.excludedFor?.includes(fieldType))) {
+    if (menuItemsMap.some((i) => i.excludedFor?.includes(fieldType ?? ''))) {
       setActiveComponent('Compose')
       return
     }
@@ -49,13 +49,13 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
   }, [initialValue, value, fieldType])
 
   const MemoizedActiveComponent = useMemo(() => {
-    return ({ isLoading, stop }) => {
+    return ({ isLoading, stop }: { isLoading: boolean; stop: () => void }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
-      const activeItem = menuItemsMap.find((i) => i.name === activeComponent)
+      const activeItem = menuItemsMap.find((i) => i.name === activeComponent)!
       return (
         <ActiveComponent
           hideIcon
-          onClick={(data) => {
+          onClick={(data: unknown) => {
             if (!isLoading) {
               const trigger = menuEvents[`on${activeComponent}`]
               if (typeof trigger === 'function') {
@@ -73,19 +73,21 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
         </ActiveComponent>
       )
     }
-  }, [activeComponent])
+  }, [activeComponent, menuEvents])
 
   const filteredMenuItems = useMemo(
     () =>
       menuItemsMap.filter((i) => {
-        if (i.name === 'Settings' && !options.isConfigAllowed) return false // Disable settings if a user role is not permitted
-        return i.name !== activeComponent && !i.excludedFor?.includes(fieldType)
+        if (i.name === 'Settings' && !options.isConfigAllowed) {
+          return false
+        } // Disable settings if a user role is not permitted
+        return i.name !== activeComponent && !i.excludedFor?.includes(fieldType ?? '')
       }),
     [activeComponent, fieldType, options.isConfigAllowed],
   )
 
   const MemoizedMenu = useMemo(() => {
-    return ({ isLoading, onClose }) => (
+    return ({ isLoading, onClose }: { isLoading: boolean; onClose: () => void }) => (
       <div className={styles.menu}>
         {filteredMenuItems.map((i) => {
           const Action = i.component
@@ -93,7 +95,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
             <Action
               disabled={isLoading}
               key={i.name}
-              onClick={(data) => {
+              onClick={(data: unknown) => {
                 if (i.name !== 'Settings') {
                   setActiveComponent(i.name)
                 }
@@ -108,7 +110,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
         })}
       </div>
     )
-  }, [filteredMenuItems])
+  }, [filteredMenuItems, menuEvents])
 
   return {
     ActiveComponent: MemoizedActiveComponent,

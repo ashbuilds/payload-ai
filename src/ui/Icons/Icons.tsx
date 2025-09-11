@@ -1,9 +1,15 @@
 import React from 'react'
 
-import LottieAnimation from './LottieAnimation.js'
 import styles from './icons.module.css'
+import LottieAnimation from './LottieAnimation.js'
 
-export const PluginIcon = ({ color = 'white', isLoading }) => {
+export const PluginIcon = ({
+  color = 'white',
+  isLoading,
+}: {
+  color?: string
+  isLoading?: boolean
+}) => {
   return (
     <span className={styles.actions_icon}>
       <LottieAnimation isLoading={isLoading} />

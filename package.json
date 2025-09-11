@@ -6,11 +6,13 @@
   "repository": "https://github.com/ashbuilds/payload-ai",
   "license": "MIT",
   "author": "ashbuilds",
+  "type": "module",
   "keywords": [
-    "plugin",
-    "text-to-speech",
+    "payload",
     "ai",
+    "plugin",
     "text-generation",
+    "text-to-speech",
     "text-to-image",
     "content-generation",
     "ai-writing",
@@ -18,104 +20,121 @@
     "smart-generation",
     "ai-translate",
     "ai-writing-tool",
-    "gpt-image-1"
+    "gpt-image-1",
+    "payload-plugin"
   ],
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
     },
     "./client": {
-      "import": "./dist/exports/client.js",
-      "types": "./dist/exports/client.d.ts",
-      "default": "./dist/exports/client.js"
-    },
-    "./fields": {
-      "import": "./dist/exports/fields.js",
-      "types": "./dist/exports/fields.d.ts",
-      "default": "./dist/exports/fields.js"
+      "import": "./src/exports/client.ts",
+      "types": "./src/exports/client.ts",
+      "default": "./src/exports/client.ts"
     },
     "./types": {
-      "import": "./dist/exports/types.js",
-      "types": "./dist/exports/types.d.ts",
-      "default": "./dist/exports/types.js"
+      "import": "./src/exports/types.ts",
+      "types": "./src/exports/types.ts",
+      "default": "./src/exports/types.ts"
+    },
+    "./fields": {
+      "import": "./src/exports/fields.ts",
+      "types": "./src/exports/fields.ts",
+      "default": "./src/exports/fields.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "client": [
+        "src/exports/client.ts"
+      ],
+      "types": [
+        "src/exports/types.ts"
+      ],
+      "fields": [
+        "src/exports/fields.ts"
+      ],
+      "*": [
+        "src/*"
+      ]
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "pnpm build:types && pnpm build:swc",
-    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --copy-files",
+    "build": "pnpm copyfiles && pnpm build:types && pnpm build:swc",
     "build:dev": "pnpm build --watch",
-    "build:types": "tsc --emitDeclarationOnly",
-    "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
-    "lint": "eslint src",
-    "lint:fix": "eslint --fix src",
-    "prepublishOnly": "pnpm clean && pnpm build"
-  },
-  "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.15",
-    "@ai-sdk/openai": "^2.0.28",
-    "@ai-sdk/provider-utils": "^3.0.8",
-    "@ai-sdk/react": "^2.0.39",
-    "@ai-sdk/ui-utils": "^1.2.10",
-    "@anthropic-ai/sdk": "^0.62.0",
-    "ai": "^5.0.39",
-    "ajv": "^8.17.1",
-    "elevenlabs": "^0.8.2",
-    "get-input-selection": "^1.1.4",
-    "handlebars": "4.7.8",
-    "handlebars-async-helpers": "^1.0.6",
-    "locale-codes": "^1.3.1",
-    "lodash.isequal": "^4.5.0",
-    "openai": "^5.20.1",
-    "react-mentions": "^4.4.10",
-    "scroll-into-view-if-needed": "^3.1.0",
-    "textarea-caret": "^3.0.2"
+    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "build:types": "tsc --outDir dist --rootDir ./src",
+    "clean": "rimraf {dist,*.tsbuildinfo}",
+    "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
+    "dev": "next dev dev --turbo",
+    "dev:generate-importmap": "pnpm dev:payload generate:importmap",
+    "dev:generate-types": "pnpm dev:payload generate:types",
+    "dev:payload": "cross-env PAYLOAD_CONFIG_PATH=./dev/payload.config.ts payload",
+    "generate:importmap": "pnpm dev:generate-importmap",
+    "generate:types": "pnpm dev:generate-types",
+    "lint": "eslint",
+    "lint:fix": "eslint ./src --fix",
+    "prepare": "pnpm clean && pnpm build",
+    "prepublishOnly": "pnpm clean && pnpm build",
+    "test": "pnpm test:int && pnpm test:e2e",
+    "test:e2e": "playwright test",
+    "test:int": "vitest"
   },
   "devDependencies": {
-    "@eslint/compat": "^1.1.1",
-    "@eslint/js": "^9.9.1",
-    "@swc/cli": ">=0.4.0",
-    "@types/dot-object": "2.1.6",
-    "@types/handlebars": "^4.1.0",
-    "@types/json-schema": "^7.0.15",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@types/react-mentions": "^4.4.1",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "copyfiles": "^2.4.1",
-    "eslint": "^9.9.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-import-x": "^3.1.0",
-    "eslint-plugin-jsx-a11y": "^6.9.0",
-    "eslint-plugin-perfectionist": "^2.11.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "eslint-plugin-react": "^7.35.0",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "eslint-plugin-regexp": "^2.6.0",
-    "globals": "^15.9.0",
-    "prettier": "^3.3.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^7.18.0"
+    "@eslint/eslintrc": "^3.2.0",
+    "@lexical/html": "0.35.0",
+    "@payloadcms/db-mongodb": "^3.55.1",
+    "@payloadcms/db-postgres": "^3.55.1",
+    "@payloadcms/db-sqlite": "^3.55.1",
+    "@payloadcms/eslint-config": "3.9.0",
+    "@payloadcms/next": "^3.55.1",
+    "@payloadcms/richtext-lexical": "^3.55.1",
+    "@payloadcms/ui": "^3.55.1",
+    "@playwright/test": "^1.52.0",
+    "@swc-node/register": "1.10.9",
+    "@swc/cli": "0.6.0",
+    "@types/node": "^22.5.4",
+    "@types/react": "19.1.8",
+    "@types/react-dom": "19.1.6",
+    "copyfiles": "2.4.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.23.0",
+    "eslint-config-next": "15.4.4",
+    "graphql": "^16.8.1",
+    "lexical": "0.35.0",
+    "mongodb-memory-server": "10.1.4",
+    "next": "15.4.4",
+    "open": "^10.1.0",
+    "payload": "^3.55.1",
+    "prettier": "^3.4.2",
+    "qs-esm": "7.0.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "rimraf": "3.0.2",
+    "sharp": "0.34.2",
+    "sort-package-json": "^2.10.0",
+    "typescript": "5.7.3",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.1.2"
   },
   "peerDependencies": {
-    "@lexical/html": "^0.28.0",
-    "@payloadcms/richtext-lexical": "^3.38.0",
-    "@payloadcms/translations": "^3.38.0",
-    "@payloadcms/ui": "^3.38.0",
-    "lexical": "^0.28.0",
-    "payload": "^3.38.0"
+    "@lexical/html": "^0.35.0",
+    "@payloadcms/richtext-lexical": "^3.55.1",
+    "@payloadcms/translations": "^3.55.1",
+    "@payloadcms/ui": "^3.55.1",
+    "lexical": "^0.35.0",
+    "payload": "^3.55.1"
+  },
+  "engines": {
+    "node": "^18.20.2 || >=20.9.0",
+    "pnpm": "^9 || ^10"
   },
   "publishConfig": {
     "main": "./dist/index.js",
@@ -145,5 +164,35 @@
         "default": "./dist/exports/client.js"
       }
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "esbuild",
+      "mongodb-memory-server",
+      "sharp"
+    ]
+  },
+  "registry": "https://registry.npmjs.org/",
+  "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.15",
+    "@ai-sdk/openai": "^2.0.28",
+    "@ai-sdk/provider-utils": "^3.0.8",
+    "@ai-sdk/react": "^2.0.39",
+    "@ai-sdk/ui-utils": "^1.2.10",
+    "@anthropic-ai/sdk": "^0.62.0",
+    "ai": "^5.0.39",
+    "ajv": "^8.17.1",
+    "elevenlabs": "^0.8.2",
+    "get-input-selection": "^1.1.4",
+    "handlebars": "4.7.8",
+    "handlebars-async-helpers": "^1.0.6",
+    "locale-codes": "^1.3.1",
+    "lodash.isequal": "^4.5.0",
+    "openai": "^5.20.1",
+    "react-mentions": "^4.4.10",
+    "scroll-into-view-if-needed": "^3.1.0",
+    "textarea-caret": "^3.0.2",
+    "zod": "^4.1.7"
   }
 }

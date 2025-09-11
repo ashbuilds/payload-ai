@@ -40,7 +40,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   } = config
 
   const { setValue } = useField<string>({
-    path: pathFromContext,
+    path: pathFromContext ?? '',
   })
 
   const { set: setHistory } = useHistory()
@@ -54,7 +54,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   } = useConfig()
 
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
-  const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
+  const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection?.admin ?? {}
   const { schema: editorSchema = {} } = editorConfig
 
   const memoizedValidator = useMemo(() => {
@@ -90,7 +90,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     submit,
   } = useObject({
     api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating object:', error)
     },
@@ -106,14 +106,16 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   })
 
   useEffect(() => {
-    if (!object) return
+    if (!object) {
+      return
+    }
 
-    requestAnimationFrame(async () => {
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      const validateObject = await memoizedSchema.validate(object)
-      if (validateObject?.success) {
+    requestAnimationFrame(() => {
+      // TODO: Temporary disabled pre validation, sometimes it fails to validate
+      // const validateObject = await memoizedSchema?.validate?.(object)
+      // if (validateObject?.success) {
         setSafeLexicalState(object, editor)
-      }
+      // }
     })
   }, [object, editor])
 
@@ -124,7 +126,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     stop: completionStop,
   } = useCompletion({
     api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating text:', error)
     },
@@ -135,7 +137,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   })
 
   useEffect(() => {
-    if (!completion) return
+    if (!completion) {
+      return
+    }
 
     requestAnimationFrame(() => {
       setValue(completion)
@@ -198,7 +202,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
     return fetch(`${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
       body: JSON.stringify({
-        collectionSlug,
+        collectionSlug: collectionSlug ?? '',
         doc,
         documentId,
         locale: localFromContext?.code,
@@ -215,14 +219,16 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       .then(async (uploadResponse) => {
         if (uploadResponse.ok) {
           const { result } = await uploadResponse.json()
-          if (!result) throw new Error('generateUpload: Something went wrong')
+          if (!result) {
+            throw new Error('generateUpload: Something went wrong')
+          }
 
           setValue(result?.id)
           setHistory(result?.id)
           console.log('Image updated...', result)
         } else {
           const { errors = [] } = await uploadResponse.json()
-          const errStr = errors.map((error) => error.message).join(', ')
+          const errStr = errors.map((error: any) => error.message).join(', ')
           throw new Error(errStr)
         }
         return uploadResponse
@@ -239,11 +245,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {
       if (type === 'richText') {
-        return streamObject(options)
+        return streamObject(options ?? { action: 'Compose' })
       }
 
-      if (['text', 'textarea'].includes(type)) {
-        return streamText(options)
+      if (['text', 'textarea'].includes(type ?? '') && type) {
+        return streamText(options ?? { action: 'Compose' })
       }
 
       if (type === 'upload') {

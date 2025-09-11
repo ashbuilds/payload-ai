@@ -209,28 +209,3 @@ export type PromptField = {
   // If not provided, the value will be returned from the data object as-is
   getter?: (data: object, ctx: PromptFieldGetterContext) => Promise<string> | string
 } & SerializedPromptField
-
-export type ActionPromptOptions = {
-  layout?: string
-  locale?: string
-  prompt?: string
-  systemPrompt?: string
-}
-
-export type ActionPrompt = {
-  layout?: (options?: ActionPromptOptions) => string
-  name: ActionMenuItems
-  system: (options: ActionPromptOptions) => string
-}
-
-export type SeedPromptOptions = {
-  fieldLabel: string
-  fieldSchemaPaths: Record<string, any>
-  fieldType: string
-  path: string
-}
-
-export type SeedPromptFunction = (options: SeedPromptOptions) => {
-  prompt: string
-  system: string
-}

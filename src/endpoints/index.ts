@@ -2,7 +2,12 @@ import type { CollectionSlug, PayloadRequest } from 'payload'
 
 import * as process from 'node:process'
 
-import type { ActionMenuItems, Endpoints, PluginConfig, PromptFieldGetterContext } from '../types.js'
+import type {
+  ActionMenuItems,
+  Endpoints,
+  PluginConfig,
+  PromptFieldGetterContext,
+} from '../types.js'
 
 import { defaultPrompts } from '../ai/prompts.js'
 import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
@@ -39,21 +44,27 @@ const checkAccess = async (req: PayloadRequest, pluginConfig: PluginConfig) => {
   return true
 }
 
-const extendContextWithPromptFields = (data: object, ctx: PromptFieldGetterContext, pluginConfig: PluginConfig) => {
-  const { promptFields } = pluginConfig
+const extendContextWithPromptFields = (
+  data: object,
+  ctx: PromptFieldGetterContext,
+  pluginConfig: PluginConfig,
+) => {
+  const { promptFields = [] } = pluginConfig
   const fieldsMap = new Map(
-    promptFields.filter((f) => !f.collections || f.collections.includes(ctx.collection)).map((f) => [f.name, f])
+    promptFields
+      .filter((f) => !f.collections || f.collections.includes(ctx.collection))
+      .map((f) => [f.name, f]),
   )
   return new Proxy(data, {
-    get: (target, prop) => {
+    get: (target, prop: string) => {
       const field = fieldsMap.get(prop as string)
       if (field?.getter) {
         const value = field.getter(data, ctx)
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
       }
       // {{prop}} escapes content by default. Here we make sure it won't be escaped.
-      const value = target[prop]
-      return typeof value === "string" ? new asyncHandlebars.SafeString(value) : value
+      const value = typeof target === "object" ? (target as any)[prop] : undefined
+      return typeof value === 'string' ? new asyncHandlebars.SafeString(value) : value
     },
     // It's used by the handlebars library to determine if the property is enumerable
     getOwnPropertyDescriptor: (target, prop) => {
@@ -95,13 +106,13 @@ const assignPrompt = async (
     field: string
     layout: string
     locale: string
-    pluginConfig: PluginConfig,
+    pluginConfig: PluginConfig
     systemPrompt: string
     template: string
     type: string
-  },  
+  },
 ) => {
-  const extendedContext = extendContextWithPromptFields(context, {type, collection}, pluginConfig)
+  const extendedContext = extendContextWithPromptFields(context, { type, collection }, pluginConfig)
   const prompt = await replacePlaceholders(template, extendedContext)
   const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
 
@@ -128,21 +139,23 @@ const assignPrompt = async (
     return assignedPrompts
   }
 
-  const prompts = [...pluginConfig.prompts || [], ...defaultPrompts]
-  const { layout: getLayout, system: getSystemPrompt } = prompts.find(
-    (p) => p.name === action,
-  )
+  const prompts = [...(pluginConfig.prompts || []), ...defaultPrompts]
+  const foundPrompt = prompts.find((p) => p.name === action)
+  const getLayout = foundPrompt?.layout
+  const getSystemPrompt = foundPrompt?.system
 
   let updatedLayout = layout
   if (getLayout) {
     updatedLayout = getLayout()
   }
 
-  const system = getSystemPrompt({
-    ...(actionParams || {}),
-    prompt,
-    systemPrompt,
-  })
+  const system = getSystemPrompt
+    ? getSystemPrompt({
+        ...(actionParams || {}),
+        prompt,
+        systemPrompt,
+      })
+    : ''
 
   return {
     layout: updatedLayout,
@@ -185,6 +198,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
           )
 
+          if (!collection) {
+            throw new Error('Collection not found')
+          }
+
           const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
           const { schema: editorSchema = {} } = editorConfig
           const { prompt: promptTemplate = '' } = instructions
@@ -204,35 +221,53 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             return l.code === locale
           })
 
-          const localeInfo = localeData?.label[defaultLocale] || locale
+          let localeInfo = locale
+          if (
+            localeData &&
+            defaultLocale &&
+            localeData.label &&
+            typeof localeData.label === 'object' &&
+            defaultLocale in localeData.label
+          ) {
+            localeInfo = localeData.label[defaultLocale]
+          }
 
-          const model = getGenerationModels(pluginConfig).find(
-            (model) => model.id === instructions['model-id'],
-          )
+          const models = getGenerationModels(pluginConfig)
+          const model =
+            models && Array.isArray(models)
+              ? models.find((model) => model.id === instructions['model-id'])
+              : undefined
 
-          // @ts-expect-error
-          const settingsName = model.settings?.name
+          if (!model) {
+            throw new Error('Model not found')
+          }
+
+          // @ts-ignore
+          const settingsName = model && model.settings ? model.settings.name : undefined
           if (!settingsName) {
             req.payload.logger.error('— AI Plugin: Error fetching settings name!')
           }
 
-          const modelOptions = instructions[settingsName] || {}
+          const modelOptions = settingsName ? instructions[settingsName] || {} : {}
 
           const prompts = await assignPrompt(action, {
-            type: instructions['field-type'] as string,
+            type: String(instructions['field-type']),
             actionParams,
             collection: collectionName,
             context: contextData,
-            field: fieldName,
+            field: fieldName || '',
             layout: instructions.layout,
             locale: localeInfo,
             pluginConfig,
             systemPrompt: instructions.system,
-            template: promptTemplate as string,
+            template: String(promptTemplate),
           })
 
           if (pluginConfig.debugging) {
-            req.payload.logger.info({prompts}, `— AI Plugin: Executing text prompt on ${schemaPath} using ${model.id}`)
+            req.payload.logger.info(
+              { prompts },
+              `— AI Plugin: Executing text prompt on ${schemaPath} using ${model.id}`,
+            )
           }
 
           return model.handler?.(prompts.prompt, {
@@ -244,11 +279,15 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           })
         } catch (error) {
           req.payload.logger.error(error, 'Error generating content: ')
-          return new Response(JSON.stringify({ error: error.message }), {
+          const message =
+            error && typeof error === 'object' && 'message' in error
+              ? (error as any).message
+              : String(error)
+          return new Response(JSON.stringify({ error: message }), {
             headers: { 'Content-Type': 'application/json' },
             status:
-              error.message.includes('Authentication required') ||
-              error.message.includes('Insufficient permissions')
+              message.includes('Authentication required') ||
+              message.includes('Insufficient permissions')
                 ? 401
                 : 500,
           })
@@ -278,7 +317,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 req, // Pass req to ensure access control is applied
               })
             } catch (e) {
-              req.payload.logger.error(e, 
+              req.payload.logger.error(
+                e,
                 '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
               )
             }
@@ -289,11 +329,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             ...docData,
           }
 
-          let instructions = { images: [], 'model-id': '', prompt: '' }
+          let instructions: Record<string, any> = { images: [], 'model-id': '', prompt: '' }
 
           if (instructionId) {
             // Verify user has access to the specific instruction
-            // @ts-expect-error
             instructions = await req.payload.findByID({
               id: instructionId,
               collection: PLUGIN_INSTRUCTIONS_TABLE,
@@ -306,7 +345,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           registerEditorHelper(req.payload, schemaPath)
 
-          const extendedContext = extendContextWithPromptFields(contextData, {type: instructions['field-type'], collection: collectionSlug}, pluginConfig)
+          const extendedContext = extendContextWithPromptFields(
+            contextData,
+            { type: instructions['field-type'], collection: collectionSlug },
+            pluginConfig,
+          )
           const text = await replacePlaceholders(promptTemplate, extendedContext)
           const modelId = instructions['model-id']
           const uploadCollectionSlug = instructions['relation-to']
@@ -345,24 +388,34 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
           }
 
-          const model = getGenerationModels(pluginConfig).find((model) => model.id === modelId)
+          const modelsUpload = getGenerationModels(pluginConfig)
+          const model =
+            modelsUpload && Array.isArray(modelsUpload)
+              ? modelsUpload.find((model) => model.id === modelId)
+              : undefined
 
-          // @ts-expect-error
-          const settingsName = model.settings?.name
+          if (!model) {
+            throw new Error('Model not found')
+          }
+
+          // @ts-ignore
+          const settingsName = model && model.settings ? model.settings.name : undefined
           if (!settingsName) {
             req.payload.logger.error('— AI Plugin: Error fetching settings name!')
           }
 
-          let modelOptions = instructions[settingsName] || {}
+          let modelOptions = settingsName ? instructions[settingsName] || {} : {}
           modelOptions = {
             ...modelOptions,
             images: editImages,
           }
 
           if (pluginConfig.debugging) {
-            req.payload.logger.info({text}, `— AI Plugin: Executing image prompt using ${model.id}`)
+            req.payload.logger.info(
+              { text },
+              `— AI Plugin: Executing image prompt using ${model.id}`,
+            )
           }
-
 
           const result = await model.handler?.(text, modelOptions)
           let assetData: { alt?: string; id: number | string }
@@ -398,11 +451,15 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           )
         } catch (error) {
           req.payload.logger.error(error, 'Error generating upload: ')
-          return new Response(JSON.stringify({ error: error.message }), {
+          const message =
+            error && typeof error === 'object' && 'message' in error
+              ? (error as any).message
+              : String(error)
+          return new Response(JSON.stringify({ error: message }), {
             headers: { 'Content-Type': 'application/json' },
             status:
-              error.message.includes('Authentication required') ||
-              error.message.includes('Insufficient permissions')
+              message.includes('Authentication required') ||
+              message.includes('Insufficient permissions')
                 ? 401
                 : 500,
           })
