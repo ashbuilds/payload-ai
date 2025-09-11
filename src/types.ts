@@ -1,6 +1,7 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
 import type { ImageGenerateParams } from 'openai/resources/images'
 import type {
+  CollectionConfig,
   CollectionSlug,
   DataFromCollectionSlug,
   Endpoint,
@@ -9,8 +10,11 @@ import type {
   GlobalConfig,
   GroupField,
   PayloadRequest,
+  TypedCollection,
 } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
+
+import type {PLUGIN_INSTRUCTIONS_TABLE} from "./defaults.js";
 
 export interface PluginConfigAccess {
   /**
@@ -67,6 +71,8 @@ export interface PluginConfig {
   interfaceName?: string
   mediaUpload?: PluginConfigMediaUploadFunction
   options?: PluginOptions
+  // Override the instructions collection config
+  overrideInstructions?: Partial<CollectionConfig>
   promptFields?: PromptField[]
   /**
    * Custom action prompts for AI text generation
@@ -143,10 +149,15 @@ export type SeedPromptOptions = {
   path: string
 }
 
-export type SeedPromptFunction = (options: SeedPromptOptions) => {
+export type SeedPromptResult = {
+  data?: TypedCollection[typeof PLUGIN_INSTRUCTIONS_TABLE]
   prompt: string
   system: string
-}
+} | {
+  data?: TypedCollection[typeof PLUGIN_INSTRUCTIONS_TABLE]
+} | false | undefined
+
+export type SeedPromptFunction = (options: SeedPromptOptions) => Promise<SeedPromptResult> | SeedPromptResult
 
 export type ActionMenuEvents =
   | 'onCompose'

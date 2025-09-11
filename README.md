@@ -201,6 +201,21 @@ export default buildConfig({
         }
       ],
 
+      // Optional: Control how field prompts are seeded for the first time
+      seedPrompts: ({path}) => {
+        if (path.endsWith('.meta.description')) {
+          return {
+            data: {
+              prompt: 'Generate SEO-friendly title for this document: {{markdown}}',
+              // other instruction options
+            }
+          }
+        }
+        // Don't allow generating slugs
+        if (path.endswith('.slug')) return false
+        // returning undefined fallbacks to default seed prompt
+      },
+
       // Optional: Custom media upload handling, useful for multi-tenant setups
       mediaUpload: async (result, { request, collection }) => {
         return request.payload.create({
