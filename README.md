@@ -263,7 +263,7 @@ Join the conversation on Payload's [Discord](https://discord.com/channels/967097
 
 ### Local development
 
-This repo includes a minimal Payload app under `dev` to iterate on the plugin quickly.
+This repo includes a minimal Payload app under [dev](dev/README.md) to iterate on the plugin quickly.
 
 Prerequisites
 - Node.js (see `.nvmrc`) and pnpm
