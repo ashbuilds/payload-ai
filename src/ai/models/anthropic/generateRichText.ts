@@ -1,13 +1,16 @@
 import { anthropic } from '@ai-sdk/anthropic'
 import { jsonSchema, streamObject } from 'ai'
 
+import {extractPromptAttachments} from "../../../utilities/extractPromptAttachments.js";
+
 export const generateRichText = (text: string, options: any) => {
   const streamResult = streamObject({
+    maxOutputTokens: options.maxTokens || 5000,
     model: anthropic(options.model),
     onError: (error) => {
       console.error(`generateRichText: `, error)
     },
-    prompt: text,
+    prompt: options.extractAttachments ? extractPromptAttachments(text) : text,
     schema: jsonSchema(options.editorSchema),
     system: `${options.system}
 
@@ -31,6 +34,7 @@ ADDITIONAL GUIDELINES:
 - Maintain a consistent tone and style throughout the content.
 - Use clear and concise language appropriate for the target audience.
 - Double-check that all JSON fields are properly filled and formatted.`,
+    temperature: options.temperature || 0.7,
   })
 
   return streamResult.toTextStreamResponse()

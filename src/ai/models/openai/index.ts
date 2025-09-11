@@ -5,6 +5,7 @@ import { streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
+import { extractPromptAttachments } from "../../../utilities/extractPromptAttachments.js";
 import { defaultSystemPrompt } from '../../prompts.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateImage } from './generateImage.js'
@@ -21,22 +22,24 @@ export const OpenAIConfig: GenerationConfig = {
       id: `${MODEL_KEY}-text`,
       name: 'OpenAI GPT Text',
       fields: ['text', 'textarea'],
-      handler: (prompt: string, options: { locale: string; model: string; system: string }) => {
+      handler: (prompt: string, options: { extractAttachments: boolean; locale: string; maxTokens: number; model: string; system: string; temperature: number;  }) => {
         const streamTextResult = streamText({
+          maxOutputTokens: options.maxTokens || 5000,
           model: openai(options.model),
           onError: (error) => {
             console.error(`${MODEL_KEY}-text: `, error)
           },
+          temperature: options.temperature || 0.7,
 
           // TODO: Implement billing/token consumption
           // onFinish: (stepResult) => {
           //   console.log('streamText : finish : ', stepResult)
           // },
-          prompt,
+          prompt: options.extractAttachments ? extractPromptAttachments(prompt) : prompt,
           system: options.system || defaultSystemPrompt,
         })
 
-        return streamTextResult.toDataStreamResponse()
+        return streamTextResult.toUIMessageStreamResponse();
       },
       output: 'text',
       settings: {
@@ -53,8 +56,38 @@ export const OpenAIConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'gpt-4o-mini',
             label: 'Model',
-            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-3.5-turbo'],
+            options: [
+              'gpt-5', 
+              'gpt-5-mini',
+              'gpt-5-nano',
+              'gpt-4.1',
+              'gpt-4o',
+              'gpt-4-turbo',
+              'gpt-4o-mini',
+              'gpt-3.5-turbo'
+            ],
           },
+          {
+            type: 'row', fields: [
+              {
+                name: 'maxTokens',
+                type: 'number',
+                defaultValue: 5000,
+              },
+              {
+                name: 'temperature',
+                type: 'number',
+                defaultValue: 0.7,
+                max: 1,
+                min: 0,
+              },
+
+            ]
+          },
+          {
+            name: 'extractAttachments',
+            type: 'checkbox',
+          }
         ],
         label: 'OpenAI GPT Settings',
       },
@@ -307,8 +340,38 @@ export const OpenAIConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'gpt-4o',
             label: 'Model',
-            options: ['gpt-4o', 'gpt-4-turbo', 'gpt-4o-mini', 'gpt-4.1', 'o4-mini'],
+            options: [
+              'gpt-5',
+              'gpt-5-mini',
+              'gpt-5-nano',
+              'gpt-4.1',
+              'gpt-4o',
+              'gpt-4-turbo',
+              'gpt-4o-mini',
+              'o4-mini'
+            ],
           },
+          {
+            type: 'row', fields: [
+              {
+                name: 'maxTokens',
+                type: 'number',
+                defaultValue: 5000,
+              },
+              {
+                name: 'temperature',
+                type: 'number',
+                defaultValue: 0.7,
+                max: 1,
+                min: 0,
+              },
+
+            ]
+          },
+          {
+            name: 'extractAttachments',
+            type: 'checkbox',
+          }
         ],
         label: 'OpenAI GPT Settings',
       },
