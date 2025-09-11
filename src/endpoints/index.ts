@@ -55,6 +55,23 @@ const extendContextWithPromptFields = (data: object, ctx: PromptFieldGetterConte
       const value = target[prop]
       return typeof value === "string" ? new asyncHandlebars.SafeString(value) : value
     },
+    // It's used by the handlebars library to determine if the property is enumerable
+    getOwnPropertyDescriptor: (target, prop) => {
+      const field = fieldsMap.get(prop as string)
+      if (field) {
+        return {
+          configurable: true,
+          enumerable: true,
+        }
+      }
+      return Object.getOwnPropertyDescriptor(target, prop)
+    },
+    has: (target, prop) => {
+      return fieldsMap.has(prop as string) || prop in target
+    },
+    ownKeys: (target) => {
+      return [...fieldsMap.keys(), ...Object.keys(target)]
+    },
   })
 }
 
@@ -152,7 +169,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           if (!instructionId) {
             throw new Error(
-              `Instruction ID is required for "${PLUGIN_NAME}" to work, please check your configuration`,
+              `Instruction ID is required for "${PLUGIN_NAME}" to work, please check your configuration, or try again`,
             )
           }
 
