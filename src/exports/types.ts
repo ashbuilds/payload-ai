@@ -1,2 +1,2 @@
 export type { payloadAiPlugin } from '../index.ts'
-export type { PluginConfig, GenerationConfig, GenerationModel } from '../types.ts'
+export type { GenerationConfig, GenerationModel, PluginConfig } from '../types.ts'
