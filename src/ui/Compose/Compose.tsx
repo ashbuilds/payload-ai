@@ -225,7 +225,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
 
   return (
     <label
-      className={`${styles.actions}`}
+      className={`payloadai-compose__actions ${styles.actions}`}
       onClick={(e) => e.preventDefault()}
       ref={actionsRef}
       role="presentation"
