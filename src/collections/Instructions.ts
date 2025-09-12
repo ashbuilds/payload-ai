@@ -66,6 +66,10 @@ export const instructionsCollection = (
     admin: {
       ...defaultAdminConfig,
       ...options?.admin,
+      components: {
+        ...(options?.admin?.components ?? {}),
+        beforeListTable: ['@ai-stack/payloadcms/client#InstructionsSettingsPanel'],
+      },
       group: 'Plugins',
     },
     fields: [

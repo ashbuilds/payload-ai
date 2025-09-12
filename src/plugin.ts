@@ -10,6 +10,7 @@ import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
 import { fetchFields } from './endpoints/fetchFields.js'
 import { endpoints } from './endpoints/index.js'
+import { aiSettingsGlobal } from './globals/AISettings.js'
 import { init } from './init.js'
 import { translations } from './translations/index.js'
 import { getGenerationModels } from './utilities/getGenerationModels.js'
@@ -84,6 +85,11 @@ const payloadAiPlugin =
       const Instructions = instructionsCollection(pluginConfig)
       // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit
       const lexicalSchema = lexicalJsonSchema(pluginConfig.editorConfig?.nodes)
+      const modelOptions = (getGenerationModels(pluginConfig) ?? []).map((m) => ({
+        label: m.name,
+        output: m.output,
+        value: m.id,
+      }))
 
       Instructions.admin = {
         ...Instructions.admin,
@@ -100,6 +106,7 @@ const payloadAiPlugin =
             // Used in admin client for useObject hook
             schema: lexicalSchema,
           },
+          models: modelOptions,
         },
       }
 
@@ -120,6 +127,13 @@ const payloadAiPlugin =
         components: {
           ...(incomingConfig.admin?.components ?? {}),
           providers: updatedProviders,
+        },
+        custom: {
+          ...(incomingConfig.admin?.custom ?? {}),
+          [PLUGIN_NAME]: {
+            ...(incomingConfig.admin?.custom?.[PLUGIN_NAME] ?? {}),
+            models: modelOptions,
+          },
         },
       }
 
@@ -144,18 +158,21 @@ const payloadAiPlugin =
           pluginEndpoints.upload,
           fetchFields(pluginConfig),
         ],
-        globals: globals.map((global) => {
-          if (globalsSlugs && globalsSlugs[global.slug]) {
-            const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(global)
-            collectionsFieldPathMap = {
-              ...collectionsFieldPathMap,
-              ...schemaPathMap,
+        globals: [
+          ...globals.map((global) => {
+            if (globalsSlugs && globalsSlugs[global.slug]) {
+              const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(global)
+              collectionsFieldPathMap = {
+                ...collectionsFieldPathMap,
+                ...schemaPathMap,
+              }
+              return updatedCollectionConfig as GlobalConfig
             }
-            return updatedCollectionConfig as GlobalConfig
-          }
 
-          return global
-        }),
+            return global
+          }),
+          aiSettingsGlobal(pluginConfig),
+        ],
         i18n: {
           ...(incomingConfig.i18n || {}),
           translations: {
@@ -166,7 +183,7 @@ const payloadAiPlugin =
     }
 
     updatedConfig.onInit = async (payload) => {
-      if (incomingConfig.onInit) await incomingConfig.onInit(payload)
+      if (incomingConfig.onInit) {await incomingConfig.onInit(payload)}
 
       if (!isActivated) {
         payload.logger.warn(`— AI Plugin: Not activated. Please verify your environment keys.`)
