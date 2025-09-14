@@ -29,6 +29,27 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (
         // ignore missing global or access errors
       }
 
+      // Resolve enabled collections from Global (fallback to plugin config)
+      let enabledCollectionsFromGlobal: string[] | undefined
+      try {
+        const settings: any = await req.payload.findGlobal({ slug: PLUGIN_SETTINGS_GLOBAL })
+        if (Array.isArray(settings?.collections)) {
+          enabledCollectionsFromGlobal = settings.collections
+            .filter((c: any) => c?.enabled && typeof c?.slug === 'string')
+            .map((c: any) => c.slug)
+        }
+      } catch (e) {
+        // ignore
+      }
+      const enabledCollectionsFromConfig =
+        config && config.collections
+          ? Object.keys(config.collections).filter((slug) => !!(config as any).collections[slug])
+          : []
+      const enabledCollections =
+        enabledCollectionsFromGlobal && enabledCollectionsFromGlobal.length
+          ? enabledCollectionsFromGlobal
+          : enabledCollectionsFromConfig
+
       let isConfigAllowed = true // Users allowed to update prompts by default
 
       if (access?.settings) {
@@ -49,10 +70,11 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (
 
       return Response.json({
         ...options,
+        enabledCollections,
         enabledLanguages: enabledLanguagesFromGlobal ?? options.enabledLanguages,
         fields: fieldMap,
         isConfigAllowed,
-        promptFields: promptFields.map(({getter: _getter, ...field}): SerializedPromptField => {
+        promptFields: promptFields.map(({ getter: _getter, ...field }): SerializedPromptField => {
           return field
         }),
       })

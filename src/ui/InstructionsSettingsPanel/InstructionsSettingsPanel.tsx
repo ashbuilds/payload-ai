@@ -3,7 +3,7 @@
 import { useConfig } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { PLUGIN_NAME, PLUGIN_SETTINGS_GLOBAL } from '../../defaults.js'
+import { PLUGIN_NAME, PLUGIN_SETTINGS_GLOBAL, PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_REINIT_ENDPOINT } from '../../defaults.js'
 
 type ModelOption = { label: string; output?: string; value: string }
 
@@ -20,6 +20,7 @@ type SettingsDoc = {
   features?: Features
   id?: number | string
   temperature?: number
+  collections?: Array<{ slug: string; enabled?: boolean }>
 }
 
 const Section: React.FC<{ children: React.ReactNode; description?: string; title: string }> = ({
@@ -70,6 +71,13 @@ export const InstructionsSettingsPanel: React.FC = () => {
   })
   const [enabledLanguagesCsv, setEnabledLanguagesCsv] = useState<string>('')
 
+  // Per-collection toggles
+  const [enabledCollections, setEnabledCollections] = useState<Record<string, boolean>>({})
+  const allCollections = useMemo(
+    () => (config?.collections ?? []).filter((c: any) => c?.slug && c.slug !== PLUGIN_INSTRUCTIONS_TABLE),
+    [config],
+  )
+
   useEffect(() => {
     let cancelled = false
 
@@ -101,6 +109,17 @@ export const InstructionsSettingsPanel: React.FC = () => {
             const langs =
               json.enabledLanguages?.map((l) => (typeof l === 'string' ? l : l?.code || '')) || []
             setEnabledLanguagesCsv(langs.filter(Boolean).join(', '))
+
+            // Initialize enabledCollections map from Global settings; default to all disabled
+            const initMap: Record<string, boolean> = {}
+            allCollections.forEach((c: any) => {
+              if (c?.slug) initMap[c.slug] = false
+            })
+            const savedCollections = Array.isArray(json.collections) ? json.collections : []
+            savedCollections.forEach((c: any) => {
+              if (c?.slug) initMap[c.slug] = !!c.enabled
+            })
+            setEnabledCollections(initMap)
           }
         }
       } catch (e: any) {
@@ -133,6 +152,10 @@ export const InstructionsSettingsPanel: React.FC = () => {
           enableText: !!features.enableText,
           enableVoice: !!features.enableVoice,
         },
+        collections: Object.entries(enabledCollections || {}).map(([slug, enabled]) => ({
+          slug,
+          enabled: !!enabled,
+        })),
         temperature:
           typeof temperature === 'number' && !Number.isNaN(temperature) ? temperature : 1,
       }
@@ -151,6 +174,16 @@ export const InstructionsSettingsPanel: React.FC = () => {
 
       const saved = (await res.json()) as SettingsDoc
       setDocId(saved.id)
+
+      // Trigger server-side re-initialization for enabled collections
+      try {
+        await fetch(`${serverURL}${api}${PLUGIN_REINIT_ENDPOINT}`, {
+          method: 'POST',
+        })
+      } catch (e) {
+        console.error('Reinit failed:', e)
+      }
+
       setSavedAt(Date.now())
     } catch (e: any) {
       setError(e?.message ?? 'Failed to save settings')
@@ -278,6 +311,34 @@ export const InstructionsSettingsPanel: React.FC = () => {
               />
               Enable Voice
             </label>
+          </div>
+        </Section>
+
+        <div style={{ height: 12 }} />
+
+        <Section
+          description="Enable AI per collection. Saving will reinitialize instructions for enabled collections."
+          title="Collections"
+        >
+          <div style={{ display: 'grid', gap: 8 }}>
+            {allCollections.map((c: any) => {
+              const slug = c.slug as string
+              const label = (c?.labels?.singular as string) || slug
+              const checked = !!enabledCollections[slug]
+              return (
+                <label key={slug} style={{ alignItems: 'center', display: 'inline-flex', gap: 8 }}>
+                  <input
+                    checked={checked}
+                    onChange={(e) =>
+                      setEnabledCollections((prev) => ({ ...prev, [slug]: e.target.checked }))
+                    }
+                    type="checkbox"
+                  />
+                  {label}{' '}
+                  <span style={{ color: 'var(--theme-elevation-500)' }}>({slug})</span>
+                </label>
+              )
+            })}
           </div>
         </Section>
 

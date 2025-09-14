@@ -43,10 +43,7 @@ const buildConfigWithMemoryDB = async () => {
         baseDir: path.resolve(dirname),
       },
     },
-    collections: [
-      Media,
-      Posts,
-    ],
+    collections: [Media, Posts],
     db: mongooseAdapter({
       ensureIndexes: true,
       url: process.env.DATABASE_URI || '',
@@ -58,9 +55,7 @@ const buildConfigWithMemoryDB = async () => {
     },
     plugins: [
       payloadAiPlugin({
-        collections: {
-          [Posts.slug]: true,
-        },
+        collections: {},
         debugging: process.env.NODE_ENV !== 'production',
         disableSponsorMessage: false,
         generatePromptOnInit: process.env.NODE_ENV !== 'production',

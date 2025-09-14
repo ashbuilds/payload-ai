@@ -115,6 +115,37 @@ export const aiSettingsGlobal = (pluginConfig: PluginConfig): GlobalConfig => {
           singular: 'Language',
         },
       },
+      {
+        name: 'collections',
+        type: 'array',
+        admin: {
+          description:
+            'Enable or disable AI features per collection. Changes will reinitialize instructions for enabled collections.',
+        },
+        fields: [
+          {
+            name: 'slug',
+            type: 'text',
+            admin: {
+              readOnly: true,
+              description: 'Collection slug',
+            },
+            label: 'Collection',
+            required: true,
+          },
+          {
+            name: 'enabled',
+            type: 'checkbox',
+            defaultValue: false,
+            label: 'Enabled',
+          },
+        ],
+        label: 'Per-Collection Toggles',
+        labels: {
+          plural: 'Collections',
+          singular: 'Collection',
+        },
+      },
     ],
     label: 'AI Settings',
   }

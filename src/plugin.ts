@@ -10,6 +10,7 @@ import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
 import { fetchFields } from './endpoints/fetchFields.js'
 import { endpoints } from './endpoints/index.js'
+import { reinit } from './endpoints/reinit.js'
 import { aiSettingsGlobal } from './globals/AISettings.js'
 import { init } from './init.js'
 import { translations } from './translations/index.js'
@@ -141,22 +142,21 @@ const payloadAiPlugin =
       updatedConfig = {
         ...incomingConfig,
         collections: collections.map((collection) => {
-          if (collectionSlugs[collection.slug]) {
-            const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(collection)
+          const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(collection)
+          if (collectionSlugs && collectionSlugs[collection.slug]) {
             collectionsFieldPathMap = {
               ...collectionsFieldPathMap,
               ...schemaPathMap,
             }
-            return updatedCollectionConfig as CollectionConfig
           }
-
-          return collection
+          return updatedCollectionConfig as CollectionConfig
         }),
         endpoints: [
           ...(incomingConfig.endpoints ?? []),
           pluginEndpoints.textarea,
           pluginEndpoints.upload,
           fetchFields(pluginConfig),
+          reinit(pluginConfig),
         ],
         globals: [
           ...globals.map((global) => {
