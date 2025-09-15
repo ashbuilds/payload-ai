@@ -49,7 +49,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         activeCollection,
         debugging,
         enabledLanguages,
-        hasInstructions: Object.keys(instructions).length > 0,
+        hasInstructions: instructions && Object.keys(instructions).length > 0,
         instructions,
         isConfigAllowed,
         promptFields,

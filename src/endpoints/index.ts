@@ -78,10 +78,10 @@ const extendContextWithPromptFields = (
       return Object.getOwnPropertyDescriptor(target, prop)
     },
     has: (target, prop) => {
-      return fieldsMap.has(prop as string) || prop in target
+      return fieldsMap.has(prop as string) || (target && prop in target)
     },
     ownKeys: (target) => {
-      return [...fieldsMap.keys(), ...Object.keys(target)]
+      return [...fieldsMap.keys(), ...Object.keys(target || {})]
     },
   })
 }
