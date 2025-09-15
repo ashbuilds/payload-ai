@@ -31,11 +31,11 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     fetch(`${serverURL}${api}${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
       .then(async (res) => {
         await res.json().then((data) => {
-          setIsConfigAllowed(data?.isConfigAllowed)
-          setEnabledLanguages(data?.enabledLanguages)
-          setInstructionsState(data?.fields)
-          setPromptFields(data?.promptFields)
-          setDebugging(data?.debugging)
+          setIsConfigAllowed(data?.isConfigAllowed || false)
+          setEnabledLanguages(data?.enabledLanguages || [])
+          setInstructionsState(data?.fields || {})
+          setPromptFields(data?.promptFields || [])
+          setDebugging(data?.debugging || false)
         })
       })
       .catch((err) => {

@@ -45,7 +45,7 @@ export const useInstructions = (
   const groupedFields = useMemo(() => {
     const result: Record<string, string[]> = {}
 
-    for (const fullKey of Object.keys(instructions)) {
+    for (const fullKey of Object.keys(instructions || {})) {
       const [collection, ...pathParts] = fullKey.split('.')
       const path = pathParts.join('.')
       if (!result[collection]) {
