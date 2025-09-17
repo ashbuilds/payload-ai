@@ -173,22 +173,21 @@ const payloadAiPlugin =
         return
       }
 
-      await init(payload, collectionsFieldPathMap, pluginConfig)
-        .catch((error) => {
-          payload.logger.error(error, `— AI Plugin: Initialization Error`)
-        })
-        .finally(() => {
-          setTimeout(() => {
-            payload.logger.info(securityMessage)
-          }, 1000)
-
-          if (!pluginConfig.disableSponsorMessage) {
-            setTimeout(() => {
-              payload.logger.info(sponsorMessage)
-            }, 3000)
-          }
-        })
-    }
+        await init(payload, collectionsFieldPathMap, pluginConfig)
+          .catch((error) => {
+            payload.logger.error(error, `— AI Plugin: Initialization Error`)
+          })
+          .finally(() => {
+            if (!pluginConfig.disableSponsorMessage) {
+              setTimeout(() => {
+                payload.logger.info(securityMessage)
+              }, 1000)
+              setTimeout(() => {
+                payload.logger.info(sponsorMessage)
+              }, 3000)
+            }
+          })
+      }
 
     return updatedConfig
   }

@@ -16,6 +16,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [activeCollection, setActiveCollection] = useState('')
   const [isConfigAllowed, setIsConfigAllowed] = useState(false)
   const [enabledLanguages, setEnabledLanguages] = useState<string[]>()
+  const [debugging, setDebugging] = useState(false)
   const { user } = useAuth()
 
   const { config } = useConfig()
@@ -30,10 +31,11 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     fetch(`${serverURL}${api}${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
       .then(async (res) => {
         await res.json().then((data) => {
-          setIsConfigAllowed(data?.isConfigAllowed)
-          setEnabledLanguages(data?.enabledLanguages)
-          setInstructionsState(data?.fields)
-          setPromptFields(data?.promptFields)
+          setIsConfigAllowed(data?.isConfigAllowed || false)
+          setEnabledLanguages(data?.enabledLanguages || [])
+          setInstructionsState(data?.fields || {})
+          setPromptFields(data?.promptFields || [])
+          setDebugging(data?.debugging || false)
         })
       })
       .catch((err) => {
@@ -45,7 +47,9 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     <InstructionsContext.Provider
       value={{
         activeCollection,
+        debugging,
         enabledLanguages,
+        hasInstructions: instructions && Object.keys(instructions).length > 0,
         instructions,
         isConfigAllowed,
         promptFields,
