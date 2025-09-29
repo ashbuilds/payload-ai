@@ -25,27 +25,25 @@ export const Posts: CollectionConfig = {
       type: 'tabs',
       tabs: [
         {
-          label: 'AI Title',
           fields: [
             {
               name: 'title',
-              label: 'Title',
               type: 'text',
-              required: true,
               admin: {
                 description:
                   'Demonstrates AI title generation. Use the AI plugin’s Compose action on this field to generate or iterate on a compelling, SEO-friendly headline.',
               },
+              label: 'Title',
+              required: true,
             },
           ],
+          label: 'AI Title',
         },
         {
-          label: 'AI Banner (GPT-Image-1)',
           fields: [
             {
-              type: 'group',
               name: 'bannerInputs',
-              label: 'Banner Inputs',
+              type: 'group',
               admin: {
                 description:
                   'Upload the source images used by the banner prompt template. The AI composes these into a single hero/banner image.',
@@ -53,34 +51,34 @@ export const Posts: CollectionConfig = {
               fields: [
                 {
                   name: 'shirt',
-                  label: 'Shirt',
                   type: 'upload',
+                  label: 'Shirt',
                   relationTo: 'media',
                 },
                 {
                   name: 'pants',
-                  label: 'Pants',
                   type: 'upload',
+                  label: 'Pants',
                   relationTo: 'media',
                 },
                 {
                   name: 'person',
-                  label: 'Person',
                   type: 'upload',
+                  label: 'Person',
                   relationTo: 'media',
                 },
                 {
                   name: 'background',
-                  label: 'Background',
                   type: 'upload',
+                  label: 'Background',
                   relationTo: 'media',
                 },
               ],
+              label: 'Banner Inputs',
             },
             {
-              type: 'group',
               name: 'bannerOutput',
-              label: 'Banner Output',
+              type: 'group',
               admin: {
                 description:
                   'Result of the AI banner generation (typically using OpenAI GPT-Image-1). Use the Compose action to generate and iterate on the final image.',
@@ -88,21 +86,21 @@ export const Posts: CollectionConfig = {
               fields: [
                 {
                   name: 'heroImage',
-                  label: 'Hero Image',
                   type: 'upload',
+                  label: 'Hero Image',
                   relationTo: 'media',
                 },
               ],
+              label: 'Banner Output',
             },
           ],
+          label: 'AI Banner (GPT-Image-1)',
         },
         {
-          label: 'AI Content (Rich Text)',
           fields: [
             {
-              type: 'group',
               name: 'articleBody',
-              label: 'Article Body',
+              type: 'group',
               admin: {
                 description:
                   'Rich text powered by Lexical with AI assistance. Use toolbars and the Compose menu to generate, refine, format, and translate content.',
@@ -137,16 +135,16 @@ export const Posts: CollectionConfig = {
                   }),
                 },
               ],
+              label: 'Article Body',
             },
           ],
+          label: 'AI Content (Rich Text)',
         },
         {
-          label: 'AI Voice-Over',
           fields: [
             {
-              type: 'group',
               name: 'voice',
-              label: 'Voice Generation',
+              type: 'group',
               admin: {
                 description:
                   'Generates narration for the Content field. Only the audio file is stored here; model and generation options are configured in the AI plugin settings.',
@@ -154,13 +152,15 @@ export const Posts: CollectionConfig = {
               fields: [
                 {
                   name: 'audio',
-                  label: 'Voice Audio',
                   type: 'upload',
+                  label: 'Voice Audio',
                   relationTo: 'media',
                 },
               ],
+              label: 'Voice Generation',
             },
           ],
+          label: 'AI Voice-Over',
         },
       ],
     },
