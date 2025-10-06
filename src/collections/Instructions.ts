@@ -53,9 +53,7 @@ const defaultAdminConfig = {
   hidden: true,
 }
 
-export const instructionsCollection = (
-  pluginConfig: PluginConfig,
-) =>
+export const instructionsCollection = (pluginConfig: PluginConfig) =>
   <CollectionConfig>{
     labels: {
       plural: 'Compose Settings',
@@ -138,6 +136,15 @@ export const instructionsCollection = (
             value: option.value,
           }
         }),
+      },
+      {
+        name: 'disabled',
+        type: 'checkbox',
+        admin: {
+          description: 'Please reload your collection after applying the changes',
+        },
+        defaultValue: false,
+        label: 'Hide Compose button for this field',
       },
       {
         id: 'ai-prompts-tabs',

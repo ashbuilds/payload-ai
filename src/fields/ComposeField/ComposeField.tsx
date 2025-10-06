@@ -1,8 +1,8 @@
 'use client'
 
-import {FieldDescription, useDocumentInfo} from "@payloadcms/ui";
 import type { ClientField } from 'payload'
 
+import { FieldDescription, useDocumentInfo } from '@payloadcms/ui'
 import React from 'react'
 
 import { FieldProvider } from '../../providers/FieldProvider/FieldProvider.js'
@@ -23,19 +23,24 @@ export const ComposeField = (props: ComposeFieldProps) => {
     props?.schemaPath ??
     (collectionSlug ? `${collectionSlug}.${props?.path ?? ''}` : (props?.path ?? ''))
 
-  const { id: instructionId, hasInstructions, isConfigAllowed,  } = useInstructions({
+  const {
+    id: instructionId,
+    disabled,
+    hasInstructions,
+    isConfigAllowed,
+  } = useInstructions({
     schemaPath: finalSchemaPath,
   })
 
   return (
     <FieldProvider
       context={{
-        type: (props?.field as any).type,
+        type: props?.field.type,
         path: props?.path ?? '',
         schemaPath: finalSchemaPath,
       }}
     >
-      {hasInstructions && instructionId ? (
+      {hasInstructions && instructionId && !disabled ? (
         <Compose
           descriptionProps={{
             ...props,
@@ -46,8 +51,7 @@ export const ComposeField = (props: ComposeFieldProps) => {
           instructionId={instructionId}
           isConfigAllowed={isConfigAllowed}
         />
-        ) : null
-      }
+      ) : null}
       {/*Render the incoming description field*/}
       <div>
         <FieldDescription path={props?.path ?? ''} {...props} />

@@ -222,7 +222,7 @@ For upload:
   field-type: upload
   field-name: Voice
   schema-path: posts.upload
-  Generated prompt: {{ title }} {{ toHTML schema-path here... }}
+  Generated prompt: {{ title }} {{ toHTML [provide schema-path here...] }}
 
 
 Remember to adapt the prompts based on the specific schema-path provided, considering the context and purpose of the field within the CMS structure. The prompts should directly instruct the AI model on what content to generate or describe, without assuming a user perspective.
