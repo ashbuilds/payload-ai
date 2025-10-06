@@ -1,7 +1,6 @@
 import { payloadAiPlugin } from '@ai-stack/payloadcms'
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { MongoMemoryReplSet } from 'mongodb-memory-server'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -10,7 +9,6 @@ import { fileURLToPath } from 'url'
 import { Media } from './collections/Media.js'
 import { Posts } from './collections/Posts.js'
 import { testEmailAdapter } from './helpers/testEmailAdapter.js'
-import { seed } from './seed.js'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -20,16 +18,6 @@ if (!process.env.ROOT_DIR) {
 }
 
 const buildConfigWithMemoryDB = async () => {
-  if (process.env.NODE_ENV === 'test') {
-    const memoryDB = await MongoMemoryReplSet.create({
-      replSet: {
-        count: 3,
-        dbName: 'payloadmemory',
-      },
-    })
-
-    process.env.DATABASE_URI = `${memoryDB.getUri()}&retryWrites=true`
-  }
 
   return buildConfig({
     admin: {
@@ -47,15 +35,15 @@ const buildConfigWithMemoryDB = async () => {
       Media,
       Posts,
     ],
-    db: mongooseAdapter({
-      ensureIndexes: true,
-      url: process.env.DATABASE_URI || '',
+    db: sqliteAdapter({
+      client: {
+        url: process.env.DATABASE_URI || `file:${path.resolve(dirname, 'dev.db')}`,
+      },
+      // Automatically push schema changes in non-production for frictionless dev
+      push: process.env.NODE_ENV !== 'production',
     }),
     editor: lexicalEditor(),
     email: testEmailAdapter,
-    onInit: async (payload) => {
-      await seed(payload)
-    },
     plugins: [
       payloadAiPlugin({
         collections: {
