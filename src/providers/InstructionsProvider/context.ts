@@ -9,9 +9,11 @@ import type { SerializedPromptField } from '../../types.js'
 
 export type InstructionsContextValue = {
   activeCollection?: string
+  debugging?: boolean
   enabledCollections?: string[]
   enabledLanguages?: string[]
   field?: Field
+  hasInstructions: boolean
   instructions: Record<string, any>
   isConfigAllowed: boolean
   path?: string
@@ -21,7 +23,9 @@ export type InstructionsContextValue = {
 }
 
 export const initialContext: InstructionsContextValue = {
+  debugging: false,
   field: undefined,
+  hasInstructions: false,
   instructions: {},
   isConfigAllowed: true,
   path: '',

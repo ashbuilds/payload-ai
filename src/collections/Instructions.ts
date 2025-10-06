@@ -53,21 +53,23 @@ const defaultAdminConfig = {
   hidden: true,
 }
 
-export const instructionsCollection = (
-  pluginConfig: PluginConfig,
-  options?: Partial<CollectionConfig>,
-) =>
+export const instructionsCollection = (pluginConfig: PluginConfig) =>
   <CollectionConfig>{
+    labels: {
+      plural: 'Compose Settings',
+      singular: 'Compose Setting',
+    },
+    ...pluginConfig.overrideInstructions,
     slug: PLUGIN_INSTRUCTIONS_TABLE,
     access: {
       ...defaultAccessConfig,
-      ...options?.access,
+      ...pluginConfig.overrideInstructions?.access,
     },
     admin: {
       ...defaultAdminConfig,
-      ...options?.admin,
+      ...pluginConfig.overrideInstructions?.admin,
       components: {
-        ...(options?.admin?.components ?? {}),
+        ...(pluginConfig.overrideInstructions?.admin?.components ?? {}),
         beforeListTable: ['@ai-stack/payloadcms/client#InstructionsSettingsPanel'],
       },
       group: 'Plugins',
@@ -139,6 +141,15 @@ export const instructionsCollection = (
             value: option.value,
           }
         }),
+      },
+      {
+        name: 'disabled',
+        type: 'checkbox',
+        admin: {
+          description: 'Please reload your collection after applying the changes',
+        },
+        defaultValue: false,
+        label: 'Hide Compose button for this field',
       },
       {
         id: 'ai-prompts-tabs',
@@ -249,8 +260,4 @@ informative and accurate but also captivating and beautifully structured.`,
       },
       ...groupSettings(pluginConfig),
     ],
-    labels: {
-      plural: 'Compose Settings',
-      singular: 'Compose Setting',
-    },
   }

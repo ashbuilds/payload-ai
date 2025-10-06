@@ -78,10 +78,10 @@ const extendContextWithPromptFields = (
       return Object.getOwnPropertyDescriptor(target, prop)
     },
     has: (target, prop) => {
-      return fieldsMap.has(prop as string) || prop in target
+      return fieldsMap.has(prop as string) || (target && prop in target)
     },
     ownKeys: (target) => {
-      return [...fieldsMap.keys(), ...Object.keys(target)]
+      return [...fieldsMap.keys(), ...Object.keys(target || {})]
     },
   })
 }
@@ -358,13 +358,19 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           const editImages = []
           for (const img of images) {
-            try {
-              const serverURL =
-                req.payload.config?.serverURL ||
-                process.env.SERVER_URL ||
-                process.env.NEXT_PUBLIC_SERVER_URL
+            const serverURL =
+            req.payload.config?.serverURL ||
+            process.env.SERVER_URL ||
+            process.env.NEXT_PUBLIC_SERVER_URL
 
-              const response = await fetch(`${serverURL}${img.image.url}`, {
+            let url = img.image.thumbnailURL || img.image.url
+            if (!url.startsWith('http')) {
+              url = `${serverURL}${url}`
+            }
+
+            try {
+
+              const response = await fetch(url, {
                 headers: {
                   //TODO: Further testing needed or so find a proper way.
                   Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
@@ -378,10 +384,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 type: img.image.type,
                 data: blob,
                 size: blob.size,
-                url: `${serverURL}${img.image.url}`,
+                url,
               })
             } catch (e) {
-              req.payload.logger.error(e, 'Error fetching reference images!')
+              req.payload.logger.error(e, `Error fetching reference image ${url}`)
               throw Error(
                 "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
               )

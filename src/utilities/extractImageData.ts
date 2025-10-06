@@ -3,7 +3,7 @@ type ImageData = {
 }[]
 
 export function extractImageData(input: string): ImageData {
-  const regex = /\/[\w%\-./]+\.(png|jpe?g|webp)/gi
+  const regex = /(?:https?:)?\/[\w%\-.,/]+\.(png|jpe?g|webp)/gi
   const matches = input.match(regex)
 
   if (!matches) return []

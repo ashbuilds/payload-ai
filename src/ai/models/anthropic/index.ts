@@ -8,6 +8,15 @@ import { defaultSystemPrompt } from '../../prompts.js'
 import { generateRichText } from './generateRichText.js'
 
 const MODEL_KEY = 'ANTH-C'
+const MODELS = [
+  'claude-opus-4-1',
+  'claude-opus-4-0',
+  'claude-sonnet-4-0',
+  'claude-3-opus-latest',
+  'claude-3-5-haiku-latest',
+  'claude-3-5-sonnet-latest',
+  'claude-3-7-sonnet-latest',
+]
 
 export const AnthropicConfig: GenerationConfig = {
   models: [
@@ -44,15 +53,7 @@ export const AnthropicConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'claude-3-5-sonnet-latest',
             label: 'Model',
-            options: [
-              'claude-opus-4-1',
-              'claude-opus-4-0',
-              'claude-sonnet-4-0',
-              'claude-3-opus-latest',
-              'claude-3-5-haiku-latest',
-              'claude-3-5-sonnet-latest',
-              'claude-3-7-sonnet-latest',
-            ],
+            options: MODELS,
           },
           {
             type: 'row', fields: [
@@ -101,15 +102,7 @@ export const AnthropicConfig: GenerationConfig = {
             type: 'select',
             defaultValue: 'claude-3-5-sonnet-latest',
             label: 'Model',
-            options: [
-              'claude-opus-4-1',
-              'claude-opus-4-0',
-              'claude-sonnet-4-0',
-              'claude-3-opus-latest',
-              'claude-3-5-haiku-latest',
-              'claude-3-5-sonnet-latest',
-              'claude-3-7-sonnet-latest',
-            ],
+            options: MODELS,
           },
           {
             type: 'row', fields: [

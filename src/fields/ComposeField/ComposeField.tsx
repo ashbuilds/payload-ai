@@ -23,7 +23,13 @@ export const ComposeField = (props: ComposeFieldProps) => {
     props?.schemaPath ??
     (collectionSlug ? `${collectionSlug}.${props?.path ?? ''}` : (props?.path ?? ''))
 
-  const { id: instructionId, isConfigAllowed, enabledCollections } = useInstructions({
+  const {
+    id: instructionId,
+    disabled,
+    hasInstructions,
+    isConfigAllowed,
+    enabledCollections
+  } = useInstructions({
     schemaPath: finalSchemaPath,
   })
 
@@ -58,21 +64,27 @@ export const ComposeField = (props: ComposeFieldProps) => {
   return (
     <FieldProvider
       context={{
-        type: (props?.field as any).type,
+        type: props?.field.type,
         path: props?.path ?? '',
         schemaPath: finalSchemaPath,
       }}
     >
-      <Compose
-        descriptionProps={{
-          ...props,
-          field: props?.field,
-          path: props?.path ?? '',
-          schemaPath: finalSchemaPath,
-        }}
-        instructionId={instructionId}
-        isConfigAllowed={isConfigAllowed}
-      />
+      {hasInstructions && instructionId && !disabled ? (
+        <Compose
+          descriptionProps={{
+            ...props,
+            field: props?.field,
+            path: props?.path ?? '',
+            schemaPath: finalSchemaPath,
+          }}
+          instructionId={instructionId}
+          isConfigAllowed={isConfigAllowed}
+        />
+      ) : null}
+      {/*Render the incoming description field*/}
+      <div>
+        <FieldDescription path={props?.path ?? ''} {...props} />
+      </div>
     </FieldProvider>
   )
 }
