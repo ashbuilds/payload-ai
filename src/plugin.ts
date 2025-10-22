@@ -113,6 +113,9 @@ const payloadAiPlugin =
         {
           path: '@ai-stack/payloadcms/client#InstructionsProvider',
         },
+        {
+          path: '@ai-stack/payloadcms/client#AgentProvider',
+        },
       ]
 
       incomingConfig.admin = {
