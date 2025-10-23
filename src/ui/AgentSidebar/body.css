@@ -1,0 +1,6 @@
+:root { --agent-sider-w: 340px; }
+
+.agent-sider-open {
+    padding-right: var(--agent-sider-w);
+    transition: padding-right 200ms ease;
+}

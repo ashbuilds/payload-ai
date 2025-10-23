@@ -1,7 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 
+import "./body.css"
 import styles from './agent-sidebar.module.css'
 
 type AgentSidebarProps = {
@@ -10,6 +11,15 @@ type AgentSidebarProps = {
 }
 
 export const AgentSidebar: React.FC<AgentSidebarProps> = ({ onCloseAction, open = false }) => {
+  useEffect(() => {
+    const b = document.body
+    if (!b) return
+    b.style.setProperty('--agent-sider-w', `340px`)
+    if (open) b.classList.add('agent-sider-open')
+    else b.classList.remove('agent-sider-open')
+    return () => b.classList.remove('agent-sider-open')
+  }, [open])
+
   return (
     <div
       aria-label="AI Agent Sidebar"
@@ -22,23 +32,10 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({ onCloseAction, open 
           <span className={styles.badge}>AI</span>
           <span>Agent</span>
         </div>
-        <button
-          aria-label="Close agent panel"
-          className={styles.iconButton}
-          onClick={onCloseAction}
-          type="button"
-        >
-          ×
-        </button>
       </div>
 
       <div className={styles.body}>
-        <div className={styles.placeholder}>
-          <p className={styles.placeholderTitle}>Agent chat</p>
-          <p className={styles.placeholderText}>
-            UI placeholder. Streaming and persistence will be added later.
-          </p>
-        </div>
+
       </div>
 
       <div className={styles.footer}>

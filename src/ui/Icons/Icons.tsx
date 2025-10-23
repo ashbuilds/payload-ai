@@ -5,13 +5,15 @@ import LottieAnimation from './LottieAnimation.js'
 
 export const PluginIcon = ({
   color = 'white',
+  hasDivider = true,
   isLoading,
 }: {
   color?: string
+  hasDivider?: boolean
   isLoading?: boolean
 }) => {
   return (
-    <span className={styles.actions_icon}>
+    <span className={`${styles.actions_icon} ${hasDivider ? styles.actions_border : ''}`}>
       <LottieAnimation isLoading={isLoading} />
     </span>
   )
