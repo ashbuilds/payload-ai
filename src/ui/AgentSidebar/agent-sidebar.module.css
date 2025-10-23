@@ -27,8 +27,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 12px 12px;
-  border-bottom: 1px solid var(--theme-elevation-150);
+  height: var(--doc-controls-height);
+  box-shadow: 1px 1px var(--theme-elevation-150);
+  padding: 12px;
 }
 
 .title {
@@ -115,7 +116,7 @@
 
   position: fixed;
   right: 12px;
-  bottom: 28px;
+  bottom: 42px;
   z-index: 31;
   gap: 8px;
   background: var(--color-base-1000);

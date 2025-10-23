@@ -14,7 +14,7 @@
   overflow: hidden;
   background: var(--theme-elevation-0);
   color: var(--theme-elevation-800);
-  padding: 6px 8px;
+  padding: 12px;
   font: inherit;
   box-sizing: border-box;
   flex: 0 0 auto;
@@ -40,5 +40,5 @@
 
 .send:disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  cursor: default;
 }
