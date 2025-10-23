@@ -10,7 +10,6 @@
   height: 100vh;
   width: var(--agent-panel-width);
   background: var(--theme-elevation-0);
-  border-right: 1px solid var(--theme-elevation-150);
   box-shadow: 0 0 0 1px var(--theme-elevation-150), 0 8px 24px rgba(0, 0, 0, 0.08);
   transform: translateX(100%);
   transition: transform 200ms ease;
@@ -82,29 +81,26 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px;
   border-top: 1px solid var(--theme-elevation-150);
-  background: var(--theme-elevation-50);
 }
 
 .input {
   flex: 1;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid var(--theme-elevation-150);
-  padding: 0 10px;
+  height: 48px;
+  /*border-radius: 8px;*/
+  border: 0;
+  padding: 8px 12px;
   background: var(--theme-elevation-0);
   color: var(--theme-elevation-800);
+  outline: none;
 }
 
 .send {
   height: 32px;
   padding: 0 12px;
-  border-radius: 8px;
-  border: 1px solid var(--theme-elevation-150);
+  border: 0;
   background: var(--theme-elevation-0);
   color: var(--theme-elevation-800);
-  cursor: not-allowed;
 }
 
 .launcher {

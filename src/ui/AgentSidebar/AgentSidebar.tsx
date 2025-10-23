@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react'
 
 import "./body.css"
+import { AgentInput } from '../AgentInput/AgentInput.js'
 import styles from './agent-sidebar.module.css'
 
 type AgentSidebarProps = {
@@ -13,10 +14,10 @@ type AgentSidebarProps = {
 export const AgentSidebar: React.FC<AgentSidebarProps> = ({ onCloseAction, open = false }) => {
   useEffect(() => {
     const b = document.body
-    if (!b) return
+    if (!b) {return}
     b.style.setProperty('--agent-sider-w', `340px`)
-    if (open) b.classList.add('agent-sider-open')
-    else b.classList.remove('agent-sider-open')
+    if (open) {b.classList.add('agent-sider-open')}
+    else {b.classList.remove('agent-sider-open')}
     return () => b.classList.remove('agent-sider-open')
   }, [open])
 
@@ -39,15 +40,13 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({ onCloseAction, open 
       </div>
 
       <div className={styles.footer}>
-        <input
-          className={styles.input}
-          disabled
-          placeholder="Type a message… (disabled)"
-          type="text"
+        <AgentInput
+          onSend={(msg) => {
+            // TODO: wire to chat provider
+            console.log('AgentInput send:', msg)
+          }}
+          placeholder="How can I help you…"
         />
-        <button className={styles.send} disabled type="button">
-          Send
-        </button>
       </div>
     </div>
   )
