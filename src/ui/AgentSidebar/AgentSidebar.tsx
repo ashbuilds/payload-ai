@@ -1,15 +1,17 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { DefaultChatTransport, type UIMessage } from 'ai'
+import { DefaultChatTransport } from 'ai'
 
 import './body.css'
 
 import React, { useEffect } from 'react'
+import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { PLUGIN_API_ENDPOINT_AGENT_CHAT } from '../../defaults.js'
 import { AgentInput } from '../AgentInput/AgentInput.js'
 import styles from './agent-sidebar.module.css'
+import { MessageItem } from './MessageItem.js'
 
 type AgentSidebarProps = {
   onCloseAction?: () => void
@@ -36,20 +38,7 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({ onCloseAction, open 
   })
   const isLoading = status === 'submitted' || status === 'streaming'
 
-  const isTextLike = (part: unknown): part is { text: string; type: 'reasoning' | 'text' } => {
-    if (typeof part !== 'object' || part === null) {
-      return false
-    }
-    const p = part as Record<string, unknown>
-    if (typeof p.type !== 'string') {
-      return false
-    }
-    return (p.type === 'text' || p.type === 'reasoning') && typeof p.text === 'string'
-  }
-
-  const messageToText = (m: UIMessage): string => {
-    return m.parts.map((part) => (isTextLike(part) ? part.text : '')).join('')
-  }
+  const { contentRef, scrollRef } = useStickToBottom()
 
   return (
     <div
@@ -65,16 +54,14 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({ onCloseAction, open 
         </div>
       </div>
 
-      <div className={styles.body}>
-        <div aria-live="polite" aria-relevant="additions">
-          {messages.map((m: UIMessage) => (
-            <div className={styles.message} key={m.id}>
-              <strong>{m.role === 'user' ? 'You' : 'AI'}:</strong> {messageToText(m)}
-            </div>
+      <div className={styles.body} ref={scrollRef}>
+        <div aria-live="polite" aria-relevant="additions" ref={contentRef}>
+          {messages.map((m) => (
+            <MessageItem key={m.id} message={m} />
           ))}
           {isLoading ? <div className={styles.message}>Thinking…</div> : null}
           {error ? (
-            <div className={styles.message} role="alert">
+            <div className={`${styles.message} ${styles.errorText}`} role="alert">
               Error: {String(error?.message || error)}
             </div>
           ) : null}
@@ -93,5 +80,3 @@ export const AgentSidebar: React.FC<AgentSidebarProps> = ({ onCloseAction, open 
     </div>
   )
 }
-
-export default AgentSidebar
