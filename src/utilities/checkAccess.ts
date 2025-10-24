@@ -1,4 +1,5 @@
 import type { PayloadRequest } from 'payload'
+
 import type { PluginConfig } from '../types.js'
 
 const requireAuthentication = (req: PayloadRequest) => {

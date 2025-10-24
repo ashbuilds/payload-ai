@@ -1,3 +1,4 @@
+import type { OpenAIChatModelId, OpenAIProviderOptions } from '@ai-sdk/openai/internal'
 import type { Endpoint, PayloadRequest } from 'payload'
 
 import { convertToModelMessages, streamText } from 'ai'
@@ -16,15 +17,24 @@ export const Chat = (pluginConfig: PluginConfig): Endpoint => ({
       const body = await req.json?.()
       const messages = Array.isArray(body?.messages) ? body.messages : []
       const system = "";
-      const modelId = PLUGIN_DEFAULT_OPENAI_MODEL
+      const modelId: OpenAIChatModelId = "gpt-5"
 
       const result = streamText({
         messages: convertToModelMessages(messages),
         model: openai(modelId),
-        system,
+        providerOptions:{
+          openai:{
+            reasoningEffort: "low",
+            structuredOutputs: true,
+          } satisfies OpenAIProviderOptions
+        },
+        system
       })
 
-      return result.toUIMessageStreamResponse()
+      return result.toUIMessageStreamResponse({
+        sendReasoning: true,
+      })
+
     } catch (error) {
       req.payload.logger.error(error, 'Error in chat endpoint: ')
       const message =
