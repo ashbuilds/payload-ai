@@ -21,12 +21,12 @@ export interface PluginConfigAccess {
    * Control access to AI generation features (generate text, images, audio)
    * @default () => !!req.user (requires authentication)
    */
-  generate?: ({ req }: { req: PayloadRequest }) => Promise<boolean> | boolean
+  generate?: ({ req }: { req: PayloadRequest }) => boolean | Promise<boolean>
   /**
    * Control access to AI settings/configuration
    * @default () => !!req.user (requires authentication)
    */
-  settings?: ({ req }: { req: PayloadRequest }) => Promise<boolean> | boolean
+  settings?: ({ req }: { req: PayloadRequest }) => boolean | Promise<boolean>
 }
 
 export interface PluginOptions {
@@ -116,6 +116,7 @@ export type GenerateTextarea<T = any> = (args: {
 export interface Endpoints {
   textarea: Omit<Endpoint, 'root'>
   upload: Omit<Endpoint, 'root'>
+  chat: Omit<Endpoint, 'root'>
 }
 
 export type ActionMenuItems =
@@ -151,13 +152,12 @@ export type SeedPromptOptions = {
 
 export type SeedPromptData = Omit<TypedCollection[typeof PLUGIN_INSTRUCTIONS_TABLE], 'createdAt' | 'id' | 'updatedAt'>
 
-export type SeedPromptResult = {
-  data?: SeedPromptData
-  prompt: string
-  system: string
-} | {
-  data?: SeedPromptData
-} | false | undefined | void
+export type SeedPromptResult =
+  | { data?: SeedPromptData }
+  | { data?: SeedPromptData; prompt: string; system: string }
+  | false
+  | undefined
+  | void
 
 export type SeedPromptFunction = (options: SeedPromptOptions) => Promise<SeedPromptResult> | SeedPromptResult
 

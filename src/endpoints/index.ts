@@ -21,28 +21,10 @@ import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { checkAccess } from '../utilities/checkAccess.js'
 import { extractImageData } from '../utilities/extractImageData.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
-
-const requireAuthentication = (req: PayloadRequest) => {
-  if (!req.user) {
-    throw new Error('Authentication required. Please log in to use AI features.')
-  }
-  return true
-}
-
-const checkAccess = async (req: PayloadRequest, pluginConfig: PluginConfig) => {
-  requireAuthentication(req)
-
-  if (pluginConfig.access?.generate) {
-    const hasAccess = await pluginConfig.access.generate({ req })
-    if (!hasAccess) {
-      throw new Error('Insufficient permissions to use AI generation features.')
-    }
-  }
-
-  return true
-}
+import { Chat } from './chat.js'
 
 const extendContextWithPromptFields = (
   data: object,
@@ -57,13 +39,13 @@ const extendContextWithPromptFields = (
   )
   return new Proxy(data, {
     get: (target, prop: string) => {
-      const field = fieldsMap.get(prop as string)
+      const field = fieldsMap.get(prop)
       if (field?.getter) {
         const value = field.getter(data, ctx)
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
       }
       // {{prop}} escapes content by default. Here we make sure it won't be escaped.
-      const value = typeof target === "object" ? (target as any)[prop] : undefined
+      const value = typeof target === 'object' ? (target as any)[prop] : undefined
       return typeof value === 'string' ? new asyncHandlebars.SafeString(value) : value
     },
     // It's used by the handlebars library to determine if the property is enumerable
@@ -167,6 +149,7 @@ const assignPrompt = async (
 
 export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfig) =>
   ({
+    chat: Chat(pluginConfig),
     textarea: {
       //TODO:  This is the main endpoint for generating content - its just needs to be renamed to 'generate' or something.
       handler: async (req: PayloadRequest) => {
@@ -359,9 +342,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const editImages = []
           for (const img of images) {
             const serverURL =
-            req.payload.config?.serverURL ||
-            process.env.SERVER_URL ||
-            process.env.NEXT_PUBLIC_SERVER_URL
+              req.payload.config?.serverURL ||
+              process.env.SERVER_URL ||
+              process.env.NEXT_PUBLIC_SERVER_URL
 
             let url = img.image.thumbnailURL || img.image.url
             if (!url.startsWith('http')) {
@@ -369,7 +352,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
 
             try {
-
               const response = await fetch(url, {
                 headers: {
                   //TODO: Further testing needed or so find a proper way.
