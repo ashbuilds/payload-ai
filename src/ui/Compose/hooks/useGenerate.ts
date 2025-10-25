@@ -1,19 +1,16 @@
-import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/react'
+import { useCompletion } from '@ai-sdk/react'
+import { convertMarkdownToLexical } from '@payloadcms/richtext-lexical'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
-import { jsonSchema } from 'ai'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
 import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
-  PLUGIN_INSTRUCTIONS_TABLE,
-  PLUGIN_NAME,
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
-import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
@@ -31,7 +28,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { type, path: pathFromContext } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
 
-  const { editor } = editorConfigContext
+  const { editor, editorConfig } = editorConfigContext
 
   const { config } = useConfig()
   const {
@@ -49,107 +46,82 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { id: documentId, collectionSlug } = useDocumentInfo()
 
   const localFromContext = useLocale()
+
+  // For rich text fields - generates markdown and converts to Lexical
   const {
-    config: { collections },
-  } = useConfig()
-
-  const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
-  const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection?.admin ?? {}
-  const { schema: editorSchema = {} } = editorConfig
-
-  const memoizedValidator = useMemo(() => {
-    return editorSchemaValidator(editorSchema)
-  }, [editorSchema])
-
-  const memoizedSchema = useMemo(
-    () =>
-      jsonSchema(editorSchema, {
-        validate: (value) => {
-          const isValid = memoizedValidator(value)
-
-          if (isValid) {
-            return {
-              success: true,
-              value,
-            }
-          } else {
-            return {
-              error: new Error('Invalid schema'),
-              success: false,
-            }
-          }
-        },
-      }),
-    [memoizedValidator],
-  )
-
-  const {
-    isLoading: loadingObject,
-    object,
-    stop: objectStop,
-    submit,
-  } = useObject({
-    api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
+    complete: completeRichText,
+    completion: richTextCompletion,
+    isLoading: loadingRichText,
+    stop: stopRichText,
+  } = useCompletion({
+    api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error: any) => {
       toast.error(`Failed to generate: ${error.message}`)
-      console.error('Error generating object:', error)
+      console.error('Error generating rich text:', error)
     },
-    onFinish: (result) => {
-      if (result.object) {
-        setHistory(result.object)
-        setValue(result.object)
-      } else {
-        console.log('onFinish: result ', result)
-      }
+    onFinish: async (_prompt: any, result: any) => {
+      // Convert markdown to Lexical JSON
+      const lexicalJSON = await convertMarkdownToLexical({
+        editorConfig,
+        markdown: result,
+      })
+      setHistory(lexicalJSON)
+      setValue(lexicalJSON)
     },
-    schema: memoizedSchema,
+    streamProtocol: 'data',
   })
 
+  // Apply markdown to Lexical conversion during streaming
   useEffect(() => {
-    if (!object) {
+    if (!richTextCompletion || !editor || !editorConfig) {
       return
     }
 
-    requestAnimationFrame(() => {
-      // TODO: Temporary disabled pre validation, sometimes it fails to validate
-      // const validateObject = await memoizedSchema?.validate?.(object)
-      // if (validateObject?.success) {
-        setSafeLexicalState(object, editor)
-      // }
+    requestAnimationFrame(async () => {
+      try {
+        // Convert the current markdown to Lexical JSON
+        const lexicalJSON = await convertMarkdownToLexical({
+          editorConfig,
+          markdown: richTextCompletion,
+        })
+        setSafeLexicalState(lexicalJSON, editor)
+      } catch (error) {
+        console.error('Error converting markdown to Lexical:', error)
+      }
     })
-  }, [object, editor])
+  }, [richTextCompletion, editor, editorConfig])
 
+  // For plain text/textarea fields
   const {
-    complete,
-    completion,
-    isLoading: loadingCompletion,
-    stop: completionStop,
+    complete: completeText,
+    completion: textCompletion,
+    isLoading: loadingText,
+    stop: stopText,
   } = useCompletion({
     api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error: any) => {
       toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating text:', error)
     },
-    onFinish: (prompt, result) => {
+    onFinish: (_prompt: any, result: any) => {
       setHistory(result)
     },
     streamProtocol: 'data',
   })
 
   useEffect(() => {
-    if (!completion) {
+    if (!textCompletion) {
       return
     }
 
     requestAnimationFrame(() => {
-      setValue(completion)
+      setValue(textCompletion)
     })
-  }, [completion])
+  }, [textCompletion])
 
-  const streamObject = useCallback(
-    ({ action = 'Compose', params }: ActionCallbackParams) => {
+  const streamRichText = useCallback(
+    async ({ action = 'Compose', params }: ActionCallbackParams) => {
       const doc = getData()
-
       const currentInstructionId = instructionIdRef.current
 
       const options = {
@@ -158,17 +130,18 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         instructionId: currentInstructionId,
       }
 
-      submit({
-        allowedEditorNodes: Array.from(editor?._nodes?.keys() || []),
-        doc: {
-          ...doc,
-          id: documentId,
+      await completeRichText('', {
+        body: {
+          doc: {
+            ...doc,
+            id: documentId,
+          },
+          locale: localFromContext?.code,
+          options,
         },
-        locale: localFromContext?.code,
-        options,
       })
     },
-    [localFromContext?.code, instructionIdRef, documentId],
+    [getData, localFromContext?.code, instructionIdRef, completeRichText, documentId],
   )
 
   const streamText = useCallback(
@@ -182,7 +155,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         instructionId: currentInstructionId,
       }
 
-      await complete('', {
+      await completeText('', {
         body: {
           doc: {
             ...doc,
@@ -193,7 +166,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         },
       })
     },
-    [getData, localFromContext?.code, instructionIdRef, complete, documentId],
+    [getData, localFromContext?.code, instructionIdRef, completeText, documentId],
   )
 
   const generateUpload = useCallback(async () => {
@@ -245,7 +218,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {
       if (type === 'richText') {
-        return streamObject(options ?? { action: 'Compose' })
+        return streamRichText(options ?? { action: 'Compose' })
       }
 
       if (['text', 'textarea'].includes(type ?? '') && type) {
@@ -256,18 +229,18 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return generateUpload()
       }
     },
-    [generateUpload, streamObject, streamText, type],
+    [generateUpload, streamRichText, streamText, type],
   )
 
   const stop = useCallback(() => {
     console.log('Stopping...')
-    objectStop()
-    completionStop()
-  }, [objectStop, completionStop])
+    stopRichText()
+    stopText()
+  }, [stopRichText, stopText])
 
   return {
     generate,
-    isLoading: loadingCompletion || loadingObject,
+    isLoading: loadingText || loadingRichText,
     stop,
   }
 }

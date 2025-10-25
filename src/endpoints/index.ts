@@ -10,7 +10,6 @@ import type {
 } from '../types.js'
 
 import { defaultPrompts } from '../ai/prompts.js'
-import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
 import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
@@ -176,7 +175,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           const data = await req.json?.()
 
-          const { allowedEditorNodes = [], locale = 'en', options } = data
+          const { locale = 'en', options } = data
           const { action, actionParams, instructionId } = options
           const contextData = data.doc
 
@@ -193,23 +192,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             req, // Pass req to ensure access control is applied
           })
 
-          const { collections } = req.payload.config
-          const collection = collections.find(
-            (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
-          )
-
-          if (!collection) {
-            throw new Error('Collection not found')
-          }
-
-          const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
-          const { schema: editorSchema = {} } = editorConfig
           const { prompt: promptTemplate = '' } = instructions
-
-          let allowedEditorSchema = editorSchema
-          if (allowedEditorNodes.length) {
-            allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
-          }
 
           const schemaPath = instructions['schema-path'] as string
           const [collectionName, fieldName] = schemaPath?.split('.') || []
@@ -272,7 +255,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           return model.handler?.(prompts.prompt, {
             ...modelOptions,
-            editorSchema: allowedEditorSchema,
             layout: prompts.layout,
             locale: localeInfo,
             system: prompts.system,
