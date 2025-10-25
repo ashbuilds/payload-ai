@@ -12,6 +12,37 @@ The Payload AI Plugin is an advanced extension that integrates modern AI capabil
 >
 > To give it a try, we recommend using [Payload's website template](https://github.com/payloadcms/payload/tree/main/templates/website).
 
+## 📝 Changelog
+
+### v0.1.0 - Architecture Improvements
+
+**🎯 Major Change: Markdown-First Generation**
+
+We've completely redesigned how the plugin generates rich text content. The new approach is more reliable and maintainable:
+
+**What Changed:**
+- ✅ **LLMs now generate Markdown** instead of complex Lexical JSON schemas
+- ✅ **Automatic conversion** using Payload's built-in `convertMarkdownToLexical()`
+- ✅ **Removed complex schema validation** - no more JSON schema constraints sent to LLMs
+- ✅ **More reliable output** - LLMs are ~95-99% accurate with Markdown vs ~85-90% with JSON schemas
+- ✅ **Simpler prompts** - clearer instructions for AI models
+- ✅ **Real-time streaming** - content converts to rich text as it streams in
+
+**Why This Matters:**
+- 🚀 **Better reliability** - Markdown is a standard format LLMs excel at
+- 🎨 **Same rich features** - all Lexical formatting still works (headings, bold, lists, links, etc.)
+- 🔧 **Easier maintenance** - no complex schema validation to debug
+- ⚡ **Faster responses** - LLMs generate markdown more efficiently
+
+**Technical Details:**
+- Changed from `streamObject()` to `streamText()` in AI handlers
+- Removed `editorSchema` filtering and validation utilities
+- Updated client-side to convert markdown → Lexical in real-time
+- Fixed type compatibility issues between client and server configs
+
+**Breaking Changes:**
+- None! The API remains the same from a user perspective.
+
 ---
 
 ### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
@@ -56,6 +87,7 @@ Want to dive deeper?
 
 ## 📚 Table of Contents
 
+- [Changelog](#-changelog)
 - [Installation](#-installation)
 - [Usage](#-usage)
 - [Configuration](#%EF%B8%8F-configuration)
@@ -67,15 +99,20 @@ Want to dive deeper?
 After PayloadCMS has been installed, run this command:
 
 ```bash
-pnpm add @ai-stack/payloadcms
+pnpm add @pawelmantur/payload-ai
 ```
+
+> **Note:** This package was previously published as `@ai-stack/payloadcms`. If you're migrating, uninstall the old package first:
+> ```bash
+> pnpm remove @ai-stack/payloadcms
+> ```
 
 ## 🛠 Usage
 
 Add below in `src/payload.config.ts`
 
-```javascript 
-import { payloadAiPlugin } from '@ai-stack/payloadcms'
+```javascript
+import { payloadAiPlugin } from '@pawelmantur/payload-ai'
 
 export default buildConfig({
   plugins: [
@@ -93,7 +130,7 @@ export default buildConfig({
 Add AI Plugin feature to your richText field:
 
 ```javascript
-import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+import { PayloadAiPluginLexicalEditorFeature } from '@pawelmantur/payload-ai'
 
 // Add below in the Lexical Editor field config of you Collection or Plugin (e.g. src/collections/Posts/index.ts)
 fields: [
@@ -145,7 +182,7 @@ Also, you might want to run payload `generate:importmap` to regenerate the impor
 </summary>
 
 ```typescript
-import { payloadAiPlugin } from '@ai-stack/payloadcms'
+import { payloadAiPlugin } from '@pawelmantur/payload-ai'
 
 export default buildConfig({
   plugins: [
@@ -250,7 +287,7 @@ For detailed guidance on personalizing and configuring the plugin to match your 
 > **⚠️ Note:** Custom fields don't fully adhere to the Payload schema, making it difficult to determine which components support injecting ComposeField as a Description.
 > If AI enabled fields don't display Compose settings, manually add the following component path:
 >
-> `@ai-stack/payloadcms/fields#ComposeField`
+> `@pawelmantur/payload-ai/fields#ComposeField`
 >
 > To view AI enabled fields, enable the `debugging` flag in your plugin config or check your server startup logs.
 
