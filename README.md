@@ -18,7 +18,7 @@ The Payload AI Plugin is an advanced extension that integrates modern AI capabil
 
 **🎯 Major Change: Markdown-First Generation**
 
-We've completely redesigned how the plugin generates rich text content. The new approach is more reliable and maintainable:
+We've completely redesigned how the plugin generates rich text content. The new approach is more reliable and maintainable: 
 
 **What Changed:**
 - ✅ **LLMs now generate Markdown** instead of complex Lexical JSON schemas
