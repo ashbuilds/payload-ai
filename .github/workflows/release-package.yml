@@ -27,7 +27,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
       - name: Build
         run: pnpm build
 
@@ -50,7 +50,7 @@ jobs:
         with:
           version: 8
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
       - name: Build
         run: pnpm build
       - name: Publish
