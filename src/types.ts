@@ -116,6 +116,7 @@ export type GenerateTextarea<T = any> = (args: {
 export interface Endpoints {
   textarea: Omit<Endpoint, 'root'>
   upload: Omit<Endpoint, 'root'>
+  videogenWebhook?: Omit<Endpoint, 'root'>
 }
 
 export type ActionMenuItems =

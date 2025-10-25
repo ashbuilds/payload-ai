@@ -253,6 +253,53 @@ informative and accurate but also captivating and beautifully structured.`,
           },
         ],
       },
+      {
+        name: 'task_id',
+        type: 'text',
+        admin: {
+          condition: (_, current) => {
+            return (
+              current['field-type'] === 'upload' && current['model-id'] === 'VideoGen-image2video'
+            )
+          },
+          readOnly: true,
+        },
+        label: 'Task ID',
+      },
+      {
+        name: 'status',
+        type: 'select',
+        admin: {
+          condition: (_, current) => {
+            return (
+              current['field-type'] === 'upload' && current['model-id'] === 'VideoGen-image2video'
+            )
+          },
+          readOnly: true,
+        },
+        label: 'Status',
+        options: [
+          { label: 'Queued', value: 'queued' },
+          { label: 'Running', value: 'running' },
+          { label: 'Completed', value: 'completed' },
+          { label: 'Failed', value: 'failed' },
+        ],
+      },
+      {
+        name: 'progress',
+        type: 'number',
+        admin: {
+          condition: (_, current) => {
+            return (
+              current['field-type'] === 'upload' && current['model-id'] === 'VideoGen-image2video'
+            )
+          },
+          readOnly: true,
+        },
+        label: 'Progress',
+        max: 100,
+        min: 0,
+      },
       ...groupSettings(pluginConfig),
     ],
   }

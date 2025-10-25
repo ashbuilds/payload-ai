@@ -14,6 +14,7 @@ import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes
 import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
+  PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK,
   PLUGIN_INSTRUCTIONS_TABLE,
   PLUGIN_NAME,
 } from '../defaults.js'
@@ -57,13 +58,13 @@ const extendContextWithPromptFields = (
   )
   return new Proxy(data, {
     get: (target, prop: string) => {
-      const field = fieldsMap.get(prop as string)
+      const field = fieldsMap.get(prop)
       if (field?.getter) {
         const value = field.getter(data, ctx)
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
       }
       // {{prop}} escapes content by default. Here we make sure it won't be escaped.
-      const value = typeof target === "object" ? (target as any)[prop] : undefined
+      const value = typeof target === 'object' ? (target as any)[prop] : undefined
       return typeof value === 'string' ? new asyncHandlebars.SafeString(value) : value
     },
     // It's used by the handlebars library to determine if the property is enumerable
@@ -342,7 +343,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
           const schemaPath = instructions['schema-path']
-          console.log("sampleImages --- >", sampleImages)
+          console.log('sampleImages --- >', sampleImages)
           registerEditorHelper(req.payload, schemaPath)
 
           const extendedContext = extendContextWithPromptFields(
@@ -355,14 +356,14 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const uploadCollectionSlug = instructions['relation-to']
 
           const images = [...extractImageData(text), ...sampleImages]
-          console.log("images :  ", images)
+          console.log('images :  ', images)
 
           const editImages = []
           for (const img of images) {
             const serverURL =
-            req.payload.config?.serverURL ||
-            process.env.SERVER_URL ||
-            process.env.NEXT_PUBLIC_SERVER_URL
+              req.payload.config?.serverURL ||
+              process.env.SERVER_URL ||
+              process.env.NEXT_PUBLIC_SERVER_URL
 
             let url = img.image.thumbnailURL || img.image.url
             if (!url.startsWith('http')) {
@@ -370,7 +371,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
 
             try {
-
               const response = await fetch(url, {
                 headers: {
                   //TODO: Further testing needed or so find a proper way.
@@ -424,38 +424,81 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             )
           }
 
-          const result = await model.handler?.(text, modelOptions)
-          let assetData: { alt?: string; id: number | string }
+          // Prepare callback URL for async jobs
+          const serverURL =
+            req.payload.config?.serverURL ||
+            process.env.SERVER_URL ||
+            process.env.NEXT_PUBLIC_SERVER_URL
 
-          if (typeof pluginConfig.mediaUpload === 'function') {
-            assetData = await pluginConfig.mediaUpload(result, {
-              collection: uploadCollectionSlug,
-              request: req,
-            })
-          } else {
-            assetData = await req.payload.create({
-              collection: uploadCollectionSlug,
-              data: result.data,
-              file: result.file,
-              req, // Pass req to ensure access control is applied
-            })
-          }
+          const callbackUrl = serverURL
+            ? `${serverURL.replace(/\/$/, '')}/api${PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK}?instructionId=${instructionId}`
+            : undefined
 
-          if (!assetData.id) {
-            req.payload.logger.error(
-              'Error uploading generated media, is your media upload function correct?',
+          const result = await model.handler?.(text, {
+            ...modelOptions,
+            callbackUrl,
+            instructionId,
+          })
+
+          // If model returned a file immediately, proceed with upload
+          if (result && 'file' in result) {
+            let assetData: { alt?: string; id: number | string }
+            if (typeof pluginConfig.mediaUpload === 'function') {
+              assetData = await pluginConfig.mediaUpload(result, {
+                collection: uploadCollectionSlug,
+                request: req,
+              })
+            } else {
+              assetData = await req.payload.create({
+                collection: uploadCollectionSlug,
+                data: result.data,
+                file: result.file,
+                req, // Pass req to ensure access control is applied
+              })
+            }
+
+            if (!assetData.id) {
+              req.payload.logger.error(
+                'Error uploading generated media, is your media upload function correct?',
+              )
+              throw new Error('Error uploading generated media!')
+            }
+
+            return new Response(
+              JSON.stringify({
+                result: {
+                  id: assetData.id,
+                  alt: assetData.alt,
+                },
+              }),
             )
-            throw new Error('Error uploading generated media!')
           }
 
-          return new Response(
-            JSON.stringify({
-              result: {
-                id: assetData.id,
-                alt: assetData.alt,
+          // Otherwise, assume async job launch
+          if (result && ('jobId' in result || 'taskId' in result)) {
+            console.log("result ---", result)
+            const jobId = result.jobId || result.taskId
+            const status = result.status || 'queued'
+            const progress = result.progress ?? 0
+
+            // Persist task info on Instruction
+            await req.payload.update({
+              id: instructionId,
+              collection: PLUGIN_INSTRUCTIONS_TABLE,
+              data: {
+                progress,
+                status,
+                task_id: jobId,
               },
-            }),
-          )
+              req,
+            })
+
+            return new Response(JSON.stringify({ job: { id: jobId, progress, status } }), {
+              headers: { 'Content-Type': 'application/json' },
+            })
+          }
+
+          throw new Error('Unexpected model response.')
         } catch (error) {
           req.payload.logger.error(error, 'Error generating upload: ')
           const message =
@@ -474,5 +517,92 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
       },
       method: 'post',
       path: PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
+    },
+    videogenWebhook: {
+      handler: async (req: PayloadRequest) => {
+        console.log("videogenWebhook --> ")
+        try {
+          const secret = req.headers.get('x-webhook-secret') || ''
+          if (
+            !process.env.VIDEOGEN_WEBHOOK_SECRET ||
+            secret !== process.env.VIDEOGEN_WEBHOOK_SECRET
+          ) {
+            return new Response('Unauthorized', { status: 401 })
+          }
+
+          const url = new URL(req.url || '')
+          const instructionId = url.searchParams.get('instructionId')
+          if (!instructionId) {
+            throw new Error('instructionId missing')
+          }
+
+          const body = await req.json?.()
+          const { error, outputs = [], progress, status, taskId } = body || {}
+
+          // Update task fields on Instruction
+          await req.payload.update({
+            id: instructionId,
+            collection: PLUGIN_INSTRUCTIONS_TABLE,
+            data: {
+              progress,
+              status,
+              task_id: taskId,
+            },
+            req,
+          })
+
+          console.log("body: outputs : ", body)
+
+          if (status === 'completed' && outputs?.[0]?.url) {
+            // Fetch the related instruction to get upload collection
+            const instructions = await req.payload.findByID({
+              id: instructionId,
+              collection: PLUGIN_INSTRUCTIONS_TABLE,
+              req,
+            })
+
+            const uploadCollectionSlug = instructions['relation-to']
+            const videoUrl = outputs[0].url
+
+            const videoResp = await fetch(videoUrl)
+            if (!videoResp.ok) {
+              throw new Error(`Failed to fetch output: ${videoResp.status}`)
+            }
+            const buffer = Buffer.from(await videoResp.arrayBuffer())
+
+            await req.payload.create({
+              collection: uploadCollectionSlug,
+              data: { alt: 'video generation' },
+              file: {
+                name: 'video_generation.mp4',
+                data: buffer,
+                mimetype: 'video/mp4',
+                size: buffer.byteLength,
+              },
+              req,
+            })
+          }
+
+          if (status === 'failed' && error) {
+            req.payload.logger.error(error, 'Video generation failed: ')
+          }
+
+          return new Response(JSON.stringify({ ok: true }), {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        } catch (error) {
+          req.payload.logger.error(error, 'Error in videogen webhook: ')
+          const message =
+            error && typeof error === 'object' && 'message' in error
+              ? (error as any).message
+              : String(error)
+          return new Response(JSON.stringify({ error: message }), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 500,
+          })
+        }
+      },
+      method: 'post',
+      path: PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK,
     },
   }) satisfies Endpoints

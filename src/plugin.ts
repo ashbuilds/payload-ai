@@ -142,6 +142,7 @@ const payloadAiPlugin =
           ...(incomingConfig.endpoints ?? []),
           pluginEndpoints.textarea,
           pluginEndpoints.upload,
+          ...(pluginEndpoints.videogenWebhook ? [pluginEndpoints.videogenWebhook] : []),
           fetchFields(pluginConfig),
         ],
         globals: globals.map((global) => {
