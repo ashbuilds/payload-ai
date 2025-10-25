@@ -1,0 +1,26 @@
+.actions_icon {
+  border-right: 1px solid var(--theme-elevation-150);
+  cursor: pointer;
+  max-width: 30px;
+  padding-right: 8px;
+  padding-left: 8px;
+
+  max-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon > svg{
+    fill: var(--theme-elevation-800);
+}
+
+.color_fill {
+  fill: var(--theme-elevation-800);
+}
