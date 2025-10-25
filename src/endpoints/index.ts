@@ -342,7 +342,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
           const schemaPath = instructions['schema-path']
-
+          console.log("sampleImages --- >", sampleImages)
           registerEditorHelper(req.payload, schemaPath)
 
           const extendedContext = extendContextWithPromptFields(
@@ -355,6 +355,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const uploadCollectionSlug = instructions['relation-to']
 
           const images = [...extractImageData(text), ...sampleImages]
+          console.log("images :  ", images)
 
           const editImages = []
           for (const img of images) {
