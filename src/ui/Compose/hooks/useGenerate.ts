@@ -62,7 +62,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     onFinish: async (_prompt: any, result: any) => {
       // Convert markdown to Lexical JSON
       const lexicalJSON = await convertMarkdownToLexical({
-        editorConfig,
+        editorConfig: editorConfig as any,
         markdown: result,
       })
       setHistory(lexicalJSON)
@@ -81,7 +81,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       try {
         // Convert the current markdown to Lexical JSON
         const lexicalJSON = await convertMarkdownToLexical({
-          editorConfig,
+          editorConfig: editorConfig as any,
           markdown: richTextCompletion,
         })
         setSafeLexicalState(lexicalJSON, editor)

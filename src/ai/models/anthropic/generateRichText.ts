@@ -5,7 +5,6 @@ import {extractPromptAttachments} from "../../../utilities/extractPromptAttachme
 
 export const generateRichText = (text: string, options: any) => {
   const streamResult = streamText({
-    maxTokens: options.maxTokens || 5000,
     model: anthropic(options.model),
     onError: (error) => {
       console.error(`generateRichText: `, error)

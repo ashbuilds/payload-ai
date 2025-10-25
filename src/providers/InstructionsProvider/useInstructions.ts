@@ -1,4 +1,4 @@
-import { InstructionsContext } from '@ai-stack/payloadcms/client'
+import { InstructionsContext } from '@pawelmantur/payload-ai/client'
 import { useDocumentInfo } from '@payloadcms/ui'
 import { useContext, useEffect, useMemo, useState } from 'react'
 
