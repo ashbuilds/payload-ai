@@ -27,26 +27,6 @@ const defaultPluginConfig: PluginConfig = {
   generationModels: defaultGenerationModels,
 }
 
-const sponsorMessage = `
-╔═══════════════════════════════════════════════════════════════╗
-║       THANK YOU FOR USING THE PAYLOAD AI PLUGIN!              ║
-║                                                               ║
-║  If this plugin makes your life easier, please                ║
-║  consider supporting its development and maintenance:         ║
-║                                                               ║
-║    • Buy me a coffee: https://buymeacoffee.com/ashbuilds      ║
-║    • Sponsor on GitHub: https://github.com/sponsors/ashbuilds ║
-║                                                               ║
-║  Your support fuels continued improvements,                   ║
-║  new features, and more caffeinated coding sessions! ☕        ║
-║                                                               ║
-║  Got feedback or need help? Submit an issue here:             ║
-║    • https://github.com/ashbuilds/payload-ai/issues/new       ║
-║                                                               ║
-║  Thank you again, and happy building!                         ║
-╚═══════════════════════════════════════════════════════════════╝
-`
-
 const securityMessage = `
 ╔═══════════════════════════════════════════════════════════════╗
 ║                    SECURITY NOTICE                            ║
@@ -182,9 +162,6 @@ const payloadAiPlugin =
               setTimeout(() => {
                 payload.logger.info(securityMessage)
               }, 1000)
-              setTimeout(() => {
-                payload.logger.info(sponsorMessage)
-              }, 3000)
             }
           })
       }

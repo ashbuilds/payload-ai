@@ -43,7 +43,7 @@ Want to dive deeper?
 
 ### Other Features
 
-- 🔌 **Bring Your Own Model** ([Setup guide](https://github.com/ashbuilds/payload-ai/blob/main/guide.md#5-add-custom-model))
+- 🔌 **Bring Your Own Model** ([Setup guide](https://github.com/pawelmantur/payload-ai/blob/main/guide.md#5-add-custom-model))
 - 🎛️ **Field-level Prompt Customization**
 - 🔐 **Access Control Support**
 - 🧠 **Prompt Editor**
