@@ -549,6 +549,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               task_id: taskId,
             },
             req,
+            overrideAccess: true,
           })
 
           console.log("body: outputs : ", body)
@@ -570,7 +571,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
             const buffer = Buffer.from(await videoResp.arrayBuffer())
 
-            await req.payload.create({
+            const created = await req.payload.create({
               collection: uploadCollectionSlug,
               data: { alt: 'video generation' },
               file: {
@@ -580,6 +581,20 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 size: buffer.byteLength,
               },
               req,
+              overrideAccess: true,
+            })
+
+            // Persist the result id and finalize status/progress
+            await req.payload.update({
+              id: instructionId,
+              collection: PLUGIN_INSTRUCTIONS_TABLE,
+              data: {
+                result_id: created?.id,
+                status: 'completed',
+                progress: 100,
+              },
+              req,
+              overrideAccess: true,
             })
           }
 

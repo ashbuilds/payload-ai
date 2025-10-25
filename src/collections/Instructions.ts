@@ -300,6 +300,19 @@ informative and accurate but also captivating and beautifully structured.`,
         max: 100,
         min: 0,
       },
+      {
+        name: 'result_id',
+        type: 'text',
+        admin: {
+          condition: (_, current) => {
+            return (
+              current['field-type'] === 'upload' && current['model-id'] === 'VideoGen-image2video'
+            )
+          },
+          readOnly: true,
+        },
+        label: 'Result Asset ID',
+      },
       ...groupSettings(pluginConfig),
     ],
   }

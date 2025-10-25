@@ -111,7 +111,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   }, [input, actionsRef])
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
-  const { generate, isLoading, stop } = useGenerate({ instructionId })
+  const { generate, isLoading, stop, jobProgress, jobStatus, isJobActive } = useGenerate({ instructionId })
 
   const { ActiveComponent, Menu } = useMenu(
     {
@@ -214,14 +214,19 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   )
 
   const memoizedPopup = useMemo(() => {
+    const loadingLabel = isJobActive
+      ? jobStatus === 'running'
+        ? `Video ${Math.max(0, Math.min(100, Math.round(jobProgress ?? 0)))}%`
+        : (jobStatus || 'Queued')
+      : undefined
     return (
       <Popup
-        button={<PluginIcon isLoading={isProcessing || isLoading} />}
+        button={<PluginIcon isLoading={isProcessing || isLoading || isJobActive} />}
         render={popupRender}
         verticalAlign="bottom"
       />
     )
-  }, [popupRender, isProcessing, isLoading])
+  }, [popupRender, isProcessing, isLoading, isJobActive, jobProgress, jobStatus])
 
   return (
     <label
@@ -236,7 +241,11 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
         }}
       />
       {memoizedPopup}
-      <ActiveComponent isLoading={isProcessing || isLoading} stop={stop} />
+      <ActiveComponent
+        isLoading={isProcessing || isLoading || isJobActive}
+        loadingLabel={isJobActive ? (jobStatus === 'running' ? `Video ${Math.max(0, Math.min(100, Math.round(jobProgress ?? 0)))}%` : (jobStatus || 'Queued')) : undefined}
+        stop={stop}
+      />
       <UndoRedoActions
         onChange={(val) => {
           setValue(val)

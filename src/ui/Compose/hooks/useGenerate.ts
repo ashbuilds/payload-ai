@@ -2,7 +2,7 @@ import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/reac
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
@@ -44,6 +44,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   })
 
   const { set: setHistory } = useHistory()
+
+  // Async job UI state
+  const [jobStatus, setJobStatus] = useState<string | undefined>(undefined)
+  const [jobProgress, setJobProgress] = useState<number>(0)
+  const [isJobActive, setIsJobActive] = useState<boolean>(false)
 
   const { getData } = useForm()
   const { id: documentId, collectionSlug } = useDocumentInfo()
@@ -218,20 +223,64 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     })
       .then(async (uploadResponse) => {
         if (uploadResponse.ok) {
-          const { result } = await uploadResponse.json()
-          if (!result) {
-            throw new Error('generateUpload: Something went wrong')
+          const json = await uploadResponse.json()
+          const { result, job } = json || {}
+          if (result) {
+            setValue(result?.id)
+            setHistory(result?.id)
+            return uploadResponse
           }
 
-          setValue(result?.id)
-          setHistory(result?.id)
-          console.log('Image updated...', result)
+          // Async job: poll instruction for status/progress/result_id
+          if (job && job.id) {
+            setIsJobActive(true)
+            let cancelled = false
+            let attempts = 0
+            const maxAttempts = 600 // up to ~10 minutes @ 1s
+
+            // Basic in-hook state via closure variables; UI will re-render off fetches below
+            const poll = async (): Promise<void> => {
+              if (cancelled) return
+              try {
+                const res = await fetch(`${serverURL}${api}/${PLUGIN_INSTRUCTIONS_TABLE}/${currentInstructionId}`, {
+                  credentials: 'include',
+                })
+                if (res.ok) {
+                  const inst = await res.json()
+                  const { status, progress, result_id } = inst || {}
+                  setJobStatus(status)
+                  setJobProgress(progress ?? 0)
+                  // When result present, set field and finish
+                  if (status === 'completed' && result_id) {
+                    setValue(result_id)
+                    setHistory(result_id)
+                    setIsJobActive(false)
+                    return
+                  }
+                  if (status === 'failed') {
+                    setIsJobActive(false)
+                    throw new Error('Video generation failed')
+                  }
+                }
+              } catch (e) {
+                // silent retry
+              }
+
+              attempts += 1
+              if (!cancelled && attempts < maxAttempts) {
+                setTimeout(poll, 1000)
+              }
+            }
+            setTimeout(poll, 1000)
+            return uploadResponse
+          }
+
+          throw new Error('generateUpload: Unexpected response')
         } else {
           const { errors = [] } = await uploadResponse.json()
           const errStr = errors.map((error: any) => error.message).join(', ')
           throw new Error(errStr)
         }
-        return uploadResponse
       })
       .catch((error) => {
         toast.error(`Failed to generate: ${error.message}`)
@@ -268,6 +317,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   return {
     generate,
     isLoading: loadingCompletion || loadingObject,
+    isJobActive,
+    jobStatus,
+    jobProgress,
     stop,
   }
 }

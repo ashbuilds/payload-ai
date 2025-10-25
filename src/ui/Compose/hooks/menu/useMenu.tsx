@@ -49,7 +49,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
   }, [initialValue, value, fieldType])
 
   const MemoizedActiveComponent = useMemo(() => {
-    return ({ isLoading, stop }: { isLoading: boolean; stop: () => void }) => {
+    return ({ isLoading, stop, loadingLabel }: { isLoading: boolean; stop: () => void; loadingLabel?: string }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
       const activeItem = menuItemsMap.find((i) => i.name === activeComponent)!
       return (
@@ -69,7 +69,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
           }}
           title={isLoading ? 'Click to stop' : activeItem.name}
         >
-          {isLoading && activeItem.loadingText}
+          {isLoading && (loadingLabel ?? activeItem.loadingText)}
         </ActiveComponent>
       )
     }
