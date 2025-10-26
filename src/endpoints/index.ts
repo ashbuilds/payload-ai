@@ -16,6 +16,7 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK,
   PLUGIN_INSTRUCTIONS_TABLE,
+  PLUGIN_AI_JOBS_TABLE,
   PLUGIN_NAME,
 } from '../defaults.js'
 import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
@@ -476,24 +477,24 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           // Otherwise, assume async job launch
           if (result && ('jobId' in result || 'taskId' in result)) {
-            console.log("result ---", result)
-            const jobId = result.jobId || result.taskId
-            const status = result.status || 'queued'
-            const progress = result.progress ?? 0
+            const externalTaskId = (result as any).jobId || (result as any).taskId
+            const status = (result as any).status || 'queued'
+            const progress = (result as any).progress ?? 0
 
-            // Persist task info on Instruction
-            await req.payload.update({
-              id: instructionId,
-              collection: PLUGIN_INSTRUCTIONS_TABLE,
+            // Create AI Job doc and return only its id
+            const createdJob = await req.payload.create({
+              collection: PLUGIN_AI_JOBS_TABLE,
               data: {
-                progress,
+                instructionId,
+                task_id: externalTaskId,
                 status,
-                task_id: jobId,
+                progress,
               },
               req,
+              overrideAccess: true,
             })
 
-            return new Response(JSON.stringify({ job: { id: jobId, progress, status } }), {
+            return new Response(JSON.stringify({ job: { id: createdJob.id } }), {
               headers: { 'Content-Type': 'application/json' },
             })
           }
@@ -539,18 +540,33 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const body = await req.json?.()
           const { error, outputs = [], progress, status, taskId } = body || {}
 
-          // Update task fields on Instruction
-          await req.payload.update({
-            id: instructionId,
-            collection: PLUGIN_INSTRUCTIONS_TABLE,
-            data: {
-              progress,
-              status,
-              task_id: taskId,
+          // Update AI Job row by task_id (and instructionId)
+          const jobSearch = await req.payload.find({
+            collection: PLUGIN_AI_JOBS_TABLE,
+            where: {
+              and: [
+                { task_id: { equals: taskId } },
+                { instructionId: { equals: instructionId } },
+              ],
             },
-            req,
-            overrideAccess: true,
+            limit: 1,
+            depth: 0,
           })
+
+          const jobDoc = jobSearch.docs?.[0]
+          if (jobDoc) {
+            await req.payload.update({
+              id: jobDoc.id,
+              collection: PLUGIN_AI_JOBS_TABLE,
+              data: {
+                progress,
+                status,
+                task_id: taskId,
+              },
+              req,
+              overrideAccess: true,
+            })
+          }
 
           console.log("body: outputs : ", body)
 
@@ -584,18 +600,20 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               overrideAccess: true,
             })
 
-            // Persist the result id and finalize status/progress
-            await req.payload.update({
-              id: instructionId,
-              collection: PLUGIN_INSTRUCTIONS_TABLE,
-              data: {
-                result_id: created?.id,
-                status: 'completed',
-                progress: 100,
-              },
-              req,
-              overrideAccess: true,
-            })
+            // Persist the result on the AI Job record
+            if (jobDoc) {
+              await req.payload.update({
+                id: jobDoc.id,
+                collection: PLUGIN_AI_JOBS_TABLE,
+                data: {
+                  result_id: created?.id,
+                  status: 'completed',
+                  progress: 100,
+                },
+                req,
+                overrideAccess: true,
+              })
+            }
           }
 
           if (status === 'failed' && error) {

@@ -7,6 +7,7 @@ import type { PluginConfig } from './types.js'
 import { defaultGenerationModels } from './ai/models/index.js'
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { instructionsCollection } from './collections/Instructions.js'
+import { aiJobsCollection } from './collections/AIJobs.js'
 import { PLUGIN_NAME } from './defaults.js'
 import { fetchFields } from './endpoints/fetchFields.js'
 import { endpoints } from './endpoints/index.js'
@@ -82,6 +83,7 @@ const payloadAiPlugin =
 
     if (isActivated) {
       const Instructions = instructionsCollection(pluginConfig)
+      const AIJobs = aiJobsCollection()
       // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit
       const lexicalSchema = lexicalJsonSchema(pluginConfig.editorConfig?.nodes)
 
@@ -103,7 +105,7 @@ const payloadAiPlugin =
         },
       }
 
-      const collections = [...(incomingConfig.collections ?? []), Instructions]
+      const collections = [...(incomingConfig.collections ?? []), Instructions, AIJobs]
       const globals = [...(incomingConfig.globals ?? [])]
       const { collections: collectionSlugs, globals: globalsSlugs } = pluginConfig
 

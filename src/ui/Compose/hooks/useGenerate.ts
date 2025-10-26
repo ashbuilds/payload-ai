@@ -10,6 +10,7 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   PLUGIN_INSTRUCTIONS_TABLE,
+  PLUGIN_AI_JOBS_TABLE,
   PLUGIN_NAME,
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
@@ -119,7 +120,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       // TODO: Temporary disabled pre validation, sometimes it fails to validate
       // const validateObject = await memoizedSchema?.validate?.(object)
       // if (validateObject?.success) {
-        setSafeLexicalState(object, editor)
+      setSafeLexicalState(object, editor)
       // }
     })
   }, [object, editor])
@@ -224,30 +225,33 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       .then(async (uploadResponse) => {
         if (uploadResponse.ok) {
           const json = await uploadResponse.json()
-          const { result, job } = json || {}
+          const { job, result } = json || {}
           if (result) {
             setValue(result?.id)
             setHistory(result?.id)
             return uploadResponse
           }
 
-          // Async job: poll instruction for status/progress/result_id
+          // Async job: poll AI Jobs collection for status/progress/result_id
           if (job && job.id) {
             setIsJobActive(true)
-            let cancelled = false
+            const cancelled = false
             let attempts = 0
             const maxAttempts = 600 // up to ~10 minutes @ 1s
 
             // Basic in-hook state via closure variables; UI will re-render off fetches below
             const poll = async (): Promise<void> => {
-              if (cancelled) return
+              if (cancelled) {
+                return
+              }
               try {
-                const res = await fetch(`${serverURL}${api}/${PLUGIN_INSTRUCTIONS_TABLE}/${currentInstructionId}`, {
-                  credentials: 'include',
-                })
+                const res = await fetch(
+                  `${serverURL}${api}/${PLUGIN_AI_JOBS_TABLE}/${job.id}`,
+                  { credentials: 'include' },
+                )
                 if (res.ok) {
-                  const inst = await res.json()
-                  const { status, progress, result_id } = inst || {}
+                  const jobDoc = await res.json()
+                  const { progress, result_id, status } = jobDoc || {}
                   setJobStatus(status)
                   setJobProgress(progress ?? 0)
                   // When result present, set field and finish
@@ -286,7 +290,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         toast.error(`Failed to generate: ${error.message}`)
         console.error(
           'Error generating or setting your upload, please set it manually if its saved in your media files.',
-          error
+          error,
         )
       })
   }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
@@ -316,10 +320,10 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
   return {
     generate,
-    isLoading: loadingCompletion || loadingObject,
     isJobActive,
-    jobStatus,
+    isLoading: loadingCompletion || loadingObject,
     jobProgress,
+    jobStatus,
     stop,
   }
 }

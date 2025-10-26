@@ -1,5 +1,6 @@
 export const PLUGIN_NAME = 'plugin-ai'
 export const PLUGIN_INSTRUCTIONS_TABLE = `${PLUGIN_NAME}-instructions`
+export const PLUGIN_AI_JOBS_TABLE = `${PLUGIN_NAME}-ai-jobs`
 export const PLUGIN_LEXICAL_EDITOR_FEATURE = `${PLUGIN_NAME}-actions-feature`
 
 // Endpoint defaults
