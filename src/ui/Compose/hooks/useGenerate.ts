@@ -1,5 +1,5 @@
 import { useCompletion } from '@ai-sdk/react'
-import { convertMarkdownToLexical } from '@payloadcms/richtext-lexical'
+import { $convertFromMarkdownString, TRANSFORMERS } from '@lexical/markdown'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { useCallback, useEffect, useRef } from 'react'
@@ -11,7 +11,6 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
-import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
@@ -28,7 +27,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { type, path: pathFromContext } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
 
-  const { editor, editorConfig } = editorConfigContext
+  const { editor } = editorConfigContext
 
   const { config } = useConfig()
   const {
@@ -60,11 +59,18 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       console.error('Error generating rich text:', error)
     },
     onFinish: async (_prompt: any, result: any) => {
-      // Convert markdown to Lexical JSON
-      const lexicalJSON = await convertMarkdownToLexical({
-        editorConfig: editorConfig as any,
-        markdown: result,
+      // Convert markdown to Lexical JSON using client-side API
+      if (!editor) return
+
+      let lexicalJSON: any
+      editor.update(() => {
+        $convertFromMarkdownString(result, TRANSFORMERS)
       })
+
+      // Get the editor state as JSON
+      const editorState = editor.getEditorState()
+      lexicalJSON = editorState.toJSON()
+
       setHistory(lexicalJSON)
       setValue(lexicalJSON)
     },
@@ -73,23 +79,21 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
   // Apply markdown to Lexical conversion during streaming
   useEffect(() => {
-    if (!richTextCompletion || !editor || !editorConfig) {
+    if (!richTextCompletion || !editor) {
       return
     }
 
-    requestAnimationFrame(async () => {
+    requestAnimationFrame(() => {
       try {
-        // Convert the current markdown to Lexical JSON
-        const lexicalJSON = await convertMarkdownToLexical({
-          editorConfig: editorConfig as any,
-          markdown: richTextCompletion,
+        // Convert the current markdown to Lexical using client-side API
+        editor.update(() => {
+          $convertFromMarkdownString(richTextCompletion, TRANSFORMERS)
         })
-        setSafeLexicalState(lexicalJSON, editor)
       } catch (error) {
         console.error('Error converting markdown to Lexical:', error)
       }
     })
-  }, [richTextCompletion, editor, editorConfig])
+  }, [richTextCompletion, editor])
 
   // For plain text/textarea fields
   const {
