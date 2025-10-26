@@ -1,8 +1,0 @@
-export declare const Proofread: import("react").MemoExoticComponent<({ children, disabled, hideIcon, isMenu, onClick, ...rest }: import("../../../../types.js").BaseItemProps) => import("react").JSX.Element>;
-export declare const Rephrase: import("react").MemoExoticComponent<({ children, disabled, hideIcon, isMenu, onClick, ...rest }: import("../../../../types.js").BaseItemProps) => import("react").JSX.Element>;
-export declare const Translate: import("react").MemoExoticComponent<({ children, disabled, hideIcon, isMenu, onClick, ...rest }: import("../../../../types.js").BaseItemProps) => import("react").JSX.Element>;
-export declare const Expand: import("react").MemoExoticComponent<({ children, disabled, hideIcon, isMenu, onClick, ...rest }: import("../../../../types.js").BaseItemProps) => import("react").JSX.Element>;
-export declare const Summarize: import("react").MemoExoticComponent<({ children, disabled, hideIcon, isMenu, onClick, ...rest }: import("../../../../types.js").BaseItemProps) => import("react").JSX.Element>;
-export declare const Simplify: import("react").MemoExoticComponent<({ children, disabled, hideIcon, isMenu, onClick, ...rest }: import("../../../../types.js").BaseItemProps) => import("react").JSX.Element>;
-export declare const Compose: import("react").MemoExoticComponent<({ children, disabled, hideIcon, isMenu, onClick, ...rest }: import("../../../../types.js").BaseItemProps) => import("react").JSX.Element>;
-export declare const Settings: import("react").MemoExoticComponent<({ children, disabled, hideIcon, isMenu, onClick, ...rest }: import("../../../../types.js").BaseItemProps) => import("react").JSX.Element>;
