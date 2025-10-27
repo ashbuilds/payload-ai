@@ -192,6 +192,7 @@
     "react-mentions": "^4.4.10",
     "scroll-into-view-if-needed": "^3.1.0",
     "textarea-caret": "^3.0.2",
-    "zod": "^4.1.7"
+    "zod": "^4.1.7",
+    "use-stick-to-bottom": "^1.1.1"
   }
 }

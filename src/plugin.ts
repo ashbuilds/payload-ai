@@ -113,6 +113,9 @@ const payloadAiPlugin =
         {
           path: '@ai-stack/payloadcms/client#InstructionsProvider',
         },
+        {
+          path: '@ai-stack/payloadcms/client#AgentProvider',
+        },
       ]
 
       incomingConfig.admin = {
@@ -142,6 +145,7 @@ const payloadAiPlugin =
           ...(incomingConfig.endpoints ?? []),
           pluginEndpoints.textarea,
           pluginEndpoints.upload,
+          pluginEndpoints.chat,
           fetchFields(pluginConfig),
         ],
         globals: globals.map((global) => {
