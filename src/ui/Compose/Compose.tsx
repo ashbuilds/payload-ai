@@ -79,37 +79,58 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
     }
   }, [pathFromContext, schemaPath, actionsRef, editorContainerRef, fieldType])
 
-  // Show or hide actions menu on field
+  // Show or hide actions menu on field - supports react-select and portal-based controls
   useEffect(() => {
-    if (!input || !actionsRef.current) {
+    if (!actionsRef.current || !pathFromContext) {
       return
     }
 
-    actionsRef.current?.classList.add(styles.actions_hidden)
+    actionsRef.current.classList.add(styles.actions_hidden)
 
-    const clickHandler = (event: MouseEvent) => {
+    const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
+    const fieldEl = document.getElementById(fieldId) || actionsRef.current?.parentElement?.querySelector('input')
+    const ourFieldContainer = fieldEl?.closest('.field-type') as HTMLElement | null
+
+    const handleInteraction = (event: Event) => {
+      const target = event.target as HTMLElement
+      const container = findParentWithClass(target, 'field-type')
+
+      // If the interaction didn't originate from any field container (e.g., react-select menu portal),
+      // do not change visibility to avoid incorrectly hiding the active menu.
+      if (!container) {
+        return
+      }
+
+      // Hide other active action menus except the current container
       document.querySelectorAll('.ai-plugin-active')?.forEach((element) => {
-        const actionElement = (element as HTMLElement).querySelector(`.${styles.actions}`)
-        if (actionElement) {
-          actionElement.classList.add(styles.actions_hidden)
-          element.classList.remove('ai-plugin-active')
+        if (element !== container) {
+          const actionElement = (element as HTMLElement).querySelector(`.${styles.actions}`)
+          if (actionElement) {
+            actionElement.classList.add(styles.actions_hidden)
+            element.classList.remove('ai-plugin-active')
+          }
         }
       })
 
-      actionsRef.current?.classList.remove(styles.actions_hidden)
-      const parentWithClass = findParentWithClass(event.target as HTMLElement, 'field-type')
-      if (parentWithClass) {
-        parentWithClass.classList.add('ai-plugin-active')
+      // Show or hide this field's actions based on whether the container is ours
+      if (ourFieldContainer && container === ourFieldContainer) {
+        actionsRef.current?.classList.remove(styles.actions_hidden)
+        ourFieldContainer.classList.add('ai-plugin-active')
+      } else {
+        actionsRef.current?.classList.add(styles.actions_hidden)
       }
     }
 
-    input?.addEventListener('click', clickHandler)
+    // Use document-level listeners to catch interactions from complex controls (e.g., react-select)
+    document.addEventListener('focusin', handleInteraction)
+    document.addEventListener('mousedown', handleInteraction)
 
-    // Clean up the event listener when the component unmounts or input changes
+    // Clean up the event listeners when the component unmounts or dependencies change
     return () => {
-      input?.removeEventListener('click', clickHandler)
+      document.removeEventListener('focusin', handleInteraction)
+      document.removeEventListener('mousedown', handleInteraction)
     }
-  }, [input, actionsRef])
+  }, [actionsRef, pathFromContext])
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const { generate, isLoading, stop } = useGenerate({ instructionId })
