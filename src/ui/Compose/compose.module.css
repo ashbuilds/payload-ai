@@ -3,34 +3,110 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  transition: opacity 0.12s ease, max-height 0.12s ease;
-  /* Hidden by default; shown when field container is active/focused */
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  max-height: 0;
   padding: 0 5px;
   margin: 0;
-  z-index: 0;
+  z-index: 1;
+  transform: scaleY(0) skewX(90deg) translateY(-5px);
+  transform-origin: top;
+  max-height: 0;
+
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+
+  transition:
+    opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    margin 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 0.3s;
 }
 
-/* Show Compose for the active/focused field container */
 :global(.field-type.ai-plugin-active) .actions {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  max-height: 100px;
   padding: 5px 0;
   margin: 5px 0;
-  z-index: auto;
+  max-height: 100px;
+  transform: scaleY(1) skewX(0) translateY(0) translateZ(0);
+
+  transition:
+    opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    margin 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Legacy class retained for backward compatibility (no longer toggled by JS) */
-.actions_hidden {
-  max-height: 0;
-  overflow: hidden;
-  padding: 0 5px;
-  margin: 0;
+:global(.field-type.ai-plugin-active) .actions {
+  animation: removeWillChange 0.3s forwards;
+}
+
+@keyframes removeWillChange {
+  to {
+    will-change: auto;
+  }
+}
+
+.actions > * {
   opacity: 0;
-  z-index: 0;
+  transform: translateY(-3px) translateZ(0);
+
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+
+  transition:
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:global(.field-type.ai-plugin-active) .actions > * {
+  opacity: 1;
+  transform: translateY(0) translateZ(0);
+}
+
+:global(.field-type.ai-plugin-active) .actions > *:nth-child(1) {
+  transition-delay: 0.05s;
+  animation: removeWillChange 0.25s 0.05s forwards;
+}
+
+:global(.field-type.ai-plugin-active) .actions > *:nth-child(2) {
+  transition-delay: 0.08s;
+  animation: removeWillChange 0.28s 0.08s forwards;
+}
+
+:global(.field-type.ai-plugin-active) .actions > *:nth-child(3) {
+  transition-delay: 0.11s;
+  animation: removeWillChange 0.31s 0.11s forwards;
+}
+
+:global(.field-type.ai-plugin-active) .actions > *:nth-child(4) {
+  transition-delay: 0.14s;
+  animation: removeWillChange 0.34s 0.14s forwards;
+}
+
+:global(.field-type.ai-plugin-active) .actions > *:nth-child(5) {
+  transition-delay: 0.17s;
+  animation: removeWillChange 0.37s 0.17s forwards;
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-resolution: 120dpi) {
+  .actions,
+  .actions > * {
+    transition-duration: 0.2s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actions,
+  .actions > * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    will-change: auto !important;
+  }
 }
