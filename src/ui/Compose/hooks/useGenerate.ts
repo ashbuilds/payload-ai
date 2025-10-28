@@ -1,4 +1,4 @@
-import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/react'
+import { experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
@@ -15,6 +15,7 @@ import {
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
+import { fieldToJsonSchema } from '../../../utilities/fieldToJsonSchema.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
@@ -29,7 +30,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     instructionIdRef.current = instructionId
   }, [instructionId])
 
-  const { type, path: pathFromContext } = useFieldProps()
+  const { field, path: pathFromContext } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
 
   const { editor } = editorConfigContext
@@ -40,7 +41,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     serverURL,
   } = config
 
-  const { setValue } = useField<string>({
+  const { setValue } = useField<any>({
     path: pathFromContext ?? '',
   })
 
@@ -89,6 +90,22 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     [memoizedValidator],
   )
 
+  // Active JSON schema for useObject based on field type
+  const activeSchema = useMemo(() => {
+    const f = field as any
+    const fieldType = f?.type as string | undefined
+    if (fieldType === 'richText') {
+      return memoizedSchema
+    }
+    if (f && f.name && fieldType) {
+      const schemaJson = fieldToJsonSchema(f)
+      if (schemaJson && Object.keys(schemaJson).length > 0) {
+        return jsonSchema(schemaJson)
+      }
+    }
+    return undefined
+  }, [field, memoizedSchema])
+
   const {
     isLoading: loadingObject,
     object,
@@ -101,14 +118,19 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       console.error('Error generating object:', error)
     },
     onFinish: (result) => {
-      if (result.object) {
-        setHistory(result.object)
-        setValue(result.object)
+      if (result.object && field) {
+        if (field.type === 'richText') {
+          setHistory(result.object)
+          setValue(result.object)
+        } else if ('name' in field) {
+          setHistory(result.object[field.name])
+          setValue(result.object[field.name])
+        }
       } else {
-        console.log('onFinish: result ', result)
+        console.log('onFinish: result, field ', result, field)
       }
     },
-    schema: memoizedSchema,
+    schema: activeSchema as any,
   })
 
   useEffect(() => {
@@ -117,40 +139,13 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     }
 
     requestAnimationFrame(() => {
-      // TODO: Temporary disabled pre validation, sometimes it fails to validate
-      // const validateObject = await memoizedSchema?.validate?.(object)
-      // if (validateObject?.success) {
+      if (field?.type === 'richText') {
       setSafeLexicalState(object, editor)
-      // }
+      } else if (field && 'name' in field && object[field.name]) {
+        setValue(object[field.name])
+      }
     })
-  }, [object, editor])
-
-  const {
-    complete,
-    completion,
-    isLoading: loadingCompletion,
-    stop: completionStop,
-  } = useCompletion({
-    api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
-    onError: (error: any) => {
-      toast.error(`Failed to generate: ${error.message}`)
-      console.error('Error generating text:', error)
-    },
-    onFinish: (prompt, result) => {
-      setHistory(result)
-    },
-    streamProtocol: 'data',
-  })
-
-  useEffect(() => {
-    if (!completion) {
-      return
-    }
-
-    requestAnimationFrame(() => {
-      setValue(completion)
-    })
-  }, [completion])
+  }, [object, editor, field])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
@@ -175,31 +170,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       })
     },
     [localFromContext?.code, instructionIdRef, documentId],
-  )
-
-  const streamText = useCallback(
-    async ({ action = 'Compose', params }: ActionCallbackParams) => {
-      const doc = getData()
-      const currentInstructionId = instructionIdRef.current
-
-      const options = {
-        action,
-        actionParams: params,
-        instructionId: currentInstructionId,
-      }
-
-      await complete('', {
-        body: {
-          doc: {
-            ...doc,
-            id: documentId,
-          },
-          locale: localFromContext?.code,
-          options,
-        },
-      })
-    },
-    [getData, localFromContext?.code, instructionIdRef, complete, documentId],
   )
 
   const generateUpload = useCallback(async () => {
@@ -297,31 +267,24 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {
-      if (type === 'richText') {
-        return streamObject(options ?? { action: 'Compose' })
-      }
-
-      if (['text', 'textarea'].includes(type ?? '') && type) {
-        return streamText(options ?? { action: 'Compose' })
-      }
-
-      if (type === 'upload') {
+      if ((field as any)?.type === 'upload') {
         return generateUpload()
       }
+      // All supported types use structured object generation when schema is provided server-side
+      return streamObject(options ?? { action: 'Compose' })
     },
-    [generateUpload, streamObject, streamText, type],
+    [generateUpload, streamObject, field],
   )
 
   const stop = useCallback(() => {
     console.log('Stopping...')
     objectStop()
-    completionStop()
-  }, [objectStop, completionStop])
+  }, [objectStop])
 
   return {
     generate,
     isJobActive,
-    isLoading: loadingCompletion || loadingObject,
+    isLoading: loadingObject,
     jobProgress,
     jobStatus,
     stop,

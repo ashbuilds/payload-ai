@@ -24,6 +24,8 @@ import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 import { extractImageData } from '../utilities/extractImageData.js'
+import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
+import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
 const requireAuthentication = (req: PayloadRequest) => {
@@ -88,6 +90,27 @@ const extendContextWithPromptFields = (
   })
 }
 
+const buildRichTextSystem = (baseSystem: string, layout: string) => {
+  return `${baseSystem}
+
+RULES:
+- Generate original and unique content based on the given topic.
+- Strictly adhere to the specified layout and formatting instructions.
+- Utilize the provided rich text editor tools for appropriate formatting.
+- Ensure the output follows the structure of the sample output object.
+- Produce valid JSON with no undefined or null values.
+---
+LAYOUT INSTRUCTIONS:
+${layout}
+
+---
+ADDITIONAL GUIDELINES:
+- Ensure coherence and logical flow between all sections.
+- Maintain a consistent tone and style throughout the content.
+- Use clear and concise language appropriate for the target audience.
+`;
+};
+
 const assignPrompt = async (
   action: ActionMenuItems,
   {
@@ -122,7 +145,7 @@ const assignPrompt = async (
     layout: type === 'richText' ? layout : undefined,
     prompt,
     //TODO: Define only once on a collection level
-    system: type === 'richText' ? systemPrompt : undefined,
+    system: type === 'richText' ? buildRichTextSystem(systemPrompt, layout) : undefined,
   }
 
   if (action === 'Compose') {
@@ -163,7 +186,7 @@ const assignPrompt = async (
     layout: updatedLayout,
     // TODO: revisit this toLexicalHTML
     prompt: await replacePlaceholders(`{{${toLexicalHTML} ${field}}}`, extendedContext),
-    system,
+    system: type === 'richText' ? buildRichTextSystem(system, updatedLayout) : system,
   }
 }
 
@@ -214,7 +237,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           const schemaPath = instructions['schema-path'] as string
-          const [collectionName, fieldName] = schemaPath?.split('.') || []
+          const parts = schemaPath?.split('.') || []
+          const collectionName = parts[0]
+          const fieldName = parts.length > 1 ? parts[parts.length - 1] : ''
 
           registerEditorHelper(req.payload, schemaPath)
 
@@ -244,8 +269,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             throw new Error('Model not found')
           }
 
-          // @ts-ignore
-          const settingsName = model && model.settings ? model.settings.name : undefined
+          const settingsName = model.settings && "name" in model.settings ? model.settings.name : undefined
           if (!settingsName) {
             req.payload.logger.error('— AI Plugin: Error fetching settings name!')
           }
@@ -272,11 +296,29 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             )
           }
 
+          // Build per-field JSON schema for structured generation when applicable
+          let jsonSchema= allowedEditorSchema
+          try {
+            const targetCollection = req.payload.config.collections.find(
+              (c) => c.slug === collectionName,
+            )
+            if (targetCollection && fieldName) {
+              const targetField = getFieldBySchemaPath(targetCollection, schemaPath)
+              const supported = ['text', 'textarea', 'select', 'number', 'date', 'code', 'email', 'json']
+              const t = String(targetField?.type || '')
+              if (targetField && supported.includes(t)) {
+                jsonSchema = fieldToJsonSchema(targetField as any, { nameOverride: fieldName })
+              }
+            }
+          } catch (e) {
+            req.payload.logger.error(e, '— AI Plugin: Error building field JSON schema')
+          }
+
           return model.handler?.(prompts.prompt, {
             ...modelOptions,
-            editorSchema: allowedEditorSchema,
             layout: prompts.layout,
             locale: localeInfo,
+            schema: jsonSchema,
             system: prompts.system,
           })
         } catch (error) {
