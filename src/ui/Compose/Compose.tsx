@@ -4,32 +4,17 @@ import type { ClientField } from 'payload'
 import type { FC } from 'react'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { FieldDescription, Popup, useDocumentDrawer, useField } from '@payloadcms/ui'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Popup, useDocumentDrawer, useField } from '@payloadcms/ui'
+import React, { useCallback, useMemo, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
 import { PluginIcon } from '../Icons/Icons.js'
 import styles from './compose.module.css'
 import { useMenu } from './hooks/menu/useMenu.js'
+import { useActiveFieldTracking } from './hooks/useActiveFieldTracking.js'
 import { useGenerate } from './hooks/useGenerate.js'
 import { UndoRedoActions } from './UndoRedoActions.js'
-import { initActiveFieldTracking } from './activeFieldManager.js'
-
-function findParentWithClass(element: HTMLElement | null, className: string): HTMLElement | null {
-  // Base case: if the element is null, or we've reached the top of the DOM
-  if (!element || element === document.body) {
-    return null
-  }
-
-  // Check if the current element has the class we're looking for
-  if (element.classList.contains(className)) {
-    return element
-  }
-
-  // Recursively call the function on the parent element
-  return findParentWithClass(element.parentElement, className)
-}
 
 type ComposeProps = {
   descriptionProps?: {
@@ -50,15 +35,8 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   const pathFromContext = descriptionProps?.path
   const { editor: lexicalEditor } = useEditorConfigContext()
 
-  // // The below snippet is used to show/hide the action menu on AI-enabled fields
-  // const actionsRef = useRef<HTMLLabelElement | null>(null)
-
-  // Initialize global active-field tracking (once)
-  useEffect(() => {
-    initActiveFieldTracking()
-  }, [])
-
-  // Visibility is controlled globally via activeFieldManager and CSS (:focus-within / .ai-plugin-active)
+  // Initialize global active-field tracking
+  useActiveFieldTracking()
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const { generate, isLoading, stop } = useGenerate({ instructionId })

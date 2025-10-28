@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 let currentContainer: HTMLElement | null = null
 
 /**
@@ -137,20 +139,38 @@ const onKeyDown = (e: KeyboardEvent): void => {
  * Initialize document-level listeners to track the active field container.
  * When a container is active, it receives the 'ai-plugin-active' class.
  */
-export const initActiveFieldTracking = (): void => {
-  if (typeof window === 'undefined') {
-    return
-  }
+export const useActiveFieldTracking = (): void => {
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
 
-  const pluginWindow = window as { __aiComposeTracking?: boolean } & Window
-  // Prevent multiple initializations
-  if (pluginWindow.__aiComposeTracking) {
-    return
-  }
+    const pluginWindow = window as {
+      __aiComposeTracking?: boolean
+      __aiComposeTrackingCount?: number
+    } & Window
 
-  document.addEventListener('focusin', onFocusIn, true)
-  document.addEventListener('pointerdown', onPointerDown, true)
-  document.addEventListener('keydown', onKeyDown, true)
+    // Track number of mounted users of the hook
+    pluginWindow.__aiComposeTrackingCount = (pluginWindow.__aiComposeTrackingCount ?? 0) + 1
 
-  pluginWindow.__aiComposeTracking = true
+    // Initialize listeners only once
+    if (!pluginWindow.__aiComposeTracking) {
+      document.addEventListener('focusin', onFocusIn, true)
+      document.addEventListener('pointerdown', onPointerDown, true)
+      document.addEventListener('keydown', onKeyDown, true)
+      pluginWindow.__aiComposeTracking = true
+    }
+
+    return () => {
+      // Decrement and cleanup when the last user unmounts
+      pluginWindow.__aiComposeTrackingCount = (pluginWindow.__aiComposeTrackingCount ?? 1) - 1
+      if ((pluginWindow.__aiComposeTrackingCount ?? 0) <= 0) {
+        document.removeEventListener('focusin', onFocusIn, true)
+        document.removeEventListener('pointerdown', onPointerDown, true)
+        document.removeEventListener('keydown', onKeyDown, true)
+        pluginWindow.__aiComposeTracking = false
+        pluginWindow.__aiComposeTrackingCount = 0
+      }
+    }
+  }, [])
 }
