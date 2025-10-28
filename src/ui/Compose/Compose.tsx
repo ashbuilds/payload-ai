@@ -14,6 +14,7 @@ import styles from './compose.module.css'
 import { useMenu } from './hooks/menu/useMenu.js'
 import { useGenerate } from './hooks/useGenerate.js'
 import { UndoRedoActions } from './UndoRedoActions.js'
+import { initActiveFieldTracking } from './activeFieldManager.js'
 
 function findParentWithClass(element: HTMLElement | null, className: string): HTMLElement | null {
   // Base case: if the element is null, or we've reached the top of the DOM
@@ -46,91 +47,18 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
     collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
   })
 
-  const fieldType = descriptionProps?.field?.type
   const pathFromContext = descriptionProps?.path
-  const schemaPath = descriptionProps?.schemaPath
-  const { editor: lexicalEditor, editorContainerRef } = useEditorConfigContext()
+  const { editor: lexicalEditor } = useEditorConfigContext()
 
-  // The below snippet is used to show/hide the action menu on AI-enabled fields
-  const [input, setInput] = useState<HTMLElement | null>(null)
-  const actionsRef = useRef<HTMLLabelElement | null>(null)
+  // // The below snippet is used to show/hide the action menu on AI-enabled fields
+  // const actionsRef = useRef<HTMLLabelElement | null>(null)
 
-  // Set input element for current field
+  // Initialize global active-field tracking (once)
   useEffect(() => {
-    if (!actionsRef.current) {
-      return
-    }
+    initActiveFieldTracking()
+  }, [])
 
-    if (!pathFromContext) {
-      return
-    }
-
-    const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
-    const inputElement = document.getElementById(fieldId)
-      // || actionsRef.current?.querySelector('input')
-    // inputElement?.setAttribute('id', fieldId)
-    if (!inputElement && fieldType === 'richText') {
-      setInput(editorContainerRef.current as HTMLElement | null)
-    } else {
-      console.log("fieldId :", fieldId)
-      console.log("fieldId actionsRef:", actionsRef)
-      actionsRef.current?.setAttribute('for', fieldId)
-      setInput(inputElement)
-    }
-  }, [pathFromContext, schemaPath, actionsRef, editorContainerRef, fieldType])
-
-  // Show or hide actions menu on field - supports react-select and portal-based controls
-  useEffect(() => {
-    if (!actionsRef.current || !pathFromContext) {
-      return
-    }
-
-    actionsRef.current.classList.add(styles.actions_hidden)
-
-    const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
-    const fieldEl = document.getElementById(fieldId) || actionsRef.current?.parentElement?.querySelector('input')
-    const ourFieldContainer = fieldEl?.closest('.field-type') as HTMLElement | null
-
-    const handleInteraction = (event: Event) => {
-      const target = event.target as HTMLElement
-      const container = findParentWithClass(target, 'field-type')
-
-      // If the interaction didn't originate from any field container (e.g., react-select menu portal),
-      // do not change visibility to avoid incorrectly hiding the active menu.
-      if (!container) {
-        return
-      }
-
-      // Hide other active action menus except the current container
-      document.querySelectorAll('.ai-plugin-active')?.forEach((element) => {
-        if (element !== container) {
-          const actionElement = (element as HTMLElement).querySelector(`.${styles.actions}`)
-          if (actionElement) {
-            actionElement.classList.add(styles.actions_hidden)
-            element.classList.remove('ai-plugin-active')
-          }
-        }
-      })
-
-      // Show or hide this field's actions based on whether the container is ours
-      if (ourFieldContainer && container === ourFieldContainer) {
-        actionsRef.current?.classList.remove(styles.actions_hidden)
-        ourFieldContainer.classList.add('ai-plugin-active')
-      } else {
-        actionsRef.current?.classList.add(styles.actions_hidden)
-      }
-    }
-
-    // Use document-level listeners to catch interactions from complex controls (e.g., react-select)
-    document.addEventListener('focusin', handleInteraction)
-    document.addEventListener('mousedown', handleInteraction)
-
-    // Clean up the event listeners when the component unmounts or dependencies change
-    return () => {
-      document.removeEventListener('focusin', handleInteraction)
-      document.removeEventListener('mousedown', handleInteraction)
-    }
-  }, [actionsRef, pathFromContext])
+  // Visibility is controlled globally via activeFieldManager and CSS (:focus-within / .ai-plugin-active)
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const { generate, isLoading, stop } = useGenerate({ instructionId })
@@ -263,7 +191,6 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
     <label
       className={`payloadai-compose__actions ${styles.actions}`}
       onClick={(e) => e.preventDefault()}
-      ref={actionsRef}
       role="presentation"
     >
       <DocumentDrawer

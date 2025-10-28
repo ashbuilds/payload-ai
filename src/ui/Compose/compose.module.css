@@ -1,16 +1,31 @@
 .actions {
   position: relative;
-  margin: 5px 0;
   display: flex;
   gap: 10px;
-  padding: 5px 0;
-  transition: all 0.3s ease;
-  max-height: 100px;
-  opacity: 1;
   align-items: center;
+  transition: opacity 0.12s ease, max-height 0.12s ease;
+  /* Hidden by default; shown when field container is active/focused */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  max-height: 0;
+  padding: 0 5px;
+  margin: 0;
+  z-index: 0;
+}
+
+/* Show Compose for the active/focused field container */
+:global(.field-type.ai-plugin-active) .actions {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  max-height: 100px;
+  padding: 5px 0;
+  margin: 5px 0;
   z-index: auto;
 }
 
+/* Legacy class retained for backward compatibility (no longer toggled by JS) */
 .actions_hidden {
   max-height: 0;
   overflow: hidden;
