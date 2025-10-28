@@ -32,6 +32,9 @@ export const ComposeField = (props: ComposeFieldProps) => {
     schemaPath: finalSchemaPath,
   })
 
+  const adminDescription = props?.field?.admin || {}
+  const description = "description" in adminDescription ? adminDescription.description : ""
+
   return (
     <FieldProvider
       context={{
@@ -52,9 +55,9 @@ export const ComposeField = (props: ComposeFieldProps) => {
           isConfigAllowed={isConfigAllowed}
         />
       ) : null}
-      {/*Render the incoming description field*/}
+
       <div>
-        <FieldDescription path={props?.path ?? ''} {...props} />
+        <FieldDescription description={description as any} path={props?.path as string} />
       </div>
     </FieldProvider>
   )

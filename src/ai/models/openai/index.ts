@@ -1,16 +1,12 @@
 import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
-import { streamText } from 'ai'
-
 import type { GenerationConfig } from '../../../types.js'
 
-import { extractPromptAttachments } from '../../../utilities/extractPromptAttachments.js'
 import { defaultSystemPrompt } from '../../prompts.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
+import { generateObject } from '../generateObject.js'
 import { generateImage } from './generateImage.js'
-import { generateObject } from './generateObject.js'
-import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
 import { openai } from './openai.js'
 
@@ -45,24 +41,20 @@ export const OpenAIConfig: GenerationConfig = {
           temperature?: number
         },
       ) => {
-        // If a schema is provided, route to structured generation (object mode)
-        if (options && options.schema) {
-          return generateObject(prompt, options)
-        }
-
-        // Fallback: legacy plain text streaming (kept for backward compatibility)
-        const streamTextResult = streamText({
-          maxOutputTokens: options.maxTokens || 5000,
-          model: openai(options.model),
-          onError: (error) => {
-            console.error(`${MODEL_KEY}-text: `, error)
+        return generateObject(
+          prompt,
+          {
+            ...options,
+            providerOptions: {
+              openai: {
+                strictJsonSchema: true,
+                structuredOutputs: true,
+              },
+            },
+            system: options.system || defaultSystemPrompt,
           },
-          prompt: options.extractAttachments ? extractPromptAttachments(prompt) : prompt,
-          system: options.system || defaultSystemPrompt,
-          temperature: options.temperature || 0.7,
-        })
-
-        return streamTextResult.toUIMessageStreamResponse()
+          openai(options.model),
+        )
       },
       output: 'text',
       settings: {
@@ -338,7 +330,20 @@ export const OpenAIConfig: GenerationConfig = {
       name: 'OpenAI GPT',
       fields: ['richText'],
       handler: (text: string, options) => {
-        return generateRichText(text, options)
+        return generateObject(
+          text,
+          {
+            ...options,
+            providerOptions: {
+              openai: {
+                strictJsonSchema: true,
+                structuredOutputs: true,
+              },
+            },
+            system: options.system || defaultSystemPrompt,
+          },
+          openai(options.model),
+        )
       },
       output: 'text',
       settings: {

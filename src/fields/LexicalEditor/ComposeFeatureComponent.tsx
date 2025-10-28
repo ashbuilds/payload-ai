@@ -20,7 +20,7 @@ export const ComposeFeatureComponent = (props: any) => {
   return (
     <FieldProvider
       context={{
-        type: props?.clientProps?.field?.type,
+        field: props?.clientProps?.field,
         path: props?.clientProps?.path,
         schemaPath: props?.clientProps?.schemaPath,
       }}

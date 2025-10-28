@@ -117,9 +117,8 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
           setHistory(result.object)
           setValue(result.object)
         } else if ('name' in field) {
-          const v = result.object[field.name]
-          setHistory(v)
-          setValue(v)
+          setHistory(result.object[field.name])
+          setValue(result.object[field.name])
         }
       } else {
         console.log('onFinish: result, field ', result, field)
@@ -133,19 +132,13 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       return
     }
 
-    if (field?.type === 'richText') {
-      requestAnimationFrame(() => {
-        if (field?.type === 'richText') {
-          // TODO: Temporary disabled pre validation, sometimes it fails to validate
-          // const validateObject = await memoizedSchema?.validate?.(object)
-          // if (validateObject?.success) {
-          setSafeLexicalState(object, editor)
-          // }
-        }
-      })
-    } else if (field && 'name' in field && object[field.name]) {
-      setValue(object[field.name])
-    }
+    requestAnimationFrame(() => {
+      if (field?.type === 'richText') {
+        setSafeLexicalState(object, editor)
+      } else if (field && 'name' in field && object[field.name]) {
+        setValue(object[field.name])
+      }
+    })
   }, [object, editor, field])
 
   const streamObject = useCallback(

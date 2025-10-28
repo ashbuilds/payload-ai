@@ -224,7 +224,6 @@ export function fieldToJsonSchema(
         if (typeof field.maxRows === 'number') {arr.maxItems = field.maxRows;}
         if (base.description) {arr.description = base.description;}
         valueSchema = arr;
-        console.log("valueSchema : ", valueSchema)
       } else {
         valueSchema = base;
       }

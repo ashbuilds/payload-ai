@@ -67,10 +67,13 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
 
     const fieldId = `field-${pathFromContext.replace(/\./g, '__')}`
     const inputElement = document.getElementById(fieldId)
-
+      // || actionsRef.current?.querySelector('input')
+    // inputElement?.setAttribute('id', fieldId)
     if (!inputElement && fieldType === 'richText') {
       setInput(editorContainerRef.current as HTMLElement | null)
     } else {
+      console.log("fieldId :", fieldId)
+      console.log("fieldId actionsRef:", actionsRef)
       actionsRef.current?.setAttribute('for', fieldId)
       setInput(inputElement)
     }
@@ -84,7 +87,6 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
 
     actionsRef.current?.classList.add(styles.actions_hidden)
 
-    // Create the handler function
     const clickHandler = (event: MouseEvent) => {
       document.querySelectorAll('.ai-plugin-active')?.forEach((element) => {
         const actionElement = (element as HTMLElement).querySelector(`.${styles.actions}`)
@@ -101,7 +103,6 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
       }
     }
 
-    // Add the event listener
     input?.addEventListener('click', clickHandler)
 
     // Clean up the event listener when the component unmounts or input changes
@@ -120,73 +121,87 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
         setIsProcessing(true)
         generate({
           action: 'Compose',
-        }).catch((reason)=>{
-          console.error("Compose : ",reason)
-        }).finally(() => {
-          setIsProcessing(false)
         })
+          .catch((reason) => {
+            console.error('Compose : ', reason)
+          })
+          .finally(() => {
+            setIsProcessing(false)
+          })
       },
-      onExpand:  () => {
+      onExpand: () => {
         console.log('Expanding...')
-         generate({
+        generate({
           action: 'Expand',
-        }).catch((reason)=>{
-          console.error("Compose : ",reason)
-        }).finally(() => {
-          setIsProcessing(false)
         })
+          .catch((reason) => {
+            console.error('Compose : ', reason)
+          })
+          .finally(() => {
+            setIsProcessing(false)
+          })
       },
-      onProofread:  () => {
+      onProofread: () => {
         console.log('Proofreading...')
-         generate({
+        generate({
           action: 'Proofread',
-        }).catch((reason)=>{
-          console.error("Compose : ",reason)
-        }).finally(() => {
-          setIsProcessing(false)
         })
+          .catch((reason) => {
+            console.error('Compose : ', reason)
+          })
+          .finally(() => {
+            setIsProcessing(false)
+          })
       },
-      onRephrase:  () => {
+      onRephrase: () => {
         console.log('Rephrasing...')
-         generate({
+        generate({
           action: 'Rephrase',
-        }).catch((reason)=>{
-          console.error("Compose : ",reason)
-        }).finally(() => {
-          setIsProcessing(false)
         })
+          .catch((reason) => {
+            console.error('Compose : ', reason)
+          })
+          .finally(() => {
+            setIsProcessing(false)
+          })
       },
       onSettings: isConfigAllowed ? openDrawer : undefined,
-      onSimplify:  () => {
+      onSimplify: () => {
         console.log('Simplifying...')
-         generate({
+        generate({
           action: 'Simplify',
-        }).catch((reason)=>{
-          console.error("Compose : ",reason)
-        }).finally(() => {
-          setIsProcessing(false)
         })
+          .catch((reason) => {
+            console.error('Compose : ', reason)
+          })
+          .finally(() => {
+            setIsProcessing(false)
+          })
       },
-      onSummarize:  () => {
+      onSummarize: () => {
         console.log('Summarizing...')
-         generate({
+        generate({
           action: 'Summarize',
-        }).catch((reason)=>{
-          console.error("Compose : ",reason)
-        }).finally(() => {
-          setIsProcessing(false)
         })
+          .catch((reason) => {
+            console.error('Compose : ', reason)
+          })
+          .finally(() => {
+            setIsProcessing(false)
+          })
       },
-      onTranslate:  (data) => {
+      onTranslate: (data) => {
         console.log('Translating...')
-         generate({
+        generate({
           action: 'Translate',
           params: data,
-        }).catch((reason)=>{
-          console.error("Compose : ",reason)
-        }).finally(() => {
-          setIsProcessing(false)
         })
+          .catch((reason) => {
+            console.error('Compose : ', reason)
+          })
+          .finally(() => {
+            setIsProcessing(false)
+          })
       },
     },
     {
