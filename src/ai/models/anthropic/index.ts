@@ -5,6 +5,7 @@ import type { GenerationConfig } from '../../../types.js'
 
 import { extractPromptAttachments } from '../../../utilities/extractPromptAttachments.js'
 import { defaultSystemPrompt } from '../../prompts.js'
+import { generateObject } from './generateObject.js'
 import { generateRichText } from './generateRichText.js'
 
 const MODEL_KEY = 'ANTH-C'
@@ -24,7 +25,24 @@ export const AnthropicConfig: GenerationConfig = {
       id: `${MODEL_KEY}-text`,
       name: 'Anthropic Claude',
       fields: ['text', 'textarea'],
-      handler: (prompt: string, options: { extractAttachments: boolean; locale: string; maxTokens: number; model: string; system: string; temperature: number; }) => {
+      handler: (
+        prompt: string,
+        options: {
+          extractAttachments?: boolean
+          locale?: string
+          maxTokens?: number
+          model: string
+          schema?: Record<string, any>
+          system?: string
+          temperature?: number
+        },
+      ) => {
+        // If a schema is provided, route to structured generation (object mode)
+        if (options && options.schema) {
+          return generateObject(prompt, options)
+        }
+
+        // Fallback: legacy plain text streaming (kept for backward compatibility)
         const streamTextResult = streamText({
           maxOutputTokens: options.maxTokens || 5000,
           model: anthropic(options.model),

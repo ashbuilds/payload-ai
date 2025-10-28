@@ -1,4 +1,4 @@
-import { useCompletion, experimental_useObject as useObject } from '@ai-sdk/react'
+import { experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
@@ -13,6 +13,7 @@ import {
   PLUGIN_NAME,
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
+import { buildFieldJsonSchema } from '../../../utilities/buildFieldJsonSchema.js'
 import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
@@ -28,7 +29,15 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     instructionIdRef.current = instructionId
   }, [instructionId])
 
-  const { type, path: pathFromContext } = useFieldProps()
+  const {
+    type,
+    description,
+    fieldName,
+    hasMany,
+    maxRows,
+    minRows,
+    path: pathFromContext,
+  } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
 
   const { editor } = editorConfigContext
@@ -39,7 +48,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     serverURL,
   } = config
 
-  const { setValue } = useField<string>({
+  const { setValue } = useField<any>({
     path: pathFromContext ?? '',
   })
 
@@ -83,6 +92,46 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     [memoizedValidator],
   )
 
+  // Active JSON schema for useObject based on field type
+  const activeSchema = useMemo(() => {
+    if (type === 'richText') {
+      return memoizedSchema
+    }
+    // Build a minimal object schema for text/textarea (includes hasMany/min/max/description)
+    const name = (fieldName as string) || 'value'
+    let schemaJson: any
+    try {
+      if (type && (type === 'text' || type === 'textarea')) {
+        schemaJson = buildFieldJsonSchema(
+          {
+            name,
+            type: type as string,
+            admin: { description },
+            hasMany,
+            maxRows,
+            minRows,
+          } as any,
+          name,
+        )
+      }
+    } catch (e) {
+      console.error('Error building local field JSON schema', e)
+    }
+
+    if (!schemaJson) {
+      schemaJson = {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          [name]: hasMany ? { type: 'array', items: { type: 'string' } } : { type: 'string' },
+        },
+        required: [name],
+      }
+    }
+
+    return jsonSchema(schemaJson)
+  }, [type, memoizedSchema, fieldName, hasMany, minRows, maxRows, description])
+
   const {
     isLoading: loadingObject,
     object,
@@ -96,13 +145,23 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     },
     onFinish: (result) => {
       if (result.object) {
-        setHistory(result.object)
-        setValue(result.object)
+        if (type === 'richText') {
+          setHistory(result.object)
+          setValue(result.object)
+        } else {
+          const key = fieldName as string
+          const value =
+            key && result.object && typeof result.object === 'object'
+              ? (result.object as any)[key]
+              : (result.object as any)
+          setHistory(value)
+          setValue(value)
+        }
       } else {
         console.log('onFinish: result ', result)
       }
     },
-    schema: memoizedSchema,
+    schema: activeSchema,
   })
 
   useEffect(() => {
@@ -111,40 +170,15 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     }
 
     requestAnimationFrame(() => {
-      // TODO: Temporary disabled pre validation, sometimes it fails to validate
-      // const validateObject = await memoizedSchema?.validate?.(object)
-      // if (validateObject?.success) {
+      if (type === 'richText') {
+        // TODO: Temporary disabled pre validation, sometimes it fails to validate
+        // const validateObject = await memoizedSchema?.validate?.(object)
+        // if (validateObject?.success) {
         setSafeLexicalState(object, editor)
-      // }
+        // }
+      }
     })
-  }, [object, editor])
-
-  const {
-    complete,
-    completion,
-    isLoading: loadingCompletion,
-    stop: completionStop,
-  } = useCompletion({
-    api: `${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
-    onError: (error: any) => {
-      toast.error(`Failed to generate: ${error.message}`)
-      console.error('Error generating text:', error)
-    },
-    onFinish: (prompt, result) => {
-      setHistory(result)
-    },
-    streamProtocol: 'data',
-  })
-
-  useEffect(() => {
-    if (!completion) {
-      return
-    }
-
-    requestAnimationFrame(() => {
-      setValue(completion)
-    })
-  }, [completion])
+  }, [object, editor, type])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
@@ -169,31 +203,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       })
     },
     [localFromContext?.code, instructionIdRef, documentId],
-  )
-
-  const streamText = useCallback(
-    async ({ action = 'Compose', params }: ActionCallbackParams) => {
-      const doc = getData()
-      const currentInstructionId = instructionIdRef.current
-
-      const options = {
-        action,
-        actionParams: params,
-        instructionId: currentInstructionId,
-      }
-
-      await complete('', {
-        body: {
-          doc: {
-            ...doc,
-            id: documentId,
-          },
-          locale: localFromContext?.code,
-          options,
-        },
-      })
-    },
-    [getData, localFromContext?.code, instructionIdRef, complete, documentId],
   )
 
   const generateUpload = useCallback(async () => {
@@ -237,37 +246,30 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         toast.error(`Failed to generate: ${error.message}`)
         console.error(
           'Error generating or setting your upload, please set it manually if its saved in your media files.',
-          error
+          error,
         )
       })
   }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {
-      if (type === 'richText') {
-        return streamObject(options ?? { action: 'Compose' })
-      }
-
-      if (['text', 'textarea'].includes(type ?? '') && type) {
-        return streamText(options ?? { action: 'Compose' })
-      }
-
       if (type === 'upload') {
         return generateUpload()
       }
+      // All supported text-like types (text, textarea, richText) use structured object generation
+      return streamObject(options ?? { action: 'Compose' })
     },
-    [generateUpload, streamObject, streamText, type],
+    [generateUpload, streamObject, type],
   )
 
   const stop = useCallback(() => {
     console.log('Stopping...')
     objectStop()
-    completionStop()
-  }, [objectStop, completionStop])
+  }, [objectStop])
 
   return {
     generate,
-    isLoading: loadingCompletion || loadingObject,
+    isLoading: loadingObject,
     stop,
   }
 }

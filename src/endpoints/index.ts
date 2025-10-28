@@ -21,7 +21,9 @@ import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { buildFieldJsonSchema } from '../utilities/buildFieldJsonSchema.js'
 import { extractImageData } from '../utilities/extractImageData.js'
+import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
 const requireAuthentication = (req: PayloadRequest) => {
@@ -57,7 +59,7 @@ const extendContextWithPromptFields = (
   )
   return new Proxy(data, {
     get: (target, prop: string) => {
-      const field = fieldsMap.get(prop as string)
+      const field = fieldsMap.get(prop)
       if (field?.getter) {
         const value = field.getter(data, ctx)
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
@@ -212,7 +214,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           const schemaPath = instructions['schema-path'] as string
-          const [collectionName, fieldName] = schemaPath?.split('.') || []
+          const parts = schemaPath?.split('.') || []
+          const collectionName = parts[0]
+          const fieldName = parts.length > 1 ? parts[parts.length - 1] : ''
 
           registerEditorHelper(req.payload, schemaPath)
 
@@ -270,8 +274,31 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             )
           }
 
+          // Build per-field JSON schema for structured generation when applicable
+          let schemaOption: any
+          try {
+            const targetCollection = req.payload.config.collections.find(
+              (c) => c.slug === collectionName,
+            )
+            if (targetCollection && fieldName) {
+              const targetField = getFieldBySchemaPath(targetCollection as any, schemaPath)
+              if (
+                targetField &&
+                ['text', 'textarea'].includes(String((targetField as any).type || ''))
+              ) {
+                schemaOption = buildFieldJsonSchema(
+                  { ...(targetField as any), name: fieldName },
+                  fieldName,
+                )
+              }
+            }
+          } catch (e) {
+            req.payload.logger.error(e, '— AI Plugin: Error building field JSON schema')
+          }
+
           return model.handler?.(prompts.prompt, {
             ...modelOptions,
+            ...(schemaOption ? { schema: schemaOption } : {}),
             editorSchema: allowedEditorSchema,
             layout: prompts.layout,
             locale: localeInfo,

@@ -180,6 +180,7 @@
     "@ai-sdk/react": "^2.0.39",
     "@ai-sdk/ui-utils": "^1.2.10",
     "@anthropic-ai/sdk": "^0.62.0",
+    "@fal-ai/client": "^1.7.0",
     "ai": "^5.0.39",
     "ajv": "^8.17.1",
     "elevenlabs": "^0.8.2",
@@ -193,5 +194,6 @@
     "scroll-into-view-if-needed": "^3.1.0",
     "textarea-caret": "^3.0.2",
     "zod": "^4.1.7"
-  }
+  },
+  "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8"
 }

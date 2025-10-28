@@ -9,6 +9,7 @@ import { extractPromptAttachments } from '../../../utilities/extractPromptAttach
 import { defaultSystemPrompt } from '../../prompts.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateImage } from './generateImage.js'
+import { generateObject } from './generateObject.js'
 import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
 import { openai } from './openai.js'
@@ -35,28 +36,30 @@ export const OpenAIConfig: GenerationConfig = {
       handler: (
         prompt: string,
         options: {
-          extractAttachments: boolean
-          locale: string
-          maxTokens: number
+          extractAttachments?: boolean
+          locale?: string
+          maxTokens?: number
           model: string
-          system: string
-          temperature: number
+          schema?: Record<string, any>
+          system?: string
+          temperature?: number
         },
       ) => {
+        // If a schema is provided, route to structured generation (object mode)
+        if (options && options.schema) {
+          return generateObject(prompt, options)
+        }
+
+        // Fallback: legacy plain text streaming (kept for backward compatibility)
         const streamTextResult = streamText({
           maxOutputTokens: options.maxTokens || 5000,
           model: openai(options.model),
           onError: (error) => {
             console.error(`${MODEL_KEY}-text: `, error)
           },
-          temperature: options.temperature || 0.7,
-
-          // TODO: Implement billing/token consumption
-          // onFinish: (stepResult) => {
-          //   console.log('streamText : finish : ', stepResult)
-          // },
           prompt: options.extractAttachments ? extractPromptAttachments(prompt) : prompt,
           system: options.system || defaultSystemPrompt,
+          temperature: options.temperature || 0.7,
         })
 
         return streamTextResult.toUIMessageStreamResponse()

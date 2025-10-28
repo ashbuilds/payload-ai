@@ -36,6 +36,11 @@ export const ComposeField = (props: ComposeFieldProps) => {
     <FieldProvider
       context={{
         type: props?.field.type,
+        description: (props?.field as any)?.admin?.description,
+        fieldName: (props?.field as any)?.name,
+        hasMany: (props?.field as any)?.hasMany,
+        maxRows: (props?.field as any)?.maxRows,
+        minRows: (props?.field as any)?.minRows,
         path: props?.path ?? '',
         schemaPath: finalSchemaPath,
       }}

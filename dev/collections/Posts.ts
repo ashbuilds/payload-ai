@@ -36,6 +36,17 @@ export const Posts: CollectionConfig = {
               label: 'Title',
               required: true,
             },
+            {
+              name: 'keywords',
+              type: 'text',
+              admin: {
+                description:
+                  'SEO keywords',
+              },
+              hasMany: true,
+              label: 'keywords',
+              required: false,
+            },
           ],
           label: 'AI Title',
         },
