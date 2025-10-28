@@ -1,6 +1,6 @@
 {
   "name": "@ai-stack/payloadcms",
-  "version": "3.2.20-beta",
+  "version": "3.2.21-beta",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
@@ -180,6 +180,7 @@
     "@ai-sdk/react": "^2.0.39",
     "@ai-sdk/ui-utils": "^1.2.10",
     "@anthropic-ai/sdk": "^0.62.0",
+    "@fal-ai/client": "^1.7.0",
     "ai": "^5.0.39",
     "ajv": "^8.17.1",
     "elevenlabs": "^0.8.2",

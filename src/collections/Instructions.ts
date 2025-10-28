@@ -230,6 +230,7 @@ informative and accurate but also captivating and beautifully structured.`,
                  *  - Layouts can be saved in as an array
                  *  - User can add their own layout to collections and use it later for generate specific rich text
                  *  - User can select previously added layout
+                 *  - IMP: Remove layout from default, this seem to affect other functions like rephrase etc.
                  */
                 name: 'layout',
                 type: 'textarea',

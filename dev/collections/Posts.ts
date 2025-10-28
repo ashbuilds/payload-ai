@@ -36,6 +36,33 @@ export const Posts: CollectionConfig = {
               label: 'Title',
               required: true,
             },
+            {
+              name: 'keywords',
+              type: 'text',
+              // Description of the field is passed to ai model
+              admin: { description: `SEO quality keywords` },
+              hasMany: true,
+              label: 'keywords',
+              maxRows: 5,
+              required: false
+            },
+            {
+              name: "number",
+              type: 'number',
+              admin: {
+                description: "Any random number 1-10",
+              },
+              hasMany: true,
+            },
+            {
+              name: "select",
+              type: "select",
+              options: ["gpt-4o-mini", "gpt-4", "gpt-5"],
+            },
+            {
+              name: "description",
+              type: "textarea"
+            }
           ],
           label: 'AI Title',
         },

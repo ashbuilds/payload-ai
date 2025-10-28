@@ -1,40 +1,49 @@
+import type { ClientField } from 'payload'
+
 import React, { createContext, useEffect } from 'react'
 
-const initialContext: {
+type FieldContextType = {
+  field?: ClientField
   path?: string
   schemaPath?: string
-  type?: string
-} = {
-  type: undefined,
+}
+
+const initialContext: FieldContextType = {
+  field: undefined,
   path: '',
   schemaPath: '',
 }
 
-export const FieldContext = createContext(initialContext)
+export const FieldContext = createContext<FieldContextType>(initialContext)
 
 export const FieldProvider = ({
   children,
   context,
 }: {
   children: React.ReactNode
-  context: { path: string; schemaPath: unknown; type: unknown }
+  context: {
+    field?: ClientField
+    path: string
+    schemaPath: unknown
+  }
 }) => {
-  const [type, setType] = React.useState<string>()
+  const [field, setField] = React.useState<ClientField | undefined>()
   const [path, setPath] = React.useState<string>()
   const [schemaPath, setSchemaPath] = React.useState<string>()
 
   useEffect(() => {
-    if (schemaPath !== context.schemaPath) {
-      setType(context.type as string)
+    const nextSchemaPath = String(context.schemaPath ?? '')
+    if (schemaPath !== nextSchemaPath) {
+      setField(context.field)
       setPath(context.path)
-      setSchemaPath(context.schemaPath as string)
+      setSchemaPath(nextSchemaPath)
     }
   }, [schemaPath, context])
 
   return (
     <FieldContext.Provider
       value={{
-        type,
+        field,
         path,
         schemaPath,
       }}
