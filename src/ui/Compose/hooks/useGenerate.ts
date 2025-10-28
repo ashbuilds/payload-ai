@@ -13,8 +13,8 @@ import {
   PLUGIN_NAME,
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
-import { buildFieldJsonSchema } from '../../../utilities/buildFieldJsonSchema.js'
 import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
+import { fieldToJsonSchema } from '../../../utilities/fieldToJsonSchema.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
@@ -29,15 +29,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     instructionIdRef.current = instructionId
   }, [instructionId])
 
-  const {
-    type,
-    description,
-    fieldName,
-    hasMany,
-    maxRows,
-    minRows,
-    path: pathFromContext,
-  } = useFieldProps()
+  const { field, path: pathFromContext } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
 
   const { editor } = editorConfigContext
@@ -94,43 +86,19 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
   // Active JSON schema for useObject based on field type
   const activeSchema = useMemo(() => {
-    if (type === 'richText') {
+    const f = field as any
+    const fieldType = f?.type as string | undefined
+    if (fieldType === 'richText') {
       return memoizedSchema
     }
-    // Build a minimal object schema for text/textarea (includes hasMany/min/max/description)
-    const name = (fieldName as string) || 'value'
-    let schemaJson: any
-    try {
-      if (type && (type === 'text' || type === 'textarea')) {
-        schemaJson = buildFieldJsonSchema(
-          {
-            name,
-            type: type as string,
-            admin: { description },
-            hasMany,
-            maxRows,
-            minRows,
-          } as any,
-          name,
-        )
-      }
-    } catch (e) {
-      console.error('Error building local field JSON schema', e)
-    }
-
-    if (!schemaJson) {
-      schemaJson = {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          [name]: hasMany ? { type: 'array', items: { type: 'string' } } : { type: 'string' },
-        },
-        required: [name],
+    if (f && f.name && fieldType) {
+      const schemaJson = fieldToJsonSchema(f)
+      if (schemaJson && Object.keys(schemaJson).length > 0) {
+        return jsonSchema(schemaJson)
       }
     }
-
-    return jsonSchema(schemaJson)
-  }, [type, memoizedSchema, fieldName, hasMany, minRows, maxRows, description])
+    return undefined
+  }, [field, memoizedSchema])
 
   const {
     isLoading: loadingObject,
@@ -144,24 +112,20 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       console.error('Error generating object:', error)
     },
     onFinish: (result) => {
-      if (result.object) {
-        if (type === 'richText') {
+      if (result.object && field) {
+        if (field.type === 'richText') {
           setHistory(result.object)
           setValue(result.object)
-        } else {
-          const key = fieldName as string
-          const value =
-            key && result.object && typeof result.object === 'object'
-              ? (result.object as any)[key]
-              : (result.object as any)
-          setHistory(value)
-          setValue(value)
+        } else if ('name' in field) {
+          const v = result.object[field.name]
+          setHistory(v)
+          setValue(v)
         }
       } else {
-        console.log('onFinish: result ', result)
+        console.log('onFinish: result, field ', result, field)
       }
     },
-    schema: activeSchema,
+    schema: activeSchema as any,
   })
 
   useEffect(() => {
@@ -169,16 +133,20 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       return
     }
 
-    requestAnimationFrame(() => {
-      if (type === 'richText') {
-        // TODO: Temporary disabled pre validation, sometimes it fails to validate
-        // const validateObject = await memoizedSchema?.validate?.(object)
-        // if (validateObject?.success) {
-        setSafeLexicalState(object, editor)
-        // }
-      }
-    })
-  }, [object, editor, type])
+    if (field?.type === 'richText') {
+      requestAnimationFrame(() => {
+        if (field?.type === 'richText') {
+          // TODO: Temporary disabled pre validation, sometimes it fails to validate
+          // const validateObject = await memoizedSchema?.validate?.(object)
+          // if (validateObject?.success) {
+          setSafeLexicalState(object, editor)
+          // }
+        }
+      })
+    } else if (field && 'name' in field && object[field.name]) {
+      setValue(object[field.name])
+    }
+  }, [object, editor, field])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
@@ -253,13 +221,13 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {
-      if (type === 'upload') {
+      if ((field as any)?.type === 'upload') {
         return generateUpload()
       }
-      // All supported text-like types (text, textarea, richText) use structured object generation
+      // All supported types use structured object generation when schema is provided server-side
       return streamObject(options ?? { action: 'Compose' })
     },
-    [generateUpload, streamObject, type],
+    [generateUpload, streamObject, field],
   )
 
   const stop = useCallback(() => {

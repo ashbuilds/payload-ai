@@ -1,3 +1,5 @@
+import type { OpenAIProviderOptions } from '@ai-sdk/openai/internal'
+
 import { jsonSchema, streamObject } from 'ai';
 
 import { extractPromptAttachments } from '../../../utilities/extractPromptAttachments.js';
@@ -16,9 +18,15 @@ export const generateObject = (text: string, options: any = {}) => {
       console.error(`generateObject: `, error);
     },
     prompt: options.extractAttachments ? extractPromptAttachments(text) : text,
+    providerOptions:{
+      openai:{
+        strictJsonSchema: true,
+        structuredOutputs: true,
+      } satisfies OpenAIProviderOptions
+    },
     schema: jsonSchema(options.schema),
     system: options.system || defaultSystemPrompt,
-    temperature: options.temperature || 0.7,
+    temperature: options.temperature || 0.7
   });
 
   // Keep return format consistent with other handlers

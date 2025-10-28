@@ -21,8 +21,8 @@ import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
-import { buildFieldJsonSchema } from '../utilities/buildFieldJsonSchema.js'
 import { extractImageData } from '../utilities/extractImageData.js'
+import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
@@ -282,20 +282,17 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             )
             if (targetCollection && fieldName) {
               const targetField = getFieldBySchemaPath(targetCollection as any, schemaPath)
-              if (
-                targetField &&
-                ['text', 'textarea'].includes(String((targetField as any).type || ''))
-              ) {
-                schemaOption = buildFieldJsonSchema(
-                  { ...(targetField as any), name: fieldName },
-                  fieldName,
-                )
+              const supported = ['text', 'textarea', 'select', 'number', 'date', 'code', 'email', 'json']
+              const t = String(targetField?.type || '')
+              if (targetField && supported.includes(t)) {
+                schemaOption = fieldToJsonSchema(targetField as any, { nameOverride: fieldName })
               }
             }
           } catch (e) {
             req.payload.logger.error(e, '— AI Plugin: Error building field JSON schema')
           }
 
+          console.log("schemaOption : ", JSON.stringify(schemaOption, null, 2))
           return model.handler?.(prompts.prompt, {
             ...modelOptions,
             ...(schemaOption ? { schema: schemaOption } : {}),
