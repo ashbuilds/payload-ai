@@ -14,12 +14,13 @@
     "jsx": "preserve",
     "incremental": true,
     "target": "ES2022",
-
-    "declaration": true,
-    "emitDeclarationOnly": true,
     "outDir": "./dist",
-    "declarationDir": "./dist/types",
-    "composite": true
+    "composite": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": ["./src/**/*.ts", "./src/**/*.tsx"],
   "exclude": ["dist"]

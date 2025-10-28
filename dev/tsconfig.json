@@ -30,11 +30,6 @@
       ]
     },
     "noEmit": true,
-    "emitDeclarationOnly": false,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+    "emitDeclarationOnly": false
   }
 }
