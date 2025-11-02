@@ -1,0 +1,5 @@
+tunnel: ${CF_TUNNEL_ID}
+ingress:
+  - hostname: ${CF_TUNNEL_HOSTNAME}
+    service: ${SERVER_URL}
+  - service: http_status:404

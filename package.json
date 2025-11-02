@@ -85,7 +85,8 @@
     "prepublishOnly": "pnpm clean && pnpm build",
     "test": "pnpm test:int && pnpm test:e2e",
     "test:e2e": "playwright test",
-    "test:int": "vitest"
+    "test:int": "vitest",
+    "tunnel": "cloudflared --config infra/cloudflared/config.yml run --token \"$CF_TUNNEL_TOKEN\""
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -103,6 +104,7 @@
     "@types/node": "^22.5.4",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
+    "cloudflared": "^0.7.1",
     "copyfiles": "2.4.1",
     "cross-env": "^7.0.3",
     "eslint": "^9.23.0",
@@ -167,6 +169,7 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "@swc/core",
+      "cloudflared",
       "esbuild",
       "mongodb-memory-server",
       "sharp"

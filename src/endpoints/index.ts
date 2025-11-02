@@ -12,11 +12,11 @@ import type {
 import { defaultPrompts } from '../ai/prompts.js'
 import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
 import {
+  PLUGIN_AI_JOBS_TABLE,
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK,
   PLUGIN_INSTRUCTIONS_TABLE,
-  PLUGIN_AI_JOBS_TABLE,
   PLUGIN_NAME,
 } from '../defaults.js'
 import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
@@ -213,8 +213,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
           }
 
-          const schemaPath = instructions['schema-path'] as string
-          const [collectionName, fieldName] = schemaPath?.split('.') || []
+          const schemaPath = String(instructions['schema-path'])
+          const [collectionName, fieldName] = (schemaPath || '').split('.') || []
 
           registerEditorHelper(req.payload, schemaPath)
 
@@ -486,12 +486,12 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               collection: PLUGIN_AI_JOBS_TABLE,
               data: {
                 instructionId,
-                task_id: externalTaskId,
-                status,
                 progress,
+                status,
+                task_id: externalTaskId,
               },
-              req,
               overrideAccess: true,
+              req,
             })
 
             return new Response(JSON.stringify({ job: { id: createdJob.id } }), {
@@ -523,29 +523,37 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
       handler: async (req: PayloadRequest) => {
         console.log("videogenWebhook --> ")
         try {
-          const secret = req.headers.get('x-webhook-secret') || ''
-          if (
-            !process.env.VIDEOGEN_WEBHOOK_SECRET ||
-            secret !== process.env.VIDEOGEN_WEBHOOK_SECRET
-          ) {
+          const urlAll = new URL(req.url || '')
+          const qpSecret = urlAll.searchParams.get('secret') || ''
+          const headerSecret = req.headers.get('x-webhook-secret') || ''
+          const falSecret = process.env.FAL_WEBHOOK_SECRET
+          const legacySecret = process.env.VIDEOGEN_WEBHOOK_SECRET
+          const provided = qpSecret || headerSecret
+          if (!provided || (falSecret ? provided !== falSecret : provided !== legacySecret)) {
             return new Response('Unauthorized', { status: 401 })
           }
 
-          const url = new URL(req.url || '')
-          const instructionId = url.searchParams.get('instructionId')
+          const instructionId = urlAll.searchParams.get('instructionId')
           if (!instructionId) {
             throw new Error('instructionId missing')
           }
 
           const body = await req.json?.()
-          const { error, outputs = [], progress, status, taskId } = body || {}
+          // Normalize fal webhook payload
+          const status: string | undefined =
+            (body && (body.status || body.data?.status || body.response?.status)) || undefined
+          const progress: number | undefined =
+            (body && (body.progress ?? body.data?.progress ?? body.response?.progress)) ?? undefined
+          const requestId: string | undefined =
+            (body && (body.taskId || body.request_id || body.gateway_request_id || body.request?.request_id)) || undefined
+          const error = body?.error || body?.data?.error || body?.response?.error
 
           // Update AI Job row by task_id (and instructionId)
           const jobSearch = await req.payload.find({
             collection: PLUGIN_AI_JOBS_TABLE,
             where: {
               and: [
-                { task_id: { equals: taskId } },
+                { task_id: { equals: requestId } },
                 { instructionId: { equals: instructionId } },
               ],
             },
@@ -561,16 +569,25 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               data: {
                 progress,
                 status,
-                task_id: taskId,
+                task_id: requestId,
               },
-              req,
               overrideAccess: true,
+              req,
             })
           }
 
-          console.log("body: outputs : ", body)
+          console.log('fal webhook body: ', body)
 
-          if (status === 'completed' && outputs?.[0]?.url) {
+          const videoUrl =
+            body?.outputs?.[0]?.url ||
+            body?.data?.outputs?.[0]?.url ||
+            body?.video?.url ||
+            body?.data?.video?.url ||
+            body?.response?.video?.url ||
+            body?.videos?.[0]?.url ||
+            body?.data?.videos?.[0]?.url
+
+          if (status === 'completed' && videoUrl) {
             // Fetch the related instruction to get upload collection
             const instructions = await req.payload.findByID({
               id: instructionId,
@@ -579,7 +596,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             })
 
             const uploadCollectionSlug = instructions['relation-to']
-            const videoUrl = outputs[0].url
 
             const videoResp = await fetch(videoUrl)
             if (!videoResp.ok) {
@@ -596,8 +612,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 mimetype: 'video/mp4',
                 size: buffer.byteLength,
               },
-              req,
               overrideAccess: true,
+              req,
             })
 
             // Persist the result on the AI Job record
@@ -606,12 +622,12 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 id: jobDoc.id,
                 collection: PLUGIN_AI_JOBS_TABLE,
                 data: {
+                  progress: 100,
                   result_id: created?.id,
                   status: 'completed',
-                  progress: 100,
                 },
-                req,
                 overrideAccess: true,
+                req,
               })
             }
           }
