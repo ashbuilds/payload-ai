@@ -1,11 +1,9 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { streamText } from 'ai'
 
 import type { GenerationConfig } from '../../../types.js'
 
-import { extractPromptAttachments } from '../../../utilities/extractPromptAttachments.js'
 import { defaultSystemPrompt } from '../../prompts.js'
-import { generateRichText } from './generateRichText.js'
+import { generateObject } from '../generateObject.js'
 
 const MODEL_KEY = 'ANTH-C'
 const MODELS = [
@@ -24,19 +22,26 @@ export const AnthropicConfig: GenerationConfig = {
       id: `${MODEL_KEY}-text`,
       name: 'Anthropic Claude',
       fields: ['text', 'textarea'],
-      handler: (prompt: string, options: { extractAttachments: boolean; locale: string; maxTokens: number; model: string; system: string; temperature: number; }) => {
-        const streamTextResult = streamText({
-          maxOutputTokens: options.maxTokens || 5000,
-          model: anthropic(options.model),
-          onError: (error) => {
-            console.error(`${MODEL_KEY}-text: `, error)
+      handler: (
+        prompt: string,
+        options: {
+          extractAttachments?: boolean
+          locale?: string
+          maxTokens?: number
+          model: string
+          schema?: Record<string, any>
+          system?: string
+          temperature?: number
+        },
+      ) => {
+        return generateObject(
+          prompt,
+          {
+            ...options,
+            system: options.system || defaultSystemPrompt,
           },
-          prompt: options.extractAttachments ? extractPromptAttachments(prompt) : prompt,
-          system: options.system || defaultSystemPrompt,
-          temperature: options.temperature || 0.7,
-        })
-
-        return streamTextResult.toUIMessageStreamResponse();
+          anthropic(options.model),
+        )
       },
       output: 'text',
       settings: {
@@ -56,7 +61,8 @@ export const AnthropicConfig: GenerationConfig = {
             options: MODELS,
           },
           {
-            type: 'row', fields: [
+            type: 'row',
+            fields: [
               {
                 name: 'maxTokens',
                 type: 'number',
@@ -69,13 +75,12 @@ export const AnthropicConfig: GenerationConfig = {
                 max: 1,
                 min: 0,
               },
-
-            ]
+            ],
           },
           {
             name: 'extractAttachments',
             type: 'checkbox',
-          }          
+          },
         ],
         label: 'Anthropic Claude Settings',
       },
@@ -85,7 +90,14 @@ export const AnthropicConfig: GenerationConfig = {
       name: 'Anthropic Claude',
       fields: ['richText'],
       handler: (text: string, options) => {
-        return generateRichText(text, options)
+        return generateObject(
+          text,
+          {
+            ...options,
+            system: options.system || defaultSystemPrompt,
+          },
+          anthropic(options.model),
+        )
       },
       output: 'text',
       settings: {
@@ -105,7 +117,8 @@ export const AnthropicConfig: GenerationConfig = {
             options: MODELS,
           },
           {
-            type: 'row', fields: [
+            type: 'row',
+            fields: [
               {
                 name: 'maxTokens',
                 type: 'number',
@@ -118,13 +131,12 @@ export const AnthropicConfig: GenerationConfig = {
                 max: 1,
                 min: 0,
               },
-
-            ]
+            ],
           },
           {
             name: 'extractAttachments',
             type: 'checkbox',
-          }
+          },
         ],
         label: 'Anthropic Claude Settings',
       },

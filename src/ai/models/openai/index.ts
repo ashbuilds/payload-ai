@@ -1,15 +1,12 @@
 import type { SpeechCreateParams } from 'openai/resources/audio/speech'
 import type { File } from 'payload'
 
-import { streamText } from 'ai'
-
 import type { GenerationConfig } from '../../../types.js'
 
-import { extractPromptAttachments } from '../../../utilities/extractPromptAttachments.js'
 import { defaultSystemPrompt } from '../../prompts.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
+import { generateObject } from '../generateObject.js'
 import { generateImage } from './generateImage.js'
-import { generateRichText } from './generateRichText.js'
 import { generateVoice } from './generateVoice.js'
 import { openai } from './openai.js'
 
@@ -35,31 +32,29 @@ export const OpenAIConfig: GenerationConfig = {
       handler: (
         prompt: string,
         options: {
-          extractAttachments: boolean
-          locale: string
-          maxTokens: number
+          extractAttachments?: boolean
+          locale?: string
+          maxTokens?: number
           model: string
-          system: string
-          temperature: number
+          schema?: Record<string, any>
+          system?: string
+          temperature?: number
         },
       ) => {
-        const streamTextResult = streamText({
-          maxOutputTokens: options.maxTokens || 5000,
-          model: openai(options.model),
-          onError: (error) => {
-            console.error(`${MODEL_KEY}-text: `, error)
+        return generateObject(
+          prompt,
+          {
+            ...options,
+            providerOptions: {
+              openai: {
+                strictJsonSchema: true,
+                structuredOutputs: true,
+              },
+            },
+            system: options.system || defaultSystemPrompt,
           },
-          temperature: options.temperature || 0.7,
-
-          // TODO: Implement billing/token consumption
-          // onFinish: (stepResult) => {
-          //   console.log('streamText : finish : ', stepResult)
-          // },
-          prompt: options.extractAttachments ? extractPromptAttachments(prompt) : prompt,
-          system: options.system || defaultSystemPrompt,
-        })
-
-        return streamTextResult.toUIMessageStreamResponse()
+          openai(options.model),
+        )
       },
       output: 'text',
       settings: {
@@ -335,7 +330,20 @@ export const OpenAIConfig: GenerationConfig = {
       name: 'OpenAI GPT',
       fields: ['richText'],
       handler: (text: string, options) => {
-        return generateRichText(text, options)
+        return generateObject(
+          text,
+          {
+            ...options,
+            providerOptions: {
+              openai: {
+                strictJsonSchema: true,
+                structuredOutputs: true,
+              },
+            },
+            system: options.system || defaultSystemPrompt,
+          },
+          openai(options.model),
+        )
       },
       output: 'text',
       settings: {

@@ -1,11 +1,11 @@
-import type { UserModelMessage } from "ai"
+import type { ModelMessage } from 'ai'
 
 // Converts prompt into messages, extracting images in the process
-export function extractPromptAttachments(prompt: string): UserModelMessage[] {
+export function extractPromptAttachments(prompt: string): ModelMessage[] {
   // Regex to match absolute HTTPS URLs with image extensions
   const imageUrlRegex = /https:\/\/\S+\.(?:png|jpe?g|webp)/gi
   
-  const messages: UserModelMessage[] = []
+  const messages: ModelMessage[] = []
   const imageUrls: string[] = []
   
   // Find all image URLs in the prompt

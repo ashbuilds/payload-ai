@@ -24,7 +24,7 @@ const getActiveComponent = (ac: ActionMenuItems) => {
 }
 
 export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
-  const { type: fieldType, path: pathFromContext } = useFieldProps()
+  const { field:{ type: fieldType } = {}, path: pathFromContext } = useFieldProps()
   const field = useField({ path: pathFromContext ?? '' })
   const [activeComponent, setActiveComponent] = useState<ActionMenuItems>('Rephrase')
 
