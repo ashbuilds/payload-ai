@@ -86,7 +86,7 @@
     "test": "pnpm test:int && pnpm test:e2e",
     "test:e2e": "playwright test",
     "test:int": "vitest",
-    "tunnel": "cloudflared --config infra/cloudflared/config.yml run --token \"$CF_TUNNEL_TOKEN\""
+    "tunnel": "dotenv -e dev/.env -- npx cloudflared tunnel --config infra/cloudflared/config.yml run --token \"$CF_TUNNEL_TOKEN\""
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -107,6 +107,7 @@
     "cloudflared": "^0.7.1",
     "copyfiles": "2.4.1",
     "cross-env": "^7.0.3",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.23.0",
     "eslint-config-next": "15.4.4",
     "graphql": "^16.8.1",

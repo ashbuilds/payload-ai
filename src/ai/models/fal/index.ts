@@ -1,3 +1,5 @@
+import { fal } from '@fal-ai/client'
+
 import type { GenerationConfig } from '../../../types.js'
 
 const DEFAULT_IMAGE2VIDEO_MODEL =
@@ -70,6 +72,54 @@ async function submitFalJob({
   return requestId
 }
 
+function ensureFalClient() {
+  const key = process.env.FAL_KEY
+  if (!key) {
+    throw new Error('FAL service unavailable: FAL_KEY not set')
+  }
+  fal.config({ credentials: key })
+}
+
+async function uploadImageToFal(img: {
+  data?: any
+  name?: string
+  size?: number
+  type?: string
+  url?: string
+}) {
+  ensureFalClient()
+
+  let fileLike: any
+  if (img.data) {
+    const name = img.name || 'image.jpg'
+    const type = img.type || 'application/octet-stream'
+    const FileCtor = (globalThis as any).File
+    try {
+      fileLike = FileCtor ? new FileCtor([img.data], name, { type }) : img.data
+    } catch {
+      fileLike = img.data
+    }
+  } else if (img.url) {
+    const resp = await fetch(img.url)
+    if (!resp.ok) {
+      throw new Error(`Failed to fetch image for upload: ${resp.status}`)
+    }
+    const blob = await resp.blob()
+    const name = img.name || img.url.split('/').pop() || 'image.jpg'
+    const type = img.type || (blob as any).type || 'application/octet-stream'
+    const FileCtor = (globalThis as any).File
+    try {
+      fileLike = FileCtor ? new FileCtor([blob], name, { type }) : blob
+    } catch {
+      fileLike = blob
+    }
+  } else {
+    throw new Error('No image data provided')
+  }
+
+  return await fal.storage.upload(fileLike)
+}
+
 export const FalVideoConfig: GenerationConfig = {
   models: [
     // Image -> Video
@@ -85,7 +135,7 @@ export const FalVideoConfig: GenerationConfig = {
           falModelId?: string
           fps?: number
           height?: number
-          images?: Array<{ name?: string; size?: number; type?: string; url: string }>
+          images?: Array<{ data?: any; name?: string; size?: number; type?: string; url?: string }>
           instructionId?: number | string
           seed?: number
           // collected but only forwarded selectively when/if supported by the target model:
@@ -93,16 +143,18 @@ export const FalVideoConfig: GenerationConfig = {
         },
       ) => {
         const img = options?.images?.[0]
-        if (!img?.url || !/^https?:\/\//i.test(img.url)) {
-          throw new Error('Input image URL required and must be absolute/public')
+        if (!img) {
+          throw new Error('Input image required')
         }
+        const uploadedUrl = await uploadImageToFal(img)
 
         const modelId = options?.falModelId || DEFAULT_IMAGE2VIDEO_MODEL
         const webhookUrl = buildFalWebhookUrl(options?.callbackUrl)
 
+        console.log('uploadedUrl', uploadedUrl)
         // Minimal, model-compatible payload (avoid sending unsupported keys)
         const payload: Record<string, any> = {
-          image_url: img.url,
+          image_url: uploadedUrl,
           prompt,
         }
 
@@ -144,6 +196,14 @@ export const FalVideoConfig: GenerationConfig = {
               {
                 label: 'MiniMax - Image to Video',
                 value: 'fal-ai/minimax-video/image-to-video',
+              },
+              {
+                label: 'Wan 2.1 Pro - Image to Video',
+                value: 'fal-ai/wan-pro/image-to-video',
+              },
+              {
+                label: 'Ovi - Image to Video',
+                value: 'fal-ai/ovi/image-to-video',
               },
               {
                 label: 'Kling v1 Standard (text-to-video)',
@@ -244,7 +304,7 @@ export const FalVideoConfig: GenerationConfig = {
                 value: 'fal-ai/kling-video/v1/standard',
               },
               {
-                label: 'MiniMax - Image to Video (not text)',
+                label: 'MiniMax - Image to Video',
                 value: 'fal-ai/minimax-video/image-to-video',
               },
               { label: 'Custom (use env default)', value: '' },

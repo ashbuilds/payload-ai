@@ -519,9 +519,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           // Otherwise, assume async job launch
           if (result && ('jobId' in result || 'taskId' in result)) {
-            const externalTaskId = (result as any).jobId || (result as any).taskId
-            const status = (result as any).status || 'queued'
-            const progress = (result as any).progress ?? 0
+            const externalTaskId = result.jobId || result.taskId
+            const status = result.status || 'queued'
+            const progress = result.progress ?? 0
 
             // Create AI Job doc and return only its id
             const createdJob = await req.payload.create({
@@ -563,7 +563,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
     },
     videogenWebhook: {
       handler: async (req: PayloadRequest) => {
-        console.log("videogenWebhook --> ")
+        console.log("videogenWebhook --> ", req)
         try {
           const urlAll = new URL(req.url || '')
           const qpSecret = urlAll.searchParams.get('secret') || ''
@@ -571,6 +571,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const falSecret = process.env.FAL_WEBHOOK_SECRET
           const legacySecret = process.env.VIDEOGEN_WEBHOOK_SECRET
           const provided = qpSecret || headerSecret
+          // TODO: fal is failing because of auth but webhook seem to work
           if (!provided || (falSecret ? provided !== falSecret : provided !== legacySecret)) {
             return new Response('Unauthorized', { status: 401 })
           }
@@ -593,14 +594,14 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           // Update AI Job row by task_id (and instructionId)
           const jobSearch = await req.payload.find({
             collection: PLUGIN_AI_JOBS_TABLE,
+            depth: 0,
+            limit: 1,
             where: {
               and: [
                 { task_id: { equals: requestId } },
                 { instructionId: { equals: instructionId } },
               ],
             },
-            limit: 1,
-            depth: 0,
           })
 
           const jobDoc = jobSearch.docs?.[0]
