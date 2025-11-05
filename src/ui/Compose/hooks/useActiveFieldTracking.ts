@@ -50,15 +50,34 @@ const resolveContainerFromTarget = (target: EventTarget | null): HTMLElement | n
 
 /**
  * Update the active container and toggle CSS class
+ * - Avoids acting on disconnected nodes
+ * - Avoids redundant class work
  */
 const setActiveContainer = (next: HTMLElement | null): void => {
+  // Normalize both references against disconnected nodes
+  if (currentContainer && !currentContainer.isConnected) {
+    currentContainer = null
+  }
+  if (next && !next.isConnected) {
+    next = null
+  }
+
   if (currentContainer === next) {
     return
   }
 
   currentContainer?.classList.remove('ai-plugin-active')
-  next?.classList.add('ai-plugin-active')
+  if (next) {
+    next.classList.add('ai-plugin-active')
+  }
   currentContainer = next
+}
+
+const clearActiveContainer = (): void => {
+  if (currentContainer) {
+    currentContainer.classList.remove('ai-plugin-active')
+    currentContainer = null
+  }
 }
 
 const isInteractiveElement = (element: HTMLElement): boolean => {
@@ -85,10 +104,16 @@ const isInteractiveElement = (element: HTMLElement): boolean => {
 
 /**
  * Handle focus events - only activate if focus is on an interactive element within .field-type
+ * Includes early-bail when focus moves within the same active container
  */
 const onFocusIn = (e: FocusEvent): void => {
   const target = e.target
   if (!(target instanceof HTMLElement)) {
+    return
+  }
+
+  // Early exit if we're already inside the current container
+  if (currentContainer && currentContainer.contains(target)) {
     return
   }
 
@@ -98,7 +123,6 @@ const onFocusIn = (e: FocusEvent): void => {
   }
 
   const container = resolveContainerFromTarget(target)
-  // Only update if we found a new container
   if (container) {
     setActiveContainer(container)
   }
@@ -106,6 +130,7 @@ const onFocusIn = (e: FocusEvent): void => {
 
 /**
  * Handle pointer/mouse events - only switch when clicking a different .field-type
+ * Includes early-bail when clicking within the same active container
  */
 const onPointerDown = (e: PointerEvent): void => {
   const target = e.target
@@ -113,9 +138,12 @@ const onPointerDown = (e: PointerEvent): void => {
     return
   }
 
-  const container = resolveContainerFromTarget(target)
+  if (currentContainer && currentContainer.contains(target)) {
+    // Clicking inside the active container doesn't require any work
+    return
+  }
 
-  // Only update if we found a container (keeps last active if clicking elsewhere)
+  const container = resolveContainerFromTarget(target)
   if (container) {
     setActiveContainer(container)
   }
@@ -129,10 +157,21 @@ const onKeyDown = (e: KeyboardEvent): void => {
     return
   }
 
+  // Defer until after focus has shifted
   requestAnimationFrame(() => {
     const container = resolveContainerFromTarget(document.activeElement)
     setActiveContainer(container)
   })
+}
+
+/**
+ * Handle visibility changes to avoid stale references when page/section is hidden.
+ */
+const onVisibilityChange = (): void => {
+  if (typeof document !== 'undefined' && (document as { hidden?: boolean } & Document).hidden) {
+    // Clear active state to avoid keeping stale DOM references alive
+    setActiveContainer(null)
+  }
 }
 
 /**
@@ -147,6 +186,7 @@ export const useActiveFieldTracking = (): void => {
 
     const pluginWindow = window as {
       __aiComposeTracking?: boolean
+      __aiComposeTrackingController?: AbortController
       __aiComposeTrackingCount?: number
     } & Window
 
@@ -155,19 +195,36 @@ export const useActiveFieldTracking = (): void => {
 
     // Initialize listeners only once
     if (!pluginWindow.__aiComposeTracking) {
-      document.addEventListener('focusin', onFocusIn, true)
-      document.addEventListener('pointerdown', onPointerDown, true)
-      document.addEventListener('keydown', onKeyDown, true)
+      const controller = new AbortController()
+      pluginWindow.__aiComposeTrackingController = controller
+
+      // Use capture for early handling; mark pointerdown passive to minimize main-thread impact
+      document.addEventListener('focusin', onFocusIn, { capture: true, signal: controller.signal })
+      document.addEventListener('pointerdown', onPointerDown, {
+        capture: true,
+        passive: true,
+        signal: controller.signal,
+      })
+      document.addEventListener('keydown', onKeyDown, { capture: true, signal: controller.signal })
+      document.addEventListener('visibilitychange', onVisibilityChange, {
+        signal: controller.signal,
+      })
+
       pluginWindow.__aiComposeTracking = true
     }
 
     return () => {
       // Decrement and cleanup when the last user unmounts
       pluginWindow.__aiComposeTrackingCount = (pluginWindow.__aiComposeTrackingCount ?? 1) - 1
+
       if ((pluginWindow.__aiComposeTrackingCount ?? 0) <= 0) {
-        document.removeEventListener('focusin', onFocusIn, true)
-        document.removeEventListener('pointerdown', onPointerDown, true)
-        document.removeEventListener('keydown', onKeyDown, true)
+        // Atomically remove all listeners that were registered with the controller
+        pluginWindow.__aiComposeTrackingController?.abort()
+        pluginWindow.__aiComposeTrackingController = undefined
+
+        // Clear active state and references
+        clearActiveContainer()
+
         pluginWindow.__aiComposeTracking = false
         pluginWindow.__aiComposeTrackingCount = 0
       }
