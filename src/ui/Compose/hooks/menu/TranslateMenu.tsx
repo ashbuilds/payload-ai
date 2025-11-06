@@ -37,7 +37,6 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
         onClick={() => {
           setShow(!show)
         }}
-        onMouseEnter={() => setShow(true)}
       />
       <div className={styles.hoverMenu} data-show={show}>
         <div
