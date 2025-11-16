@@ -1,12 +1,22 @@
 import type { LanguageModel } from 'ai'
-import * as process from 'node:process'
 
 import { anthropic as anthropicProvider } from '@ai-sdk/anthropic'
+import * as process from 'node:process'
+
 import { openai as openAIProvider } from '../models/openai/openai.js'
 
-export type ProviderKey = 'openai' | 'anthropic'
+export type ProviderKey = 'anthropic' | 'openai'
 
 export const TEXT_MODEL_OPTIONS: Record<ProviderKey, string[]> = {
+  anthropic: [
+    'claude-opus-4-1',
+    'claude-opus-4-0',
+    'claude-sonnet-4-0',
+    'claude-3-opus-latest',
+    'claude-3-5-haiku-latest',
+    'claude-3-5-sonnet-latest',
+    'claude-3-7-sonnet-latest',
+  ],
   openai: [
     'gpt-5',
     'gpt-5-mini',
@@ -17,21 +27,12 @@ export const TEXT_MODEL_OPTIONS: Record<ProviderKey, string[]> = {
     'gpt-4o-mini',
     'gpt-3.5-turbo',
   ],
-  anthropic: [
-    'claude-opus-4-1',
-    'claude-opus-4-0',
-    'claude-sonnet-4-0',
-    'claude-3-opus-latest',
-    'claude-3-5-haiku-latest',
-    'claude-3-5-sonnet-latest',
-    'claude-3-7-sonnet-latest',
-  ],
 }
 
 export function availableTextProviders(): ProviderKey[] {
   const providers: ProviderKey[] = []
-  if (process.env.OPENAI_API_KEY) providers.push('openai')
-  if (process.env.ANTHROPIC_API_KEY) providers.push('anthropic')
+  if (process.env.OPENAI_API_KEY) {providers.push('openai')}
+  if (process.env.ANTHROPIC_API_KEY) {providers.push('anthropic')}
   return providers
 }
 
@@ -45,11 +46,11 @@ export function getLanguageModel(provider: ProviderKey, modelName: string): Lang
   }
 
   switch (provider) {
+    case 'anthropic':
+      return anthropicProvider(modelName)
     case 'openai':
       // Use the local OpenAI factory so custom baseURL is respected
       return openAIProvider(modelName)
-    case 'anthropic':
-      return anthropicProvider(modelName)
     default:
       // Exhaustive check for future providers
       throw new Error(`Unsupported provider: ${String(provider)}`)
