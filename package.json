@@ -5,7 +5,7 @@
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
   "license": "MIT",
-  "author": "ashbuilds",
+  "author": "ashbuilds <ashish.mishra41191@gmail.com>",
   "type": "module",
   "keywords": [
     "payload",
