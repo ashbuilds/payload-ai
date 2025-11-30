@@ -498,6 +498,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             ...modelOptions,
             callbackUrl,
             instructionId,
+            req,
           })
 
           // If model returned a file immediately, proceed with upload

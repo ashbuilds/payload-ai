@@ -77,10 +77,12 @@ export const aiSettingsGlobal: GlobalConfig = {
   hooks: {
     afterRead: [
       async ({ context, doc, req }) => {
-        if (!req.payload.secret) {return doc}
-        
+        if (!req.payload.secret) {
+          return doc
+        }
+
         const { decrypt } = await import('../utilities/encryption.js')
-        
+
         if (doc.providers) {
           doc.providers = doc.providers.map((provider: any) => {
             if (provider.apiKey) {
@@ -101,18 +103,26 @@ export const aiSettingsGlobal: GlobalConfig = {
       },
     ],
     beforeChange: [
-      async ({ data, req }) => {
-        if (!req.payload.secret) {return data}
-        
+      async ({ data, originalDoc, req }) => {
+        if (!req.payload.secret) {
+          return data
+        }
+
         const { encrypt } = await import('../utilities/encryption.js')
-        
+
         // Iterate over providers and encrypt API keys
         if (data.providers) {
           data.providers = data.providers.map((provider: any) => {
             if (provider.apiKey) {
               // If it looks like a masked key, don't re-encrypt (it means it wasn't changed)
               if (provider.apiKey.startsWith('sk-') && provider.apiKey.includes('****')) {
-                delete provider.apiKey // Remove it so it doesn't overwrite the existing encrypted value
+                // Restore the original encrypted key from originalDoc
+                const originalProvider = originalDoc?.providers?.find(
+                  (p: any) => p.id === provider.id,
+                )
+                if (originalProvider?.apiKey) {
+                  provider.apiKey = originalProvider.apiKey
+                }
               } else {
                 // Encrypt new key
                 provider.apiKey = encrypt(provider.apiKey, req.payload.secret)
