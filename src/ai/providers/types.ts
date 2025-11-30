@@ -83,11 +83,22 @@ export type ProviderBlockData =
   | OpenAICompatibleBlockData
   | XAIBlockData
 
+// Generic AI Provider interface matching Vercel AI SDK structure
+export interface AIProvider {
+  (modelId: string, settings?: any): LanguageModel
+  chat?: (modelId: string, settings?: any) => LanguageModel
+  completion?: (modelId: string, settings?: any) => LanguageModel
+  embedding?: (modelId: string, settings?: any) => any
+  image?: (modelId: string, settings?: any) => any
+  languageModel?: (modelId: string, settings?: any) => LanguageModel
+  textEmbedding?: (modelId: string, settings?: any) => any
+}
+
 // Provider registry types
 export interface ProviderConfig {
   apiKey?: string
   enabled: boolean
-  factory: () => any // Provider instance factory
+  factory: () => AIProvider | any // Provider instance factory
   id: string
   instance?: any // For providers like fal that use singleton
   models: ProviderModel[]

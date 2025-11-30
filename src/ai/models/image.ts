@@ -28,9 +28,23 @@ const getModelsFromBlocks = (useCase: string) => {
 const getImageProviders = () => {
   return allProviderBlocks
     .filter((block) => {
+      // Check if the block has a 'models' array field
       const modelsField = block.fields.find((f: any) => f.name === 'models')
+      
+      // Check if the 'useCase' field within 'models' has 'image' as an option
+      const useCaseField = modelsField && 'fields' in modelsField 
+        ? (modelsField.fields as any[]).find((f: any) => f.name === 'useCase')
+        : undefined
+        
+      const supportsImage = useCaseField && 'options' in useCaseField 
+        ? (useCaseField.options as any[]).some(opt => opt.value === 'image')
+        : false
+
+      // Also check default values for backward compatibility or if options check fails
       const defaultModels = modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
-      return defaultModels.some((m) => m.useCase === 'image')
+      const hasDefaultImageModel = defaultModels.some((m) => m.useCase === 'image')
+
+      return supportsImage || hasDefaultImageModel
     })
     .map((block) => ({
       label: typeof block.labels?.singular === 'string' ? block.labels.singular : block.slug,
@@ -46,12 +60,21 @@ export const ImageConfig: GenerationConfig = {
       fields: ['upload'],
       handler: async (prompt: string, options: any) => {
         const { req } = options
+
+        if (!prompt || !prompt.trim()) {
+          throw new Error('Prompt is required for image generation. Please ensure your Instruction has a prompt template.')
+        }
+
         const model = await getImageModel(req.payload, options.provider, options.model)
-        
-        // TODO: Implement actual generation using the model instance
-        // This requires updating the generation logic to handle different SDK responses
-        // For now, we just throw to indicate it's not fully wired up yet
-        throw new Error('Image generation using registry is pending implementation')
+        const { experimental_generateImage } = await import('ai')
+
+        const { image } = await experimental_generateImage({
+          model,
+          n: 1,
+          prompt,
+        })
+
+        return image.base64
       },
       output: 'image',
       settings: {
@@ -72,10 +95,14 @@ export const ImageConfig: GenerationConfig = {
           },
           {
             name: 'model',
-            type: 'select',
+            type: 'text',
+            admin: {
+              components: {
+                Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+              },
+            },
             defaultValue: 'dall-e-3',
             label: 'Model',
-            options: getModelsFromBlocks('image'),
           },
         ],
         label: 'Image Settings',

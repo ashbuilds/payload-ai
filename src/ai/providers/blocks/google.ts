@@ -32,8 +32,10 @@ export const googleBlock: Block = {
         { id: 'gemini-exp-1206', name: 'Gemini Exp 1206', enabled: true, useCase: 'text' },
         { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', enabled: true, useCase: 'text' },
         { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', enabled: true, useCase: 'text' },
+        // { id: 'gemini-2.5-flash-image', name: 'Gemini 2.5 Flash Image', enabled: true, useCase: 'image' },
+        // { id: 'gemini-3-pro-image-preview', name: 'Gemini 3 Pro Image', enabled: true, useCase: 'image' },
         {
-          id: 'imagen-3.0-generate-001',
+          id: 'imagen-3.0-generate-002',
           name: 'Imagen 3.0',
           enabled: true,
           useCase: 'image',

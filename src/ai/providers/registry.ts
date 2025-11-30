@@ -13,6 +13,7 @@ import { createXai } from '@ai-sdk/xai'
 import * as process from 'node:process'
 
 import type {
+  AIProvider,
   AISettingsData,
   AnthropicBlockData,
   ElevenLabsBlockData,
@@ -91,9 +92,11 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
   })) as unknown as AISettingsData
 
   const registry: ProviderRegistry = {}
-
+  console.log('settings - >', JSON.stringify(settings, null, 2))
   for (const providerBlock of settings.providers || []) {
-    if (!providerBlock.enabled) {continue}
+    if (!providerBlock.enabled) {
+      continue
+    }
 
     const { blockType } = providerBlock
 
@@ -105,6 +108,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
     } else if (isProviderBlock<AnthropicBlockData>(providerBlock, 'anthropic')) {
       factory = () => providerFactories.anthropic(providerBlock)
     } else if (isProviderBlock<GoogleBlockData>(providerBlock, 'google')) {
+      console.log("providerBlock:  ", providerBlock)
       factory = () => providerFactories.google(providerBlock)
     } else if (isProviderBlock<XAIBlockData>(providerBlock, 'xai')) {
       factory = () => providerFactories.xai(providerBlock)
@@ -158,8 +162,12 @@ export async function getLanguageModel(
 ): Promise<LanguageModel> {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
-    if (!providerId) {providerId = defaults?.text?.provider}
-    if (!modelId) {modelId = defaults?.text?.model}
+    if (!providerId) {
+      providerId = defaults?.text?.provider
+    }
+    if (!modelId) {
+      modelId = defaults?.text?.model
+    }
   }
 
   if (!providerId || !modelId) {
@@ -192,8 +200,12 @@ export async function getLanguageModel(
 export async function getImageModel(payload: Payload, providerId?: string, modelId?: string) {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
-    if (!providerId) {providerId = defaults?.image?.provider}
-    if (!modelId) {modelId = defaults?.image?.model}
+    if (!providerId) {
+      providerId = defaults?.image?.provider
+    }
+    if (!modelId) {
+      modelId = defaults?.image?.model
+    }
   }
 
   if (!providerId || !modelId) {
@@ -213,8 +225,22 @@ export async function getImageModel(payload: Payload, providerId?: string, model
 
   if (provider.factory) {
     const instance = provider.factory()
-    // Some providers (like OpenAI) return a function that needs to be called with modelId
-    // Others (like Fal) return the SDK instance directly
+
+    // Type-safe check for image support
+    if (
+      typeof instance === 'function' &&
+      'image' in instance &&
+      typeof instance.image === 'function'
+    ) {
+      return instance.image(modelId)
+    }
+
+    // Also check if instance is an object with image method (though usually it's a function + properties)
+    if (typeof instance === 'object' && instance !== null && 'image' in instance) {
+      return (instance as AIProvider).image?.(modelId)
+    }
+
+    // Fallback for providers that might return the model directly or use the default factory
     return typeof instance === 'function' ? instance(modelId) : instance
   }
 
@@ -224,8 +250,12 @@ export async function getImageModel(payload: Payload, providerId?: string, model
 export async function getTTSModel(payload: Payload, providerId?: string, modelId?: string) {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
-    if (!providerId) {providerId = defaults?.tts?.provider}
-    if (!modelId) {modelId = defaults?.tts?.model}
+    if (!providerId) {
+      providerId = defaults?.tts?.provider
+    }
+    if (!modelId) {
+      modelId = defaults?.tts?.model
+    }
   }
 
   if (!providerId || !modelId) {
