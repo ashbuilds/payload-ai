@@ -4,7 +4,7 @@ import OpenAI from 'openai'
 
 import type { GenerateImageParams } from '../../../types.js'
 
-import { editImagesWithOpenAI } from '../../utils/editImagesWithOpenAI.js'
+import { editImagesWithOpenAI } from './editImagesWithOpenAI.js'
 
 export const generateImage = async (
   prompt: string,

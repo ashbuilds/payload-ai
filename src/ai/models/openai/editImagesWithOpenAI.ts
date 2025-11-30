@@ -1,4 +1,4 @@
-import type { ImageReference } from '../../types.js'
+import type { ImageReference } from '../../../types.js'
 
 /**
  * Send multiple images as `image[]` to OpenAI's image edit endpoint using gpt-image-1.
