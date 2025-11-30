@@ -108,8 +108,8 @@ ADDITIONAL GUIDELINES:
 - Ensure coherence and logical flow between all sections.
 - Maintain a consistent tone and style throughout the content.
 - Use clear and concise language appropriate for the target audience.
-`;
-};
+`
+}
 
 const assignPrompt = async (
   action: ActionMenuItems,
@@ -260,18 +260,21 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           const models = getGenerationModels(pluginConfig)
-          console.log("models :", models)
+          console.log('models :', models)
 
           const model =
             models && Array.isArray(models)
               ? models.find((model) => model.id === instructions['model-id'])
               : undefined
 
+          console.log('model --> :', model)
+
           if (!model) {
             throw new Error('Model not found')
           }
 
-          const settingsName = model.settings && "name" in model.settings ? model.settings.name : undefined
+          const settingsName =
+            model.settings && 'name' in model.settings ? model.settings.name : undefined
           if (!settingsName) {
             req.payload.logger.error('— AI Plugin: Error fetching settings name!')
           }
@@ -299,14 +302,23 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           // Build per-field JSON schema for structured generation when applicable
-          let jsonSchema= allowedEditorSchema
+          let jsonSchema = allowedEditorSchema
           try {
             const targetCollection = req.payload.config.collections.find(
               (c) => c.slug === collectionName,
             )
             if (targetCollection && fieldName) {
               const targetField = getFieldBySchemaPath(targetCollection, schemaPath)
-              const supported = ['text', 'textarea', 'select', 'number', 'date', 'code', 'email', 'json']
+              const supported = [
+                'text',
+                'textarea',
+                'select',
+                'number',
+                'date',
+                'code',
+                'email',
+                'json',
+              ]
               const t = String(targetField?.type || '')
               if (targetField && supported.includes(t)) {
                 jsonSchema = fieldToJsonSchema(targetField as any, { nameOverride: fieldName })
@@ -320,6 +332,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             ...modelOptions,
             layout: prompts.layout,
             locale: localeInfo,
+            req,
             schema: jsonSchema,
             system: prompts.system,
           })
@@ -396,7 +409,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             { type: instructions['field-type'], collection: collectionSlug },
             pluginConfig,
           )
-          console.log("extendedContext: ",extendedContext)
+          console.log('extendedContext: ', extendedContext)
           const text = await replacePlaceholders(promptTemplate, extendedContext)
           const modelId = instructions['model-id']
           const uploadCollectionSlug = instructions['relation-to']
@@ -417,7 +430,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
 
             try {
-              console.log("url : ", url)
+              console.log('url : ', url)
               const response = await fetch(url, {
                 headers: {
                   //TODO: Further testing needed or so find a proper way.
@@ -567,7 +580,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
     },
     videogenWebhook: {
       handler: async (req: PayloadRequest) => {
-        console.log("videogenWebhook --> ", req)
+        console.log('videogenWebhook --> ', req)
         try {
           const urlAll = new URL(req.url || '')
           const qpSecret = urlAll.searchParams.get('secret') || ''
@@ -592,7 +605,12 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const progress: number | undefined =
             (body && (body.progress ?? body.data?.progress ?? body.response?.progress)) ?? undefined
           const requestId: string | undefined =
-            (body && (body.taskId || body.request_id || body.gateway_request_id || body.request?.request_id)) || undefined
+            (body &&
+              (body.taskId ||
+                body.request_id ||
+                body.gateway_request_id ||
+                body.request?.request_id)) ||
+            undefined
           const error = body?.error || body?.data?.error || body?.response?.error
 
           // Update AI Job row by task_id (and instructionId)
