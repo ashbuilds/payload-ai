@@ -5,7 +5,7 @@ type ImageData = {
 export function extractImageData(input: string): ImageData {
   const regex = /(?:https?:)?\/[\w%\-.,/]+\.(png|jpe?g|webp)/gi
   const matches = input.match(regex)
-
+  console.log("input : ", input)
   if (!matches) return []
 
   return matches.map((url) => {

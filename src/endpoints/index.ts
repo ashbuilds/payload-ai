@@ -394,6 +394,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             { type: instructions['field-type'], collection: collectionSlug },
             pluginConfig,
           )
+          console.log("extendedContext: ",extendedContext)
           const text = await replacePlaceholders(promptTemplate, extendedContext)
           const modelId = instructions['model-id']
           const uploadCollectionSlug = instructions['relation-to']
@@ -414,6 +415,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
 
             try {
+              console.log("url : ", url)
               const response = await fetch(url, {
                 headers: {
                   //TODO: Further testing needed or so find a proper way.

@@ -7,7 +7,14 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Media } from './collections/Media.js'
+import { NPCs } from './collections/NPCs.js'
+import { Organizations } from './collections/Organizations.js'
 import { Posts } from './collections/Posts.js'
+import { Stories } from './collections/Stories.js'
+import { StoryChapters } from './collections/StoryChapters.js'
+import { StoryEvents } from './collections/StoryEvents.js'
+import { StoryNodes } from './collections/StoryNodes.js'
+import { StoryUniverses } from './collections/StoryUniverses.js'
 import { testEmailAdapter } from './helpers/testEmailAdapter.js'
 
 const filename = fileURLToPath(import.meta.url)
@@ -33,7 +40,14 @@ const buildConfigWithMemoryDB = async () => {
     },
     collections: [
       Media,
-      Posts,
+      // Posts,
+      Organizations,
+      StoryUniverses,
+      Stories,
+      StoryChapters,
+      NPCs,
+      StoryNodes,
+      StoryEvents,
     ],
     db: sqliteAdapter({
       client: {
@@ -47,9 +61,14 @@ const buildConfigWithMemoryDB = async () => {
     plugins: [
       payloadAiPlugin({
         collections: {
+          [NPCs.slug]: true,
           [Posts.slug]: true,
+          [Stories.slug]: true,
+          [StoryChapters.slug]: true,
+          [StoryNodes.slug]: true,
+          [StoryUniverses.slug]: true,
         },
-        debugging: process.env.NODE_ENV !== 'production',
+
         disableSponsorMessage: false,
         generatePromptOnInit: process.env.NODE_ENV !== 'production',
         mediaUpload: async (result, { collection, request }) => {

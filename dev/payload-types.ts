@@ -69,6 +69,13 @@ export interface Config {
   collections: {
     media: Media;
     posts: Post;
+    organizations: Organization;
+    'story-universes': StoryUniverse;
+    stories: Story;
+    'story-chapters': StoryChapter;
+    npcs: Npc;
+    'story-nodes': StoryNode;
+    'story-events': StoryEvent;
     users: User;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -79,6 +86,13 @@ export interface Config {
   collectionsSelect: {
     media: MediaSelect<false> | MediaSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
+    'story-universes': StoryUniversesSelect<false> | StoryUniversesSelect<true>;
+    stories: StoriesSelect<false> | StoriesSelect<true>;
+    'story-chapters': StoryChaptersSelect<false> | StoryChaptersSelect<true>;
+    npcs: NpcsSelect<false> | NpcsSelect<true>;
+    'story-nodes': StoryNodesSelect<false> | StoryNodesSelect<true>;
+    'story-events': StoryEventsSelect<false> | StoryEventsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -86,7 +100,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
   globalsSelect: {};
@@ -128,7 +142,7 @@ export interface UserAuthOperations {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt?: string | null;
   caption?: {
     root: {
@@ -220,25 +234,35 @@ export interface Media {
  * via the `definition` "posts".
  */
 export interface Post {
-  id: string;
+  id: number;
   /**
    * Demonstrates AI title generation. Use the AI plugin’s Compose action on this field to generate or iterate on a compelling, SEO-friendly headline.
    */
   title: string;
   /**
+   * SEO quality keywords
+   */
+  keywords?: string[] | null;
+  /**
+   * Any random number 1-10
+   */
+  number?: number[] | null;
+  select?: ('gpt-4o-mini' | 'gpt-4' | 'gpt-5') | null;
+  description?: string | null;
+  /**
    * Upload the source images used by the banner prompt template. The AI composes these into a single hero/banner image.
    */
   bannerInputs?: {
-    shirt?: (string | null) | Media;
-    pants?: (string | null) | Media;
-    person?: (string | null) | Media;
-    background?: (string | null) | Media;
+    shirt?: (number | null) | Media;
+    pants?: (number | null) | Media;
+    person?: (number | null) | Media;
+    background?: (number | null) | Media;
   };
   /**
    * Result of the AI banner generation (typically using OpenAI GPT-Image-1). Use the Compose action to generate and iterate on the final image.
    */
   bannerOutput?: {
-    heroImage?: (string | null) | Media;
+    heroImage?: (number | null) | Media;
   };
   /**
    * Rich text powered by Lexical with AI assistance. Use toolbars and the Compose menu to generate, refine, format, and translate content.
@@ -264,18 +288,395 @@ export interface Post {
    * Generates narration for the Content field. Only the audio file is stored here; model and generation options are configured in the AI plugin settings.
    */
   voice?: {
-    audio?: (string | null) | Media;
+    audio?: (number | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Organizations are used to scope Storytelling content. Users associated with an organization can only access their own org data.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations".
+ */
+export interface Organization {
+  id: number;
+  name: string;
+  /**
+   * Unique identifier for the organization (used in URLs and references).
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "story-universes".
+ */
+export interface StoryUniverse {
+  id: number;
+  /**
+   * Owning organization. Access is scoped by this value.
+   */
+  organization: number | Organization;
+  /**
+   * Unique key used in URLs and engine references.
+   */
+  slug: string;
+  /**
+   * Short universe title. Use AI Compose to ideate and refine.
+   */
+  title: string;
+  /**
+   * Longer background / context for this universe. Rich text with AI Compose enabled.
+   */
+  summary?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional universe-wide flags or engine parameters.
+   */
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stories".
+ */
+export interface Story {
+  id: number;
+  /**
+   * Owning organization. Access is scoped by this value.
+   */
+  organization: number | Organization;
+  /**
+   * Optional universe this story belongs to (Episode 1, 2, etc).
+   */
+  universe?: (number | null) | StoryUniverse;
+  /**
+   * Unique key for URLs and game engine references.
+   */
+  slug: string;
+  /**
+   * Short story title. Use AI Compose to ideate options.
+   */
+  title: string;
+  /**
+   * Short abstract explaining the story in a nutshell. AI Compose is enabled to draft this quickly.
+   */
+  summary?: string | null;
+  /**
+   * High-level quest description for players. AI Compose can propose clear, actionable goals.
+   */
+  objective?: string | null;
+  status: 'draft' | 'active' | 'archived';
+  /**
+   * Ordered list of chapters in this story. Create chapters and link them here or from the chapter itself.
+   */
+  chapters?: (number | StoryChapter)[] | null;
+  /**
+   * Optional internal classification labels.
+   */
+  tags?: string[] | null;
+  /**
+   * Optional engine-specific metadata.
+   */
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "story-chapters".
+ */
+export interface StoryChapter {
+  id: number;
+  /**
+   * Owning organization. Access is scoped by this value.
+   */
+  organization: number | Organization;
+  /**
+   * Parent story for this chapter.
+   */
+  story: number | Story;
+  /**
+   * Integer index indicating chapter order within the story.
+   */
+  order: number;
+  /**
+   * Short chapter title. Use AI Compose to ideate concise titles.
+   */
+  title: string;
+  /**
+   * Short recap of the chapter. Use AI Compose to quickly draft an overview.
+   */
+  summary?: string | null;
+  /**
+   * Narrative content. Rich text supports headings, lists, and inline images. AI Compose is enabled.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * For planning and scheduling game sessions.
+   */
+  estimatedDurationMinutes?: number | null;
+  /**
+   * Optional engine-specific data for this chapter.
+   */
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "npcs".
+ */
+export interface Npc {
+  id: number;
+  /**
+   * Owning organization. Access is scoped by this value.
+   */
+  organization: number | Organization;
+  /**
+   * NPC display name. Use AI Compose to brainstorm distinct, memorable names that fit the role and tone.
+   */
+  name: string;
+  /**
+   * Unique identifier for the NPC (used by content pipelines or engine keys).
+   */
+  slug: string;
+  /**
+   * The primary narrative function of this character. Prompts can reference this to guide generation.
+   */
+  role: 'guide' | 'rival' | 'historian' | 'narrator' | 'other';
+  /**
+   * 2D portrait image used for UI/dialogue.
+   */
+  portrait?: (number | null) | Media;
+  /**
+   * Optional 3D model reference. Can be replaced with a dedicated assets collection later.
+   */
+  model3D?: (number | null) | Media;
+  /**
+   * A longer biography/personality profile. Use AI Compose to generate consistent backstory and voice.
+   */
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Stories this NPC appears in (many-to-many).
+   */
+  linkedStories?: (number | Story)[] | null;
+  /**
+   * Mark as a library NPC that can be reused across experiences for the same organization.
+   */
+  reusableAcrossHunts?: boolean | null;
+  /**
+   * Optional engine metadata (dialogue IDs, voice actor ID, behavior flags, etc).
+   */
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "story-nodes".
+ */
+export interface StoryNode {
+  id: number;
+  /**
+   * Owning organization. Access is scoped by this value.
+   */
+  organization: number | Organization;
+  /**
+   * Story this node belongs to.
+   */
+  story: number | Story;
+  /**
+   * Optional chapter association; lets engines map nodes to linear content when needed.
+   */
+  chapter?: (number | null) | StoryChapter;
+  /**
+   * Self-reference to parent; enables tree-like structures.
+   */
+  parentNode?: (number | null) | StoryNode;
+  /**
+   * Ordering among sibling nodes for deterministic traversal.
+   */
+  order?: number | null;
+  /**
+   * Controls how the engine treats this node (narration, choice, condition, or ending).
+   */
+  nodeType: 'narration' | 'choice' | 'condition' | 'ending';
+  /**
+   * Short node title; useful for editors and visual graphs. AI Compose enabled.
+   */
+  title?: string | null;
+  /**
+   * Narrative shown to the player. Rich text with AI Compose to draft/iterate fast.
+   */
+  text?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional short label shown in UI when nodeType is "choice". AI can suggest succinct options.
+   */
+  choiceLabel?: string | null;
+  /**
+   * Optional JSON used by the game engine to decide transitions (e.g., flags/variables checks).
+   */
+  conditionExpression?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Outgoing edges for this node (branching).
+   */
+  nextNodes?: (number | StoryNode)[] | null;
+  /**
+   * Optional engine-specific data for this node.
+   */
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Analytics and telemetry events for stories. Designed for internal tools and dashboards.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "story-events".
+ */
+export interface StoryEvent {
+  id: number;
+  /**
+   * Owning organization. Access is scoped by this value.
+   */
+  organization: number | Organization;
+  story: number | Story;
+  chapter?: (number | null) | StoryChapter;
+  npc?: (number | null) | Npc;
+  /**
+   * Example values: story_intro_viewed, story_intro_skipped, npc_interaction, chapter_completed, drop_off
+   */
+  eventType: string;
+  /**
+   * Arbitrary event data (shape defined by your game engine/services).
+   */
+  payload?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -299,7 +700,7 @@ export interface User {
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
-  id: string;
+  id: number;
   /**
    * Input data provided to the job
    */
@@ -391,28 +792,56 @@ export interface PayloadJob {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'organizations';
+        value: number | Organization;
+      } | null)
+    | ({
+        relationTo: 'story-universes';
+        value: number | StoryUniverse;
+      } | null)
+    | ({
+        relationTo: 'stories';
+        value: number | Story;
+      } | null)
+    | ({
+        relationTo: 'story-chapters';
+        value: number | StoryChapter;
+      } | null)
+    | ({
+        relationTo: 'npcs';
+        value: number | Npc;
+      } | null)
+    | ({
+        relationTo: 'story-nodes';
+        value: number | StoryNode;
+      } | null)
+    | ({
+        relationTo: 'story-events';
+        value: number | StoryEvent;
       } | null)
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'payload-jobs';
-        value: string | PayloadJob;
+        value: number | PayloadJob;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -422,10 +851,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -445,7 +874,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -550,6 +979,10 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  keywords?: T;
+  number?: T;
+  select?: T;
+  description?: T;
   bannerInputs?:
     | T
     | {
@@ -576,6 +1009,116 @@ export interface PostsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organizations_select".
+ */
+export interface OrganizationsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "story-universes_select".
+ */
+export interface StoryUniversesSelect<T extends boolean = true> {
+  organization?: T;
+  slug?: T;
+  title?: T;
+  summary?: T;
+  meta?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stories_select".
+ */
+export interface StoriesSelect<T extends boolean = true> {
+  organization?: T;
+  universe?: T;
+  slug?: T;
+  title?: T;
+  summary?: T;
+  objective?: T;
+  status?: T;
+  chapters?: T;
+  tags?: T;
+  meta?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "story-chapters_select".
+ */
+export interface StoryChaptersSelect<T extends boolean = true> {
+  organization?: T;
+  story?: T;
+  order?: T;
+  title?: T;
+  summary?: T;
+  content?: T;
+  estimatedDurationMinutes?: T;
+  meta?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "npcs_select".
+ */
+export interface NpcsSelect<T extends boolean = true> {
+  organization?: T;
+  name?: T;
+  slug?: T;
+  role?: T;
+  portrait?: T;
+  model3D?: T;
+  bio?: T;
+  linkedStories?: T;
+  reusableAcrossHunts?: T;
+  meta?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "story-nodes_select".
+ */
+export interface StoryNodesSelect<T extends boolean = true> {
+  organization?: T;
+  story?: T;
+  chapter?: T;
+  parentNode?: T;
+  order?: T;
+  nodeType?: T;
+  title?: T;
+  text?: T;
+  choiceLabel?: T;
+  conditionExpression?: T;
+  nextNodes?: T;
+  meta?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "story-events_select".
+ */
+export interface StoryEventsSelect<T extends boolean = true> {
+  organization?: T;
+  story?: T;
+  chapter?: T;
+  npc?: T;
+  eventType?: T;
+  payload?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -670,12 +1213,17 @@ export interface TaskSchedulePublish {
   input: {
     type?: ('publish' | 'unpublish') | null;
     locale?: string | null;
-    doc?: {
-      relationTo: 'posts';
-      value: string | Post;
-    } | null;
+    doc?:
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'stories';
+          value: number | Story;
+        } | null);
     global?: string | null;
-    user?: (string | null) | User;
+    user?: (number | null) | User;
   };
   output?: unknown;
 }
