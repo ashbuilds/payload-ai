@@ -7,6 +7,7 @@ import type { PluginConfig } from './types.js'
 import { defaultGenerationModels } from './ai/models/index.js'
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { aiJobsCollection } from './collections/AIJobs.js'
+import { aiSettingsGlobal } from './collections/AISettings.js'
 import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
 import { fetchFields } from './endpoints/fetchFields.js'
@@ -106,7 +107,7 @@ const payloadAiPlugin =
       }
 
       const collections = [...(incomingConfig.collections ?? []), Instructions, AIJobs]
-      const globals = [...(incomingConfig.globals ?? [])]
+      const globals = [...(incomingConfig.globals ?? []), aiSettingsGlobal]
       const { collections: collectionSlugs, globals: globalsSlugs } = pluginConfig
 
       const { components: { providers = [] } = {} } = incomingConfig.admin || {}

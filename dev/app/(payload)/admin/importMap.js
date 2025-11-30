@@ -27,6 +27,8 @@ import { LexicalEditorFeatureClient as LexicalEditorFeatureClient_4490b89d4413c1
 import { TableFeatureClient as TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { SelectField as SelectField_c25bd927cd468b8e16d7bdb2cc282659 } from '@ai-stack/payloadcms/fields'
 import { PromptEditorField as PromptEditorField_c25bd927cd468b8e16d7bdb2cc282659 } from '@ai-stack/payloadcms/fields'
+import { AIConfigDashboard as AIConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
+import { EncryptedTextField as EncryptedTextField_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { InstructionsProvider as InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 
 export const importMap = {
@@ -59,5 +61,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#TableFeatureClient": TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@ai-stack/payloadcms/fields#SelectField": SelectField_c25bd927cd468b8e16d7bdb2cc282659,
   "@ai-stack/payloadcms/fields#PromptEditorField": PromptEditorField_c25bd927cd468b8e16d7bdb2cc282659,
+  "@ai-stack/payloadcms/client#AIConfigDashboard": AIConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73,
+  "@ai-stack/payloadcms/client#EncryptedTextField": EncryptedTextField_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#InstructionsProvider": InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73
 }

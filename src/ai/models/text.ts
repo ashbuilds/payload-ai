@@ -2,12 +2,8 @@ import type { GenerationConfig } from '../../types.js'
 import type { ProviderId } from '../providers/index.js'
 
 import { defaultSystemPrompt } from '../prompts.js'
-import {
-  getEnabledProviders,
-  getLanguageModel,
-  getModelsForUseCase,
-  providerRegistry,
-} from '../providers/index.js'
+import { allProviderBlocks } from '../providers/blocks/index.js'
+import { getLanguageModel } from '../providers/index.js'
 import { generateObject } from './generateObject.js'
 
 type TextOptions = {
@@ -21,25 +17,50 @@ type TextOptions = {
   temperature?: number
 }
 
-// Get all text models across all enabled providers
-const getAllTextModels = () => {
-  const models = getModelsForUseCase('text')
-  return models.map((m) => `${m.provider}/${m.model}`)
+// Helper to extract models from blocks
+const getModelsFromBlocks = (useCase: string) => {
+  const models: { label: string; value: string }[] = []
+
+  allProviderBlocks.forEach((block) => {
+    const providerId = block.slug
+    const modelsField = block.fields.find((f: any) => f.name === 'models')
+    const defaultModels =
+      modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
+
+    defaultModels.forEach((m) => {
+      if (m.useCase === useCase) {
+        models.push({
+          label: `${block.labels?.singular || providerId} - ${m.name}`,
+          value: m.id, // We just use model ID, provider is selected separately
+        })
+      }
+    })
+  })
+
+  return models
 }
 
 const getTextProviders = () => {
-  return getEnabledProviders().filter((id) => {
-    const models = providerRegistry[id].models.text
-    return models && models.length > 0
-  })
+  return allProviderBlocks
+    .filter((block) => {
+      // Check if this provider has any text models in its default configuration
+      const modelsField = block.fields.find((f: any) => f.name === 'models')
+      const defaultModels =
+        modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
+      return defaultModels.some((m) => m.useCase === 'text')
+    })
+    .map((block) => ({
+      label: typeof block.labels?.singular === 'string' ? block.labels.singular : block.slug,
+      value: block.slug,
+    }))
 }
 
 const providerSelect = {
   name: 'provider',
   type: 'select',
-  defaultValue: getTextProviders()[0] || 'openai',
+  defaultValue: 'openai',
   label: 'Provider',
-  options: getTextProviders().map((p) => ({ label: providerRegistry[p].name, value: p })),
+  options: getTextProviders(),
 }
 
 const modelSelect = {
@@ -47,8 +68,7 @@ const modelSelect = {
   type: 'select',
   defaultValue: 'gpt-4o',
   label: 'Model',
-  // Return all text models from all enabled providers
-  options: getAllTextModels(),
+  options: getModelsFromBlocks('text'),
 }
 
 const commonParamsRow = {
@@ -75,8 +95,8 @@ export const TextConfig: GenerationConfig = {
       id: 'text',
       name: 'Text (AI SDK)',
       fields: ['text', 'textarea'],
-      handler: (prompt: string, options: TextOptions) => {
-        const model = getLanguageModel(options.provider, options.model)
+      handler: async (prompt: string, options: { req: any } & TextOptions) => {
+        const model = await getLanguageModel(options.req.payload, options.provider, options.model)
         return generateObject(
           prompt,
           {
@@ -117,8 +137,8 @@ export const TextConfig: GenerationConfig = {
       id: 'richtext',
       name: 'Rich Text (AI SDK)',
       fields: ['richText'],
-      handler: (text: string, options: TextOptions) => {
-        const model = getLanguageModel(options.provider, options.model)
+      handler: async (text: string, options: { req: any } & TextOptions) => {
+        const model = await getLanguageModel(options.req.payload, options.provider, options.model)
         return generateObject(
           text,
           {

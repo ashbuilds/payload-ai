@@ -68,7 +68,7 @@ const buildConfigWithMemoryDB = async () => {
           [StoryNodes.slug]: true,
           [StoryUniverses.slug]: true,
         },
-
+        debugging: true,
         disableSponsorMessage: false,
         generatePromptOnInit: process.env.NODE_ENV !== 'production',
         mediaUpload: async (result, { collection, request }) => {

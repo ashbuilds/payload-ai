@@ -2,6 +2,9 @@ import { fal } from '@fal-ai/client'
 
 import type { GenerationConfig } from '../../types.js'
 
+import { allProviderBlocks } from '../providers/blocks/index.js'
+import { getProviderRegistry } from '../providers/index.js'
+
 const DEFAULT_IMAGE2VIDEO_MODEL =
   process.env.FAL_IMAGE2VIDEO_MODEL || 'fal-ai/minimax-video/image-to-video'
 
@@ -40,14 +43,6 @@ function buildFalWebhookUrl(callbackUrl?: string) {
   }
 }
 
-function ensureFalClient() {
-  const key = process.env.FAL_KEY
-  if (!key) {
-    throw new Error('FAL service unavailable: FAL_KEY not set')
-  }
-  fal.config({ credentials: key })
-}
-
 async function uploadImageToFal(img: {
   data?: any
   name?: string
@@ -55,8 +50,8 @@ async function uploadImageToFal(img: {
   type?: string
   url?: string
 }) {
-  ensureFalClient()
-
+  // Fal client is already configured by the registry factory call in the handler
+  
   let fileLike: any
   if (img.data) {
     const name = img.name || 'image.jpg'
@@ -135,13 +130,48 @@ async function submitFalJob({
   return requestId
 }
 
+// Helper to extract models from blocks
+const getModelsFromBlocks = (useCase: string) => {
+  const models: { label: string; value: string }[] = []
+  
+  allProviderBlocks.forEach((block) => {
+    const providerId = block.slug
+    const modelsField = block.fields.find((f: any) => f.name === 'models')
+    const defaultModels = modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
+    
+    defaultModels.forEach((m) => {
+      if (m.useCase === useCase) {
+        models.push({
+          label: `${block.labels?.singular || providerId} - ${m.name}`,
+          value: m.id,
+        })
+      }
+    })
+  })
+  
+  return models
+}
+
 export const VideoConfig: GenerationConfig = {
   models: [
     {
       id: 'video',
       name: 'Video (Fal)',
       fields: ['upload'],
-      handler: async (prompt: string, options: VideoOptions) => {
+      handler: async (prompt: string, options: VideoOptions & { req: any }) => {
+        const { req } = options
+        
+        // Initialize Fal provider from registry
+        const registry = await getProviderRegistry(req.payload)
+        const falProvider = registry.fal
+        
+        if (!falProvider || !falProvider.enabled || !falProvider.factory) {
+          throw new Error('Fal provider is not enabled or configured')
+        }
+        
+        // This call configures the global process.env.FAL_KEY
+        falProvider.factory()
+        
         const mode = options.mode || 't2v'
         const webhookUrl = buildFalWebhookUrl(options?.callbackUrl)
 
@@ -221,32 +251,7 @@ export const VideoConfig: GenerationConfig = {
             type: 'select',
             defaultValue: DEFAULT_TEXT2VIDEO_MODEL,
             label: 'Fal Model',
-            options: [
-              {
-                label: 'Luma Dream Machine (text-to-video)',
-                value: 'fal-ai/luma-dream-machine',
-              },
-              {
-                label: 'Kling v1 Standard (text-to-video)',
-                value: 'fal-ai/kling-video/v1/standard',
-              },
-              {
-                label: 'MiniMax - Image to Video',
-                value: 'fal-ai/minimax-video/image-to-video',
-              },
-              {
-                label: 'Wan 2.1 Pro - Image to Video',
-                value: 'fal-ai/wan-pro/image-to-video',
-              },
-              {
-                label: 'Ovi - Image to Video',
-                value: 'fal-ai/ovi/image-to-video',
-              },
-              {
-                label: 'Custom (use env default)',
-                value: '',
-              },
-            ],
+            options: getModelsFromBlocks('video'),
           },
           {
             type: 'row',

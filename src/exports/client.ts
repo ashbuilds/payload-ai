@@ -1,3 +1,6 @@
 export { LexicalEditorFeatureClient } from '../fields/LexicalEditor/feature.client.js'
 export { InstructionsContext } from '../providers/InstructionsProvider/context.js'
 export { InstructionsProvider } from '../providers/InstructionsProvider/InstructionsProvider.js'
+export { AIConfigDashboard } from '../ui/AIConfigDashboard/index.js'
+export { ApiKeyStatusIndicator } from '../ui/ApiKeyStatusIndicator/index.js'
+export { EncryptedTextField } from '../ui/EncryptedTextField/index.js'

@@ -2,6 +2,8 @@ import type { File } from 'payload'
 
 import type { GenerationConfig } from '../../types.js'
 
+import { allProviderBlocks } from '../providers/blocks/index.js'
+import { getTTSModel } from '../providers/index.js'
 import { generateFileNameByPrompt } from '../utils/generateFileNameByPrompt.js'
 
 type TTSProvider = 'elevenlabs' | 'openai'
@@ -43,65 +45,52 @@ function getAudioFileMeta(format: TTSOptions['response_format'] | undefined) {
   return { ext, mime }
 }
 
+// Helper to extract models from blocks
+const getModelsFromBlocks = (useCase: string) => {
+  const models: { label: string; value: string }[] = []
+  
+  allProviderBlocks.forEach((block) => {
+    const providerId = block.slug
+    const modelsField = block.fields.find((f: any) => f.name === 'models')
+    const defaultModels = modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
+    
+    defaultModels.forEach((m) => {
+      if (m.useCase === useCase) {
+        models.push({
+          label: `${block.labels?.singular || providerId} - ${m.name}`,
+          value: m.id,
+        })
+      }
+    })
+  })
+  
+  return models
+}
+
+const getTTSProviders = () => {
+  return allProviderBlocks
+    .filter((block) => {
+      const modelsField = block.fields.find((f: any) => f.name === 'models')
+      const defaultModels = modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
+      return defaultModels.some((m) => m.useCase === 'tts')
+    })
+    .map((block) => ({
+      label: typeof block.labels?.singular === 'string' ? block.labels.singular : block.slug,
+      value: block.slug,
+    }))
+}
+
 export const TTSConfig: GenerationConfig = {
   models: [
     {
       id: 'tts',
       name: 'Text-to-Speech',
       fields: ['upload'],
-      handler: async (text: string, options: TTSOptions) => {
-        throw new Error('Audio generation not yet implemented with registry')
-        // if (options.provider === 'openai') {
-        //   const result = await generateOpenAIVoice(text, {
-        //     model: options.model || 'tts-1',
-        //     response_format: options.response_format || 'mp3',
-        //     speed: options.speed ?? 1,
-        //     voice: options.voice || 'alloy',
-        //   } as any)
-        //
-        //   if (!result?.buffer) {
-        //     throw new Error('OpenAI TTS failed to produce audio')
-        //   }
-        //   const { ext, mime } = getAudioFileMeta(options.response_format)
-        //   return {
-        //     data: { alt: text },
-        //     file: {
-        //       name: `voice_${generateFileNameByPrompt(text)}.${ext}`,
-        //       data: result.buffer,
-        //       mimetype: mime,
-        //       size: result.buffer.byteLength,
-        //     } as File,
-        //   }
-        // }
-        //
-        // // ElevenLabs
-        // if (!options.voice_id) {
-        //   throw new Error('voice_id is required for ElevenLabs provider')
-        // }
-        // const result = await generateElevenLabsVoice(text, {
-        //   next_text: options.next_text,
-        //   previous_text: options.previous_text,
-        //   seed: options.seed,
-        //   similarity_boost: options.similarity_boost,
-        //   stability: options.stability,
-        //   style: options.style,
-        //   use_speaker_boost: options.use_speaker_boost,
-        //   voice_id: options.voice_id,
-        // } as any)
-        //
-        // if (!result?.buffer) {
-        //   throw new Error('ElevenLabs TTS failed to produce audio')
-        // }
-        //
-        // return {
-        //   data: { alt: 'voice over' },
-        //   file: {
-        //     name: `voice_${generateFileNameByPrompt(text)}.mp3`,
-        //     data: result.buffer,
-        //     mimetype: 'audio/mp3',
-        //     size: result.buffer.byteLength,
-        //   } as File,
-        // }
+      handler: async (text: string, options: TTSOptions & { req: any }) => {
+        const { req } = options
+        const model = await getTTSModel(req.payload, options.provider, options.model || 'tts-1')
+        
+        throw new Error('Audio generation using registry is pending implementation')
       },
       output: 'audio',
       settings: {
@@ -116,14 +105,9 @@ export const TTSConfig: GenerationConfig = {
           {
             name: 'provider',
             type: 'select',
-            defaultValue: (process.env.OPENAI_API_KEY ? 'openai' : 'elevenlabs') as TTSProvider,
+            defaultValue: 'openai',
             label: 'Provider',
-            options: [
-              ...(process.env.OPENAI_API_KEY ? [{ label: 'OpenAI', value: 'openai' }] : []),
-              ...(process.env.ELEVENLABS_API_KEY
-                ? [{ label: 'ElevenLabs', value: 'elevenlabs' }]
-                : []),
-            ],
+            options: getTTSProviders(),
           },
 
           // OpenAI-specific
@@ -131,6 +115,7 @@ export const TTSConfig: GenerationConfig = {
             type: 'collapsible',
             admin: {
               initCollapsed: false,
+              condition: (data: any) => data?.provider === 'openai',
             },
             fields: [
               {
@@ -171,6 +156,7 @@ export const TTSConfig: GenerationConfig = {
             type: 'collapsible',
             admin: {
               initCollapsed: false,
+              condition: (data: any) => data?.provider === 'elevenlabs',
             },
             fields: [
               // to be implemented properly and dynamically

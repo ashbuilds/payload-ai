@@ -68,6 +68,9 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
     admin: {
       ...defaultAdminConfig,
       ...pluginConfig.overrideInstructions?.admin,
+      components: {
+        beforeList: ['@ai-stack/payloadcms/client#AIConfigDashboard'],
+      },
     },
   fields: [
       {
