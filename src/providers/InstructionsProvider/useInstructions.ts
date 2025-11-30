@@ -22,7 +22,7 @@ export const useInstructions = (
 ) => {
   const context = useContext(InstructionsContext)
   const { collectionSlug } = useDocumentInfo()
-  const { activeCollection, hasInstructions, instructions, promptFields, setActiveCollection, debugging } = context
+  const { activeCollection, debugging, hasInstructions, instructions, promptFields, setActiveCollection } = context
 
   const [schemaPath, setSchemaPath] = useState(update.schemaPath as string)
 

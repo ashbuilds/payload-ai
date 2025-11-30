@@ -1,9 +1,9 @@
 import type { SerializedEditorState } from 'lexical'
 
 import {
-  type SanitizedServerEditorConfig,
   consolidateHTMLConverters,
   convertLexicalToHTML,
+  type SanitizedServerEditorConfig,
 } from '@payloadcms/richtext-lexical'
 
 export async function lexicalToHTML(

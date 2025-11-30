@@ -10,7 +10,7 @@ const LottieAnimation = ({ isLoading = false }) => {
 
   useEffect(() => {
     const svg = svgRef.current
-    if (!svg) return
+    if (!svg) {return}
 
     const animateTransform = (element, keyframes) => {
       const animation = element.animate(keyframes, {

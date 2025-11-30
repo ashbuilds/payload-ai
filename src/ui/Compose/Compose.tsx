@@ -39,7 +39,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   useActiveFieldTracking()
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
-  const { generate, isLoading, stop, jobProgress, jobStatus, isJobActive } = useGenerate({ instructionId })
+  const { generate, isJobActive, isLoading, jobProgress, jobStatus, stop } = useGenerate({ instructionId })
 
   const { ActiveComponent, Menu } = useMenu(
     {

@@ -49,7 +49,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
   }, [initialValue, value, fieldType])
 
   const MemoizedActiveComponent = useMemo(() => {
-    return ({ isLoading, stop, loadingLabel }: { isLoading: boolean; stop: () => void; loadingLabel?: string }) => {
+    return ({ isLoading, loadingLabel, stop }: { isLoading: boolean; loadingLabel?: string; stop: () => void }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
       const activeItem = menuItemsMap.find((i) => i.name === activeComponent)!
       return (

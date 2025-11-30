@@ -7,10 +7,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
 import {
+  PLUGIN_AI_JOBS_TABLE,
   PLUGIN_API_ENDPOINT_GENERATE,
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   PLUGIN_INSTRUCTIONS_TABLE,
-  PLUGIN_AI_JOBS_TABLE,
   PLUGIN_NAME,
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'

@@ -1,26 +1,40 @@
-import * as process from 'node:process'
-
 import type { GenerationModel } from '../../types.js'
 
-import { OpenAIImageConfig } from './image-openai.js'
+import { getEnabledProviders } from '../providers/index.js'
+import { ImageConfig } from './image.js'
 import { TextConfig } from './text.js'
 import { TTSConfig } from './tts.js'
 import { VideoConfig } from './video.js'
-import { VideoGenConfig } from './videogen/index.js'
 
-// Build the default model list from unified configs.
-// Notes:
-// - Text models available if either OpenAI or Anthropic key is present
-// - OpenAI image model requires OPENAI_API_KEY
-// - TTS available if OpenAI or ElevenLabs key present
-// - Fal video requires FAL_KEY
-// - VideoGen legacy is kept if VIDEOGEN_API_URL is set
-const models: GenerationModel[] = [
-  ...(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY ? TextConfig.models : []),
-  ...(process.env.OPENAI_API_KEY ? OpenAIImageConfig.models : []),
-  ...(process.env.OPENAI_API_KEY || process.env.ELEVENLABS_API_KEY ? TTSConfig.models : []),
-  ...(process.env.FAL_KEY ? VideoConfig.models : []),
-  ...(process.env.VIDEOGEN_API_URL ? VideoGenConfig.models : []),
-]
+// Build the default model list from unified configs using the provider registry
+const models: GenerationModel[] = []
+
+// Add text models if any text provider is enabled
+const enabledProviders = getEnabledProviders()
+const hasTextProvider = enabledProviders.some((id) =>
+  ['anthropic', 'google', 'openai', 'xai'].includes(id),
+)
+if (hasTextProvider) {
+  models.push(...TextConfig.models)
+}
+
+// Add image models if any image provider is enabled
+const hasImageProvider = enabledProviders.some((id) =>
+  ['fal', 'google', 'openai', 'xai'].includes(id),
+)
+if (hasImageProvider) {
+  models.push(...ImageConfig.models)
+}
+
+// Add TTS models if any TTS provider is enabled
+const hasTTSProvider = enabledProviders.some((id) => ['elevenlabs', 'openai'].includes(id))
+if (hasTTSProvider) {
+  models.push(...TTSConfig.models)
+}
+
+// Add video models if Fal is enabled
+if (enabledProviders.includes('fal')) {
+  models.push(...VideoConfig.models)
+}
 
 export const defaultGenerationModels: GenerationModel[] = models

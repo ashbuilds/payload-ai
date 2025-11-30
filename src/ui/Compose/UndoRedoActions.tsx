@@ -38,7 +38,7 @@ export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void
     setIsMounted(true)
   }, [])
 
-  if (!isMounted || (!canUndo && !canRedo)) return null
+  if (!isMounted || (!canUndo && !canRedo)) {return null}
 
   return (
     <React.Fragment>

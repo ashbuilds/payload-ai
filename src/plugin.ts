@@ -6,8 +6,8 @@ import type { PluginConfig } from './types.js'
 
 import { defaultGenerationModels } from './ai/models/index.js'
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
-import { instructionsCollection } from './collections/Instructions.js'
 import { aiJobsCollection } from './collections/AIJobs.js'
+import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
 import { fetchFields } from './endpoints/fetchFields.js'
 import { endpoints } from './endpoints/index.js'
@@ -169,7 +169,7 @@ const payloadAiPlugin =
     }
 
     updatedConfig.onInit = async (payload) => {
-      if (incomingConfig.onInit) await incomingConfig.onInit(payload)
+      if (incomingConfig.onInit) {await incomingConfig.onInit(payload)}
 
       if (!isActivated) {
         payload.logger.warn(`— AI Plugin: Not activated. Please verify your environment keys.`)

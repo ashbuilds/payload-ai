@@ -3,12 +3,6 @@ import type { File } from 'payload'
 import type { GenerationConfig } from '../../types.js'
 
 import { generateFileNameByPrompt } from '../utils/generateFileNameByPrompt.js'
-import { generateVoice as generateElevenLabsVoice } from './elevenLabs/generateVoice.js'
-import { getAllVoices } from './elevenLabs/voices.js'
-import { generateVoice as generateOpenAIVoice } from './openai/generateVoice.js'
-
-// Fetch ElevenLabs voices once for building select options
-const { voices = [] } = await getAllVoices().catch(() => ({ voices: [] as any[] }))
 
 type TTSProvider = 'elevenlabs' | 'openai'
 
@@ -56,57 +50,58 @@ export const TTSConfig: GenerationConfig = {
       name: 'Text-to-Speech',
       fields: ['upload'],
       handler: async (text: string, options: TTSOptions) => {
-        if (options.provider === 'openai') {
-          const result = await generateOpenAIVoice(text, {
-            model: options.model || 'tts-1',
-            response_format: options.response_format || 'mp3',
-            speed: options.speed ?? 1,
-            voice: options.voice || 'alloy',
-          } as any)
-
-          if (!result?.buffer) {
-            throw new Error('OpenAI TTS failed to produce audio')
-          }
-          const { ext, mime } = getAudioFileMeta(options.response_format)
-          return {
-            data: { alt: text },
-            file: {
-              name: `voice_${generateFileNameByPrompt(text)}.${ext}`,
-              data: result.buffer,
-              mimetype: mime,
-              size: result.buffer.byteLength,
-            } as File,
-          }
-        }
-
-        // ElevenLabs
-        if (!options.voice_id) {
-          throw new Error('voice_id is required for ElevenLabs provider')
-        }
-        const result = await generateElevenLabsVoice(text, {
-          next_text: options.next_text,
-          previous_text: options.previous_text,
-          seed: options.seed,
-          similarity_boost: options.similarity_boost,
-          stability: options.stability,
-          style: options.style,
-          use_speaker_boost: options.use_speaker_boost,
-          voice_id: options.voice_id,
-        } as any)
-
-        if (!result?.buffer) {
-          throw new Error('ElevenLabs TTS failed to produce audio')
-        }
-
-        return {
-          data: { alt: 'voice over' },
-          file: {
-            name: `voice_${generateFileNameByPrompt(text)}.mp3`,
-            data: result.buffer,
-            mimetype: 'audio/mp3',
-            size: result.buffer.byteLength,
-          } as File,
-        }
+        throw new Error('Audio generation not yet implemented with registry')
+        // if (options.provider === 'openai') {
+        //   const result = await generateOpenAIVoice(text, {
+        //     model: options.model || 'tts-1',
+        //     response_format: options.response_format || 'mp3',
+        //     speed: options.speed ?? 1,
+        //     voice: options.voice || 'alloy',
+        //   } as any)
+        //
+        //   if (!result?.buffer) {
+        //     throw new Error('OpenAI TTS failed to produce audio')
+        //   }
+        //   const { ext, mime } = getAudioFileMeta(options.response_format)
+        //   return {
+        //     data: { alt: text },
+        //     file: {
+        //       name: `voice_${generateFileNameByPrompt(text)}.${ext}`,
+        //       data: result.buffer,
+        //       mimetype: mime,
+        //       size: result.buffer.byteLength,
+        //     } as File,
+        //   }
+        // }
+        //
+        // // ElevenLabs
+        // if (!options.voice_id) {
+        //   throw new Error('voice_id is required for ElevenLabs provider')
+        // }
+        // const result = await generateElevenLabsVoice(text, {
+        //   next_text: options.next_text,
+        //   previous_text: options.previous_text,
+        //   seed: options.seed,
+        //   similarity_boost: options.similarity_boost,
+        //   stability: options.stability,
+        //   style: options.style,
+        //   use_speaker_boost: options.use_speaker_boost,
+        //   voice_id: options.voice_id,
+        // } as any)
+        //
+        // if (!result?.buffer) {
+        //   throw new Error('ElevenLabs TTS failed to produce audio')
+        // }
+        //
+        // return {
+        //   data: { alt: 'voice over' },
+        //   file: {
+        //     name: `voice_${generateFileNameByPrompt(text)}.mp3`,
+        //     data: result.buffer,
+        //     mimetype: 'audio/mp3',
+        //     size: result.buffer.byteLength,
+        //   } as File,
+        // }
       },
       output: 'audio',
       settings: {
@@ -178,21 +173,22 @@ export const TTSConfig: GenerationConfig = {
               initCollapsed: false,
             },
             fields: [
-              ...(voices.length
-                ? [
-                    {
-                      name: 'voice_id',
-                      type: 'select',
-                      defaultValue: voices[0]?.voice_id,
-                      label: 'Voice',
-                      options: voices.map((v: any) => ({
-                        label: v.name || v.voice_id,
-                        value: v.voice_id,
-                      })),
-                      required: true,
-                    },
-                  ]
-                : []),
+              // to be implemented properly and dynamically
+              // ...(voices.length
+              //   ? [
+              //       {
+              //         name: 'voice_id',
+              //         type: 'select',
+              //         defaultValue: voices[0]?.voice_id,
+              //         label: 'Voice',
+              //         options: voices.map((v: any) => ({
+              //           label: v.name || v.voice_id,
+              //           value: v.voice_id,
+              //         })),
+              //         required: true,
+              //       },
+              //     ]
+              //   : []),
               {
                 name: 'stability',
                 type: 'number',

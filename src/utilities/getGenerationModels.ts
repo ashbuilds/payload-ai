@@ -1,5 +1,6 @@
+import type { PluginConfig } from '../types.js'
+
 import { defaultGenerationModels } from '../ai/models/index.js'
-import { PluginConfig } from '../types.js'
 
 export function getGenerationModels(
   pluginConfig: PluginConfig,

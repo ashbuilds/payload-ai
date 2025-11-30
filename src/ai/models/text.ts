@@ -1,8 +1,13 @@
 import type { GenerationConfig } from '../../types.js'
-import type { ProviderKey } from '../providers/index.js'
+import type { ProviderId } from '../providers/index.js'
 
 import { defaultSystemPrompt } from '../prompts.js'
-import { availableTextProviders, getLanguageModel, TEXT_MODEL_OPTIONS } from '../providers/index.js'
+import {
+  getEnabledProviders,
+  getLanguageModel,
+  getModelsForUseCase,
+  providerRegistry,
+} from '../providers/index.js'
 import { generateObject } from './generateObject.js'
 
 type TextOptions = {
@@ -10,20 +15,31 @@ type TextOptions = {
   locale?: string
   maxTokens?: number
   model: string
-  provider: ProviderKey
+  provider: ProviderId
   schema?: Record<string, any>
   system?: string
   temperature?: number
 }
 
-const ALL_TEXT_MODELS = [...TEXT_MODEL_OPTIONS.openai, ...TEXT_MODEL_OPTIONS.anthropic]
+// Get all text models across all enabled providers
+const getAllTextModels = () => {
+  const models = getModelsForUseCase('text')
+  return models.map((m) => `${m.provider}/${m.model}`)
+}
+
+const getTextProviders = () => {
+  return getEnabledProviders().filter((id) => {
+    const models = providerRegistry[id].models.text
+    return models && models.length > 0
+  })
+}
 
 const providerSelect = {
   name: 'provider',
   type: 'select',
-  defaultValue: availableTextProviders()[0] || 'openai',
+  defaultValue: getTextProviders()[0] || 'openai',
   label: 'Provider',
-  options: availableTextProviders().map((p) => p),
+  options: getTextProviders().map((p) => ({ label: providerRegistry[p].name, value: p })),
 }
 
 const modelSelect = {
@@ -31,8 +47,8 @@ const modelSelect = {
   type: 'select',
   defaultValue: 'gpt-4o',
   label: 'Model',
-  // Single static list to avoid complex dynamic filtering in admin UI
-  options: ALL_TEXT_MODELS,
+  // Return all text models from all enabled providers
+  options: getAllTextModels(),
 }
 
 const commonParamsRow = {
