@@ -187,24 +187,11 @@ export const GoogleConfig: GenerationConfig = {
             options: IMAGEN_MODELS,
           },
           {
-            type: 'row',
-            fields: [
-              {
-                name: 'aspectRatio',
-                type: 'select',
-                defaultValue: '1:1',
-                label: 'Aspect Ratio',
-                options: ['1:1', '3:4', '4:3', '9:16', '16:9'],
-              },
-              {
-                name: 'numberOfImages',
-                type: 'number',
-                defaultValue: 1,
-                label: 'Number of Images',
-                max: 4,
-                min: 1,
-              },
-            ],
+            name: 'aspectRatio',
+            type: 'select',
+            defaultValue: '1:1',
+            label: 'Aspect Ratio',
+            options: ['1:1', '3:4', '4:3', '9:16', '16:9'],
           },
           {
             name: 'outputMimeType',

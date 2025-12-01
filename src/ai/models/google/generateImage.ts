@@ -7,12 +7,10 @@ export const generateImage = async (
   {
     aspectRatio = '1:1',
     model = 'imagen-4.0-fast-generate-001',
-    numberOfImages = 1,
     outputMimeType = 'image/png',
   }: GenerateImageParams & {
     aspectRatio?: '1:1' | '3:4' | '4:3' | '9:16' | '16:9'
     model?: string
-    numberOfImages?: number
     outputMimeType?: 'image/jpeg' | 'image/png'
   } = {},
 ) => {
@@ -24,7 +22,7 @@ export const generateImage = async (
     model,
     prompt,
     config: {
-      numberOfImages,
+      numberOfImages: 1,
       aspectRatio,
       outputMimeType,
     },
