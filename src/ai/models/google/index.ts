@@ -1,9 +1,12 @@
+import type { File } from 'payload'
 import { google } from '@ai-sdk/google'
 
 import type { GenerationConfig } from '../../../types.js'
 
 import { defaultSystemPrompt } from '../../prompts.js'
+import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateObject } from '../generateObject.js'
+import { generateImage } from './generateImage.js'
 
 const MODEL_KEY = 'GEMINI'
 const MODELS = [
@@ -14,6 +17,13 @@ const MODELS = [
   'gemini-2.0-flash',
   'gemini-2.0-flash-lite',
   'gemini-flash-latest',
+]
+
+const IMAGEN_MODELS = [
+  'imagen-4.0-fast-generate-001',
+  'imagen-4.0-generate-001',
+  'imagen-4.0-ultra-generate-001',
+  'imagen-3.0-generate-002',
 ]
 
 export const GoogleConfig: GenerationConfig = {
@@ -141,7 +151,59 @@ export const GoogleConfig: GenerationConfig = {
         label: 'Google Gemini Settings',
       },
     },
+    {
+      id: 'imagen',
+      name: 'Google Imagen',
+      fields: ['upload'],
+      handler: async (prompt: string, options) => {
+        const imageData = await generateImage(prompt, options)
+        return {
+          data: {
+            alt: imageData.alt,
+          },
+          file: {
+            name: `image_${generateFileNameByPrompt(imageData.alt || prompt)}.png`,
+            data: imageData.buffer,
+            mimetype: 'image/png',
+            size: imageData.buffer.byteLength,
+          } as File,
+        }
+      },
+      output: 'image',
+      settings: {
+        name: 'imagen-settings',
+        type: 'group',
+        admin: {
+          condition(data) {
+            return data['model-id'] === 'imagen'
+          },
+        },
+        fields: [
+          {
+            name: 'model',
+            type: 'select',
+            defaultValue: 'imagen-4.0-fast-generate-001',
+            label: 'Model',
+            options: IMAGEN_MODELS,
+          },
+          {
+            name: 'aspectRatio',
+            type: 'select',
+            defaultValue: '1:1',
+            label: 'Aspect Ratio',
+            options: ['1:1', '3:4', '4:3', '9:16', '16:9'],
+          },
+          {
+            name: 'outputMimeType',
+            type: 'select',
+            defaultValue: 'image/png',
+            label: 'Output Format',
+            options: ['image/png', 'image/jpeg'],
+          },
+        ],
+        label: 'Google Imagen Settings',
+      },
+    },
   ],
   provider: 'Google',
 }
-
