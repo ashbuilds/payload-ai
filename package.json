@@ -182,6 +182,7 @@
     "@ai-sdk/ui-utils": "^1.2.10",
     "@anthropic-ai/sdk": "^0.62.0",
     "@fal-ai/client": "^1.7.0",
+    "@google/genai": "^1.30.0",
     "ai": "^5.0.39",
     "ajv": "^8.17.1",
     "elevenlabs": "^0.8.2",
