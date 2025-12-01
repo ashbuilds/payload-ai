@@ -197,8 +197,13 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
           const json = await uploadResponse.json()
           const { job, result } = json || {}
           if (result) {
+            // Set the upload ID
             setValue(result?.id)
             setHistory(result?.id)
+            
+            // Show toast to prompt user to save
+            toast.success('Image generated successfully! Click Save to see the preview.')
+            
             return uploadResponse
           }
 
@@ -226,7 +231,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
                   setJobProgress(progress ?? 0)
                   // When result present, set field and finish
                   if (status === 'completed' && result_id) {
-                    setValue(result_id)
+                    // Force upload field to refetch by clearing then setting the ID
+                    setValue(null)
+                    setTimeout(() => {
+                      setValue(result_id)
+                    }, 0)
                     setHistory(result_id)
                     setIsJobActive(false)
                     return
