@@ -60,11 +60,14 @@ const providerFactories = {
     }),
 
   'openai-compatible': (block: OpenAICompatibleBlockData) =>
-    createOpenAICompatible({
+  {
+    console.log("OpenAI compatible, ", block)
+    return createOpenAICompatible({
       name: block.providerName,
       apiKey: block.apiKey || '',
       baseURL: block.baseURL,
-    }),
+    })
+  },
 
   xai: (block: XAIBlockData) =>
     createXai({
@@ -197,7 +200,7 @@ export async function getLanguageModel(
   return providerInstance(modelId)
 }
 
-export async function getImageModel(payload: Payload, providerId?: string, modelId?: string) {
+export async function getImageModel(payload: Payload, providerId?: string, modelId?: string, generationMethod?: 'multimodal-text' | 'standard') {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
     if (!providerId) {
@@ -224,10 +227,12 @@ export async function getImageModel(payload: Payload, providerId?: string, model
   }
 
   if (provider.factory) {
+    console.log("modelId:  ", modelId)
     const instance = provider.factory()
 
     // Type-safe check for image support
     if (
+      generationMethod !== "multimodal-text" &&
       typeof instance === 'function' &&
       'image' in instance &&
       typeof instance.image === 'function'
@@ -236,7 +241,7 @@ export async function getImageModel(payload: Payload, providerId?: string, model
     }
 
     // Also check if instance is an object with image method (though usually it's a function + properties)
-    if (typeof instance === 'object' && instance !== null && 'image' in instance) {
+    if (typeof instance === 'object' && instance !== null && 'image' in instance && generationMethod !== "multimodal-text") {
       return (instance as AIProvider).image?.(modelId)
     }
 

@@ -4,4 +4,5 @@ export { InstructionsProvider } from '../providers/InstructionsProvider/Instruct
 export { AIConfigDashboard } from '../ui/AIConfigDashboard/index.js'
 export { ApiKeyStatusIndicator } from '../ui/ApiKeyStatusIndicator/index.js'
 export { DynamicModelSelect } from '../ui/DynamicModelSelect/index.js'
+export { DynamicProviderSelect } from '../ui/DynamicProviderSelect/index.js'
 export { EncryptedTextField } from '../ui/EncryptedTextField/index.js'

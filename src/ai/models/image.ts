@@ -1,56 +1,7 @@
 import type { GenerationConfig } from '../../types.js'
 
-import { allProviderBlocks } from '../providers/blocks/index.js'
 import { getImageModel } from '../providers/index.js'
-
-// Helper to extract models from blocks
-const getModelsFromBlocks = (useCase: string) => {
-  const models: { label: string; value: string }[] = []
-  
-  allProviderBlocks.forEach((block) => {
-    const providerId = block.slug
-    const modelsField = block.fields.find((f: any) => f.name === 'models')
-    const defaultModels = modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
-    
-    defaultModels.forEach((m) => {
-      if (m.useCase === useCase) {
-        models.push({
-          label: `${block.labels?.singular || providerId} - ${m.name}`,
-          value: m.id,
-        })
-      }
-    })
-  })
-  
-  return models
-}
-
-const getImageProviders = () => {
-  return allProviderBlocks
-    .filter((block) => {
-      // Check if the block has a 'models' array field
-      const modelsField = block.fields.find((f: any) => f.name === 'models')
-      
-      // Check if the 'useCase' field within 'models' has 'image' as an option
-      const useCaseField = modelsField && 'fields' in modelsField 
-        ? (modelsField.fields as any[]).find((f: any) => f.name === 'useCase')
-        : undefined
-        
-      const supportsImage = useCaseField && 'options' in useCaseField 
-        ? (useCaseField.options as any[]).some(opt => opt.value === 'image')
-        : false
-
-      // Also check default values for backward compatibility or if options check fails
-      const defaultModels = modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
-      const hasDefaultImageModel = defaultModels.some((m) => m.useCase === 'image')
-
-      return supportsImage || hasDefaultImageModel
-    })
-    .map((block) => ({
-      label: typeof block.labels?.singular === 'string' ? block.labels.singular : block.slug,
-      value: block.slug,
-    }))
-}
+import { generateFileNameByPrompt } from '../utils/generateFileNameByPrompt.js'
 
 export const ImageConfig: GenerationConfig = {
   models: [
@@ -62,19 +13,97 @@ export const ImageConfig: GenerationConfig = {
         const { req } = options
 
         if (!prompt || !prompt.trim()) {
-          throw new Error('Prompt is required for image generation. Please ensure your Instruction has a prompt template.')
+          throw new Error(
+            'Prompt is required for image generation. Please ensure your Instruction has a prompt template.',
+          )
         }
 
-        const model = await getImageModel(req.payload, options.provider, options.model)
-        const { experimental_generateImage } = await import('ai')
+        // Determine generation method by checking the model metadata
+        // We need to fetch the provider's model configuration to check generationMethod
+        const { getProviderRegistry } = await import('../providers/index.js')
+        const registry = await getProviderRegistry(req.payload)
+        const provider = registry[options.provider]
 
-        const { image } = await experimental_generateImage({
-          model,
-          n: 1,
-          prompt,
-        })
+        let generationMethod: 'multimodal-text' | 'standard' = 'standard'
 
-        return image.base64
+        if (provider && provider.models) {
+          const modelConfig = provider.models.find((m: any) => m.id === options.model)
+          console.log('generationMethod: modelConfig', modelConfig)
+          if (modelConfig && modelConfig.generationMethod) {
+            generationMethod = modelConfig.generationMethod
+          }
+        }
+        console.log('generationMethod: L', generationMethod)
+
+        // Get the model instance
+        const model = await getImageModel(
+          req.payload,
+          options.provider,
+          options.model,
+          generationMethod,
+        )
+
+        // Route based on generation method
+        if (generationMethod === 'multimodal-text') {
+          // Use generateText for Nano Banana models
+          const { generateText } = await import('ai')
+
+          const result = await generateText({
+            model, //: google('gemini-2.5-flash-image-preview'),
+            prompt,
+            providerOptions: {
+              google: {
+                imageConfig: {
+                  aspectRatio: '16:9',
+                },
+                responseModalities: ['IMAGE', 'TEXT'],
+              },
+            },
+          })
+
+          // Extract images from result.files
+          const images = result.files?.filter((f: any) => f.mediaType?.startsWith('image/')) || []
+
+          console.log('generationMethod: images --> ', images?.length)
+
+          if (images.length === 0) {
+            throw new Error(
+              'No images returned from the model. The model may have generated only text.',
+            )
+          }
+
+          // Convert Uint8Array to base64
+          const firstImage = images[0]
+          console.log('firstImage --- ', Object.keys(firstImage))
+          // @ts-ignore
+          const base64 = firstImage.base64Data
+          const mediaType = firstImage.mediaType
+          console.log('mediaType: mediaType', mediaType)
+          const buffer = Buffer.from(base64 ?? '', 'base64')
+
+          return {
+            data: {
+              alt: prompt,
+            },
+            file: {
+              name: `image_${generateFileNameByPrompt(prompt)}.png`, // TODO: fix extension based on mediaType
+              data: buffer,
+              mimetype: mediaType,
+              size: buffer.byteLength,
+            },
+          }
+        } else {
+          // Use experimental_generateImage for standard models (Imagen, DALL-E, etc.)
+          const { experimental_generateImage } = await import('ai')
+
+          const { image } = await experimental_generateImage({
+            model,
+            n: 1,
+            prompt,
+          })
+          // TODO: Return file
+          return image.base64
+        }
       },
       output: 'image',
       settings: {
@@ -88,10 +117,14 @@ export const ImageConfig: GenerationConfig = {
         fields: [
           {
             name: 'provider',
-            type: 'select',
+            type: 'text',
+            admin: {
+              components: {
+                Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+              },
+            },
             defaultValue: 'openai',
             label: 'Provider',
-            options: getImageProviders(),
           },
           {
             name: 'model',

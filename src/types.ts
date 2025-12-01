@@ -92,7 +92,7 @@ export interface PluginConfig {
 export interface GenerationModel {
   fields: string[]
   generateText?: (prompt: string, system: string) => Promise<string>
-  handler?: (prompt: string, options: any) => Promise<any> | Response
+  handler?: (prompt: string, options: any) => File | Promise<any> | Response
   id: string
   name: string
   output: 'audio' | 'file' | 'image' | 'json' | 'text' | 'video'
