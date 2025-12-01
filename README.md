@@ -128,6 +128,7 @@ OPENAI_ORG_ID=your-org-id
 
 # Optional: Other supported providers
 ANTHROPIC_API_KEY=your-anthropic-api-key
+GOOGLE_GENERATIVE_AI_API_KEY=your-google-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
 
 # Optional: Custom OpenAI Endpoint
@@ -283,7 +284,7 @@ This repo includes a minimal Payload app under [dev](dev/README.md) to iterate o
 Prerequisites
 - Node.js (see `.nvmrc`) and pnpm
 - A database connection string for `DATABASE_URI` (Postgres or Mongo)
-- Optional: AI provider keys to test features (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`)
+- Optional: AI provider keys to test features (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`, `ELEVENLABS_API_KEY`)
 
 1) Install dependencies
 ```bash
