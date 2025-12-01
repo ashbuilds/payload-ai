@@ -30,14 +30,21 @@ export const googleBlock: Block = {
       defaultValue: [
         {
           id: 'gemini-2.5-flash-image',
-          name: 'Gemini 2.5 Flash Image (Nano Banana)',
+          name: 'Gemini 2.5 Flash Image',
           enabled: true,
           generationMethod: 'multimodal-text',
           useCase: 'image',
         },
         {
           id: 'gemini-3-pro-image-preview',
-          name: 'Gemini 3 Pro Image (Nano Banana Pro)',
+          name: 'Gemini 3 Pro Image Preview',
+          enabled: true,
+          generationMethod: 'multimodal-text',
+          useCase: 'image',
+        },
+        {
+          id: 'gemini-3-pro-image',
+          name: 'Gemini 3 Pro Image',
           enabled: true,
           generationMethod: 'multimodal-text',
           useCase: 'image',

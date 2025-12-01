@@ -1,7 +1,164 @@
+import type { File } from 'payload'
+
 import type { GenerationConfig } from '../../types.js'
 
 import { getImageModel } from '../providers/index.js'
 import { generateFileNameByPrompt } from '../utils/generateFileNameByPrompt.js'
+
+interface ImageGenerationResult {
+  data: {
+    alt: string
+  }
+  file: File
+}
+
+interface MultimodalImageFile {
+  base64Data?: string
+  mediaType?: string
+  uint8Array?: Uint8Array
+}
+
+/**
+ * Get file extension from MIME type
+ */
+function getExtensionFromMimeType(mimeType: string): string {
+  const mimeToExt: Record<string, string> = {
+    'image/bmp': 'bmp',
+    'image/gif': 'gif',
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/png': 'png',
+    'image/svg+xml': 'svg',
+    'image/tiff': 'tiff',
+    'image/webp': 'webp',
+  }
+
+  return mimeToExt[mimeType.toLowerCase()] || 'png'
+}
+
+/**
+ * Convert base64 or Uint8Array to Buffer
+ */
+function convertToBuffer(imageData: string | Uint8Array): Buffer {
+  if (typeof imageData === 'string') {
+    return Buffer.from(imageData, 'base64')
+  }
+  return Buffer.from(imageData)
+}
+
+/**
+ * Create a PayloadFile from image data
+ */
+function createPayloadFile(
+  imageData: string | Uint8Array,
+  prompt: string,
+  mimeType: string = 'image/png',
+): ImageGenerationResult {
+  const buffer = convertToBuffer(imageData)
+  const extension = getExtensionFromMimeType(mimeType)
+  const fileName = `${generateFileNameByPrompt(prompt)}.${extension}`
+
+  return {
+    data: {
+      alt: prompt,
+    },
+    file: {
+      name: fileName,
+      data: buffer,
+      mimetype: mimeType,
+      size: buffer.byteLength,
+    },
+  }
+}
+
+/**
+ * Handle multimodal-text image generation (Nano Banana models)
+ */
+async function handleMultimodalTextGeneration(
+  model: any,
+  prompt: string,
+  images: any[] = [],
+): Promise<ImageGenerationResult> {
+  const { generateText } = await import('ai')
+
+  const imageParts = await Promise.all(
+    images.map(async (img) => ({
+      type: 'image' as const,
+      image: await img.data.arrayBuffer(),
+      mediaType: img.type || 'image/png',
+    })),
+  )
+
+  const promptParts = [
+    {
+      type: 'text',
+      text: prompt,
+    },
+    ...imageParts,
+  ]
+  console.log("promptParts images : ", images?.length)
+  console.log("promptParts : ", promptParts)
+
+  const promptContent = [
+    {
+      content: promptParts,
+      role: 'user',
+    },
+  ]
+
+  const result = await generateText({
+    model,
+    prompt: promptContent,
+    providerOptions: {
+      google: {
+        imageConfig: {
+          aspectRatio: '16:9',
+        },
+        responseModalities: ['IMAGE', 'TEXT'],
+      },
+    },
+  })
+
+  // Extract images from result.files
+  const resultImages = (result.files?.filter((f: MultimodalImageFile) =>
+    f.mediaType?.startsWith('image/'),
+  ) || []) as MultimodalImageFile[]
+
+  if (resultImages.length === 0) {
+    throw new Error('No images returned from the model. The model may have generated only text.')
+  }
+
+  const firstImage = resultImages[0]
+  const mimeType = firstImage.mediaType || 'image/png'
+
+  // Handle both base64Data and uint8Array formats
+  const imageData = firstImage.base64Data || firstImage.uint8Array
+
+  if (!imageData) {
+    throw new Error('Image data is missing from the response.')
+  }
+
+  return createPayloadFile(imageData, prompt, mimeType)
+}
+
+/**
+ * Handle standard image generation (Imagen, DALL-E, etc.)
+ */
+async function handleStandardImageGeneration(
+  model: any,
+  prompt: string,
+): Promise<ImageGenerationResult> {
+  const { experimental_generateImage } = await import('ai')
+
+  const { image } = await experimental_generateImage({
+    model,
+    n: 1,
+    prompt,
+  })
+
+  // experimental_generateImage returns base64 and mimeType
+  return createPayloadFile(image.base64, prompt, image.mimeType || 'image/png')
+}
 
 export const ImageConfig: GenerationConfig = {
   models: [
@@ -9,8 +166,8 @@ export const ImageConfig: GenerationConfig = {
       id: 'image',
       name: 'Image Generation',
       fields: ['upload'],
-      handler: async (prompt: string, options: any) => {
-        const { req } = options
+      handler: async (prompt: string, options: any): Promise<ImageGenerationResult> => {
+        const { images = [], req } = options
 
         if (!prompt || !prompt.trim()) {
           throw new Error(
@@ -19,7 +176,6 @@ export const ImageConfig: GenerationConfig = {
         }
 
         // Determine generation method by checking the model metadata
-        // We need to fetch the provider's model configuration to check generationMethod
         const { getProviderRegistry } = await import('../providers/index.js')
         const registry = await getProviderRegistry(req.payload)
         const provider = registry[options.provider]
@@ -28,12 +184,10 @@ export const ImageConfig: GenerationConfig = {
 
         if (provider && provider.models) {
           const modelConfig = provider.models.find((m: any) => m.id === options.model)
-          console.log('generationMethod: modelConfig', modelConfig)
           if (modelConfig && modelConfig.generationMethod) {
             generationMethod = modelConfig.generationMethod
           }
         }
-        console.log('generationMethod: L', generationMethod)
 
         // Get the model instance
         const model = await getImageModel(
@@ -45,64 +199,9 @@ export const ImageConfig: GenerationConfig = {
 
         // Route based on generation method
         if (generationMethod === 'multimodal-text') {
-          // Use generateText for Nano Banana models
-          const { generateText } = await import('ai')
-
-          const result = await generateText({
-            model, //: google('gemini-2.5-flash-image-preview'),
-            prompt,
-            providerOptions: {
-              google: {
-                imageConfig: {
-                  aspectRatio: '16:9',
-                },
-                responseModalities: ['IMAGE', 'TEXT'],
-              },
-            },
-          })
-
-          // Extract images from result.files
-          const images = result.files?.filter((f: any) => f.mediaType?.startsWith('image/')) || []
-
-          console.log('generationMethod: images --> ', images?.length)
-
-          if (images.length === 0) {
-            throw new Error(
-              'No images returned from the model. The model may have generated only text.',
-            )
-          }
-
-          // Convert Uint8Array to base64
-          const firstImage = images[0]
-          console.log('firstImage --- ', Object.keys(firstImage))
-          // @ts-ignore
-          const base64 = firstImage.base64Data
-          const mediaType = firstImage.mediaType
-          console.log('mediaType: mediaType', mediaType)
-          const buffer = Buffer.from(base64 ?? '', 'base64')
-
-          return {
-            data: {
-              alt: prompt,
-            },
-            file: {
-              name: `image_${generateFileNameByPrompt(prompt)}.png`, // TODO: fix extension based on mediaType
-              data: buffer,
-              mimetype: mediaType,
-              size: buffer.byteLength,
-            },
-          }
+          return handleMultimodalTextGeneration(model, prompt, images)
         } else {
-          // Use experimental_generateImage for standard models (Imagen, DALL-E, etc.)
-          const { experimental_generateImage } = await import('ai')
-
-          const { image } = await experimental_generateImage({
-            model,
-            n: 1,
-            prompt,
-          })
-          // TODO: Return file
-          return image.base64
+          return handleStandardImageGeneration(model, prompt)
         }
       },
       output: 'image',
@@ -139,7 +238,7 @@ export const ImageConfig: GenerationConfig = {
           },
         ],
         label: 'Image Settings',
-      } as any,
+      },
     },
   ],
   provider: 'Multi-Provider',
