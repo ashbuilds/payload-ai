@@ -20,9 +20,9 @@ export interface BaseProviderBlock {
 
 export interface ProviderModel {
   enabled: boolean
-  generationMethod?: 'multimodal-text' | 'standard'
   id: string
   name: string
+  responseModalities?: string[]
   useCase: UseCase
 }
 

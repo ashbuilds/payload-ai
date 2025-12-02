@@ -77,32 +77,35 @@ function createPayloadFile(
 async function handleMultimodalTextGeneration(
   model: any,
   prompt: string,
-  images: any[] = [],
+  images?: { base64: string; mediaType: string }[],
 ): Promise<ImageGenerationResult> {
   const { generateText } = await import('ai')
 
-  const imageParts = await Promise.all(
-    images.map(async (img) => ({
-      type: 'image' as const,
-      image: await img.data.arrayBuffer(),
-      mediaType: img.type || 'image/png',
-    })),
-  )
+  // For multimodal Gemini models that can return images via generateText + responseModalities
+  // Prepare image parts if input images are provided
+  const imageParts = images
+    ? images.map((img) => ({
+        type: 'image' as const,
+        image: img.base64,
+        mediaType: img.mediaType,
+      }))
+    : []
 
+  // Create prompt content with text and optional images
   const promptParts = [
     {
-      type: 'text',
+      type: 'text' as const,
       text: prompt,
     },
     ...imageParts,
   ]
-  console.log("promptParts images : ", images?.length)
-  console.log("promptParts : ", promptParts)
+  console.log('promptParts images : ', images?.length)
+  console.log('promptParts : ', promptParts)
 
   const promptContent = [
     {
       content: promptParts,
-      role: 'user',
+      role: 'user' as const,
     },
   ]
 
@@ -157,7 +160,7 @@ async function handleStandardImageGeneration(
   })
 
   // experimental_generateImage returns base64 and mimeType
-  return createPayloadFile(image.base64, prompt, image.mimeType || 'image/png')
+  return createPayloadFile(image.base64, prompt, image.mediaType || 'image/png')
 }
 
 export const ImageConfig: GenerationConfig = {
@@ -179,26 +182,17 @@ export const ImageConfig: GenerationConfig = {
         const { getProviderRegistry } = await import('../providers/index.js')
         const registry = await getProviderRegistry(req.payload)
         const provider = registry[options.provider]
+        const modelConfig = provider?.models?.find((m: any) => m.id === options.model)
 
-        let generationMethod: 'multimodal-text' | 'standard' = 'standard'
-
-        if (provider && provider.models) {
-          const modelConfig = provider.models.find((m: any) => m.id === options.model)
-          if (modelConfig && modelConfig.generationMethod) {
-            generationMethod = modelConfig.generationMethod
-          }
-        }
+        // Determine generation approach based on responseModalities
+        // If the model supports IMAGE in responseModalities, use multimodal approach
+        const isMultimodalText = modelConfig?.responseModalities?.includes('IMAGE') ?? false
 
         // Get the model instance
-        const model = await getImageModel(
-          req.payload,
-          options.provider,
-          options.model,
-          generationMethod,
-        )
+        const model = await getImageModel(req.payload, options.provider, options.model)
 
         // Route based on generation method
-        if (generationMethod === 'multimodal-text') {
+        if (isMultimodalText) {
           return handleMultimodalTextGeneration(model, prompt, images)
         } else {
           return handleStandardImageGeneration(model, prompt)

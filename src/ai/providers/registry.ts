@@ -200,7 +200,7 @@ export async function getLanguageModel(
   return providerInstance(modelId)
 }
 
-export async function getImageModel(payload: Payload, providerId?: string, modelId?: string, generationMethod?: 'multimodal-text' | 'standard') {
+export async function getImageModel(payload: Payload, providerId?: string, modelId?: string) {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
     if (!providerId) {
@@ -232,7 +232,6 @@ export async function getImageModel(payload: Payload, providerId?: string, model
 
     // Type-safe check for image support
     if (
-      generationMethod !== "multimodal-text" &&
       typeof instance === 'function' &&
       'image' in instance &&
       typeof instance.image === 'function'
@@ -240,8 +239,8 @@ export async function getImageModel(payload: Payload, providerId?: string, model
       return instance.image(modelId)
     }
 
-    // Also check if instance is an object with image method (though usually it's a function + properties)
-    if (typeof instance === 'object' && instance !== null && 'image' in instance && generationMethod !== "multimodal-text") {
+    // Also check if instance is an object with image method
+    if (typeof instance === 'object' && instance !== null && 'image' in instance) {
       return (instance as AIProvider).image?.(modelId)
     }
 
