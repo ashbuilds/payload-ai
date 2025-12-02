@@ -151,12 +151,6 @@ OPENAI_API_KEY=your-openai-api-key           # OpenAI TTS (uses same key as abov
 
 **You only need the keys for the providers you plan to use.** Mix and match based on your preferences!
 
-**Important:** Restart your server after updating `.env` or plugin settings!
-
-You may also need to regenerate the import map:
-```bash
-payload generate:importmap
-
 
 **Important:** Restart your server after updating `.env` or plugin settings!
 
