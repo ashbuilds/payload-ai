@@ -105,7 +105,7 @@ export const googleBlock: Block = {
               admin: {
                 components: {
                   // Adjust the path to wherever you put the component
-                  RowLabel: '@ai-stack/payloadcms/client#GoogleModelRowLabel',
+                  RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
                 },
                 description: 'Keep this list short. Enable only the models you actually use.',
                 initCollapsed: false,

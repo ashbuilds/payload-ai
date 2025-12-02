@@ -31,7 +31,7 @@ import { DynamicProviderSelect as DynamicProviderSelect_4490b89d4413c1ffaecdacfe
 import { DynamicModelSelect as DynamicModelSelect_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { AIConfigDashboard as AIConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { EncryptedTextField as EncryptedTextField_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
-import { GoogleModelRowLabel as GoogleModelRowLabel_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
+import { ModelRowLabel as ModelRowLabel_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { InstructionsProvider as InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 
 export const importMap = {
@@ -68,6 +68,6 @@ export const importMap = {
   "@ai-stack/payloadcms/client#DynamicModelSelect": DynamicModelSelect_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#AIConfigDashboard": AIConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#EncryptedTextField": EncryptedTextField_4490b89d4413c1ffaecdacfe72efaf73,
-  "@ai-stack/payloadcms/client#GoogleModelRowLabel": GoogleModelRowLabel_4490b89d4413c1ffaecdacfe72efaf73,
+  "@ai-stack/payloadcms/client#ModelRowLabel": ModelRowLabel_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#InstructionsProvider": InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73
 }
