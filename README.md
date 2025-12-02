@@ -4,77 +4,90 @@
   <img alt="Payload AI Plugin" src="assets/payload-ai-intro.gif" width="100%" />
 </p>
 
-## 🌟 Supercharge Your [Payload CMS](https://payloadcms.com) with AI-Powered Content Creation
+<p align="center">
+  <strong>Transform content creation with intelligent automation — your models, your way</strong>
+</p>
 
-The Payload AI Plugin is an advanced extension that integrates modern AI capabilities into your Payload CMS, streamlining content creation and management.
-
-> **⚠️ Important:** This plugin is in active development. We're doing our best to improve its features and functionality. Please be prepared for regular updates; The plugin has been tested with a Payload version v3.38.0.
->
-> To give it a try, we recommend using [Payload's website template](https://github.com/payloadcms/payload/tree/main/templates/website).
+<p align="center">
+  <img alt="Supported AI Providers" src="assets/providers.png" width="100%" />
+</p>
 
 ---
 
-### 🎥 [Watch the Magic in Action](https://youtu.be/qaYukeGpuu4)
+## 🚀 What is this?
 
-Want to dive deeper?
+The Payload AI Plugin is your secret weapon for turbocharged content creation. It seamlessly integrates cutting-edge AI capabilities directly into [Payload CMS](https://payloadcms.com), turning your content workflow from tedious to tremendous.
 
-### 🎥 [Explore More in Our Extended Demo](https://youtu.be/LEsuHbKalNY)
+### 🎥 See It in Action
 
-### ⚙️ [Guide to Personalize](guide.md)
+- **[Quick Demo](https://youtu.be/qaYukeGpuu4)** - Watch the magic happen
+- **[Extended Demo](https://youtu.be/LEsuHbKalNY)** - Deep dive into all features
+- **[Customization Guide](guide.md)** - Make it your own
 
-## ✨ Supported Fields and Features
+---
 
-### Text and RichText Field
+## ⚠️ Beta Notice
 
-- 📝 **Text Generation**
-  - [x] **Compose** masterpieces effortlessly
-  - [x] **Proofread** with precision (Beta)
-  - [x] **Translate** across languages
-  - [ ] **Expand** your ideas
-  - [ ] **Summarize** with clarity
-  - [ ] **Simplify** complex concepts
-  - [x] **Rephrase** for maximum impact (Beta)
+This plugin is actively evolving. We're constantly shipping improvements and new features. Tested with Payload v3.38.0.
 
-### Upload Field
+**Quick Start Tip:** Try it out with [Payload's website template](https://github.com/payloadcms/payload/tree/main/templates/website) for the smoothest experience.
 
-- 🎙️ **Voice Generation** powered by ElevenLabs, OpenAI
-- 🖼️ **Image Generation** powered by OpenAI
-  - Now also supports **[GPT-Image-1](https://github.com/ashbuilds/payload-ai/pull/82)** Model
+---
 
-### Other Features
+## ✨ Features
 
-- 🔌 **Bring Your Own Model** ([Setup guide](https://github.com/ashbuilds/payload-ai/blob/main/guide.md#5-add-custom-model))
-- 🎛️ **Field-level Prompt Customization**
-- 🔐 **Access Control Support**
-- 🧠 **Prompt Editor**
-- 🌍 **Internationalization Support**
-- 📊 **Document Analyzer** (Coming Soon)
-- ✅ **Fact Checking** (Coming Soon)
-- 🔄 **Automated Content Workflows** (Coming Soon)
-- 🌍 **Editor AI suggestions** (Coming Soon)
-- 💬 **AI Chat Support** (Coming Soon)
+### 📝 Text & RichText Fields
 
-## 📚 Table of Contents
+**Content Generation Magic:**
+- ✅ **Compose** - Generate content from scratch
+- ✅ **Proofread** - Polish your prose (Beta)
+- ✅ **Translate** - Break language barriers
+- ✅ **Rephrase** - Find better ways to say it (Beta)
+- 🔜 **Expand** - Elaborate on ideas
+- 🔜 **Summarize** - Distill the essence
+- 🔜 **Simplify** - Make complex things clear
 
-- [Installation](#-installation)
-- [Usage](#-usage)
-- [Configuration](#%EF%B8%8F-configuration)
-- [Setup Guide](guide.md)
-- [Contributing](#-contributing)
+### 🎨 Upload Fields
+
+- 🎙️ **Voice Generation** - Powered by ElevenLabs & OpenAI
+- 🖼️ **Image Generation** - Powered by OpenAI (DALL-E & GPT-Image-1)
+
+### 🔧 Power User Features
+
+- 🔌 **Bring Your Own Model** - Not limited to our defaults
+- 🎛️ **Field-Level Prompts** - Customize AI behavior per field
+- 🔐 **Access Control** - Lock down who can use AI features
+- 🧠 **Prompt Editor** - Fine-tune AI instructions
+- 🌍 **i18n Support** - Works with your multilingual setup
+- 🎨 **Custom Components** - Extend with your own UI
+
+### 🔜 Coming Soon
+
+- 📊 Document Analyzer
+- ✅ Fact Checking
+- 🔄 Automated Workflows
+- 💡 Editor Suggestions
+- 💬 AI Chat Assistant
+
+---
 
 ## 📦 Installation
-
-After PayloadCMS has been installed, run this command:
 
 ```bash
 pnpm add @ai-stack/payloadcms
 ```
 
-## 🛠 Usage
+That's it! Now let's configure it.
 
-Add below in `src/payload.config.ts`
+---
 
-```javascript 
+## 🛠️ Quick Setup
+
+### Step 1: Configure the Plugin
+
+Add to `src/payload.config.ts`:
+
+```typescript
 import { payloadAiPlugin } from '@ai-stack/payloadcms'
 
 export default buildConfig({
@@ -86,16 +99,17 @@ export default buildConfig({
       debugging: false,
     }),
   ],
-  // ... your existing Payload configuration
+  // ... rest of your config
 })
 ```
 
-Add AI Plugin feature to your richText field:
+### Step 2: Enable AI in Your Fields
 
-```javascript
+Add to your RichText fields (e.g., `src/collections/Posts/index.ts`):
+
+```typescript
 import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 
-// Add below in the Lexical Editor field config of you Collection or Plugin (e.g. src/collections/Posts/index.ts)
 fields: [
   {
     name: 'content',
@@ -103,10 +117,8 @@ fields: [
     editor: lexicalEditor({
       features: ({ rootFeatures }) => {
         return [
-          // ... your existing features
           HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-
-          // Please add below
+          // Add this line:
           PayloadAiPluginLexicalEditorFeature(),
         ]
       },
@@ -115,35 +127,50 @@ fields: [
 ]
 ```
 
-## ⚙️ Configuration
+### Step 3: Add Your API Keys
 
-To get started, set your API keys in a `.env` file in your project root:
-
+Create a `.env` file in your project root. Add the keys for the providers you want to use:
 ```env
-# Required for text and image generation
-OPENAI_API_KEY=your-openai-api-key
+# Text Generation - Choose your provider(s)
+OPENAI_API_KEY=your-openai-api-key           # OpenAI models (GPT-4, etc.)
+ANTHROPIC_API_KEY=your-anthropic-api-key     # Claude models
+GOOGLE_GENERATIVE_AI_API_KEY=your-google-key # Gemini models
 
-# Required if using gpt-image-1 model
-OPENAI_ORG_ID=your-org-id
+# Image Generation - Choose your provider(s)
+OPENAI_API_KEY=your-openai-api-key           # DALL-E (uses same key as above)
+# OPENAI_ORG_ID=your-org-id                  # Required only for GPT-Image-1 model
+GOOGLE_GENERATIVE_AI_API_KEY=your-google-key # Imagen (uses same key as above)
 
-# Optional: Other supported providers
-ANTHROPIC_API_KEY=your-anthropic-api-key
-GOOGLE_GENERATIVE_AI_API_KEY=your-google-api-key
-ELEVENLABS_API_KEY=your-elevenlabs-api-key
+# Audio/Voice Generation - Choose your provider(s)
+ELEVENLABS_API_KEY=your-elevenlabs-api-key   # ElevenLabs voices
+OPENAI_API_KEY=your-openai-api-key           # OpenAI TTS (uses same key as above)
 
-# Optional: Custom OpenAI Endpoint
-OPENAI_BASE_URL=https://api.openai.com/v1
+# Optional: Use custom OpenAI-compatible endpoint
+# OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-> **⚠️ Important:** Restart your server after updating .env or plugin settings to apply the changes.
-Also, you might want to run payload `generate:importmap` to regenerate the import map before starting the server.
+**You only need the keys for the providers you plan to use.** Mix and match based on your preferences!
+
+**Important:** Restart your server after updating `.env` or plugin settings!
+
+You may also need to regenerate the import map:
+```bash
+payload generate:importmap
+
+
+**Important:** Restart your server after updating `.env` or plugin settings!
+
+You may also need to regenerate the import map:
+```bash
+payload generate:importmap
+```
+
 ---
 
-### 👇 Advanced Configuration
+## ⚙️ Advanced Configuration
+
 <details>
-<summary>
-   🔧 Access Control, Multi-Tenant, Media Upload 
-</summary>
+<summary><strong>🔐 Access Control & Multi-Tenant Setup</strong></summary>
 
 ```typescript
 import { payloadAiPlugin } from '@ai-stack/payloadcms'
@@ -154,70 +181,59 @@ export default buildConfig({
       collections: {
         [Posts.slug]: true,
       },
-
-      // Optional
+      
+      // Enable AI for globals too
       globals: {
         [Home.slug]: true,
       },
 
-      // Optional: Show debug logs to list AI-enabled fields
+      // Development helpers
       debugging: false,
-
-      // Optional: Disable sponsor message in the console
       disableSponsorMessage: false,
-
-      // Optional: Pre-generate prompts on server start (recommended for dev only)
       generatePromptOnInit: process.env.NODE_ENV !== 'production',
 
-      // Optional: Specify the media collection used by the gpt-image-1 model to reference images (defaults to media)
+      // Specify media collection for GPT-Image-1
       uploadCollectionSlug: "media",
 
-      // Optional: Access control for AI features
+      // Lock down AI features
       access: {
-        // Control who can generate AI content
         generate: ({ req }) => req.user?.role === 'admin',
-        
-        // Control who can modify AI settings and prompts
         settings: ({ req }) => req.user?.role === 'admin',
       },
 
+      // Customize language options
       options: {
-        // Visit locale-codes for tags, 
-        // defaults to display all language options for Translate feature
-        // https://www.npmjs.com/package/locale-codes
         enabledLanguages: ["en-US", "zh-SG", "zh-CN", "en"],
       },
 
-      // Optional: Additional fields that can be referenced in prompts
+      // Reference additional fields in prompts
       promptFields: [
-        // Expose "url" field on images collection
         {
           name: 'url',
           collections: ['images'],
         },
-        // Expose custom async function that generates markdown summary of any document
         {
           name: 'markdown',
-          async getter(doc, {collection}) => docToMarkdown(collection, doc)
+          async getter(doc, {collection}) {
+            return docToMarkdown(collection, doc)
+          }
         }
       ],
 
-      // Optional: Control how field prompts are seeded for the first time
+      // Control initial prompt generation
       seedPrompts: ({path}) => {
         if (path.endsWith('.meta.description')) {
           return {
             data: {
-              prompt: 'Generate SEO-friendly title for this document: {{markdown}}',
-              // other instruction options
+              prompt: 'Generate SEO-friendly meta description: {{markdown}}',
             }
           }
         }
-        // Don't allow generating slugs
-        if (path.endswith('.slug')) return false
-        // returning undefined fallbacks to default seed prompt
+        if (path.endsWith('.slug')) return false // Disable for slugs
+        return undefined // Use defaults
       },
 
-      // Optional: Custom media upload handling, useful for multi-tenant setups
+      // Custom media upload (useful for multi-tenant)
       mediaUpload: async (result, { request, collection }) => {
         return request.payload.create({
           collection,
@@ -232,112 +248,127 @@ export default buildConfig({
 
 </details>
 
----
+<details>
+<summary><strong>🎨 Custom Components & Fields</strong></summary>
 
-### OpenAI Endpoint
-
-If you want to use a custom endpoint for the OpenAI provider, set your base URL like this:
+Custom fields don't automatically inherit AI capabilities. If your AI-enabled fields don't show Compose settings, manually add this component path:
 
 ```
-OPENAI_BASE_URL=https://api.openai.com/v1
+@ai-stack/payloadcms/fields#ComposeField
 ```
 
-If not specified, the [default](src/ai/models/openai/openai.ts) OpenAI endpoint will be used.
+**Debug Tip:** Enable `debugging: true` in your plugin config to see which fields have AI enabled.
 
-For detailed guidance on personalizing and configuring the plugin to match your needs, check out the **[Complete Guide](guide.md)**. It walks you through every step, from setting up fields to generating amazing content!
-
-### Enabling AI for Custom Components
-
-> **⚠️ Note:** Custom fields don't fully adhere to the Payload schema, making it difficult to determine which components support injecting ComposeField as a Description.
-> If AI enabled fields don't display Compose settings, manually add the following component path:
->
-> `@ai-stack/payloadcms/fields#ComposeField`
->
-> To view AI enabled fields, enable the `debugging` flag in your plugin config or check your server startup logs.
+</details>
 
 ---
 
-## 🤝 Support Development
-I build and maintain this in my free time because I love seeing the community benefit from it.
-Keeping it alive takes real hours and real money (those AI credits aren’t free 😄).
+## 📚 Documentation
 
-If this project has saved you time or made your work easier, why not fuel my next coding session with a coffee?
+Need more details? Check out the **[Complete Setup Guide](guide.md)** for:
+- Custom model configuration
+- Advanced prompt engineering
+- Field-specific customization
+- Troubleshooting tips
 
-<a href="https://www.buymeacoffee.com/ashbuilds" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;"></a>
+---
 
-**Any support means the world to me. Thank you for even considering it!**
+## 🤝 Support This Project
+
+Built with ❤️ in my free time. If this plugin saves you hours of work, consider fueling future development!
+
+<a href="https://www.buymeacoffee.com/ashbuilds" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" width="217" />
+</a>
+
+Every coffee keeps the AI models running and new features shipping. Thank you! 🙏
 
 ---
 
 ## 👥 Contributing
 
-Innovators: welcome! We're always excited to expand our community and hear fresh ideas. Whether you’re here to share feedback, suggest features, or contribute code, we’d love to have you on board.
+We love contributors! Whether you're fixing typos, suggesting features, or building new capabilities, all contributions are welcome.
 
-Feel free to create a pull request with your ideas, improvements, or bug fixes. No contribution is too small, and every bit helps us grow!
+### Ways to Contribute
 
-Join the conversation on Payload's [Discord](https://discord.com/channels/967097582721572934/1264949995656843345) and let’s build something amazing together! 🚀✨
+- 🐛 Report bugs
+- 💡 Suggest features
+- 📖 Improve documentation
+- 🔧 Submit pull requests
 
-### Local development
+Join the conversation on [Payload's Discord](https://discord.com/channels/967097582721572934/1264949995656843345) and let's build something amazing together!
 
-This repo includes a minimal Payload app under [dev](dev/README.md) to iterate on the plugin quickly.
+### Local Development
 
-Prerequisites
-- Node.js (see `.nvmrc`) and pnpm
-- A database connection string for `DATABASE_URI` (Postgres or Mongo)
-- Optional: AI provider keys to test features (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`, `ELEVENLABS_API_KEY`)
+Want to hack on the plugin? Here's how:
 
-1) Install dependencies
+#### Prerequisites
+
+- Node.js (version in `.nvmrc`)
+- pnpm
+- Database connection (Postgres or MongoDB)
+- Optional: AI provider API keys
+
+#### Setup
+
 ```bash
+# 1. Install dependencies
 pnpm install
-```
 
-2) Set up the dev app environment
-```bash
+# 2. Set up environment
 cp dev/.env.example dev/.env
-# Edit dev/.env:
-# - Set DATABASE_URI to your DB connection string
-# - Set PAYLOAD_SECRET to a strong random string
-# - Optionally set AI provider keys to exercise features
-```
+# Edit dev/.env with your DATABASE_URI, PAYLOAD_SECRET, and API keys
 
-3) Start the dev app (admin available at http://localhost:3000)
-```bash
+# 3. Start development server
 pnpm dev
-```
+# Admin UI available at http://localhost:3000
 
-If you run into admin import-map issues, regenerate it:
-```bash
+# 4. Generate types/importmap if needed
 pnpm generate:importmap
-```
-Optionally regenerate Payload types:
-```bash
 pnpm generate:types
 ```
 
-4) Develop
-- Plugin source lives in `src/`; the dev app imports it locally.
-- Edit files in `src/**` and refresh the dev app to validate changes.
+#### Development Workflow
 
-5) Tests, linting, formatting
+- Plugin source: `src/`
+- Test app: `dev/`
+- Edit files in `src/` and refresh to see changes
+
+#### Testing & Quality
+
 ```bash
-pnpm test           # runs Vitest + Playwright (see dev/int.spec.ts, dev/e2e.spec.ts)
-pnpm lint           # ESLint
-pnpm prettier --write .   # Prettier (format all files)
+pnpm test                    # Run all tests
+pnpm lint                    # ESLint
+pnpm prettier --write .      # Format code
+pnpm build                   # Build plugin
 ```
 
-6) Build the plugin
-```bash
-pnpm build
-```
+#### Test in Another Project
 
-7) Try the built package in another Payload project (optional)
 ```bash
-pnpm pack  # creates a tarball in the repo root
-# then in your other project:
+pnpm pack
+# In your other project:
 pnpm add /path/to/ai-plugin-*.tgz
 ```
 
-Project structure quick reference
-- `src/` — plugin source code
-- `dev/` — minimal Payload app wired to this plugin for local testing
-- Tests — see `dev/int.spec.ts` and `dev/e2e.spec.ts` for integration and e2e tests
+#### Project Structure
+
+```
+├── src/              # Plugin source code
+├── dev/              # Test Payload app
+│   ├── int.spec.ts   # Integration tests
+│   └── e2e.spec.ts   # E2E tests
+└── README.md         # You are here!
+```
+
+---
+
+<p align="center">
+  Made with ❤️ and ☕ by the community
+</p>
+
+<p align="center">
+  <a href="https://github.com/ashbuilds/payload-ai">Star on GitHub</a> •
+  <a href="https://discord.com/channels/967097582721572934/1264949995656843345">Join Discord</a> •
+  <a href="guide.md">Read the Guide</a>
+</p>
