@@ -39,22 +39,22 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-  
-      - uses: actions/setup-node@v4
+
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           registry-url: https://registry.npmjs.org
-  
+
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: 8
-  
+
       - name: Install dependencies
         run: pnpm install
-  
+
       - name: Build
         run: pnpm build
-  
-      - name: Publish to npm (OIDC Trusted Publishing)
+
+      - name: Publish to npm (Trusted Publishing)
         run: pnpm publish --provenance --no-git-checks
