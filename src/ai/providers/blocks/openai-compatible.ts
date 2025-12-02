@@ -80,6 +80,7 @@ export const openaiCompatibleBlock: Block = {
       label: 'Available Models',
     },
   ],
+  imageURL: '/provider-icons/custom-provider.png',
   labels: {
     plural: 'Custom Providers',
     singular: 'Custom Provider',

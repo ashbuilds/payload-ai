@@ -13,7 +13,7 @@ export const allProviderBlocks: Block[] = [
   anthropicBlock,
   googleBlock,
   xaiBlock,
-  falBlock,
   elevenlabsBlock,
+  falBlock,
   openaiCompatibleBlock,
 ]

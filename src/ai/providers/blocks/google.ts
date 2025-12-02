@@ -97,6 +97,7 @@ export const googleBlock: Block = {
       label: 'Available Models',
     },
   ],
+  imageURL: '/provider-icons/google-gemini.webp',
   labels: {
     plural: 'Google Providers',
     singular: 'Google Gemini',

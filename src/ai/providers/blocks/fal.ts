@@ -82,6 +82,7 @@ export const falBlock: Block = {
       label: 'Available Models',
     },
   ],
+  imageURL: '/provider-icons/fai-ai.webp',
   labels: {
     plural: 'Fal Providers',
     singular: 'Fal AI',

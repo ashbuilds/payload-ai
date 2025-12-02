@@ -68,6 +68,7 @@ export const elevenlabsBlock: Block = {
       label: 'Available Models',
     },
   ],
+  imageURL: '/provider-icons/elevenllabs.webp',
   labels: {
     plural: 'ElevenLabs Providers',
     singular: 'ElevenLabs',

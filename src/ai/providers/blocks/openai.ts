@@ -100,6 +100,7 @@ export const openaiBlock: Block = {
       label: 'Available Models',
     },
   ],
+  imageURL: '/provider-icons/openai.webp',
   labels: {
     plural: 'OpenAI Providers',
     singular: 'OpenAI',

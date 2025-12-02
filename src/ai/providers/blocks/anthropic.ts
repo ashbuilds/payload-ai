@@ -74,6 +74,7 @@ export const anthropicBlock: Block = {
       label: 'Available Models',
     },
   ],
+  imageURL: '/provider-icons/anthropic.webp',
   labels: {
     plural: 'Anthropic Providers',
     singular: 'Anthropic',

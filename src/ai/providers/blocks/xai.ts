@@ -68,6 +68,7 @@ export const xaiBlock: Block = {
       label: 'Available Models',
     },
   ],
+  imageURL: '/provider-icons/xai-grok.webp',
   labels: {
     plural: 'xAI Providers',
     singular: 'xAI Grok',
