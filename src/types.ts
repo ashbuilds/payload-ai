@@ -114,6 +114,7 @@ export type GenerateTextarea<T = any> = (args: {
 }) => Promise<string> | string
 
 export interface Endpoints {
+  fetchVoices?: Omit<Endpoint, 'root'>
   textarea: Omit<Endpoint, 'root'>
   upload: Omit<Endpoint, 'root'>
   videogenWebhook?: Omit<Endpoint, 'root'>

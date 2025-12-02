@@ -32,6 +32,7 @@ import { DynamicModelSelect as DynamicModelSelect_4490b89d4413c1ffaecdacfe72efaf
 import { AIConfigDashboard as AIConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { EncryptedTextField as EncryptedTextField_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { ModelRowLabel as ModelRowLabel_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
+import { VoicesFetcher as VoicesFetcher_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { InstructionsProvider as InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 
 export const importMap = {
@@ -69,5 +70,6 @@ export const importMap = {
   "@ai-stack/payloadcms/client#AIConfigDashboard": AIConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#EncryptedTextField": EncryptedTextField_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#ModelRowLabel": ModelRowLabel_4490b89d4413c1ffaecdacfe72efaf73,
+  "@ai-stack/payloadcms/client#VoicesFetcher": VoicesFetcher_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#InstructionsProvider": InstructionsProvider_4490b89d4413c1ffaecdacfe72efaf73
 }

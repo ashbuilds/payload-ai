@@ -11,6 +11,7 @@ import { aiSettingsGlobal } from './collections/AISettings.js'
 import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
 import { fetchFields } from './endpoints/fetchFields.js'
+import { fetchVoices } from './endpoints/fetchVoices.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
 import { translations } from './translations/index.js'
@@ -147,6 +148,7 @@ const payloadAiPlugin =
           pluginEndpoints.upload,
           ...(pluginEndpoints.videogenWebhook ? [pluginEndpoints.videogenWebhook] : []),
           fetchFields(pluginConfig),
+          fetchVoices,
         ],
         globals: globals.map((global) => {
           if (globalsSlugs && globalsSlugs[global.slug]) {
@@ -170,28 +172,30 @@ const payloadAiPlugin =
     }
 
     updatedConfig.onInit = async (payload) => {
-      if (incomingConfig.onInit) {await incomingConfig.onInit(payload)}
+      if (incomingConfig.onInit) {
+        await incomingConfig.onInit(payload)
+      }
 
       if (!isActivated) {
         payload.logger.warn(`— AI Plugin: Not activated. Please verify your environment keys.`)
         return
       }
 
-        await init(payload, collectionsFieldPathMap, pluginConfig)
-          .catch((error) => {
-            payload.logger.error(error, `— AI Plugin: Initialization Error`)
-          })
-          .finally(() => {
-            if (!pluginConfig.disableSponsorMessage) {
-              setTimeout(() => {
-                payload.logger.info(securityMessage)
-              }, 1000)
-              setTimeout(() => {
-                payload.logger.info(sponsorMessage)
-              }, 3000)
-            }
-          })
-      }
+      await init(payload, collectionsFieldPathMap, pluginConfig)
+        .catch((error) => {
+          payload.logger.error(error, `— AI Plugin: Initialization Error`)
+        })
+        .finally(() => {
+          if (!pluginConfig.disableSponsorMessage) {
+            setTimeout(() => {
+              payload.logger.info(securityMessage)
+            }, 1000)
+            setTimeout(() => {
+              payload.logger.info(sponsorMessage)
+            }, 3000)
+          }
+        })
+    }
 
     return updatedConfig
   }

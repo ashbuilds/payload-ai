@@ -27,6 +27,7 @@ import { extractImageData } from '../utilities/extractImageData.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
+import { fetchVoices } from './fetchVoices.js'
 
 const requireAuthentication = (req: PayloadRequest) => {
   if (!req.user) {
@@ -192,6 +193,7 @@ const assignPrompt = async (
 
 export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfig) =>
   ({
+    fetchVoices,
     textarea: {
       //TODO:  This is the main endpoint for generating content - its just needs to be renamed to 'generate' or something.
       handler: async (req: PayloadRequest) => {
