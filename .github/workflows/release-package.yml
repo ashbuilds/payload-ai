@@ -35,10 +35,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      packages: write
       contents: read
       id-token: write
-      attestations: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
