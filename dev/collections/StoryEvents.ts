@@ -51,7 +51,7 @@ export const StoryEvents: CollectionConfig = {
       name: 'npc',
       type: 'relationship',
       label: 'NPC',
-      relationTo: 'npcs',
+      relationTo: 'characters',
       required: false,
     },
     {
@@ -74,5 +74,3 @@ export const StoryEvents: CollectionConfig = {
     },
   ],
 }
-
-

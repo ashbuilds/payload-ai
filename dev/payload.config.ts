@@ -6,8 +6,8 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { Characters } from './collections/Characters.js'
 import { Media } from './collections/Media.js'
-import { NPCs } from './collections/NPCs.js'
 import { Organizations } from './collections/Organizations.js'
 import { Posts } from './collections/Posts.js'
 import { Stories } from './collections/Stories.js'
@@ -45,7 +45,7 @@ const buildConfigWithMemoryDB = async () => {
       StoryUniverses,
       Stories,
       StoryChapters,
-      NPCs,
+      Characters,
       StoryNodes,
       StoryEvents,
     ],
@@ -61,7 +61,7 @@ const buildConfigWithMemoryDB = async () => {
     plugins: [
       payloadAiPlugin({
         collections: {
-          [NPCs.slug]: true,
+          [Characters.slug]: true,
           [Posts.slug]: true,
           [Stories.slug]: true,
           [StoryChapters.slug]: true,

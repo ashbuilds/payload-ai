@@ -51,7 +51,7 @@ async function uploadImageToFal(img: {
   url?: string
 }) {
   // Fal client is already configured by the registry factory call in the handler
-  
+
   let fileLike: any
   if (img.data) {
     const name = img.name || 'image.jpg'
@@ -130,15 +130,52 @@ async function submitFalJob({
   return requestId
 }
 
+// Helper to find the models field recursively
+const findModelsField = (fields: any[]): any => {
+  for (const field of fields) {
+    if (field.name === 'models') {
+      return field
+    }
+    if (field.type === 'tabs' && field.tabs) {
+      for (const tab of field.tabs) {
+        const found = findModelsField(tab.fields)
+        if (found) {
+          return found
+        }
+      }
+    }
+    if (field.type === 'collapsible' && field.fields) {
+      const found = findModelsField(field.fields)
+      if (found) {
+        return found
+      }
+    }
+    if (field.type === 'row' && field.fields) {
+      const found = findModelsField(field.fields)
+      if (found) {
+        return found
+      }
+    }
+    if (field.type === 'group' && field.fields) {
+      const found = findModelsField(field.fields)
+      if (found) {
+        return found
+      }
+    }
+  }
+  return undefined
+}
+
 // Helper to extract models from blocks
 const getModelsFromBlocks = (useCase: string) => {
   const models: { label: string; value: string }[] = []
-  
+
   allProviderBlocks.forEach((block) => {
     const providerId = block.slug
-    const modelsField = block.fields.find((f: any) => f.name === 'models')
-    const defaultModels = modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
-    
+    const modelsField = findModelsField(block.fields)
+    const defaultModels =
+      modelsField && 'defaultValue' in modelsField ? (modelsField.defaultValue as any[]) : []
+
     defaultModels.forEach((m) => {
       if (m.useCase === useCase) {
         models.push({
@@ -148,7 +185,7 @@ const getModelsFromBlocks = (useCase: string) => {
       }
     })
   })
-  
+
   return models
 }
 
@@ -158,20 +195,20 @@ export const VideoConfig: GenerationConfig = {
       id: 'video',
       name: 'Video (Fal)',
       fields: ['upload'],
-      handler: async (prompt: string, options: VideoOptions & { req: any }) => {
+      handler: async (prompt: string, options: { req: any } & VideoOptions) => {
         const { req } = options
-        
+
         // Initialize Fal provider from registry
         const registry = await getProviderRegistry(req.payload)
         const falProvider = registry.fal
-        
+
         if (!falProvider || !falProvider.enabled || !falProvider.factory) {
           throw new Error('Fal provider is not enabled or configured')
         }
-        
+
         // This call configures the global process.env.FAL_KEY
         falProvider.factory()
-        
+
         const mode = options.mode || 't2v'
         const webhookUrl = buildFalWebhookUrl(options?.callbackUrl)
 

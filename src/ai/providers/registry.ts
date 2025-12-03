@@ -95,7 +95,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
   })) as unknown as AISettingsData
 
   const registry: ProviderRegistry = {}
-  console.log('settings - >', JSON.stringify(settings, null, 2))
+  // console.log('settings - >', JSON.stringify(settings, null, 2))
   for (const providerBlock of settings.providers || []) {
     if (!providerBlock.enabled) {
       continue
@@ -111,7 +111,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
     } else if (isProviderBlock<AnthropicBlockData>(providerBlock, 'anthropic')) {
       factory = () => providerFactories.anthropic(providerBlock)
     } else if (isProviderBlock<GoogleBlockData>(providerBlock, 'google')) {
-      console.log("providerBlock:  ", providerBlock)
+      // console.log("providerBlock:  ", providerBlock)
       factory = () => providerFactories.google(providerBlock)
     } else if (isProviderBlock<XAIBlockData>(providerBlock, 'xai')) {
       factory = () => providerFactories.xai(providerBlock)
@@ -129,7 +129,8 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
     }
 
     // Filter enabled models only
-    const enabledModels = providerBlock.models.filter((m) => m.enabled)
+    // console.log("providerBlock.models : ", JSON.stringify(providerBlock.models, null, 2))
+    const enabledModels = providerBlock.models //.filter((m) => m.enabled) //TODO fix to get only enabled model
 
     registry[blockType] = {
       id: blockType,
@@ -200,7 +201,7 @@ export async function getLanguageModel(
   return providerInstance(modelId)
 }
 
-export async function getImageModel(payload: Payload, providerId?: string, modelId?: string) {
+export async function getImageModel(payload: Payload, providerId?: string, modelId?: string, isMultimodalText?: boolean) {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
     if (!providerId) {
@@ -232,6 +233,7 @@ export async function getImageModel(payload: Payload, providerId?: string, model
 
     // Type-safe check for image support
     if (
+      !isMultimodalText &&
       typeof instance === 'function' &&
       'image' in instance &&
       typeof instance.image === 'function'
@@ -240,7 +242,7 @@ export async function getImageModel(payload: Payload, providerId?: string, model
     }
 
     // Also check if instance is an object with image method
-    if (typeof instance === 'object' && instance !== null && 'image' in instance) {
+    if (typeof instance === 'object' && instance !== null && 'image' in instance && !isMultimodalText) {
       return (instance as AIProvider).image?.(modelId)
     }
 

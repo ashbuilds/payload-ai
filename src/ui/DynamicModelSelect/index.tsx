@@ -61,8 +61,15 @@ export const DynamicModelSelect: React.FC<Props> = (props) => {
     // If path is 'image-settings.model', inferred is 'image-settings'.
     // We check if inferred is 'image', 'text', etc. If not, default to 'image' for now as this is mostly for image generation.
     let inferredUseCase = pathParts[pathParts.length - 2]
+    
     if (inferredUseCase === 'image-settings') {
       inferredUseCase = 'image'
+    } else if (inferredUseCase === 'tts-settings') {
+      inferredUseCase = 'tts'
+    } else if (inferredUseCase === 'text-settings' || inferredUseCase === 'richtext-settings') {
+      inferredUseCase = 'text'
+    } else if (inferredUseCase === 'video-settings') {
+      inferredUseCase = 'video'
     }
 
     if (staticBlock) {

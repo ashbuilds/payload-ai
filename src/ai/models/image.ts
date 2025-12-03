@@ -1,3 +1,4 @@
+import type { ImagePart, ModelMessage } from 'ai'
 import type { File } from 'payload'
 
 import type { GenerationConfig } from '../../types.js'
@@ -18,9 +19,6 @@ interface MultimodalImageFile {
   uint8Array?: Uint8Array
 }
 
-/**
- * Get file extension from MIME type
- */
 function getExtensionFromMimeType(mimeType: string): string {
   const mimeToExt: Record<string, string> = {
     'image/bmp': 'bmp',
@@ -77,41 +75,34 @@ function createPayloadFile(
 async function handleMultimodalTextGeneration(
   model: any,
   prompt: string,
-  images?: { base64: string; mediaType: string }[],
+  images: ImagePart[] = [],
 ): Promise<ImageGenerationResult> {
   const { generateText } = await import('ai')
 
-  // For multimodal Gemini models that can return images via generateText + responseModalities
-  // Prepare image parts if input images are provided
-  const imageParts = images
-    ? images.map((img) => ({
-        type: 'image' as const,
-        image: img.base64,
-        mediaType: img.mediaType,
-      }))
-    : []
+  // const imageParts = images.map((img) => ({
+  //   type: 'image' as const,
+  //   image: img.data,
+  //   mimeType: img.mimeType,
+  // }))
 
-  // Create prompt content with text and optional images
-  const promptParts = [
+  const promptParts: ModelMessage['content'] = [
     {
       type: 'text' as const,
       text: prompt,
     },
-    ...imageParts,
+    ...images,
   ]
-  console.log('promptParts images : ', images?.length)
-  console.log('promptParts : ', promptParts)
 
-  const promptContent = [
+  const messages: ModelMessage[] = [
     {
       content: promptParts,
-      role: 'user' as const,
+      role: 'user',
     },
   ]
 
   const result = await generateText({
     model,
-    prompt: promptContent,
+    prompt: messages,
     providerOptions: {
       google: {
         imageConfig: {
@@ -181,15 +172,25 @@ export const ImageConfig: GenerationConfig = {
         // Determine generation method by checking the model metadata
         const { getProviderRegistry } = await import('../providers/index.js')
         const registry = await getProviderRegistry(req.payload)
+        console.log('options.provider', options.provider)
         const provider = registry[options.provider]
+        console.log('provider ', provider)
         const modelConfig = provider?.models?.find((m: any) => m.id === options.model)
 
+        console.log('modelConfig', modelConfig)
         // Determine generation approach based on responseModalities
         // If the model supports IMAGE in responseModalities, use multimodal approach
         const isMultimodalText = modelConfig?.responseModalities?.includes('IMAGE') ?? false
+        console.log('isMultimodalText', isMultimodalText)
 
         // Get the model instance
-        const model = await getImageModel(req.payload, options.provider, options.model)
+        const model = await getImageModel(
+          req.payload,
+          options.provider,
+          options.model,
+          isMultimodalText,
+        )
+        console.log('model', model)
 
         // Route based on generation method
         if (isMultimodalText) {

@@ -15,9 +15,9 @@ export const Organizations: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    useAsTitle: 'name',
     description:
       'Organizations are used to scope Storytelling content. Users associated with an organization can only access their own org data.',
+    useAsTitle: 'name',
   },
   fields: [
     {
@@ -29,12 +29,12 @@ export const Organizations: CollectionConfig = {
     {
       name: 'slug',
       type: 'text',
-      label: 'Slug',
-      required: true,
-      unique: true,
       admin: {
         description: 'Unique identifier for the organization (used in URLs and references).',
       },
+      label: 'Slug',
+      required: true,
+      unique: true,
     },
   ],
   versions: {

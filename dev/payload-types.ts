@@ -68,14 +68,15 @@ export interface Config {
   blocks: {};
   collections: {
     media: Media;
-    posts: Post;
     organizations: Organization;
     'story-universes': StoryUniverse;
     stories: Story;
     'story-chapters': StoryChapter;
-    npcs: Npc;
+    characters: Character;
     'story-nodes': StoryNode;
     'story-events': StoryEvent;
+    'plugin-ai-instructions': PluginAiInstruction;
+    'plugin-ai-ai-jobs': PluginAiAiJob;
     users: User;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -85,14 +86,15 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     media: MediaSelect<false> | MediaSelect<true>;
-    posts: PostsSelect<false> | PostsSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     'story-universes': StoryUniversesSelect<false> | StoryUniversesSelect<true>;
     stories: StoriesSelect<false> | StoriesSelect<true>;
     'story-chapters': StoryChaptersSelect<false> | StoryChaptersSelect<true>;
-    npcs: NpcsSelect<false> | NpcsSelect<true>;
+    characters: CharactersSelect<false> | CharactersSelect<true>;
     'story-nodes': StoryNodesSelect<false> | StoryNodesSelect<true>;
     'story-events': StoryEventsSelect<false> | StoryEventsSelect<true>;
+    'plugin-ai-instructions': PluginAiInstructionsSelect<false> | PluginAiInstructionsSelect<true>;
+    'plugin-ai-ai-jobs': PluginAiAiJobsSelect<false> | PluginAiAiJobsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -102,8 +104,12 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'ai-settings': AiSetting;
+  };
+  globalsSelect: {
+    'ai-settings': AiSettingsSelect<false> | AiSettingsSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -228,71 +234,6 @@ export interface Media {
       filename?: string | null;
     };
   };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
- */
-export interface Post {
-  id: number;
-  /**
-   * Demonstrates AI title generation. Use the AI plugin’s Compose action on this field to generate or iterate on a compelling, SEO-friendly headline.
-   */
-  title: string;
-  /**
-   * SEO quality keywords
-   */
-  keywords?: string[] | null;
-  /**
-   * Any random number 1-10
-   */
-  number?: number[] | null;
-  select?: ('gpt-4o-mini' | 'gpt-4' | 'gpt-5') | null;
-  description?: string | null;
-  /**
-   * Upload the source images used by the banner prompt template. The AI composes these into a single hero/banner image.
-   */
-  bannerInputs?: {
-    shirt?: (number | null) | Media;
-    pants?: (number | null) | Media;
-    person?: (number | null) | Media;
-    background?: (number | null) | Media;
-  };
-  /**
-   * Result of the AI banner generation (typically using OpenAI GPT-Image-1). Use the Compose action to generate and iterate on the final image.
-   */
-  bannerOutput?: {
-    heroImage?: (number | null) | Media;
-  };
-  /**
-   * Rich text powered by Lexical with AI assistance. Use toolbars and the Compose menu to generate, refine, format, and translate content.
-   */
-  articleBody?: {
-    content?: {
-      root: {
-        type: string;
-        children: {
-          type: string;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-  };
-  /**
-   * Generates narration for the Content field. Only the audio file is stored here; model and generation options are configured in the AI plugin settings.
-   */
-  voice?: {
-    audio?: (number | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * Organizations are used to scope Storytelling content. Users associated with an organization can only access their own org data.
@@ -481,26 +422,58 @@ export interface StoryChapter {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "npcs".
+ * via the `definition` "characters".
  */
-export interface Npc {
+export interface Character {
   id: number;
   /**
-   * Owning organization. Access is scoped by this value.
+   * The organization that owns this NPC.
    */
-  organization: number | Organization;
+  organization?: (number | null) | Organization;
   /**
-   * NPC display name. Use AI Compose to brainstorm distinct, memorable names that fit the role and tone.
-   */
-  name: string;
-  /**
-   * Unique identifier for the NPC (used by content pipelines or engine keys).
+   * URL safe identifier used by APIs and the game engine.
    */
   slug: string;
   /**
-   * The primary narrative function of this character. Prompts can reference this to guide generation.
+   * The name players will see for this NPC.
    */
-  role: 'guide' | 'rival' | 'historian' | 'narrator' | 'other';
+  name: string;
+  /**
+   * High level function of this NPC in the story.
+   */
+  role: 'guide' | 'rival' | 'historian' | 'narrator' | 'merchant' | 'scholar' | 'other';
+  /**
+   * Very short description used in UI and in prompts.
+   */
+  description?: string | null;
+  /**
+   * Gender presentation of the character.
+   */
+  gender?: string | null;
+  /**
+   * Approximate perceived age.
+   */
+  ageRange?: string | null;
+  ethnicity?: string | null;
+  skinTone?: string | null;
+  faceShape?: string | null;
+  eyeShape?: string | null;
+  eyeColor?: string | null;
+  eyebrows?: string | null;
+  nose?: string | null;
+  lips?: string | null;
+  distinguishingFeatures?: string | null;
+  hairLength?: string | null;
+  hairTexture?: string | null;
+  hairStyle?: string | null;
+  hairColor?: string | null;
+  era?: string | null;
+  culture?: string | null;
+  clothingStyle?: string | null;
+  palette?: string | null;
+  expression?: string | null;
+  vibe?: string | null;
+  posture?: string | null;
   /**
    * 2D portrait image used for UI/dialogue.
    */
@@ -509,6 +482,10 @@ export interface Npc {
    * Optional 3D model reference. Can be replaced with a dedicated assets collection later.
    */
   model3D?: (number | null) | Media;
+  /**
+   * Generate character speech sample
+   */
+  Speech?: (number | null) | Media;
   /**
    * A longer biography/personality profile. Use AI Compose to generate consistent backstory and voice.
    */
@@ -651,7 +628,7 @@ export interface StoryEvent {
   organization: number | Organization;
   story: number | Story;
   chapter?: (number | null) | StoryChapter;
-  npc?: (number | null) | Npc;
+  npc?: (number | null) | Character;
   /**
    * Example values: story_intro_viewed, story_intro_skipped, npc_interaction, chapter_completed, drop_off
    */
@@ -660,6 +637,109 @@ export interface StoryEvent {
    * Arbitrary event data (shape defined by your game engine/services).
    */
   payload?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-instructions".
+ */
+export interface PluginAiInstruction {
+  id: number;
+  /**
+   * Please don't change this unless you're sure of what you're doing
+   */
+  'schema-path'?: string | null;
+  /**
+   * Please don't change this unless you're sure of what you're doing
+   */
+  'field-type'?: ('text' | 'textarea' | 'upload' | 'richText') | null;
+  'relation-to'?: string | null;
+  'model-id'?: ('text' | 'richtext' | 'image' | 'tts' | 'video') | null;
+  /**
+   * Please reload your collection after applying the changes
+   */
+  disabled?: boolean | null;
+  /**
+   * Click 'Compose' to run this custom prompt and generate content
+   */
+  prompt?: string | null;
+  images?:
+    | {
+        /**
+         * Please make sure the image is publicly accessible.
+         */
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  system?: string | null;
+  layout?: string | null;
+  'text-settings'?: {
+    provider?: string | null;
+    model?: string | null;
+    maxTokens?: number | null;
+    temperature?: number | null;
+    extractAttachments?: boolean | null;
+  };
+  'richtext-settings'?: {
+    provider?: string | null;
+    model?: string | null;
+    maxTokens?: number | null;
+    temperature?: number | null;
+    extractAttachments?: boolean | null;
+  };
+  'image-settings'?: {
+    provider?: string | null;
+    model?: string | null;
+  };
+  'tts-settings'?: {
+    provider?: string | null;
+    model?: string | null;
+    voice?: ('alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer') | null;
+    response_format?: ('mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm') | null;
+    speed?: number | null;
+    stability?: number | null;
+    similarity_boost?: number | null;
+    style?: number | null;
+    use_speaker_boost?: boolean | null;
+    seed?: number | null;
+    previous_text?: string | null;
+    next_text?: string | null;
+  };
+  'video-settings'?: {
+    mode?: ('t2v' | 'i2v') | null;
+    falModelId?: ('fal-ai/minimax-video' | 'fal-ai/hunyuan-video' | 'fal-ai/luma-dream-machine') | null;
+    width?: number | null;
+    height?: number | null;
+    durationSeconds?: number | null;
+    fps?: number | null;
+    seed?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-ai-jobs".
+ */
+export interface PluginAiAiJob {
+  id: number;
+  instructionId: number | PluginAiInstruction;
+  task_id: string;
+  status?: ('queued' | 'running' | 'completed' | 'failed' | 'canceled') | null;
+  progress?: number | null;
+  result_id?: string | null;
+  error?: string | null;
+  meta?:
     | {
         [k: string]: unknown;
       }
@@ -799,10 +879,6 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'posts';
-        value: number | Post;
-      } | null)
-    | ({
         relationTo: 'organizations';
         value: number | Organization;
       } | null)
@@ -819,8 +895,8 @@ export interface PayloadLockedDocument {
         value: number | StoryChapter;
       } | null)
     | ({
-        relationTo: 'npcs';
-        value: number | Npc;
+        relationTo: 'characters';
+        value: number | Character;
       } | null)
     | ({
         relationTo: 'story-nodes';
@@ -829,6 +905,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'story-events';
         value: number | StoryEvent;
+      } | null)
+    | ({
+        relationTo: 'plugin-ai-instructions';
+        value: number | PluginAiInstruction;
+      } | null)
+    | ({
+        relationTo: 'plugin-ai-ai-jobs';
+        value: number | PluginAiAiJob;
       } | null)
     | ({
         relationTo: 'users';
@@ -975,43 +1059,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts_select".
- */
-export interface PostsSelect<T extends boolean = true> {
-  title?: T;
-  keywords?: T;
-  number?: T;
-  select?: T;
-  description?: T;
-  bannerInputs?:
-    | T
-    | {
-        shirt?: T;
-        pants?: T;
-        person?: T;
-        background?: T;
-      };
-  bannerOutput?:
-    | T
-    | {
-        heroImage?: T;
-      };
-  articleBody?:
-    | T
-    | {
-        content?: T;
-      };
-  voice?:
-    | T
-    | {
-        audio?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "organizations_select".
  */
 export interface OrganizationsSelect<T extends boolean = true> {
@@ -1070,15 +1117,39 @@ export interface StoryChaptersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "npcs_select".
+ * via the `definition` "characters_select".
  */
-export interface NpcsSelect<T extends boolean = true> {
+export interface CharactersSelect<T extends boolean = true> {
   organization?: T;
-  name?: T;
   slug?: T;
+  name?: T;
   role?: T;
+  description?: T;
+  gender?: T;
+  ageRange?: T;
+  ethnicity?: T;
+  skinTone?: T;
+  faceShape?: T;
+  eyeShape?: T;
+  eyeColor?: T;
+  eyebrows?: T;
+  nose?: T;
+  lips?: T;
+  distinguishingFeatures?: T;
+  hairLength?: T;
+  hairTexture?: T;
+  hairStyle?: T;
+  hairColor?: T;
+  era?: T;
+  culture?: T;
+  clothingStyle?: T;
+  palette?: T;
+  expression?: T;
+  vibe?: T;
+  posture?: T;
   portrait?: T;
   model3D?: T;
+  Speech?: T;
   bio?: T;
   linkedStories?: T;
   reusableAcrossHunts?: T;
@@ -1117,6 +1188,94 @@ export interface StoryEventsSelect<T extends boolean = true> {
   npc?: T;
   eventType?: T;
   payload?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-instructions_select".
+ */
+export interface PluginAiInstructionsSelect<T extends boolean = true> {
+  'schema-path'?: T;
+  'field-type'?: T;
+  'relation-to'?: T;
+  'model-id'?: T;
+  disabled?: T;
+  prompt?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  system?: T;
+  layout?: T;
+  'text-settings'?:
+    | T
+    | {
+        provider?: T;
+        model?: T;
+        maxTokens?: T;
+        temperature?: T;
+        extractAttachments?: T;
+      };
+  'richtext-settings'?:
+    | T
+    | {
+        provider?: T;
+        model?: T;
+        maxTokens?: T;
+        temperature?: T;
+        extractAttachments?: T;
+      };
+  'image-settings'?:
+    | T
+    | {
+        provider?: T;
+        model?: T;
+      };
+  'tts-settings'?:
+    | T
+    | {
+        provider?: T;
+        model?: T;
+        voice?: T;
+        response_format?: T;
+        speed?: T;
+        stability?: T;
+        similarity_boost?: T;
+        style?: T;
+        use_speaker_boost?: T;
+        seed?: T;
+        previous_text?: T;
+        next_text?: T;
+      };
+  'video-settings'?:
+    | T
+    | {
+        mode?: T;
+        falModelId?: T;
+        width?: T;
+        height?: T;
+        durationSeconds?: T;
+        fps?: T;
+        seed?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-ai-jobs_select".
+ */
+export interface PluginAiAiJobsSelect<T extends boolean = true> {
+  instructionId?: T;
+  task_id?: T;
+  status?: T;
+  progress?: T;
+  result_id?: T;
+  error?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1207,21 +1366,641 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-settings".
+ */
+export interface AiSetting {
+  id: number;
+  /**
+   * Configure which AI providers to use and their settings
+   */
+  providers: (
+    | {
+        enabled?: boolean | null;
+        /**
+         * Optional. If empty, @ai-sdk/openai will use the OPENAI_API_KEY environment variable.
+         */
+        apiKey?: string | null;
+        /**
+         * Optional. Override default API endpoint (defaults to https://api.openai.com/v1).
+         */
+        baseURL?: string | null;
+        /**
+         * Optional. OpenAI organization ID for billing and access control.
+         */
+        organization?: string | null;
+        /**
+         * Optional. OpenAI project ID for organization-level access.
+         */
+        project?: string | null;
+        /**
+         * Optional. Extra headers to send with every request, for example routing through a proxy.
+         */
+        headers?:
+          | {
+              key: string;
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Keep this list short. Enable only the models you actually use.
+         */
+        models?:
+          | {
+              id: string | null;
+              name: string;
+              useCase?: ('text' | 'image' | 'tts' | 'embedding') | null;
+              /**
+               * Controls randomness. 0 = deterministic, 2 = very creative.
+               */
+              temperature?: number | null;
+              /**
+               * Maximum number of tokens to generate. Leave empty for model default.
+               */
+              maxTokens?: number | null;
+              /**
+               * Nucleus sampling probability threshold.
+               */
+              topP?: number | null;
+              /**
+               * Penalize tokens based on frequency in the text.
+               */
+              frequencyPenalty?: number | null;
+              /**
+               * Penalize tokens based on presence in the text.
+               */
+              presencePenalty?: number | null;
+              /**
+               * Optional. Seed for deterministic sampling.
+               */
+              seed?: number | null;
+              /**
+               * Modify likelihood of tokens (JSON object mapping token IDs to bias).
+               */
+              logitBias?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
+              /**
+               * Image dimensions.
+               */
+              size?: ('1024x1024' | '1024x1792' | '1792x1024') | null;
+              /**
+               * Image quality (DALL-E 3 only).
+               */
+              quality?: ('standard' | 'hd') | null;
+              /**
+               * Image style (DALL-E 3 only).
+               */
+              style?: ('vivid' | 'natural') | null;
+              /**
+               * Voice for text-to-speech.
+               */
+              voice?: ('alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer') | null;
+              /**
+               * Speed of speech (0.25 to 4.0).
+               */
+              speed?: number | null;
+              enabled?: boolean | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'openai';
+      }
+    | {
+        enabled?: boolean | null;
+        /**
+         * Your Anthropic API key. Will be encrypted in the database.
+         */
+        apiKey: string;
+        models?:
+          | {
+              id: string;
+              name: string;
+              useCase?: 'text' | null;
+              enabled?: boolean | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'anthropic';
+      }
+    | {
+        enabled?: boolean | null;
+        /**
+         * Optional. If empty, @ai-sdk/google will use the GOOGLE_GENERATIVE_AI_API_KEY environment variable.
+         */
+        apiKey?: string | null;
+        /**
+         * Optional. Override default API endpoint (defaults to https://generativelanguage.googleapis.com/v1beta).
+         */
+        baseURL?: string | null;
+        /**
+         * Optional. Extra headers to send with every request, for example routing through a proxy.
+         */
+        headers?:
+          | {
+              key: string;
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Keep this list short. Enable only the models you actually use.
+         */
+        models?:
+          | {
+              id: string | null;
+              name: string;
+              useCase?: ('text' | 'image' | 'embedding') | null;
+              /**
+               * Controls randomness. 0 = deterministic, 2 = very creative.
+               */
+              temperature?: number | null;
+              /**
+               * Optional upper limit for generated tokens. Leave empty to let the SDK decide.
+               */
+              maxTokens?: number | null;
+              /**
+               * Nucleus sampling probability threshold.
+               */
+              topP?: number | null;
+              /**
+               * Limit sampling to the K most probable tokens.
+               */
+              topK?: number | null;
+              /**
+               * Gemini models that support it can return text, images, or both. Leave empty for text only.
+               */
+              responseModalities?: ('TEXT' | 'IMAGE')[] | null;
+              /**
+               * Used as imageConfig.aspectRatio for models that support it.
+               */
+              aspectRatio?: ('1:1' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '9:16' | '16:9' | '21:9') | null;
+              /**
+               * Imagen models option. Controls whether people can be generated.
+               */
+              personGeneration?: ('allow_adult' | 'allow_all' | 'dont_allow') | null;
+              /**
+               * For Gemini 3 models. Controls depth of reasoning.
+               */
+              thinkingLevel?: ('low' | 'high') | null;
+              /**
+               * Approx token budget for thinking step. For Gemini 2.5 models.
+               */
+              thinkingBudget?: number | null;
+              /**
+               * If true, exposes high level reasoning summaries in the response metadata.
+               */
+              includeThoughts?: boolean | null;
+              safetySettings?:
+                | {
+                    category:
+                      | 'HARM_CATEGORY_HARASSMENT'
+                      | 'HARM_CATEGORY_HATE_SPEECH'
+                      | 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
+                      | 'HARM_CATEGORY_DANGEROUS_CONTENT';
+                    threshold: 'BLOCK_NONE' | 'BLOCK_LOW_AND_ABOVE' | 'BLOCK_MEDIUM_AND_ABOVE' | 'BLOCK_ONLY_HIGH';
+                    id?: string | null;
+                  }[]
+                | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'google';
+      }
+    | {
+        enabled?: boolean | null;
+        /**
+         * Your xAI API key. Will be encrypted in the database.
+         */
+        apiKey: string;
+        models?:
+          | {
+              id: string;
+              name: string;
+              useCase: 'text' | 'image';
+              enabled?: boolean | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'xai';
+      }
+    | {
+        enabled?: boolean | null;
+        /**
+         * Your ElevenLabs API key. Will be encrypted in the database. Get yours at elevenlabs.io
+         */
+        apiKey: string;
+        /**
+         * Optional. Override default API endpoint (defaults to https://api.elevenlabs.io/v1).
+         */
+        baseURL?: string | null;
+        /**
+         * Optional. Custom headers to send with every request.
+         */
+        headers?:
+          | {
+              key: string;
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Use the "Fetch Voices" button above to populate this list from your ElevenLabs account.
+         */
+        voices?:
+          | {
+              id: string | null;
+              name: string;
+              enabled?: boolean | null;
+              category?: ('premade' | 'cloned' | 'professional' | 'generated') | null;
+              preview_url?: string | null;
+              /**
+               * Voice attributes like gender, age, accent (JSON object). Example: {"gender": "female", "age": "young", "accent": "american"}
+               */
+              labels?:
+                | {
+                    [k: string]: unknown;
+                  }
+                | unknown[]
+                | string
+                | number
+                | boolean
+                | null;
+            }[]
+          | null;
+        /**
+         * Configure TTS models with specific voice settings and parameters.
+         */
+        models?:
+          | {
+              id: string | null;
+              name: string;
+              useCase?: 'tts' | null;
+              enabled?: boolean | null;
+              /**
+               * Voice stability (0-1). Lower = more emotional range, higher = more monotonous.
+               */
+              stability?: number | null;
+              /**
+               * How closely AI adheres to the original voice (0-1).
+               */
+              similarity_boost?: number | null;
+              /**
+               * Amplify speaker style (0-1). Values above 0 may increase latency.
+               */
+              style?: number | null;
+              /**
+               * Boost similarity to original speaker (increases latency).
+               */
+              use_speaker_boost?: boolean | null;
+              /**
+               * ISO 639-1 language code (only for Turbo v2.5 and Flash v2.5).
+               */
+              language_code?: string | null;
+              /**
+               * Seed for deterministic sampling (0-4294967295).
+               */
+              seed?: number | null;
+              /**
+               * Controls text normalization (spell out numbers, etc.)
+               */
+              apply_text_normalization?: ('auto' | 'on' | 'off') | null;
+              /**
+               * Language-specific normalization (e.g., Japanese). May increase latency.
+               */
+              apply_language_text_normalization?: boolean | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'elevenlabs';
+      }
+    | {
+        enabled?: boolean | null;
+        /**
+         * Your Fal API key. Will be encrypted in the database.
+         */
+        apiKey: string;
+        /**
+         * Secret for webhook verification (optional)
+         */
+        webhookSecret?: string | null;
+        models?:
+          | {
+              id: string;
+              name: string;
+              useCase: 'image' | 'video';
+              enabled?: boolean | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'fal';
+      }
+    | {
+        /**
+         * Display name for this custom provider (e.g., "Ollama", "Together AI")
+         */
+        providerName: string;
+        enabled?: boolean | null;
+        /**
+         * API key for this provider (if required)
+         */
+        apiKey: string;
+        /**
+         * OpenAI-compatible API endpoint (e.g., http://localhost:11434/v1)
+         */
+        baseURL: string;
+        models?:
+          | {
+              id: string;
+              name: string;
+              useCase: 'text' | 'image' | 'video' | 'tts';
+              enabled?: boolean | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'openai-compatible';
+      }
+  )[];
+  /**
+   * Default provider/model for each use case
+   */
+  defaults?: {
+    text?: {
+      /**
+       * Auto-populated from blocks
+       */
+      provider?: string | null;
+      model?: string | null;
+    };
+    image?: {
+      provider?: string | null;
+      model?: string | null;
+    };
+    video?: {
+      provider?: string | null;
+      model?: string | null;
+    };
+    tts?: {
+      provider?: string | null;
+      model?: string | null;
+    };
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ai-settings_select".
+ */
+export interface AiSettingsSelect<T extends boolean = true> {
+  providers?:
+    | T
+    | {
+        openai?:
+          | T
+          | {
+              enabled?: T;
+              apiKey?: T;
+              baseURL?: T;
+              organization?: T;
+              project?: T;
+              headers?:
+                | T
+                | {
+                    key?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              models?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    useCase?: T;
+                    temperature?: T;
+                    maxTokens?: T;
+                    topP?: T;
+                    frequencyPenalty?: T;
+                    presencePenalty?: T;
+                    seed?: T;
+                    logitBias?: T;
+                    size?: T;
+                    quality?: T;
+                    style?: T;
+                    voice?: T;
+                    speed?: T;
+                    enabled?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        anthropic?:
+          | T
+          | {
+              enabled?: T;
+              apiKey?: T;
+              models?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    useCase?: T;
+                    enabled?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        google?:
+          | T
+          | {
+              enabled?: T;
+              apiKey?: T;
+              baseURL?: T;
+              headers?:
+                | T
+                | {
+                    key?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              models?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    useCase?: T;
+                    temperature?: T;
+                    maxTokens?: T;
+                    topP?: T;
+                    topK?: T;
+                    responseModalities?: T;
+                    aspectRatio?: T;
+                    personGeneration?: T;
+                    thinkingLevel?: T;
+                    thinkingBudget?: T;
+                    includeThoughts?: T;
+                    safetySettings?:
+                      | T
+                      | {
+                          category?: T;
+                          threshold?: T;
+                          id?: T;
+                        };
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        xai?:
+          | T
+          | {
+              enabled?: T;
+              apiKey?: T;
+              models?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    useCase?: T;
+                    enabled?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        elevenlabs?:
+          | T
+          | {
+              enabled?: T;
+              apiKey?: T;
+              baseURL?: T;
+              headers?:
+                | T
+                | {
+                    key?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              voices?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    enabled?: T;
+                    category?: T;
+                    preview_url?: T;
+                    labels?: T;
+                  };
+              models?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    useCase?: T;
+                    enabled?: T;
+                    stability?: T;
+                    similarity_boost?: T;
+                    style?: T;
+                    use_speaker_boost?: T;
+                    language_code?: T;
+                    seed?: T;
+                    apply_text_normalization?: T;
+                    apply_language_text_normalization?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        fal?:
+          | T
+          | {
+              enabled?: T;
+              apiKey?: T;
+              webhookSecret?: T;
+              models?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    useCase?: T;
+                    enabled?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        'openai-compatible'?:
+          | T
+          | {
+              providerName?: T;
+              enabled?: T;
+              apiKey?: T;
+              baseURL?: T;
+              models?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    useCase?: T;
+                    enabled?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  defaults?:
+    | T
+    | {
+        text?:
+          | T
+          | {
+              provider?: T;
+              model?: T;
+            };
+        image?:
+          | T
+          | {
+              provider?: T;
+              model?: T;
+            };
+        video?:
+          | T
+          | {
+              provider?: T;
+              model?: T;
+            };
+        tts?:
+          | T
+          | {
+              provider?: T;
+              model?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskSchedulePublish".
  */
 export interface TaskSchedulePublish {
   input: {
     type?: ('publish' | 'unpublish') | null;
     locale?: string | null;
-    doc?:
-      | ({
-          relationTo: 'posts';
-          value: number | Post;
-        } | null)
-      | ({
-          relationTo: 'stories';
-          value: number | Story;
-        } | null);
+    doc?: {
+      relationTo: 'stories';
+      value: number | Story;
+    } | null;
     global?: string | null;
     user?: (number | null) | User;
   };

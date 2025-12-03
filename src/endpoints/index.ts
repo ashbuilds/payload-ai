@@ -1,3 +1,4 @@
+import type { ImagePart } from 'ai'
 import type { CollectionSlug, PayloadRequest } from 'payload'
 
 import * as process from 'node:process'
@@ -27,7 +28,6 @@ import { extractImageData } from '../utilities/extractImageData.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
-import { fetchVoices } from './fetchVoices.js'
 
 const requireAuthentication = (req: PayloadRequest) => {
   if (!req.user) {
@@ -193,7 +193,6 @@ const assignPrompt = async (
 
 export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfig) =>
   ({
-    fetchVoices,
     textarea: {
       //TODO:  This is the main endpoint for generating content - its just needs to be renamed to 'generate' or something.
       handler: async (req: PayloadRequest) => {
@@ -269,7 +268,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               ? models.find((model) => model.id === instructions['model-id'])
               : undefined
 
-          console.log('model --> :', model)
+          // console.log('model --> :', model)
 
           if (!model) {
             throw new Error('Model not found')
@@ -419,7 +418,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const images = [...extractImageData(text), ...sampleImages]
           console.log('images :  ', images)
 
-          const editImages = []
+          const editImages: ImagePart[] = []
           for (const img of images) {
             const serverURL =
               req.payload.config?.serverURL ||
@@ -442,12 +441,12 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               })
 
               const blob = await response.blob()
+              const arrayBuffer = await blob.arrayBuffer()
+
               editImages.push({
-                name: img.image.name,
-                type: img.image.type,
-                data: blob,
-                size: blob.size,
-                url,
+                type: 'image',
+                image: blob,
+                mimeType: img.image.mimeType || blob.type || 'image/png',
               })
             } catch (e) {
               req.payload.logger.error(e, `Error fetching reference image ${url}`)
@@ -563,7 +562,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           throw new Error('Unexpected model response.')
         } catch (error) {
-          req.payload.logger.error(error, 'Error generating upload: ')
+          req.payload.logger.error(error?.type || error.message, 'Error generating upload: ')
           const message =
             error && typeof error === 'object' && 'message' in error
               ? (error as any).message
