@@ -110,10 +110,8 @@ export const Characters: CollectionConfig = {
           label: 'Description',
         },
         {
-          type: 'collapsible',
-          admin: {
-            initCollapsed: false,
-          },
+          name: 'visualProfile',
+          type: 'group',
           fields: [
             // ----------------------------
             // DEMOGRAPHICS
@@ -125,37 +123,43 @@ export const Characters: CollectionConfig = {
               },
               fields: [
                 {
-                  name: 'gender',
-                  type: 'text',
-                  admin: {
-                    description: 'Gender presentation of the character.',
-                  },
-                  label: 'Gender',
-                },
-                {
-                  name: 'ageRange',
-                  type: 'text',
-                  admin: {
-                    description: 'Approximate perceived age.',
-                    placeholder: 'example: early 30s',
-                  },
-                  label: 'Age Range',
-                },
-                {
-                  name: 'ethnicity',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'example: South Asian, East African, Middle Eastern',
-                  },
-                  label: 'Ethnicity / Region',
-                },
-                {
-                  name: 'skinTone',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'example: medium brown with warm undertones',
-                  },
-                  label: 'Skin Tone',
+                  name: 'demographics',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'gender',
+                      type: 'text',
+                      admin: {
+                        description: 'Gender presentation of the character.',
+                      },
+                      label: 'Gender',
+                    },
+                    {
+                      name: 'ageRange',
+                      type: 'text',
+                      admin: {
+                        description: 'Approximate perceived age.',
+                        placeholder: 'example: early 30s',
+                      },
+                      label: 'Age Range',
+                    },
+                    {
+                      name: 'ethnicity',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'example: South Asian, East African, Middle Eastern',
+                      },
+                      label: 'Ethnicity / Region',
+                    },
+                    {
+                      name: 'skinTone',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'example: medium brown with warm undertones',
+                      },
+                      label: 'Skin Tone',
+                    },
+                  ],
                 },
               ],
               label: 'Demographics',
@@ -171,54 +175,66 @@ export const Characters: CollectionConfig = {
               },
               fields: [
                 {
-                  name: 'faceShape',
-                  type: 'text',
-                  admin: { placeholder: 'oval, angular, heart-shaped, round, etc.' },
-                  label: 'Face Shape',
-                },
-                {
-                  name: 'eyeShape',
-                  type: 'text',
-                  admin: { placeholder: 'almond-shaped, round, deep-set, etc.' },
-                  label: 'Eye Shape',
-                },
-                {
-                  name: 'eyeColor',
-                  type: 'text',
-                  admin: { placeholder: 'dark brown, hazel, green, etc.' },
-                  label: 'Eye Color',
-                },
-                {
-                  name: 'eyebrows',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'slightly arched, thick, straight, medium thickness',
-                  },
-                  label: 'Eyebrows',
-                },
-                {
-                  name: 'nose',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'straight, wide bridge, button, aquiline, etc.',
-                  },
-                  label: 'Nose',
-                },
-                {
-                  name: 'lips',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'full lower lip, defined cupid’s bow',
-                  },
-                  label: 'Lips',
-                },
-                {
-                  name: 'distinguishingFeatures',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'scar under left eye, freckles, birthmark, etc.',
-                  },
-                  label: 'Distinguishing Features',
+                  name: 'faceStructure',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'faceShape',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'oval, angular, heart-shaped, round, etc.',
+                      },
+                      label: 'Face Shape',
+                    },
+                    {
+                      name: 'eyeShape',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'almond-shaped, round, deep-set, etc.',
+                      },
+                      label: 'Eye Shape',
+                    },
+                    {
+                      name: 'eyeColor',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'dark brown, hazel, green, etc.',
+                      },
+                      label: 'Eye Color',
+                    },
+                    {
+                      name: 'eyebrows',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'slightly arched, thick, straight, medium thickness',
+                      },
+                      label: 'Eyebrows',
+                    },
+                    {
+                      name: 'nose',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'straight, wide bridge, button, aquiline, etc.',
+                      },
+                      label: 'Nose',
+                    },
+                    {
+                      name: 'lips',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'full lower lip, defined cupid’s bow',
+                      },
+                      label: 'Lips',
+                    },
+                    {
+                      name: 'distinguishingFeatures',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'scar under left eye, freckles, birthmark, etc.',
+                      },
+                      label: 'Distinguishing Features',
+                    },
+                  ],
                 },
               ],
               label: 'Face Structure',
@@ -234,30 +250,42 @@ export const Characters: CollectionConfig = {
               },
               fields: [
                 {
-                  name: 'hairLength',
-                  type: 'text',
-                  admin: { placeholder: 'short, medium, shoulder-length, long' },
-                  label: 'Hair Length',
-                },
-                {
-                  name: 'hairTexture',
-                  type: 'text',
-                  admin: { placeholder: 'curly, wavy, straight, coiled' },
-                  label: 'Hair Texture',
-                },
-                {
-                  name: 'hairStyle',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'tied back bun, loose curls, braided crown, etc.',
-                  },
-                  label: 'Hair Style',
-                },
-                {
-                  name: 'hairColor',
-                  type: 'text',
-                  admin: { placeholder: 'black, chestnut brown, dark auburn, etc.' },
-                  label: 'Hair Color',
+                  name: 'hair',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'hairLength',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'short, medium, shoulder-length, long',
+                      },
+                      label: 'Hair Length',
+                    },
+                    {
+                      name: 'hairTexture',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'curly, wavy, straight, coiled',
+                      },
+                      label: 'Hair Texture',
+                    },
+                    {
+                      name: 'hairStyle',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'tied back bun, loose curls, braided crown, etc.',
+                      },
+                      label: 'Hair Style',
+                    },
+                    {
+                      name: 'hairColor',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'black, chestnut brown, dark auburn, etc.',
+                      },
+                      label: 'Hair Color',
+                    },
+                  ],
                 },
               ],
               label: 'Hair',
@@ -273,34 +301,43 @@ export const Characters: CollectionConfig = {
               },
               fields: [
                 {
-                  name: 'era',
-                  type: 'text',
-                  admin: { placeholder: '15th century, early modern, etc.' },
-                  label: 'Era',
-                },
-                {
-                  name: 'culture',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'Indian Ocean trade region, Swahili coast, etc.',
-                  },
-                  label: 'Culture / Region',
-                },
-                {
-                  name: 'clothingStyle',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'layered linen garments, embroidered shawl, sailor tunic, etc.',
-                  },
-                  label: 'Clothing Style',
-                },
-                {
-                  name: 'palette',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'earthy browns, muted beige, deep blue accents, etc.',
-                  },
-                  label: 'Color Palette',
+                  name: 'culturalEra',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'era',
+                      type: 'text',
+                      admin: {
+                        placeholder: '15th century, early modern, etc.',
+                      },
+                      label: 'Era',
+                    },
+                    {
+                      name: 'culture',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'Indian Ocean trade region, Swahili coast, etc.',
+                      },
+                      label: 'Culture / Region',
+                    },
+                    {
+                      name: 'clothingStyle',
+                      type: 'text',
+                      admin: {
+                        placeholder:
+                          'layered linen garments, embroidered shawl, sailor tunic, etc.',
+                      },
+                      label: 'Clothing Style',
+                    },
+                    {
+                      name: 'palette',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'earthy browns, muted beige, deep blue accents, etc.',
+                      },
+                      label: 'Color Palette',
+                    },
+                  ],
                 },
               ],
               label: 'Cultural & Era Context',
@@ -316,28 +353,35 @@ export const Characters: CollectionConfig = {
               },
               fields: [
                 {
-                  name: 'expression',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'calm and observant, warm smile, stern and focused, etc.',
-                  },
-                  label: 'Facial Expression',
-                },
-                {
-                  name: 'vibe',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'quiet intelligence, energetic storyteller, steady leader',
-                  },
-                  label: 'Overall Vibe',
-                },
-                {
-                  name: 'posture',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'upright and composed, relaxed and approachable, tense and alert',
-                  },
-                  label: 'Posture / Body Language',
+                  name: 'expressionPersonality',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'expression',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'calm and observant, warm smile, stern and focused, etc.',
+                      },
+                      label: 'Facial Expression',
+                    },
+                    {
+                      name: 'vibe',
+                      type: 'text',
+                      admin: {
+                        placeholder: 'quiet intelligence, energetic storyteller, steady leader',
+                      },
+                      label: 'Overall Vibe',
+                    },
+                    {
+                      name: 'posture',
+                      type: 'text',
+                      admin: {
+                        placeholder:
+                          'upright and composed, relaxed and approachable, tense and alert',
+                      },
+                      label: 'Posture / Body Language',
+                    },
+                  ],
                 },
               ],
               label: 'Expression & Personality',
@@ -432,6 +476,31 @@ export const Characters: CollectionConfig = {
       label: 'Meta',
     },
   ],
+  hooks: {
+    beforeChange: [
+      async ({ data, req }) => {
+        if (data.description && !data.visualProfile) {
+          // Find the group/collapsible field safely
+          const identityGroup = req.payload.collections.characters.config.fields.find(
+            (f) => 'label' in f && f.label === 'Identity',
+          )
+          if (!identityGroup || !('fields' in identityGroup)) {return data}
+          const visualProfileField = identityGroup.fields.find(
+            (f) => 'name' in f && f.name === 'visualProfile',
+          )
+          if (visualProfileField && 'fields' in visualProfileField) {
+            const { object } = await req.payload.ai.generate({
+              prompt: `Generate a visual profile for a character described as: ${data.description}`,
+              schema: visualProfileField.fields,
+            })
+            console.log("object", object)
+            data.visualProfile = object
+          }
+        }
+        return data
+      },
+    ],
+  },
   versions: {
     maxPerDoc: 50,
   },
