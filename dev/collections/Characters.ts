@@ -75,30 +75,8 @@ export const Characters: CollectionConfig = {
       ],
       required: true,
     },
-    // {
-    //   name: 'tags',
-    //   type: 'array',
-    //   admin: {
-    //     description: 'Optional quick tags, for search and AI hints.',
-    //   },
-    //   fields: [
-    //     {
-    //       name: 'tag',
-    //       type: 'text',
-    //       required: true,
-    //     },
-    //   ],
-    //   label: 'Tags',
-    //   labels: {
-    //     plural: 'Tags',
-    //     singular: 'Tag',
-    //   },
-    // },
     {
       type: 'group',
-      // admin: {
-      //   initCollapsed: true,
-      // },
       fields: [
         {
           name: 'description',
@@ -479,12 +457,14 @@ export const Characters: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req }) => {
-        if (data.description && !data.visualProfile) {
+        if (data.description) {
           // Find the group/collapsible field safely
           const identityGroup = req.payload.collections.characters.config.fields.find(
             (f) => 'label' in f && f.label === 'Identity',
           )
-          if (!identityGroup || !('fields' in identityGroup)) {return data}
+          if (!identityGroup || !('fields' in identityGroup)) {
+            return data
+          }
           const visualProfileField = identityGroup.fields.find(
             (f) => 'name' in f && f.name === 'visualProfile',
           )
@@ -493,7 +473,7 @@ export const Characters: CollectionConfig = {
               prompt: `Generate a visual profile for a character described as: ${data.description}`,
               schema: visualProfileField.fields,
             })
-            console.log("object", object)
+            console.log('object', object)
             data.visualProfile = object
           }
         }

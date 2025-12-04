@@ -59,7 +59,7 @@ export const init = async (
         continue
       }
 
-      let generatedPrompt = '{{ title }}'
+      let generatedPrompt: string | undefined = '{{ title }}'
       if ('prompt' in seed) {
         // find the model that has the generateText function
         const models = getGenerationModels(pluginConfig)

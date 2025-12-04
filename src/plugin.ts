@@ -195,6 +195,14 @@ const payloadAiPlugin =
             }, 3000)
           }
         })
+
+      // Inject AI capabilities
+      ;(payload as any).ai = {
+        generate: async (args: any) => {
+          const { generate } = await import('./ai/index.js')
+          return generate({ ...args, payload })
+        },
+      }
     }
 
     return updatedConfig
