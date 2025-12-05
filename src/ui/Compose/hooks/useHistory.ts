@@ -15,6 +15,9 @@ interface HistoryState {
   }
 }
 
+// Global cache to prevent synchronous localStorage reads on every render
+let globalHistoryCache: HistoryState | null = null
+
 export const useHistory = () => {
   const { id } = useDocumentInfo()
   const { path: pathFromContext, schemaPath } = useFieldProps()
@@ -25,10 +28,17 @@ export const useHistory = () => {
   const fieldKey = `${id}.${schemaPath}`
 
   const getLatestHistory = useCallback((): HistoryState => {
+    // Return cache if available
+    if (globalHistoryCache) {
+      return globalHistoryCache
+    }
+
     try {
-      // This condition is applied, as it was somehow triggering on server side
       if (typeof localStorage !== 'undefined') {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+        // Read once, cache it
+        const stored = localStorage.getItem(STORAGE_KEY)
+        globalHistoryCache = stored ? JSON.parse(stored) : {}
+        return globalHistoryCache!
       }
       return {}
     } catch (e) {
@@ -41,6 +51,9 @@ export const useHistory = () => {
   const saveTimerRef = useRef<null | ReturnType<typeof setTimeout>>(null)
 
   const saveToLocalStorage = useCallback((newGlobalHistory: HistoryState) => {
+    // Update cache immediately
+    globalHistoryCache = newGlobalHistory
+
     if (typeof localStorage === 'undefined') {
       return
     }
@@ -58,7 +71,7 @@ export const useHistory = () => {
           () => {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
           },
-          { timeout: 2000 }
+          { timeout: 2000 },
         )
       } else {
         // Fallback for browsers without requestIdleCallback
@@ -66,6 +79,24 @@ export const useHistory = () => {
       }
       saveTimerRef.current = null
     }, 300)
+  }, [])
+
+  // Sync with other tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          globalHistoryCache = JSON.parse(e.newValue)
+        } catch (err) {
+          // ignore parse error
+        }
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
   }, [])
 
   // Clear previous history
