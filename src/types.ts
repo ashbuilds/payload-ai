@@ -84,7 +84,7 @@ export interface PluginConfig {
    * Custom seed prompt function for generating field-specific prompts
    * If not provided, uses default seed prompt function
    * You can access default seed prompts by importing { defaultSeedPrompts } from '@ai-stack/payloadcms'
-  */
+   */
   seedPrompts?: SeedPromptFunction
   uploadCollectionSlug?: CollectionSlug
 }
@@ -151,17 +151,27 @@ export type SeedPromptOptions = {
   path: string
 }
 
-export type SeedPromptData = Omit<TypedCollection[typeof PLUGIN_INSTRUCTIONS_TABLE], 'createdAt' | 'id' | 'updatedAt'>
+export type SeedPromptData = Omit<
+  TypedCollection[typeof PLUGIN_INSTRUCTIONS_TABLE],
+  'createdAt' | 'id' | 'updatedAt'
+>
 
-export type SeedPromptResult = {
-  data?: SeedPromptData
-} | {
-  data?: SeedPromptData
-  prompt: string
-  system: string
-} | false | undefined | void
+export type SeedPromptResult =
+  | {
+      data?: SeedPromptData
+    }
+  | {
+      data?: SeedPromptData
+      prompt: string
+      system: string
+    }
+  | false
+  | undefined
+  | void
 
-export type SeedPromptFunction = (options: SeedPromptOptions) => Promise<SeedPromptResult> | SeedPromptResult
+export type SeedPromptFunction = (
+  options: SeedPromptOptions,
+) => Promise<SeedPromptResult> | SeedPromptResult
 
 export type ActionMenuEvents =
   | 'onCompose'
@@ -211,7 +221,7 @@ export type GenerateImageParams = {
 }
 
 export type SerializedPromptField = {
-  collections?: (CollectionSlug)[]
+  collections?: CollectionSlug[]
   name: string
 }
 

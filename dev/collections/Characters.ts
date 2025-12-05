@@ -91,6 +91,11 @@ export const Characters: CollectionConfig = {
           name: 'visualProfile',
           type: 'group',
           fields: [
+            {
+              name: 'autoApply',
+              type: 'checkbox',
+              defaultValue: true,
+            },
             // ----------------------------
             // DEMOGRAPHICS
             // ----------------------------
@@ -456,8 +461,8 @@ export const Characters: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
-      async ({ data, req }) => {
-        if (data.description) {
+      async ({ data, originalDoc, req }) => {
+        if (data.description && originalDoc.autoApply) {
           // Find the group/collapsible field safely
           const identityGroup = req.payload.collections.characters.config.fields.find(
             (f) => 'label' in f && f.label === 'Identity',
@@ -474,7 +479,9 @@ export const Characters: CollectionConfig = {
               schema: visualProfileField.fields,
             })
             console.log('object', object)
+
             data.visualProfile = object
+            data.visualProfile.autoApply = false
           }
         }
         return data

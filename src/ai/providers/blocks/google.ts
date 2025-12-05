@@ -362,6 +362,33 @@ export const googleBlock: Block = {
                         },
                       ],
                     },
+                    {
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'seed',
+                          type: 'number',
+                          admin: {
+                            description:
+                              'For consistent outputs, use the same seed. Requires addWatermark to be false.',
+                            width: '50%',
+                          },
+                          label: 'Seed',
+                          min: 0,
+                        },
+                        {
+                          name: 'addWatermark',
+                          type: 'checkbox',
+                          admin: {
+                            description:
+                              'Enable SynthID watermark. Must be false to use seed for deterministic output.',
+                            width: '50%',
+                          },
+                          defaultValue: true,
+                          label: 'Add Watermark (SynthID)',
+                        },
+                      ],
+                    },
                   ],
                   label: 'Image Settings',
                 },
