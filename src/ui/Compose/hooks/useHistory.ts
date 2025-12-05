@@ -1,7 +1,7 @@
 'use client'
 
 import { useDocumentInfo, useField } from '@payloadcms/ui'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import { PLUGIN_NAME } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
@@ -37,10 +37,35 @@ export const useHistory = () => {
     }
   }, [])
 
+  // Debounce timer ref to prevent excessive localStorage writes
+  const saveTimerRef = useRef<null | ReturnType<typeof setTimeout>>(null)
+
   const saveToLocalStorage = useCallback((newGlobalHistory: HistoryState) => {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+    if (typeof localStorage === 'undefined') {
+      return
     }
+
+    // Clear any pending save
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
+    }
+
+    // Debounce the save operation by 300ms
+    saveTimerRef.current = setTimeout(() => {
+      // Use requestIdleCallback if available to avoid blocking the main thread
+      if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(
+          () => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+          },
+          { timeout: 2000 }
+        )
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+      }
+      saveTimerRef.current = null
+    }, 300)
   }, [])
 
   // Clear previous history

@@ -30,7 +30,7 @@ export const useInstructions = (
     if (update.schemaPath !== schemaPath) {
       setSchemaPath((update.schemaPath as string) ?? '')
     }
-  }, [update.schemaPath])
+  }, [update.schemaPath, schemaPath])
 
   useEffect(() => {
     if (
@@ -60,12 +60,18 @@ export const useInstructions = (
   // Suggestions for prompt editor
   const promptEditorSuggestions = useMemo(() => {
     const activeFields = groupedFields[activeCollection as string] || []
-
     const suggestions: string[] = []
 
+    // Build instruction lookup map once for O(1) access instead of O(n) search per field
+    const instructionLookup = new Map(
+      Object.entries(instructions).map(([key, value]) => {
+        const path = key.split('.').slice(1).join('.')
+        return [path, value]
+      })
+    )
+
     activeFields.forEach((f) => {
-      const fieldKey = Object.keys(instructions).find((k) => k.endsWith(f))
-      const fieldInfo = fieldKey ? instructions[fieldKey] : undefined
+      const fieldInfo = instructionLookup.get(f)
 
       if (!fieldInfo) {return}
 
@@ -85,7 +91,7 @@ export const useInstructions = (
       } else {
         suggestions.push(f)
       }
-    }, [])
+    })
 
     promptFields.forEach(({ name, collections }) => {
       if (!activeCollection) {return}

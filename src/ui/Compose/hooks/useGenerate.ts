@@ -145,7 +145,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         setValue(object[field.name])
       }
     })
-  }, [object, editor, field])
+  }, [object, editor, field, setValue])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {

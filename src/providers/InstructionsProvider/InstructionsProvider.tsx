@@ -28,6 +28,11 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // This is here because each field have separate instructions and
   // their ID is needed to edit them for Drawer
   useEffect(() => {
+    // Only fetch if we have a user ID - prevents fetching on every user object reference change
+    if (!user?.id) {
+      return
+    }
+
     fetch(`${serverURL}${api}${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
       .then(async (res) => {
         await res.json().then((data) => {
@@ -41,7 +46,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       .catch((err) => {
         console.error('InstructionsProvider:', err)
       })
-  }, [api, serverURL, user])
+  }, [api, serverURL, user?.id])
 
   return (
     <InstructionsContext.Provider

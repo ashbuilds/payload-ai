@@ -156,11 +156,6 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   )
 
   const memoizedPopup = useMemo(() => {
-    const loadingLabel = isJobActive
-      ? jobStatus === 'running'
-        ? `Video ${Math.max(0, Math.min(100, Math.round(jobProgress ?? 0)))}%`
-        : (jobStatus || 'Queued')
-      : undefined
     return (
       <Popup
         button={<PluginIcon isLoading={isProcessing || isLoading || isJobActive} />}
@@ -168,7 +163,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
         verticalAlign="bottom"
       />
     )
-  }, [popupRender, isProcessing, isLoading, isJobActive, jobProgress, jobStatus])
+  }, [popupRender, isProcessing, isLoading, isJobActive])
 
   return (
     <label
