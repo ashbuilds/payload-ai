@@ -7,6 +7,14 @@ import { useEffect } from 'react'
  */
 const ALLOWED_FIELD_TYPES = ['upload', 'text', 'textarea', 'rich-text-lexical']
 
+// Performance optimization: Cache container and field type lookups
+const containerCache = new WeakMap<HTMLElement, HTMLElement | null>()
+const fieldTypeCache = new WeakMap<HTMLElement, boolean>()
+
+// Performance optimization: Throttle/debounce timers
+let pointerDownThrottleTimer: null | number = null
+let focusDebounceTimer: null | number = null
+
 let currentContainer: HTMLElement | null = null
 let rafId: null | number = null // Track RAF to cancel if needed
 
@@ -22,8 +30,15 @@ const cssEscape = (value: string): string => {
 
 /**
  * Find container from React Select dropdown elements
+ * Performance: Early exit if not in a listbox/option element
  */
 const findContainerFromReactSelect = (target: HTMLElement): HTMLElement | null => {
+  // Early exit if element doesn't have role indicator for React Select
+  const role = target.getAttribute('role')
+  if (!role || !['listbox', 'option'].includes(role)) {
+    return null
+  }
+
   const listbox = target.closest<HTMLElement>('[role="listbox"]')
   if (!listbox?.id) {
     return null
@@ -38,37 +53,58 @@ const findContainerFromReactSelect = (target: HTMLElement): HTMLElement | null =
 
 /**
  * Check if a container has one of the allowed field type classes
+ * Performance: Uses WeakMap cache to avoid repeated class list checks
  */
 const isAllowedFieldType = (container: HTMLElement): boolean => {
-  return ALLOWED_FIELD_TYPES.some(
+  // Check cache first
+  if (fieldTypeCache.has(container)) {
+    return fieldTypeCache.get(container)!
+  }
+
+  // Compute and cache result
+  const result = ALLOWED_FIELD_TYPES.some(
     (type) =>
       container.classList.contains(type) || container.classList.contains(`field-type-${type}`),
   )
+
+  fieldTypeCache.set(container, result)
+  return result
 }
 
 /**
  * Resolve the .field-type container for a given event target
  * Only returns containers that match allowed field types
+ * Performance: Uses WeakMap cache to avoid repeated DOM traversals
  */
 const resolveContainerFromTarget = (target: EventTarget | null): HTMLElement | null => {
   if (!(target instanceof HTMLElement)) {
     return null
   }
 
-  // Check for direct parent first
+  // Check cache first
+  if (containerCache.has(target)) {
+    const cached = containerCache.get(target)!
+    // Validate cache entry is still in DOM
+    if (!cached || cached.isConnected) {
+      return cached
+    }
+    // Invalidate stale cache entry
+    containerCache.delete(target)
+  }
+
+  // Perform lookup
   let container = target.closest<HTMLElement>('.field-type')
 
-  // If not found, fall back to React Select logic
+  // Fall back to React Select logic if needed
   if (!container) {
     container = findContainerFromReactSelect(target)
   }
 
-  // Only return if it's an allowed field type
-  if (container && isAllowedFieldType(container)) {
-    return container
-  }
+  // Validate field type and cache result
+  const result = container && isAllowedFieldType(container) ? container : null
+  containerCache.set(target, result)
 
-  return null
+  return result
 }
 
 /**
@@ -133,6 +169,7 @@ const isInteractiveElement = (element: HTMLElement): boolean => {
 
 /**
  * Handle focus events - only activate if focus is on an interactive element within .field-type
+ * Performance: Debounced by 10ms to handle rapid focus changes
  */
 const onFocusIn = (e: FocusEvent): void => {
   const target = e.target
@@ -150,12 +187,22 @@ const onFocusIn = (e: FocusEvent): void => {
     return
   }
 
-  const container = resolveContainerFromTarget(target)
-  setActiveContainer(container)
+  // Clear any pending debounce
+  if (focusDebounceTimer !== null) {
+    clearTimeout(focusDebounceTimer)
+  }
+
+  // Debounce to reduce work during rapid focus changes (e.g., fast tabbing)
+  focusDebounceTimer = window.setTimeout(() => {
+    focusDebounceTimer = null
+    const container = resolveContainerFromTarget(target)
+    setActiveContainer(container)
+  }, 10)
 }
 
 /**
  * Handle pointer/mouse events - only switch when clicking a different .field-type
+ * Performance: Early exit for non-field clicks + 50ms throttling
  */
 const onPointerDown = (e: PointerEvent): void => {
   const target = e.target
@@ -168,8 +215,27 @@ const onPointerDown = (e: PointerEvent): void => {
     return
   }
 
+  // Performance: Quick check before expensive traversal
+  // If click is nowhere near a field, just clear active state
+  if (!target.closest('.field-type')) {
+    if (currentContainer) {
+      setActiveContainer(null)
+    }
+    return
+  }
+
+  // Throttle to prevent excessive work on rapid clicking
+  if (pointerDownThrottleTimer !== null) {
+    return
+  }
+
   const container = resolveContainerFromTarget(target)
   setActiveContainer(container)
+
+  // Set throttle timer for 50ms
+  pointerDownThrottleTimer = window.setTimeout(() => {
+    pointerDownThrottleTimer = null
+  }, 50)
 }
 
 /**
