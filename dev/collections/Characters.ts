@@ -461,12 +461,15 @@ export const Characters: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
-      async ({ data, originalDoc, req }) => {
-        if (data.description && originalDoc.autoApply) {
+      async ({ data, req }) => {
+      // console.log("originalDoc : ", data.description)
+        if (data.description && data.visualProfile.autoApply) {
           // Find the group/collapsible field safely
           const identityGroup = req.payload.collections.characters.config.fields.find(
             (f) => 'label' in f && f.label === 'Identity',
           )
+          console.log("identityGroup :", identityGroup)
+
           if (!identityGroup || !('fields' in identityGroup)) {
             return data
           }
@@ -474,6 +477,7 @@ export const Characters: CollectionConfig = {
             (f) => 'name' in f && f.name === 'visualProfile',
           )
           if (visualProfileField && 'fields' in visualProfileField) {
+            console.log("visualProfileField.fields : ", visualProfileField.fields)
             const { object } = await req.payload.ai.generate({
               prompt: `Generate a visual profile for a character described as: ${data.description}`,
               schema: visualProfileField.fields,

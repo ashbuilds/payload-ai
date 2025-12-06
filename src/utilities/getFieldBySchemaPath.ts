@@ -54,6 +54,23 @@ export const getFieldBySchemaPath = (
         }
       }
 
+      // Handle unnamed groups and collapsibles (they don't contribute to path)
+      // Groups without names are just wrappers, their children are at the same path level
+      if ((field as any).type === 'group' && !(field as any).name && (field as any).fields) {
+        const foundInUnnamedGroup = findInFields((field as any).fields, segments)
+        if (foundInUnnamedGroup) {
+          return foundInUnnamedGroup
+        }
+      }
+
+      // Handle unnamed collapsibles similarly
+      if ((field as any).type === 'collapsible' && (field as any).fields) {
+        const foundInCollapsible = findInFields((field as any).fields, segments)
+        if (foundInCollapsible) {
+          return foundInCollapsible
+        }
+      }
+
       if ((field as any).name === current) {
         // If this is the last segment, we found the target field
         if (remaining.length === 0) {
