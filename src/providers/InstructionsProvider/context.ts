@@ -15,6 +15,7 @@ export type InstructionsContextValue = {
   hasInstructions: boolean
   instructions: Record<string, any>
   isConfigAllowed: boolean
+  openDrawer: (instructionId: string) => void
   path?: string
   promptFields: SerializedPromptField[]
   schemaPath?: unknown
@@ -27,6 +28,7 @@ export const initialContext: InstructionsContextValue = {
   hasInstructions: false,
   instructions: {},
   isConfigAllowed: true,
+  openDrawer: () => null,
   path: '',
   promptFields: [],
   schemaPath: '',

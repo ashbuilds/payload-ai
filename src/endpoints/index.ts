@@ -261,7 +261,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           const models = getGenerationModels(pluginConfig)
-          console.log('models :', models)
 
           const model =
             models && Array.isArray(models)

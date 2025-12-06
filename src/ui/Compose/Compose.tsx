@@ -4,10 +4,11 @@ import type { ClientField } from 'payload'
 import type { FC } from 'react'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { Popup, useDocumentDrawer, useField } from '@payloadcms/ui'
+import { Popup, useField } from '@payloadcms/ui'
 import React, { useCallback, useMemo, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
+import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
 import { PluginIcon } from '../Icons/Icons.js'
 import styles from './compose.module.css'
@@ -27,13 +28,11 @@ export type ComposeProps = {
 }
 
 export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isConfigAllowed }) => {
-  const [DocumentDrawer, _, { closeDrawer, openDrawer }] = useDocumentDrawer({
-    id: instructionId,
-    collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
-  })
-
   const pathFromContext = descriptionProps?.path
   const { editor: lexicalEditor } = useEditorConfigContext()
+  
+  // Get global openDrawer from context
+  const { openDrawer } = useInstructions()
 
   // Initialize global active-field tracking
   useActiveFieldTracking()
@@ -135,13 +134,19 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
       })
   }, [generate])
 
+  const handleOpenSettings = useCallback(() => {
+    if (isConfigAllowed) {
+      openDrawer(instructionId)
+    }
+  }, [isConfigAllowed, openDrawer, instructionId])
+
   const { ActiveComponent, Menu } = useMenu(
     {
       onCompose,
       onExpand,
       onProofread,
       onRephrase,
-      onSettings: isConfigAllowed ? openDrawer : undefined,
+      onSettings: isConfigAllowed ? handleOpenSettings : undefined,
       onSimplify,
       onSummarize,
       onTranslate,
@@ -160,7 +165,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
       setSafeLexicalState(JSON.stringify(val), lexicalEditor)
     }
 
-    // DO NOT PROVIDE lexicalEditor as a dependency, it freaks out and does not update the editor after first undo/redo
+    // DO NOT PROVIDE lexicalEditor as a dependency, it freaks out and does not update the editor after first undo/redo - revisit
   }, [])
 
   const popupRender = useCallback(
@@ -189,11 +194,6 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
       onClick={(e) => e.preventDefault()}
       role="presentation"
     >
-      <DocumentDrawer
-        onSave={() => {
-          closeDrawer()
-        }}
-      />
       {memoizedPopup}
       <ActiveComponent
         isLoading={isProcessing || isLoading || isJobActive}

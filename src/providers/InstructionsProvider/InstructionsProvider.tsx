@@ -1,14 +1,12 @@
 'use client'
 
-
-import { useAuth, useConfig } from '@payloadcms/ui'
-import React, { useEffect, useState } from 'react'
+import { useAuth, useConfig, useDocumentDrawer } from '@payloadcms/ui'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import type { SerializedPromptField } from '../../types.js'
 
-import { PLUGIN_FETCH_FIELDS_ENDPOINT } from '../../defaults.js'
+import { PLUGIN_FETCH_FIELDS_ENDPOINT, PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { InstructionsContext } from './context.js'
-
 
 export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [instructions, setInstructionsState] = useState({})
@@ -24,6 +22,27 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     routes: { api },
     serverURL,
   } = config
+
+  // Global Document Drawer state
+  const [drawerInstructionId, setDrawerInstructionId] = useState<string>('')
+  const [drawerOpenCount, setDrawerOpenCount] = useState(0)
+
+  const [DocumentDrawer, _, { openDrawer: openPayloadDrawer }] = useDocumentDrawer({
+    id: drawerInstructionId,
+    collectionSlug: PLUGIN_INSTRUCTIONS_TABLE,
+  })
+
+  const openDrawer = useCallback((id: string) => {
+    setDrawerInstructionId(id)
+    setDrawerOpenCount((prev) => prev + 1)
+  }, [])
+
+  // Open drawer when count changes
+  useEffect(() => {
+    if (drawerOpenCount > 0) {
+      openPayloadDrawer()
+    }
+  }, [drawerOpenCount, openPayloadDrawer])
 
   // This is here because each field have separate instructions and
   // their ID is needed to edit them for Drawer
@@ -57,11 +76,13 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         hasInstructions: instructions && Object.keys(instructions).length > 0,
         instructions,
         isConfigAllowed,
+        openDrawer,
         promptFields,
         setActiveCollection,
       }}
     >
       {children}
+      <DocumentDrawer />
     </InstructionsContext.Provider>
   )
 }

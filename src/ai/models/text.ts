@@ -67,7 +67,6 @@ export const TextConfig: GenerationConfig = {
       name: 'Text (AI SDK)',
       fields: ['text', 'textarea'],
       handler: async (prompt: string, options: { req: any } & TextOptions) => {
-        console.log("options.req ; ", options.req)
         const model = await getLanguageModel(options.req.payload, options.provider, options.model)
         return generateObject(
           prompt,
