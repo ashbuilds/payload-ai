@@ -56,9 +56,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { id: documentId, collectionSlug } = useDocumentInfo()
 
   const localFromContext = useLocale()
-  const {
-    config: { collections },
-  } = useConfig()
+  
+  // Reuse config from above instead of calling useConfig again
+  const { collections } = config
 
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection?.admin ?? {}

@@ -41,95 +41,110 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const { generate, isJobActive, isLoading, jobProgress, jobStatus, stop } = useGenerate({ instructionId })
 
+  // Memoize menu event handlers to prevent recreation on every render
+  const onCompose = useCallback(() => {
+    console.log('Composing...')
+    setIsProcessing(true)
+    generate({
+      action: 'Compose',
+    })
+      .catch((reason) => {
+        console.error('Compose : ', reason)
+      })
+      .finally(() => {
+        setIsProcessing(false)
+      })
+  }, [generate])
+
+  const onExpand = useCallback(() => {
+    console.log('Expanding...')
+    generate({
+      action: 'Expand',
+    })
+      .catch((reason) => {
+        console.error('Compose : ', reason)
+      })
+      .finally(() => {
+        setIsProcessing(false)
+      })
+  }, [generate])
+
+  const onProofread = useCallback(() => {
+    console.log('Proofreading...')
+    generate({
+      action: 'Proofread',
+    })
+      .catch((reason) => {
+        console.error('Compose : ', reason)
+      })
+      .finally(() => {
+        setIsProcessing(false)
+      })
+  }, [generate])
+
+  const onRephrase = useCallback(() => {
+    console.log('Rephrasing...')
+    generate({
+      action: 'Rephrase',
+    })
+      .catch((reason) => {
+        console.error('Compose : ', reason)
+      })
+      .finally(() => {
+        setIsProcessing(false)
+      })
+  }, [generate])
+
+  const onSimplify = useCallback(() => {
+    console.log('Simplifying...')
+    generate({
+      action: 'Simplify',
+    })
+      .catch((reason) => {
+        console.error('Compose : ', reason)
+      })
+      .finally(() => {
+        setIsProcessing(false)
+      })
+  }, [generate])
+
+  const onSummarize = useCallback(() => {
+    console.log('Summarizing...')
+    generate({
+      action: 'Summarize',
+    })
+      .catch((reason) => {
+        console.error('Compose : ', reason)
+      })
+      .finally(() => {
+        setIsProcessing(false)
+      })
+  }, [generate])
+
+  const onTranslate = useCallback((data: unknown) => {
+    console.log('Translating...')
+    generate({
+      action: 'Translate',
+      params: data,
+    })
+      .catch((reason) => {
+        console.error('Compose : ', reason)
+      })
+      .finally(() => {
+        setIsProcessing(false)
+      })
+  }, [generate])
+
   const { ActiveComponent, Menu } = useMenu(
     {
-      onCompose: () => {
-        console.log('Composing...')
-        setIsProcessing(true)
-        generate({
-          action: 'Compose',
-        })
-          .catch((reason) => {
-            console.error('Compose : ', reason)
-          })
-          .finally(() => {
-            setIsProcessing(false)
-          })
-      },
-      onExpand: () => {
-        console.log('Expanding...')
-        generate({
-          action: 'Expand',
-        })
-          .catch((reason) => {
-            console.error('Compose : ', reason)
-          })
-          .finally(() => {
-            setIsProcessing(false)
-          })
-      },
-      onProofread: () => {
-        console.log('Proofreading...')
-        generate({
-          action: 'Proofread',
-        })
-          .catch((reason) => {
-            console.error('Compose : ', reason)
-          })
-          .finally(() => {
-            setIsProcessing(false)
-          })
-      },
-      onRephrase: () => {
-        console.log('Rephrasing...')
-        generate({
-          action: 'Rephrase',
-        })
-          .catch((reason) => {
-            console.error('Compose : ', reason)
-          })
-          .finally(() => {
-            setIsProcessing(false)
-          })
-      },
+      onCompose,
+      onExpand,
+      onProofread,
+      onRephrase,
       onSettings: isConfigAllowed ? openDrawer : undefined,
-      onSimplify: () => {
-        console.log('Simplifying...')
-        generate({
-          action: 'Simplify',
-        })
-          .catch((reason) => {
-            console.error('Compose : ', reason)
-          })
-          .finally(() => {
-            setIsProcessing(false)
-          })
-      },
-      onSummarize: () => {
-        console.log('Summarizing...')
-        generate({
-          action: 'Summarize',
-        })
-          .catch((reason) => {
-            console.error('Compose : ', reason)
-          })
-          .finally(() => {
-            setIsProcessing(false)
-          })
-      },
-      onTranslate: (data) => {
-        console.log('Translating...')
-        generate({
-          action: 'Translate',
-          params: data,
-        })
-          .catch((reason) => {
-            console.error('Compose : ', reason)
-          })
-          .finally(() => {
-            setIsProcessing(false)
-          })
-      },
+      onSimplify,
+      onSummarize,
+      onTranslate,
     },
     {
       isConfigAllowed,
@@ -155,15 +170,18 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
     [isProcessing, isLoading, Menu],
   )
 
+  // Combine loading states to reduce re-renders
+  const isAnyLoading = isProcessing || isLoading || isJobActive
+
   const memoizedPopup = useMemo(() => {
     return (
       <Popup
-        button={<PluginIcon isLoading={isProcessing || isLoading || isJobActive} />}
+        button={<PluginIcon isLoading={isAnyLoading} />}
         render={popupRender}
         verticalAlign="bottom"
       />
     )
-  }, [popupRender, isProcessing, isLoading, isJobActive])
+  }, [popupRender, isAnyLoading])
 
   return (
     <label
