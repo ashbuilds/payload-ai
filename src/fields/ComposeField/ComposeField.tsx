@@ -7,7 +7,7 @@ import React from 'react'
 
 import { FieldProvider } from '../../providers/FieldProvider/FieldProvider.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
-import { Compose } from '../../ui/Compose/Compose.js'
+import { ComposePlaceholder } from '../../ui/Compose/ComposePlaceholder.js'
 
 type ComposeFieldProps = {
   [key: string]: any
@@ -44,7 +44,7 @@ export const ComposeField = (props: ComposeFieldProps) => {
       }}
     >
       {hasInstructions && instructionId && !disabled ? (
-        <Compose
+        <ComposePlaceholder
           descriptionProps={{
             ...props,
             field: props?.field,

@@ -8,7 +8,7 @@
   pointer-events: none;
   padding: 0 5px;
   margin: 0;
-  z-index: 1;
+  z-index: 99;
   transform: scaleY(0) skewX(90deg) translateY(-5px);
   transform-origin: top;
   max-height: 0;

@@ -16,7 +16,7 @@ import { useActiveFieldTracking } from './hooks/useActiveFieldTracking.js'
 import { useGenerate } from './hooks/useGenerate.js'
 import { UndoRedoActions } from './UndoRedoActions.js'
 
-type ComposeProps = {
+export type ComposeProps = {
   descriptionProps?: {
     field: ClientField
     path: string
