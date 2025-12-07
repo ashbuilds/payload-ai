@@ -301,7 +301,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               ? 'image-settings'
               : modelId === 'video'
                 ? 'video-settings'
-                : undefined
+                : modelId === 'tts'
+                  ? 'tts-settings'
+                  : undefined
           if (!settingsName) {
             throw new Error(`Unsupported model-id: ${modelId}`)
           }

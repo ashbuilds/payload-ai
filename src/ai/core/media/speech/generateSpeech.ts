@@ -11,6 +11,7 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
 
   // Get TTS model instance
   const model = await getTTSModel(payload, provider, modelId)
+  console.log("model:   ", model)
 
   // Dynamic import to support older SDK versions
   let generateSpeechFn
@@ -25,6 +26,8 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
     throw new Error('generateSpeech not found in "ai" package. Please upgrade to the latest version.')
   }
 
+  // TODO: fix with proper error handling
+  try{
   // Generate speech
   const result = await generateSpeechFn({
     model,
@@ -32,9 +35,12 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
     text: prompt,
     voice: args.voice,
   })
-
+  console.log("result : ", result)
+}catch (e) {
+    console.error(e)
+  }
  // Extract audio from result
-  const { audio } = result
+  const { audio } = {  } as any
   const mimeType = audio.mediaType || 'audio/mp3'
   
   // Try to get format from audio object, otherwise infer from mime type

@@ -1,2 +1,2 @@
-export { generateSpeech } from './generateSpeech.js'
 export type * from '../types.js'
+export { generateSpeech } from './generateSpeech.js'

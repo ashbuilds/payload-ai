@@ -59,9 +59,8 @@ const providerFactories = {
       organization: block.organization,
     }),
 
-  'openai-compatible': (block: OpenAICompatibleBlockData) =>
-  {
-    console.log("OpenAI compatible, ", block)
+  'openai-compatible': (block: OpenAICompatibleBlockData) => {
+    console.log('OpenAI compatible, ', block)
     return createOpenAICompatible({
       name: block.providerName,
       apiKey: block.apiKey || '',
@@ -111,7 +110,6 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
     } else if (isProviderBlock<AnthropicBlockData>(providerBlock, 'anthropic')) {
       factory = () => providerFactories.anthropic(providerBlock)
     } else if (isProviderBlock<GoogleBlockData>(providerBlock, 'google')) {
-      // console.log("providerBlock:  ", providerBlock)
       factory = () => providerFactories.google(providerBlock)
     } else if (isProviderBlock<XAIBlockData>(providerBlock, 'xai')) {
       factory = () => providerFactories.xai(providerBlock)
@@ -201,7 +199,12 @@ export async function getLanguageModel(
   return providerInstance(modelId)
 }
 
-export async function getImageModel(payload: Payload, providerId?: string, modelId?: string, isMultimodalText?: boolean) {
+export async function getImageModel(
+  payload: Payload,
+  providerId?: string,
+  modelId?: string,
+  isMultimodalText?: boolean,
+) {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
     if (!providerId) {
@@ -228,7 +231,7 @@ export async function getImageModel(payload: Payload, providerId?: string, model
   }
 
   if (provider.factory) {
-    console.log("modelId:  ", modelId)
+    console.log('modelId:  ', modelId)
     const instance = provider.factory()
 
     // Type-safe check for image support
@@ -242,7 +245,12 @@ export async function getImageModel(payload: Payload, providerId?: string, model
     }
 
     // Also check if instance is an object with image method
-    if (typeof instance === 'object' && instance !== null && 'image' in instance && !isMultimodalText) {
+    if (
+      typeof instance === 'object' &&
+      instance !== null &&
+      'image' in instance &&
+      !isMultimodalText
+    ) {
       return (instance as AIProvider).image?.(modelId)
     }
 
@@ -277,6 +285,9 @@ export async function getTTSModel(payload: Payload, providerId?: string, modelId
 
   if (provider.factory) {
     const instance = provider.factory()
+    if (instance?.speech) {
+      return instance.speech(modelId)
+    }
     return typeof instance === 'function' ? instance(modelId) : instance
   }
 
