@@ -15,8 +15,8 @@ import { getLanguageModel } from '../providers/registry.js'
  * and passes everything directly to the AI SDK
  */
 export async function generateObject(args: PayloadGenerateObjectArgs) {
-  const { 
-    maxTokens, 
+  const {
+    maxTokens,
     mode,
     model: modelId,
     payload,
@@ -28,15 +28,15 @@ export async function generateObject(args: PayloadGenerateObjectArgs) {
     temperature,
     ...rest
   } = args
-  
+
   // Extract attachments if needed (from existing utility)
-  const processedPrompt = (rest as any).extractAttachments 
-    ? extractPromptAttachments(prompt) 
+  const processedPrompt = (rest as any).extractAttachments
+    ? extractPromptAttachments(prompt)
     : prompt
-  
+
   // Resolve model from registry
   const model = await getLanguageModel(payload, provider, modelId)
-  
+
   // Pass directly to AI SDK with minimal transformation
   const options: Record<string, unknown> = {
     mode: mode || 'auto',

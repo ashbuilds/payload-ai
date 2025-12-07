@@ -7,6 +7,7 @@ import type {
   PayloadGenerateObjectArgs,
   PayloadGenerateTextArgs,
 } from './ai/core/types.js'
+import { GenerateObjectResult } from 'ai'
 
 declare module 'payload' {
   interface BasePayload {
@@ -29,7 +30,7 @@ declare module 'payload' {
        * @param args - Generation arguments including provider, model, prompt, and schema
        * @returns Promise resolving to the generated object
        */
-      generateObject: <T = unknown>(args: Omit<PayloadGenerateObjectArgs, 'payload'>) => Promise<T>
+      generateObject: <T = unknown>(args: Omit<PayloadGenerateObjectArgs, 'payload'>) => Promise<GenerateObjectResult<T>>
 
       /**
        * Generate simple text output

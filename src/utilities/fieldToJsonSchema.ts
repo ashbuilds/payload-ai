@@ -184,10 +184,16 @@ export function fieldToJsonSchema(
       break;
     }
 
+    case 'checkbox': {
+      valueSchema = { type: 'boolean' };
+      const description = getDescription(field);
+      if (description) {valueSchema.description = description;}
+      break;
+    }
+
     case 'number': {
       const base = numberWithBounds(field);
       if (field.hasMany) {
-        // Respect hasMany only if truly configured; Payload rarely uses hasMany for number, but allow if present.
         valueSchema = { type: 'array', items: base };
       } else {
         valueSchema = base;
@@ -231,8 +237,59 @@ export function fieldToJsonSchema(
       break;
     }
 
+    case 'group':
+    case 'array': {
+      if ('fields' in field && Array.isArray(field.fields)) {
+        const properties: Record<string, any> = {}
+        const required: string[] = []
+        
+        const processFields = (fields: any[]) => {
+          for (const subField of fields) {
+            if (subField.type === 'row' || subField.type === 'collapsible') {
+               if (subField.fields) processFields(subField.fields)
+               continue
+            }
+            if (!subField.name) continue
+
+            const subSchema = fieldToJsonSchema(subField, { wrapObject: false })
+            if (subSchema && Object.keys(subSchema).length > 0) {
+              properties[subField.name] = subSchema
+              if (subField.required) required.push(subField.name)
+            }
+          }
+        }
+        
+        processFields(field.fields)
+
+        const objSchema = {
+          type: 'object',
+          additionalProperties: false,
+          properties,
+          required: required.length ? required : undefined
+        }
+
+        if (type === 'array') {
+          valueSchema = {
+            type: 'array',
+            items: objSchema
+          }
+        } else {
+          valueSchema = objSchema
+        }
+        
+        const description = getDescription(field);
+        if (description) {valueSchema.description = description;}
+      }
+      break;
+    }
+    
+    // Explicitly handle organizational types to avoid default breakage if passed directly
+    // though usually they are handled by parent recursion in group/array case above.
+    // If passed as root, we can't really return a meaningful single-value schema without a wrapper?
+    // But let's leave default for them or handle if necessary. 
+    // For now, if someone passes a 'row' as root, it will fall to default (null).
+
     default: {
-      // Unsupported type: return null to allow caller to decide how to proceed (e.g., no schema)
       valueSchema = null;
       break;
     }
@@ -245,7 +302,6 @@ export function fieldToJsonSchema(
   }
 
   if (!valueSchema) {
-    // Return undefined-like schema if not supported; caller may choose to skip passing schema
     return {} as JsonSchema;
   }
 
