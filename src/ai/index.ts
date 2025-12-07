@@ -15,6 +15,7 @@ export type GenerateArgs = {
   system?: string
 }
 
+// Use in payload.ai that is injected during payload init. // this will always be non-streaming function, generateText, generateObject, Images etc
 export async function generate(args: GenerateArgs) {
   const { mode, model, payload, prompt, provider, schema, system } = args
 

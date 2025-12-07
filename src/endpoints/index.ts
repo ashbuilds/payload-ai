@@ -3,10 +3,7 @@ import type { PayloadRequest } from 'payload'
 
 import * as process from 'node:process'
 
-import type {
-  Endpoints,
-  PluginConfig,
-} from '../types.js'
+import type { Endpoints, PluginConfig } from '../types.js'
 
 import { checkAccess } from '../access/checkAccess.js'
 import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
@@ -23,14 +20,12 @@ import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders
 import { extractImageData } from '../utilities/extractImageData.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
-import { getGenerationModels } from '../utilities/getGenerationModels.js'
 import { assignPrompt, extendContextWithPromptFields } from './buildPromptUtils.js'
-
 
 export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfig) =>
   ({
     textarea: {
-      //TODO:  This is the main endpoint for generating content - its just needs to be renamed to 'generate' or something.
+      // Text/rich-text generation endpoint using payload.ai.streamObject
       handler: async (req: PayloadRequest) => {
         try {
           // Check authentication and authorization first
@@ -96,27 +91,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             localeInfo = localeData.label[defaultLocale]
           }
 
-          const models = getGenerationModels(pluginConfig)
-
-          const model =
-            models && Array.isArray(models)
-              ? models.find((model) => model.id === instructions['model-id'])
-              : undefined
-
-          // console.log('model --> :', model)
-
-          if (!model) {
-            throw new Error('Model not found')
-          }
-
-          const settingsName =
-            model.settings && 'name' in model.settings ? model.settings.name : undefined
-          if (!settingsName) {
-            req.payload.logger.error('— AI Plugin: Error fetching settings name!')
-          }
-
-          const modelOptions = settingsName ? instructions[settingsName] || {} : {}
-
           const prompts = await assignPrompt(action, {
             type: String(instructions['field-type']),
             actionParams,
@@ -133,7 +107,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           if (pluginConfig.debugging) {
             req.payload.logger.info(
               { prompts },
-              `— AI Plugin: Executing text prompt on ${schemaPath} using ${model.id}`,
+              `— AI Plugin: Executing text prompt on ${schemaPath}`,
             )
           }
 
@@ -157,26 +131,45 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               ]
               const t = String(targetField?.type || '')
               if (targetField && supported.includes(t)) {
-                jsonSchema = fieldToJsonSchema(targetField as any, { nameOverride: fieldName })
+                jsonSchema = fieldToJsonSchema(targetField, { nameOverride: fieldName })
               }
             }
           } catch (e) {
             req.payload.logger.error(e, '— AI Plugin: Error building field JSON schema')
           }
 
-          return model.handler?.(prompts.prompt, {
-            ...modelOptions,
-            layout: prompts.layout,
-            locale: localeInfo,
-            req,
+          // Get model settings from instruction
+          const settingsName =
+            instructions['model-id'] === 'richtext'
+              ? 'richtext-settings'
+              : instructions['model-id'] === 'text'
+                ? 'text-settings'
+                : undefined
+
+          if (!settingsName) {
+            throw new Error(`Unsupported model-id: ${instructions['model-id']}`)
+          }
+
+          const modelSettings = instructions[settingsName] || {}
+
+          // Use payload.ai.streamObject directly! 🎉
+          const streamResult = await req.payload.ai.streamObject({
+            extractAttachments: modelSettings.extractAttachments as boolean | undefined,
+            maxTokens: modelSettings.maxTokens as number | undefined,
+            model: modelSettings.model as string,
+            prompt: prompts.prompt,
+            provider: modelSettings.provider as string,
             schema: jsonSchema,
             system: prompts.system,
+            temperature: modelSettings.temperature as number | undefined,
           })
+
+          return streamResult
         } catch (error) {
           req.payload.logger.error(error, 'Error generating content: ')
           const message =
             error && typeof error === 'object' && 'message' in error
-              ? (error as any).message
+              ? (error as Error).message
               : String(error)
           return new Response(JSON.stringify({ error: message }), {
             headers: { 'Content-Type': 'application/json' },
@@ -192,6 +185,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
       path: PLUGIN_API_ENDPOINT_GENERATE,
     },
     upload: {
+      // Image/video generation endpoint using payload.ai.generateMedia
       handler: async (req: PayloadRequest) => {
         try {
           // Check authentication and authorization first
@@ -224,7 +218,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             ...docData,
           }
 
-          let instructions: Record<string, any> = { images: [], 'model-id': '', prompt: '' }
+          let instructions: Record<string, unknown> = { images: [], 'model-id': '', prompt: '' }
 
           if (instructionId) {
             // Verify user has access to the specific instruction
@@ -236,23 +230,21 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
-          const schemaPath = instructions['schema-path']
-          console.log('sampleImages --- >', sampleImages)
+          const schemaPath = String(instructions['schema-path']);
           registerEditorHelper(req.payload, schemaPath)
 
           const extendedContext = extendContextWithPromptFields(
             contextData,
-            { type: instructions['field-type'], collection: collectionSlug },
+            { type: String(instructions['field-type']), collection: collectionSlug },
             pluginConfig,
           )
-          console.log('extendedContext: ', extendedContext)
-          const text = await replacePlaceholders(promptTemplate, extendedContext)
+          const text = await replacePlaceholders(promptTemplate as string, extendedContext)
           const modelId = instructions['model-id']
           const uploadCollectionSlug = instructions['relation-to']
 
-          const images = [...extractImageData(text), ...sampleImages]
-          console.log('images :  ', images)
+          const images = [...extractImageData(text), ...(sampleImages as unknown[])]
 
+          // Process images - convert to ImagePart format
           const editImages: ImagePart[] = []
           for (const img of images) {
             const serverURL =
@@ -266,10 +258,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
 
             try {
-              console.log('url : ', url)
               const response = await fetch(url, {
                 headers: {
-                  //TODO: Further testing needed or so find a proper way.
                   Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
                 },
                 method: 'GET',
@@ -291,33 +281,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
           }
 
-          const modelsUpload = getGenerationModels(pluginConfig)
-          const model =
-            modelsUpload && Array.isArray(modelsUpload)
-              ? modelsUpload.find((model) => model.id === modelId)
-              : undefined
-
-          if (!model) {
-            throw new Error('Model not found')
-          }
-
-          // @ts-ignore
-          const settingsName = model && model.settings ? model.settings.name : undefined
-          if (!settingsName) {
-            req.payload.logger.error('— AI Plugin: Error fetching settings name!')
-          }
-
-          let modelOptions = settingsName ? instructions[settingsName] || {} : {}
-          modelOptions = {
-            ...modelOptions,
-            images: editImages,
-          }
-
           if (pluginConfig.debugging) {
-            req.payload.logger.info(
-              { text },
-              `— AI Plugin: Executing image prompt using ${model.id}`,
-            )
+            req.payload.logger.info({ text }, `— AI Plugin: Executing media generation`)
           }
 
           // Prepare callback URL for async jobs
@@ -330,11 +295,28 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             ? `${serverURL.replace(/\/$/, '')}/api${PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK}?instructionId=${instructionId}`
             : undefined
 
-          const result = await model.handler?.(text, {
-            ...modelOptions,
+          // Get model settings
+          const settingsName =
+            modelId === 'image'
+              ? 'image-settings'
+              : modelId === 'video'
+                ? 'video-settings'
+                : undefined
+          if (!settingsName) {
+            throw new Error(`Unsupported model-id: ${modelId}`)
+          }
+
+          const modelSettings = instructions[settingsName] || {}
+
+          // Use payload.ai.generateMedia directly! 🎉
+          const result = await req.payload.ai.generateMedia({
             callbackUrl,
+            images: editImages,
             instructionId,
-            req,
+            model: (modelSettings as Record<string, unknown>).model as string,
+            prompt: text,
+            provider: (modelSettings as Record<string, unknown>).provider as string,
+            ...(modelSettings as Record<string, unknown>),
           })
 
           // If model returned a file immediately, proceed with upload
@@ -342,13 +324,13 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             let assetData: { alt?: string; id: number | string }
             if (typeof pluginConfig.mediaUpload === 'function') {
               assetData = await pluginConfig.mediaUpload(result, {
-                collection: uploadCollectionSlug,
+                collection: uploadCollectionSlug as string,
                 request: req,
               })
             } else {
               assetData = await req.payload.create({
-                collection: uploadCollectionSlug,
-                data: result.data,
+                collection: uploadCollectionSlug as string,
+                data: { alt: text },
                 file: result.file,
                 req, // Pass req to ensure access control is applied
               })
@@ -397,10 +379,13 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           throw new Error('Unexpected model response.')
         } catch (error) {
-          req.payload.logger.error(error?.type || error.message, 'Error generating upload: ')
+          req.payload.logger.error(
+            error?.type || (error as Error).message,
+            'Error generating upload: ',
+          )
           const message =
             error && typeof error === 'object' && 'message' in error
-              ? (error as any).message
+              ? (error as Error).message
               : String(error)
           return new Response(JSON.stringify({ error: message }), {
             headers: { 'Content-Type': 'application/json' },

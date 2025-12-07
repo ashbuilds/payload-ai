@@ -196,8 +196,57 @@ const payloadAiPlugin =
           }
         })
 
-      // Inject AI capabilities
+      // Inject AI capabilities with enhanced abstraction layer
       ;(payload as any).ai = {
+        // Core generation methods
+        generateObject: async (args: any) => {
+          const { generateObject } = await import('./ai/core/index.js')
+          return generateObject({ ...args, payload })
+        },
+        
+        generateText: async (args: any) => {
+          const { generateText } = await import('./ai/core/index.js')
+          return generateText({ ...args, payload })
+        },
+        
+        generateMedia: async (args: any) => {
+          const { generateMedia } = await import('./ai/core/index.js')
+          return generateMedia({ ...args, payload })
+        },
+        
+        // Streaming variants
+        streamObject: async (args: unknown) => {
+          const { streamObject } = await import('./ai/core/index.js')
+          const result = await streamObject({ ...(args as Record<string, unknown>), payload })
+          return result.toTextStreamResponse()
+        },
+        
+        streamText: async (args: any) => {
+          const { streamText } = await import('./ai/core/index.js')
+          return streamText({ ...args, payload })
+        },
+        
+        // Helper utilities
+        getModel: async (provider: string, modelId: string, type?: 'image' | 'text' | 'tts') => {
+          const { getImageModel, getLanguageModel, getTTSModel } = await import(
+            './ai/providers/registry.js'
+          )
+          if (type === 'image') {
+            return getImageModel(payload, provider, modelId)
+          }
+          if (type === 'tts') {
+            return getTTSModel(payload, provider, modelId)
+          }
+          return getLanguageModel(payload, provider, modelId)
+        },
+        
+        getRegistry: async () => {
+          const { getProviderRegistry } = await import('./ai/providers/registry.js')
+          return getProviderRegistry(payload)
+        },
+        
+        // Legacy method for backward compatibility
+        /** @deprecated Use generateObject or generateText instead */
         generate: async (args: any) => {
           const { generate } = await import('./ai/index.js')
           return generate({ ...args, payload })

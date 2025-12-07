@@ -8,6 +8,7 @@
  * Arrays are emitted only when field.hasMany is true and the field type supports hasMany
  * (text, textarea, select; for others only if your config truly sets hasMany).
  */
+import { Field } from 'payload'
 
 export type JsonSchema = Record<string, any>;
 
@@ -134,10 +135,10 @@ function supportsHasMany(fieldType: string | undefined): boolean {
 }
 
 export function fieldToJsonSchema(
-  fieldInput: BaseField,
+  fieldInput: BaseField & Field,
   opts?: { nameOverride?: string; wrapObject?: boolean },
 ): JsonSchema {
-  const field: BaseField = fieldInput || {};
+  const field = fieldInput || {};
   const name = isString(opts?.nameOverride) && opts?.nameOverride.length ? opts.nameOverride : (field.name || 'value');
   const type = field.type;
 
