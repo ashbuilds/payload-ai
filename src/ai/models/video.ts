@@ -195,6 +195,7 @@ export const VideoConfig: GenerationConfig = {
       id: 'video',
       name: 'Video (Fal)',
       fields: ['upload'],
+      //TODO:  this should be gone
       handler: async (prompt: string, options: { req: any } & VideoOptions) => {
         const { req } = options
 

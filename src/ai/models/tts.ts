@@ -1,58 +1,11 @@
 import type { GenerationConfig } from '../../types.js'
 
-import { getTTSModel } from '../providers/index.js'
-
-type TTSProvider = 'elevenlabs' | 'openai'
-
-type TTSOptions = {
-  // OpenAI
-  model?: 'tts-1' | 'tts-1-hd'
-
-  next_text?: string
-  previous_text?: string
-  provider: TTSProvider
-  response_format?: 'aac' | 'flac' | 'mp3' | 'opus' | 'pcm' | 'wav'
-
-  seed?: number
-  similarity_boost?: number
-  speed?: number
-  stability?: number
-  style?: number
-  use_speaker_boost?: boolean
-  voice?: 'alloy' | 'echo' | 'fable' | 'nova' | 'onyx' | 'shimmer'
-  // ElevenLabs
-  voice_id?: string
-}
-
-function getAudioFileMeta(format: TTSOptions['response_format'] | undefined) {
-  const ext = format || 'mp3'
-  const mime =
-    ext === 'wav'
-      ? 'audio/wav'
-      : ext === 'flac'
-        ? 'audio/flac'
-        : ext === 'aac'
-          ? 'audio/aac'
-          : ext === 'opus'
-            ? 'audio/opus'
-            : ext === 'pcm'
-              ? 'audio/L16'
-              : 'audio/mp3'
-  return { ext, mime }
-}
-
 export const TTSConfig: GenerationConfig = {
   models: [
     {
       id: 'tts',
       name: 'Text-to-Speech',
       fields: ['upload'],
-      handler: async (text: string, options: { req: any } & TTSOptions) => {
-        const { req } = options
-        const model = await getTTSModel(req.payload, options.provider, options.model || 'tts-1')
-
-        throw new Error('Audio generation using registry is pending implementation')
-      },
       output: 'audio',
       settings: {
         name: 'tts-settings',

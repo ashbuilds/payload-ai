@@ -43,16 +43,23 @@ export interface PayloadGenerateTextArgs extends PayloadGenerationBaseArgs {
  */
 export interface PayloadGenerateMediaArgs {
   aspectRatio?: string
+  audioFormat?: string
   callbackUrl?: string
+  duration?: number
+  fps?: number
   images?: ImagePart[]
   instructionId?: number | string
+  mode?: 'i2v' | 't2v'
   model?: string
   n?: number
   payload: Payload
   prompt: string
   provider?: string
   providerOptions?: ProviderOptions
+  seed?: number
   size?: { height: number; width: number }
+  speed?: number
+  voice?: string
 }
 
 /**
