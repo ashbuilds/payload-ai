@@ -2,12 +2,12 @@ import { jsonSchema, streamObject as sdkStreamObject } from 'ai'
 
 import type { PayloadGenerateObjectArgs } from './types.js'
 
+import { extractPromptAttachments } from '../../utilities/extractPromptAttachments.js'
+import { getLanguageModel } from '../providers/registry.js'
+
 function isZodSchema(schema: unknown): boolean {
   return typeof schema === 'object' && schema !== null && '_def' in schema
 }
-
-import { extractPromptAttachments } from '../../utilities/extractPromptAttachments.js'
-import { getLanguageModel } from '../providers/registry.js'
 
 /**
  * Stream structured output using AI SDK's streamObject
@@ -35,7 +35,7 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
     : prompt
   
   // Resolve model from registry
-  const model = await getLanguageModel(payload, provider, modelId)
+  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
   
   // Return streaming result from AI SDK
   const options: Record<string, unknown> = {

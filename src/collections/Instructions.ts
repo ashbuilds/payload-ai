@@ -1,25 +1,31 @@
-import type { CollectionConfig, GroupField } from 'payload'
+import type { CollectionConfig } from 'payload'
 import type { PluginConfig } from 'src/types.js'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
-import { getGenerationModels } from '../utilities/getGenerationModels.js'
 
-const groupSettings = (pluginConfig: PluginConfig) =>
-  (getGenerationModels(pluginConfig) ?? []).reduce((fields, model) => {
-    if (model.settings) {
-      fields.push(model.settings)
-    }
-    return fields
-  }, [] as GroupField[])
-
-const modelOptions = (pluginConfig: PluginConfig) =>
-  (getGenerationModels(pluginConfig) ?? []).map((model) => {
-    return {
-      fields: model.fields,
-      label: model.name,
-      value: model.id,
-    }
-  })
+// Defined capabilities replacing src/ai/models/
+const CAPABILITIES = [
+  {
+    id: 'text',
+    name: 'Text Generation',
+    fields: ['text', 'textarea'],
+  },
+  {
+    id: 'richtext',
+    name: 'Rich Text Generation',
+    fields: ['richText'],
+  },
+  {
+    id: 'image',
+    name: 'Image Generation',
+    fields: ['upload'],
+  },
+  {
+    id: 'tts',
+    name: 'Text to Speech',
+    fields: ['upload'],
+  },
+]
 
 const defaultAccessConfig = {
   create: ({ req }: { req: { user?: any } }) => {
@@ -53,6 +59,69 @@ const defaultAdminConfig = {
   hidden: true,
 }
 
+const providerSelect = {
+  name: 'provider',
+  type: 'text' as const,
+  admin: {
+    components: {
+      Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+    },
+  },
+  label: 'Provider',
+}
+
+const modelSelect = {
+  name: 'model',
+  type: 'text' as const,
+  admin: {
+    components: {
+      Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+    },
+  },
+  label: 'Model',
+}
+
+const providerOptionsJson = {
+  name: 'providerOptions',
+  type: 'json' as const,
+  admin: {
+    components: {
+      Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
+    },
+    description: 'Provider-specific options. Defaults are inherited from AI Settings.',
+  },
+  label: 'Provider Options',
+}
+
+const commonTextParams = [
+  {
+    type: 'row' as const,
+    fields: [
+      {
+        name: 'maxTokens',
+        type: 'number' as const,
+        label: 'Max Tokens',
+        admin: {
+          placeholder: 'Model Default',
+        },
+      },
+      {
+        name: 'temperature',
+        type: 'number' as const,
+        defaultValue: 0.7,
+        label: 'Temperature',
+        max: 1,
+        min: 0,
+      },
+    ],
+  },
+  {
+    name: 'extractAttachments',
+    type: 'checkbox' as const,
+    label: 'Extract Attachments',
+  },
+]
+
 export const instructionsCollection = (pluginConfig: PluginConfig) =>
   <CollectionConfig>{
     labels: {
@@ -72,7 +141,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
         beforeList: ['@ai-stack/payloadcms/client#AIConfigDashboard'],
       },
     },
-  fields: [
+    fields: [
       {
         name: 'schema-path',
         type: 'text',
@@ -126,19 +195,21 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
             Field: {
               clientProps: {
                 filterByField: 'field-type',
-                options: modelOptions(pluginConfig),
+                options: CAPABILITIES.map((c) => ({
+                  fields: c.fields,
+                  label: c.name,
+                  value: c.id,
+                })),
               },
               path: '@ai-stack/payloadcms/fields#SelectField',
             },
           },
         },
-        label: 'Model',
-        options: modelOptions(pluginConfig).map((option) => {
-          return {
-            label: option.label,
-            value: option.value,
-          }
-        }),
+        label: 'Capability',
+        options: CAPABILITIES.map((c) => ({
+          label: c.name,
+          value: c.id,
+        })),
       },
       {
         name: 'disabled',
@@ -174,11 +245,11 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
           {
             admin: {
               condition: (_, current) => {
-                return current['field-type'] === 'upload' && current['model-id'] === 'gpt-image-1'
+                return current['field-type'] === 'upload' && current['model-id'] === 'image'
               },
             },
             description:
-              'These images will be used to generate new visuals in a similar style, layout, or content. You can combine multiple references for more controlled results.',
+              'These images will be used to generate new visuals in a similar style, layout, or content.',
             fields: [
               {
                 name: 'images',
@@ -229,12 +300,6 @@ informative and accurate but also captivating and beautifully structured.`,
             description: '',
             fields: [
               {
-                /** TODO:
-                 *  - Layouts can be saved in as an array
-                 *  - User can add their own layout to collections and use it later for generate specific rich text
-                 *  - User can select previously added layout
-                 *  - IMP: Remove layout from default, this seem to affect other functions like rephrase etc.
-                 */
                 name: 'layout',
                 type: 'textarea',
                 admin: {
@@ -258,6 +323,78 @@ informative and accurate but also captivating and beautifully structured.`,
         ],
       },
       
-      ...groupSettings(pluginConfig),
+      // Inline Settings Groups by Capability
+      
+      // Text Settings
+      {
+        name: 'text-settings',
+        type: 'group',
+        admin: {
+          condition: (data) => data['model-id'] === 'text',
+        },
+        fields: [
+          providerSelect,
+          modelSelect,
+          ...commonTextParams,
+          providerOptionsJson,
+        ],
+        label: 'Text Settings',
+      },
+      
+      // Rich Text Settings
+      {
+        name: 'richtext-settings',
+        type: 'group',
+        admin: {
+          condition: (data) => data['model-id'] === 'richtext',
+        },
+        fields: [
+          providerSelect,
+          modelSelect,
+          ...commonTextParams,
+          providerOptionsJson,
+        ],
+        label: 'Rich Text Settings',
+      },
+      
+      // Image Settings
+      {
+        name: 'image-settings',
+        type: 'group',
+        admin: {
+          condition: (data) => data['model-id'] === 'image',
+        },
+        fields: [
+          providerSelect,
+          modelSelect,
+          providerOptionsJson,
+        ],
+        label: 'Image Settings',
+      },
+      
+      // TTS Settings
+      {
+        name: 'tts-settings',
+        type: 'group',
+        admin: {
+          condition: (data) => data['model-id'] === 'tts',
+        },
+        fields: [
+          providerSelect,
+          modelSelect,
+          {
+            name: 'voice',
+            type: 'text',
+            admin: {
+              components: {
+                Field: '@ai-stack/payloadcms/client#DynamicVoiceSelect',
+              },
+            },
+            label: 'Voice',
+          },
+          providerOptionsJson,
+        ],
+        label: 'TTS Settings',
+      },
     ],
   }

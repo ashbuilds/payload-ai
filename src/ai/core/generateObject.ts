@@ -2,12 +2,12 @@ import { jsonSchema, generateObject as sdkGenerateObject } from 'ai'
 
 import type { PayloadGenerateObjectArgs } from './types.js'
 
+import { extractPromptAttachments } from '../../utilities/extractPromptAttachments.js'
+import { getLanguageModel } from '../providers/registry.js'
+
 function isZodSchema(schema: unknown): boolean {
   return typeof schema === 'object' && schema !== null && '_def' in schema
 }
-
-import { extractPromptAttachments } from '../../utilities/extractPromptAttachments.js'
-import { getLanguageModel } from '../providers/registry.js'
 
 /**
  * Generate structured output using AI SDK's generateObject
@@ -35,7 +35,7 @@ export async function generateObject(args: PayloadGenerateObjectArgs) {
     : prompt
 
   // Resolve model from registry
-  const model = await getLanguageModel(payload, provider, modelId)
+  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
 
   // Pass directly to AI SDK with minimal transformation
   const options: Record<string, unknown> = {

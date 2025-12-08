@@ -28,8 +28,8 @@ export async function generateText(args: PayloadGenerateTextArgs) {
     ? extractPromptAttachments(prompt) 
     : prompt
   
-  // Resolve model from registry
-  const model = await getLanguageModel(payload, provider, modelId)
+  // Resolve model from registry with provider options
+  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
   
   // Pass directly to AI SDK
   const options: Record<string, unknown> = {
@@ -40,6 +40,7 @@ export async function generateText(args: PayloadGenerateTextArgs) {
     ...(maxTokens ? { maxOutputTokens: maxTokens } : {}),
   }
 
+  // Also pass providerOptions to generateText for per-call overrides if supported by SDK/Model
   if (providerOptions) {
     options.providerOptions = providerOptions
   }

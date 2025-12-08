@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { type OpenAICompatibleProviderOptions } from '@ai-sdk/openai-compatible';
+
 export const openaiCompatibleBlock: Block = {
   slug: 'openai-compatible',
   fields: [

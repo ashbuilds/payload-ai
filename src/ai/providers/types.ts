@@ -31,8 +31,12 @@ export interface OpenAIBlockData extends BaseProviderBlock {
   apiKey: string
   baseURL?: string
   blockType: 'openai'
+  imageProviderOptions?: Record<string, any>
   organization?: string
   supportedUseCases: UseCase[]
+  textProviderOptions?: Record<string, any>
+  ttsProviderOptions?: Record<string, any>
+  voices?: any[]
 }
 
 export interface AnthropicBlockData extends BaseProviderBlock {
@@ -64,6 +68,8 @@ export interface ElevenLabsBlockData extends BaseProviderBlock {
   apiKey: string
   blockType: 'elevenlabs'
   supportedUseCases: ['tts']
+  ttsProviderOptions?: Record<string, any>
+  voices?: any[]
 }
 
 export interface OpenAICompatibleBlockData extends BaseProviderBlock {
@@ -104,6 +110,11 @@ export interface ProviderConfig {
   instance?: any // For providers like fal that use singleton
   models: ProviderModel[]
   name: string
+  options?: {
+    image?: Record<string, any>
+    text?: Record<string, any>
+    tts?: Record<string, any>
+  }
 }
 
 export type ProviderRegistry = Record<string, ProviderConfig>

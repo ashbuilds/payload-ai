@@ -4,7 +4,6 @@ import { deepMerge } from 'payload/shared'
 
 import type { PluginConfig } from './types.js'
 
-import { defaultGenerationModels } from './ai/models/index.js'
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { aiJobsCollection } from './collections/AIJobs.js'
 import { aiSettingsGlobal } from './collections/AISettings.js'
@@ -15,7 +14,6 @@ import { fetchVoices } from './endpoints/fetchVoices.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
 import { translations } from './translations/index.js'
-import { getGenerationModels } from './utilities/getGenerationModels.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
@@ -27,7 +25,6 @@ const defaultPluginConfig: PluginConfig = {
   collections: {},
   disableSponsorMessage: false,
   generatePromptOnInit: true,
-  generationModels: defaultGenerationModels,
 }
 
 const sponsorMessage = `
@@ -76,8 +73,6 @@ const payloadAiPlugin =
         ...pluginConfig.access,
       },
     }
-
-    pluginConfig.generationModels = getGenerationModels(pluginConfig)
 
     const isActivated = isPluginActivated(pluginConfig)
     let updatedConfig: Config = { ...incomingConfig }

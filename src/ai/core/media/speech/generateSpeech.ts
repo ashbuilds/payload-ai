@@ -10,7 +10,7 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
   const { model: modelId, payload, prompt, provider } = args
 
   // Get TTS model instance
-  const model = await getTTSModel(payload, provider, modelId)
+  const model = await getTTSModel(payload, provider, modelId, args.providerOptions)
   console.log("model:   ", model)
 
   // Dynamic import to support older SDK versions
@@ -27,24 +27,19 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
   }
 
   // TODO: fix with proper error handling
-  try{
-  // Generate speech
   const result = await generateSpeechFn({
     model,
     speed: args.speed,
     text: prompt,
     voice: args.voice,
   })
-  console.log("result : ", result)
-}catch (e) {
-    console.error(e)
-  }
+  console.log("result", result)
  // Extract audio from result
-  const { audio } = {  } as any
+  const { audio } = result
   const mimeType = audio.mediaType || 'audio/mp3'
   
   // Try to get format from audio object, otherwise infer from mime type
-  const extension = (audio as any).format || getExtensionFromMimeType(mimeType)
+  const extension = audio.format || getExtensionFromMimeType(mimeType)
 
   // Prefer uint8Array if available, else base64
   const dataBuffer = audio.uint8Array

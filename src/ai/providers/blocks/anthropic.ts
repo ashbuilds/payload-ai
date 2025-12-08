@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { type AnthropicProviderOptions } from '@ai-sdk/anthropic';
+
 export const anthropicBlock: Block = {
   slug: 'anthropic',
   fields: [

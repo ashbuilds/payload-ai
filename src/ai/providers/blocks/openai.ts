@@ -1,7 +1,31 @@
 import type { Block } from 'payload'
 
+import { type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
+
+
 export const openaiBlock: Block = {
   slug: 'openai',
+  custom: {
+    providerOptionsSchemas: {
+      image: {
+        fields: ['quality', 'style'],
+      },
+      text: {
+        fields: [
+          'temperature',
+          'max_tokens',
+          'top_p',
+          'frequency_penalty',
+          'presence_penalty',
+          'seed',
+          'logitBias',
+        ],
+      },
+      tts: {
+        fields: ['speed', 'response_format', 'instructions'],
+      },
+    },
+  },
   fields: [
     {
       type: 'tabs',
@@ -119,7 +143,209 @@ export const openaiBlock: Block = {
           label: 'Connection',
         },
 
-        // 3. Models tab
+        // 3. Voices tab (NEW)
+        {
+          fields: [
+            {
+              name: 'voices',
+              type: 'array',
+              admin: {
+                description: 'Available voices for Text-to-Speech models. You can add custom voices here.',
+                initCollapsed: false,
+              },
+              defaultValue: [
+                { id: 'alloy', name: 'Alloy', enabled: true },
+                { id: 'echo', name: 'Echo', enabled: true },
+                { id: 'fable', name: 'Fable', enabled: true },
+                { id: 'onyx', name: 'Onyx', enabled: true },
+                { id: 'nova', name: 'Nova', enabled: true },
+                { id: 'shimmer', name: 'Shimmer', enabled: true },
+              ],
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'id',
+                      type: 'text',
+                      admin: {
+                        description: 'Voice ID as used by OpenAI API',
+                        width: '40%',
+                      },
+                      label: 'Voice ID',
+                      required: true,
+                    },
+                    {
+                      name: 'name',
+                      type: 'text',
+                      admin: {
+                        width: '40%',
+                      },
+                      label: 'Display Name',
+                      required: true,
+                    },
+                    {
+                      name: 'enabled',
+                      type: 'checkbox',
+                      admin: {
+                        width: '20%',
+                      },
+                      defaultValue: true,
+                      label: 'Enabled',
+                    },
+                  ],
+                },
+              ],
+              label: 'Available Voices',
+            },
+          ],
+          label: 'Voices',
+        },
+
+        // 4. Provider Options (NEW - One group per use case)
+        {
+          fields: [
+            // TTS Provider Options
+            {
+              name: 'ttsProviderOptions',
+              type: 'group',
+              admin: {
+                description: 'Default provider options for TTS models. Users can override these per field.',
+              },
+              fields: [
+                {
+                  name: 'speed',
+                  type: 'number',
+                  defaultValue: 1.0,
+                  label: 'Default Speed',
+                  max: 4,
+                  min: 0.25,
+                },
+                {
+                  name: 'response_format',
+                  type: 'select',
+                  dbName: "openai-tts-response_format",
+                  defaultValue: 'mp3',
+                  label: 'Default Response Format',
+                  options: [
+                    { label: 'MP3', value: 'mp3' },
+                    { label: 'Opus', value: 'opus' },
+                    { label: 'AAC', value: 'aac' },
+                    { label: 'FLAC', value: 'flac' },
+                    { label: 'WAV', value: 'wav' },
+                    { label: 'PCM', value: 'pcm' },
+                  ],
+                },
+                {
+                  name: 'instructions',
+                  type: 'textarea',
+                  admin: {
+                    placeholder: 'Optional default voice instructions',
+                  },
+                  label: 'Default Instructions',
+                },
+              ],
+              label: 'TTS Provider Options',
+            },
+
+            // Image Provider Options
+            {
+              name: 'imageProviderOptions',
+              type: 'group',
+              admin: {
+                description: 'Default provider options for image generation models.',
+              },
+              fields: [
+                {
+                  name: 'quality',
+                  type: 'select',
+                  defaultValue: 'standard',
+                  label: 'Default Quality',
+                  options: [
+                    { label: 'Standard', value: 'standard' },
+                    { label: 'HD', value: 'hd' },
+                  ],
+                },
+                {
+                  name: 'style',
+                  type: 'select',
+                  defaultValue: 'vivid',
+                  label: 'Default Style',
+                  options: [
+                    { label: 'Vivid', value: 'vivid' },
+                    { label: 'Natural', value: 'natural' },
+                  ],
+                },
+              ],
+              label: 'Image Provider Options',
+            },
+
+            // Text Provider Options
+            {
+              name: 'textProviderOptions',
+              type: 'group',
+              admin: {
+                description: 'Default provider options for text generation models.',
+              },
+              fields: [
+                {
+                  name: 'temperature',
+                  type: 'number',
+                  defaultValue: 1.0,
+                  label: 'Default Temperature',
+                  max: 2,
+                  min: 0,
+                },
+                {
+                  name: 'max_tokens',
+                  type: 'number',
+                  label: 'Default Max Tokens',
+                },
+                {
+                  name: 'top_p',
+                  type: 'number',
+                  defaultValue: 1.0,
+                  label: 'Default Top P',
+                  max: 1,
+                  min: 0,
+                },
+                {
+                  name: 'frequency_penalty',
+                  type: 'number',
+                  defaultValue: 0,
+                  label: 'Default Frequency Penalty',
+                  max: 2,
+                  min: -2,
+                },
+                {
+                  name: 'presence_penalty',
+                  type: 'number',
+                  defaultValue: 0,
+                  label: 'Default Presence Penalty',
+                  max: 2,
+                  min: -2,
+                },
+                {
+                  name: 'seed',
+                  type: 'number',
+                  label: 'Default Seed',
+                },
+                {
+                  name: 'logitBias',
+                  type: 'json',
+                  admin: {
+                    description: 'Modify likelihood of tokens (JSON object mapping token IDs to bias).',
+                  },
+                  label: 'Default Logit Bias',
+                },
+              ],
+              label: 'Text Provider Options',
+            },
+          ],
+          label: 'Provider Options',
+        },
+
+        // 5. Models (SIMPLIFIED - no per-model settings)
         {
           fields: [
             {
@@ -144,54 +370,36 @@ export const openaiBlock: Block = {
                   id: 'gpt-5',
                   name: 'GPT-5 (Latest Flagship)',
                   enabled: true,
-                  maxTokens: 16384,
-                  temperature: 1.0,
-                  topP: 1.0,
                   useCase: 'text',
                 },
                 {
                   id: 'gpt-5-mini',
                   name: 'GPT-5 Mini (Fast & Efficient)',
                   enabled: true,
-                  maxTokens: 16384,
-                  temperature: 1.0,
-                  topP: 1.0,
                   useCase: 'text',
                 },
                 {
                   id: 'chatgpt-4o-latest',
                   name: 'ChatGPT-4o (Always Updated)',
                   enabled: true,
-                  maxTokens: 16384,
-                  temperature: 1.0,
-                  topP: 1.0,
                   useCase: 'text',
                 },
                 {
                   id: 'gpt-4o',
                   name: 'GPT-4o (Multimodal)',
                   enabled: true,
-                  maxTokens: 16384,
-                  temperature: 1.0,
-                  topP: 1.0,
                   useCase: 'text',
                 },
                 {
                   id: 'gpt-4o-mini',
                   name: 'GPT-4o Mini (Best Value)',
                   enabled: true,
-                  maxTokens: 16384,
-                  temperature: 1.0,
-                  topP: 1.0,
                   useCase: 'text',
                 },
                 {
                   id: 'gpt-4-turbo',
                   name: 'GPT-4 Turbo',
                   enabled: true,
-                  maxTokens: 4096,
-                  temperature: 1.0,
-                  topP: 1.0,
                   useCase: 'text',
                 },
 
@@ -200,18 +408,12 @@ export const openaiBlock: Block = {
                   id: 'gpt-image-1',
                   name: 'GPT Image 1 (Latest)',
                   enabled: true,
-                  quality: 'standard',
-                  size: '1024x1024',
-                  style: 'vivid',
                   useCase: 'image',
                 },
                 {
                   id: 'dall-e-3',
                   name: 'DALL-E 3',
                   enabled: true,
-                  quality: 'standard',
-                  size: '1024x1024',
-                  style: 'vivid',
                   useCase: 'image',
                 },
 
@@ -221,7 +423,6 @@ export const openaiBlock: Block = {
                   name: 'TTS HD (Text-to-Speech)',
                   enabled: true,
                   useCase: 'tts',
-                  voice: 'alloy',
                 },
                 {
                   id: 'whisper-1',
@@ -272,235 +473,6 @@ export const openaiBlock: Block = {
                     },
                   ],
                 },
-
-                // Text generation settings
-                {
-                  type: 'collapsible',
-                  admin: {
-                    condition: (_, siblingData) => siblingData.useCase === 'text',
-                    initCollapsed: false,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'temperature',
-                          type: 'number',
-                          admin: {
-                            description:
-                              'Controls randomness. 0 = deterministic, 2 = very creative.',
-                            width: '50%',
-                          },
-                          defaultValue: 1.0,
-                          label: 'Temperature',
-                          max: 2,
-                          min: 0,
-                        },
-                        {
-                          name: 'maxTokens',
-                          type: 'number',
-                          admin: {
-                            description:
-                              'Maximum number of tokens to generate. Leave empty for model default.',
-                            width: '50%',
-                          },
-                          label: 'Max Tokens',
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Basic Settings',
-                },
-
-                // Advanced sampling
-                {
-                  type: 'collapsible',
-                  admin: {
-                    condition: (_, siblingData) => siblingData.useCase === 'text',
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'topP',
-                          type: 'number',
-                          admin: {
-                            description: 'Nucleus sampling probability threshold.',
-                            width: '33%',
-                          },
-                          defaultValue: 1.0,
-                          label: 'Top P',
-                          max: 1,
-                          min: 0,
-                        },
-                        {
-                          name: 'frequencyPenalty',
-                          type: 'number',
-                          admin: {
-                            description: 'Penalize tokens based on frequency in the text.',
-                            width: '33%',
-                          },
-                          defaultValue: 0,
-                          label: 'Frequency Penalty',
-                          max: 2,
-                          min: -2,
-                        },
-                        {
-                          name: 'presencePenalty',
-                          type: 'number',
-                          admin: {
-                            description: 'Penalize tokens based on presence in the text.',
-                            width: '33%',
-                          },
-                          defaultValue: 0,
-                          label: 'Presence Penalty',
-                          max: 2,
-                          min: -2,
-                        },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'seed',
-                          type: 'number',
-                          admin: {
-                            description: 'Optional. Seed for deterministic sampling.',
-                            width: '50%',
-                          },
-                          label: 'Seed',
-                        },
-                        {
-                          name: 'logitBias',
-                          type: 'json',
-                          admin: {
-                            description:
-                              'Modify likelihood of tokens (JSON object mapping token IDs to bias).',
-                            width: '50%',
-                          },
-                          label: 'Logit Bias',
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Advanced Sampling',
-                },
-
-                // Image-specific settings
-                {
-                  type: 'collapsible',
-                  admin: {
-                    condition: (_, siblingData) => siblingData.useCase === 'image',
-                    initCollapsed: false,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'size',
-                          type: 'select',
-                          admin: {
-                            description: 'Image dimensions.',
-                            width: '50%',
-                          },
-                          defaultValue: '1024x1024',
-                          label: 'Size',
-                          options: [
-                            { label: '1024x1024 (Square)', value: '1024x1024' },
-                            { label: '1024x1792 (Portrait)', value: '1024x1792' },
-                            { label: '1792x1024 (Landscape)', value: '1792x1024' },
-                          ],
-                        },
-                        {
-                          name: 'quality',
-                          type: 'select',
-                          admin: {
-                            description: 'Image quality (DALL-E 3 only).',
-                            width: '50%',
-                          },
-                          defaultValue: 'standard',
-                          label: 'Quality',
-                          options: [
-                            { label: 'Standard', value: 'standard' },
-                            { label: 'HD', value: 'hd' },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'style',
-                          type: 'select',
-                          admin: {
-                            description: 'Image style (DALL-E 3 only).',
-                            width: '50%',
-                          },
-                          label: 'Style',
-                          options: [
-                            { label: 'Vivid', value: 'vivid' },
-                            { label: 'Natural', value: 'natural' },
-                          ],
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Image Settings',
-                },
-
-                // TTS-specific settings
-                {
-                  type: 'collapsible',
-                  admin: {
-                    condition: (_, siblingData) => siblingData.useCase === 'tts',
-                    initCollapsed: false,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'voice',
-                          type: 'select',
-                          admin: {
-                            description: 'Voice for text-to-speech.',
-                            width: '50%',
-                          },
-                          defaultValue: 'alloy',
-                          label: 'Voice',
-                          options: [
-                            { label: 'Alloy', value: 'alloy' },
-                            { label: 'Echo', value: 'echo' },
-                            { label: 'Fable', value: 'fable' },
-                            { label: 'Onyx', value: 'onyx' },
-                            { label: 'Nova', value: 'nova' },
-                            { label: 'Shimmer', value: 'shimmer' },
-                          ],
-                        },
-                        {
-                          name: 'speed',
-                          type: 'number',
-                          admin: {
-                            description: 'Speed of speech (0.25 to 4.0).',
-                            width: '50%',
-                          },
-                          defaultValue: 1.0,
-                          label: 'Speed',
-                          max: 4,
-                          min: 0.25,
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'TTS Settings',
-                },
-
                 // Enabled checkbox
                 {
                   name: 'enabled',

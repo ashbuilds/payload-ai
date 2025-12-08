@@ -5,7 +5,14 @@ import type { PluginConfig } from './types.js'
 import { defaultSeedPrompts } from './ai/prompts.js'
 import { systemGenerate } from './ai/utils/systemGenerate.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
-import { getGenerationModels } from './utilities/getGenerationModels.js'
+
+// Defined capabilities mapping for init
+const CAPABILITY_MAP = [
+  { id: 'text', fields: ['text', 'textarea'] },
+  { id: 'richtext', fields: ['richText'] },
+  { id: 'image', fields: ['upload'] },
+  // TTS usually outputs to upload, but init logic maps field types to capabilities
+]
 
 export const init = async (
   payload: Payload,
@@ -61,24 +68,20 @@ export const init = async (
 
       let generatedPrompt: string | undefined = '{{ title }}'
       if ('prompt' in seed) {
-        // find the model that has the generateText function
-        const models = getGenerationModels(pluginConfig)
-        const model =
-          models && Array.isArray(models) ? models.find((model) => model.generateText) : undefined
+        // Prompt generation currently disabled during migration to AI SDK Providers
+        // TODO: Re-enable using a default provider from AI Settings if available
+        /*
         generatedPrompt = await systemGenerate(
           {
             prompt: seed.prompt,
             system: seed.system,
           },
-          model?.generateText,
+          undefined // No generateTextFn currently
         )
+        */
       }
 
-      const modelsForId = getGenerationModels(pluginConfig)
-      const modelForId =
-        modelsForId && Array.isArray(modelsForId)
-          ? modelsForId.find((a) => a.fields.includes(fieldType))
-          : undefined
+      const modelForId = CAPABILITY_MAP.find((a) => a.fields.includes(fieldType))
 
       const data = {
         'model-id': modelForId?.id,

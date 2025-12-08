@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { type GoogleGenerativeAIProviderOptions } from '@ai-sdk/google';
+
 export const googleBlock: Block = {
   slug: 'google',
   fields: [

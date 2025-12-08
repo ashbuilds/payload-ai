@@ -1,7 +1,25 @@
 import type { Block } from 'payload'
 
+import { type ElevenLabsSpeechVoiceId } from '@ai-sdk/elevenlabs'
+
 export const elevenlabsBlock: Block = {
   slug: 'elevenlabs',
+  custom: {
+    providerOptionsSchemas: {
+      tts: {
+        fields: [
+          'stability',
+          'similarity_boost',
+          'style',
+          'use_speaker_boost',
+          'seed',
+          'language_code',
+          'apply_text_normalization',
+          'apply_language_text_normalization',
+        ],
+      },
+    },
+  },
   fields: [
     {
       type: 'tabs',
@@ -91,7 +109,7 @@ export const elevenlabsBlock: Block = {
           label: 'Connection',
         },
 
-        // 3. Voices tab
+        // 3. Voices tab (Existing)
         {
           fields: [
             {
@@ -188,7 +206,88 @@ export const elevenlabsBlock: Block = {
           label: 'Voices',
         },
 
-        // 4. Models tab
+        // 4. Provider Options (NEW)
+        {
+          fields: [
+            {
+              name: 'ttsProviderOptions',
+              type: 'group',
+              admin: {
+                description: 'Default provider options for ElevenLabs TTS.',
+              },
+              fields: [
+                {
+                  name: 'voice_settings',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'stability',
+                      type: 'number',
+                      defaultValue: 0.5,
+                      label: 'Default Stability',
+                      max: 1,
+                      min: 0,
+                    },
+                    {
+                      name: 'similarity_boost',
+                      type: 'number',
+                      defaultValue: 0.75,
+                      label: 'Default Similarity Boost',
+                      max: 1,
+                      min: 0,
+                    },
+                    {
+                      name: 'style',
+                      type: 'number',
+                      defaultValue: 0,
+                      label: 'Default Style',
+                      max: 1,
+                      min: 0,
+                    },
+                    {
+                      name: 'use_speaker_boost',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      label: 'Use Speaker Boost',
+                    },
+                  ],
+                  label: 'Voice Settings',
+                },
+                {
+                  name: 'seed',
+                  type: 'number',
+                  label: 'Default Seed',
+                  max: 4294967295,
+                  min: 0,
+                },
+                {
+                  name: 'apply_text_normalization',
+                  type: 'select',
+                  dbName: 'openai-tts-apply_text_normalization',
+                  defaultValue: 'auto',
+                  label: 'Text Normalization',
+                  options: [
+                    { label: 'Auto', value: 'auto' },
+                    { label: 'On', value: 'on' },
+                    { label: 'Off', value: 'off' },
+                  ],
+                },
+                {
+                  name: 'language_code',
+                  type: 'text',
+                  admin: {
+                    placeholder: 'en',
+                  },
+                  label: 'Language Code',
+                },
+              ],
+              label: 'TTS Provider Options',
+            },
+          ],
+          label: 'Provider Options',
+        },
+
+        // 5. Models (SIMPLIFIED - no per-model settings)
         {
           fields: [
             {
@@ -198,7 +297,8 @@ export const elevenlabsBlock: Block = {
                 components: {
                   RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
                 },
-                description: 'Configure TTS models with specific voice settings and parameters.',
+                description:
+                  'Configure TTS models. Use the Voices and Provider Options tabs for detailed settings.',
                 initCollapsed: false,
               },
               defaultValue: [
@@ -276,144 +376,6 @@ export const elevenlabsBlock: Block = {
                       label: 'Enabled',
                     },
                   ],
-                },
-
-                // Voice Settings
-                {
-                  type: 'collapsible',
-                  admin: {
-                    initCollapsed: false,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'stability',
-                          type: 'number',
-                          admin: {
-                            description:
-                              'Voice stability (0-1). Lower = more emotional range, higher = more monotonous.',
-                            step: 0.01,
-                            width: '50%',
-                          },
-                          label: 'Stability',
-                          max: 1,
-                          min: 0,
-                        },
-                        {
-                          name: 'similarity_boost',
-                          type: 'number',
-                          admin: {
-                            description: 'How closely AI adheres to the original voice (0-1).',
-                            step: 0.01,
-                            width: '50%',
-                          },
-                          label: 'Similarity Boost',
-                          max: 1,
-                          min: 0,
-                        },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'style',
-                          type: 'number',
-                          admin: {
-                            description:
-                              'Amplify speaker style (0-1). Values above 0 may increase latency.',
-                            step: 0.01,
-                            width: '50%',
-                          },
-                          label: 'Style',
-                          max: 1,
-                          min: 0,
-                        },
-                        {
-                          name: 'use_speaker_boost',
-                          type: 'checkbox',
-                          admin: {
-                            description:
-                              'Boost similarity to original speaker (increases latency).',
-                            width: '50%',
-                          },
-                          label: 'Use Speaker Boost',
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Voice Settings',
-                },
-
-                // Advanced Settings
-                {
-                  type: 'collapsible',
-                  admin: {
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'language_code',
-                          type: 'text',
-                          admin: {
-                            description:
-                              'ISO 639-1 language code (only for Turbo v2.5 and Flash v2.5).',
-                            placeholder: 'en',
-                            width: '50%',
-                          },
-                          label: 'Language Code',
-                        },
-                        {
-                          name: 'seed',
-                          type: 'number',
-                          admin: {
-                            description: 'Seed for deterministic sampling (0-4294967295).',
-                            width: '50%',
-                          },
-                          label: 'Seed',
-                          max: 4294967295,
-                          min: 0,
-                        },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'apply_text_normalization',
-                          type: 'select',
-                          admin: {
-                            description: 'Controls text normalization (spell out numbers, etc.)',
-                            width: '50%',
-                          },
-                          dbName: 'text_norm',
-                          defaultValue: 'auto',
-                          label: 'Text Normalization',
-                          options: [
-                            { label: 'Auto (System Decides)', value: 'auto' },
-                            { label: 'Always On', value: 'on' },
-                            { label: 'Always Off', value: 'off' },
-                          ],
-                        },
-                        {
-                          name: 'apply_language_text_normalization',
-                          type: 'checkbox',
-                          admin: {
-                            description:
-                              'Language-specific normalization (e.g., Japanese). May increase latency.',
-                            width: '50%',
-                          },
-                          label: 'Language Normalization',
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Advanced Settings',
                 },
               ],
               label: 'Available Models',

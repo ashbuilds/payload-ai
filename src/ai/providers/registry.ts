@@ -130,6 +130,14 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
     // console.log("providerBlock.models : ", JSON.stringify(providerBlock.models, null, 2))
     const enabledModels = providerBlock.models //.filter((m) => m.enabled) //TODO fix to get only enabled model
 
+    // Extract provider options
+    const options = {
+      image:
+        'imageProviderOptions' in providerBlock ? providerBlock.imageProviderOptions : undefined,
+      text: 'textProviderOptions' in providerBlock ? providerBlock.textProviderOptions : undefined,
+      tts: 'ttsProviderOptions' in providerBlock ? providerBlock.ttsProviderOptions : undefined,
+    }
+
     registry[blockType] = {
       id: blockType,
       name: 'providerName' in providerBlock ? providerBlock.providerName : blockType,
@@ -138,6 +146,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
       factory,
       instance: blockType === 'fal' ? fal : undefined,
       models: enabledModels,
+      options,
     }
   }
 
@@ -161,6 +170,7 @@ export async function getLanguageModel(
   payload: Payload,
   providerId?: string,
   modelId?: string,
+  options?: Record<string, any>,
 ): Promise<LanguageModel> {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
@@ -196,13 +206,20 @@ export async function getLanguageModel(
     throw new Error(`Provider ${providerId} has no factory or instance`)
   }
 
-  return providerInstance(modelId)
+  // Merge default settings with override options
+  const finalOptions = {
+    ...(provider.options?.text || {}),
+    ...(options || {}),
+  }
+
+  return providerInstance(modelId, finalOptions)
 }
 
 export async function getImageModel(
   payload: Payload,
   providerId?: string,
   modelId?: string,
+  options?: Record<string, any>,
   isMultimodalText?: boolean,
 ) {
   if (!providerId || !modelId) {
@@ -226,6 +243,12 @@ export async function getImageModel(
     throw new Error(`Provider ${providerId} not found`)
   }
 
+  // Merge default settings with override options
+  const finalOptions = {
+    ...(provider.options?.image || {}),
+    ...(options || {}),
+  }
+
   if (provider.instance) {
     return provider.instance
   }
@@ -241,7 +264,7 @@ export async function getImageModel(
       'image' in instance &&
       typeof instance.image === 'function'
     ) {
-      return instance.image(modelId)
+      return instance.image(modelId, finalOptions)
     }
 
     // Also check if instance is an object with image method
@@ -251,17 +274,22 @@ export async function getImageModel(
       'image' in instance &&
       !isMultimodalText
     ) {
-      return (instance as AIProvider).image?.(modelId)
+      return (instance as AIProvider).image?.(modelId, finalOptions)
     }
 
     // Fallback for providers that might return the model directly or use the default factory
-    return typeof instance === 'function' ? instance(modelId) : instance
+    return typeof instance === 'function' ? instance(modelId, finalOptions) : instance
   }
 
   throw new Error(`Invalid provider configuration for ${providerId}`)
 }
 
-export async function getTTSModel(payload: Payload, providerId?: string, modelId?: string) {
+export async function getTTSModel(
+  payload: Payload,
+  providerId?: string,
+  modelId?: string,
+  options?: Record<string, any>,
+) {
   if (!providerId || !modelId) {
     const defaults = await getGlobalDefaults(payload)
     if (!providerId) {
@@ -283,12 +311,18 @@ export async function getTTSModel(payload: Payload, providerId?: string, modelId
     throw new Error(`Provider ${providerId} not found`)
   }
 
+  // Merge default settings with override options
+  const finalOptions = {
+    ...(provider.options?.tts || {}),
+    ...(options || {}),
+  }
+
   if (provider.factory) {
     const instance = provider.factory()
     if (instance?.speech) {
-      return instance.speech(modelId)
+      return instance.speech(modelId, finalOptions)
     }
-    return typeof instance === 'function' ? instance(modelId) : instance
+    return typeof instance === 'function' ? instance(modelId, finalOptions) : instance
   }
 
   throw new Error(`Invalid provider configuration for ${providerId}`)

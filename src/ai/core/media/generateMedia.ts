@@ -64,7 +64,8 @@ export async function generateMedia(args: PayloadGenerateMediaArgs): Promise<Med
     case 'speech':
       return generateSpeech(args)
     case 'video':
-      return generateVideo(args)
+      throw Error(`Not implemented: ${mediaType}`)
+      // return generateVideo(args)
     default:
       throw new Error(`Unsupported media type: ${mediaType}`)
   }

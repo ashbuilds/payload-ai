@@ -29,7 +29,7 @@ export async function streamText(args: PayloadGenerateTextArgs) {
     : prompt
   
   // Resolve model from registry
-  const model = await getLanguageModel(payload, provider, modelId)
+  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
   
   // Return streaming result from AI SDK
   const options: Record<string, unknown> = {
