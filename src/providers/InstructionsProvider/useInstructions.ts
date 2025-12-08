@@ -76,12 +76,11 @@ export const useInstructions = (
       if (!fieldInfo) {return}
 
       if (fieldInfo.fieldType === 'upload') {
-        suggestions.push(`${f}.url`)
         return
       }
 
       const helpers = handlebarsHelpers.filter(
-        (h) => (handlebarsHelpersMap as Record<string, any>)[h]?.field === fieldInfo.fieldType,
+        (h) => (handlebarsHelpersMap as Record<string, { field?: string }>)[h]?.field === fieldInfo.fieldType,
       )
 
       if (helpers.length) {

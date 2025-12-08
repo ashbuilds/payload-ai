@@ -15,6 +15,7 @@ import type {
 import type { CSSProperties, MouseEventHandler } from 'react'
 
 import type {PLUGIN_INSTRUCTIONS_TABLE} from "./defaults.js";
+import { MediaResult } from './ai/core/index.js'
 
 export interface PluginConfigAccess {
   /**
@@ -40,7 +41,7 @@ export interface PluginOptions {
 }
 
 export type PluginConfigMediaUploadFunction = (
-  result: { data: Record<any, any>; file: File },
+  result: MediaResult,
   {
     collection,
     request,

@@ -2,6 +2,15 @@ type ImageData = {
   image: { name: string; type: string; url: string }
 }[]
 
+/**
+ * Extracts hardcoded image URLs from text using regex.
+ * 
+ * NOTE: This only handles direct URLs in the text.
+ * For @field references, use resolveImageReferences utility instead.
+ * 
+ * @param input - Text containing image URLs
+ * @returns Array of extracted image data
+ */
 export function extractImageData(input: string): ImageData {
   const regex = /(?:https?:)?\/[\w%\-.,/]+\.(png|jpe?g|webp)/gi
   const matches = input.match(regex)

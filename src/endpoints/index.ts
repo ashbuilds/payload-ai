@@ -20,6 +20,7 @@ import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders
 import { extractImageData } from '../utilities/extractImageData.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
+import { resolveImageReferences } from '../utilities/resolveImageReferences.js'
 import { assignPrompt, extendContextWithPromptFields } from './buildPromptUtils.js'
 
 export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfig) =>
@@ -230,7 +231,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
-          const schemaPath = String(instructions['schema-path']);
+          const schemaPath = String(instructions['schema-path'])
           registerEditorHelper(req.payload, schemaPath)
 
           const extendedContext = extendContextWithPromptFields(
@@ -242,7 +243,19 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const modelId = instructions['model-id']
           const uploadCollectionSlug = instructions['relation-to']
 
-          const images = [...extractImageData(text), ...(sampleImages as unknown[])]
+          // Resolve @field:filename references from the prompt
+          const { images: resolvedImages, processedPrompt } = await resolveImageReferences(
+            text,
+            contextData,
+            req,
+          )
+
+          // Extract hardcoded URLs from the processed prompt and merge with resolved images and sample images
+          const images = [
+            ...extractImageData(processedPrompt),
+            ...resolvedImages,
+            ...(sampleImages as unknown[]),
+          ] as any
 
           // Process images - convert to ImagePart format
           const editImages: ImagePart[] = []
@@ -325,10 +338,13 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           if (result && 'file' in result) {
             let assetData: { alt?: string; id: number | string }
             if (typeof pluginConfig.mediaUpload === 'function') {
-              assetData = await pluginConfig.mediaUpload(result, {
-                collection: uploadCollectionSlug as string,
-                request: req,
-              })
+              assetData = await pluginConfig.mediaUpload(
+                result,
+                {
+                  collection: uploadCollectionSlug as string,
+                  request: req,
+                },
+              )
             } else {
               assetData = await req.payload.create({
                 collection: uploadCollectionSlug as string,
@@ -382,6 +398,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           throw new Error('Unexpected model response.')
         } catch (error) {
           req.payload.logger.error(
+            // @ts-ignore
             error?.type || (error as Error).message,
             'Error generating upload: ',
           )
