@@ -1,6 +1,6 @@
 import type { MediaResult, SpeechGenerationArgs } from '../types.js'
 
-import { getTTSModel } from '../../../providers/registry.js'
+import { getGlobalDefaults, getTTSModel } from '../../../providers/registry.js'
 import { getExtensionFromMimeType } from '../utils.js'
 
 /**
@@ -8,6 +8,15 @@ import { getExtensionFromMimeType } from '../utils.js'
  */
 export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaResult> {
   const { model: modelId, payload, prompt, provider } = args
+  let { voice } = args
+
+  // Fallback to global default voice if not specified
+  if (!voice) {
+    const defaults = await getGlobalDefaults(payload)
+    if (defaults?.tts?.voice) {
+      voice = defaults.tts.voice
+    }
+  }
 
   // Get TTS model instance
   const model = await getTTSModel(payload, provider, modelId, args.providerOptions)
@@ -31,7 +40,7 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
     model,
     speed: args.speed,
     text: prompt,
-    voice: args.voice,
+    voice: voice,
   })
   console.log("result", result)
  // Extract audio from result

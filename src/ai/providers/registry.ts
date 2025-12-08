@@ -182,6 +182,15 @@ export async function getLanguageModel(
     }
   }
 
+  // Extract global default options if we are using the default provider
+  let globalDefaultOptions = {}
+  if (providerId) {
+    const defaults = await getGlobalDefaults(payload)
+    if (defaults?.text?.provider === providerId) {
+      globalDefaultOptions = defaults?.text?.options || {}
+    }
+  }
+
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
   }
@@ -209,6 +218,7 @@ export async function getLanguageModel(
   // Merge default settings with override options
   const finalOptions = {
     ...(provider.options?.text || {}),
+    ...globalDefaultOptions,
     ...(options || {}),
   }
 
@@ -232,6 +242,15 @@ export async function getImageModel(
     }
   }
 
+  // Extract global default options if we are using the default provider
+  let globalDefaultOptions = {}
+  if (providerId) {
+    const defaults = await getGlobalDefaults(payload)
+    if (defaults?.image?.provider === providerId) {
+      globalDefaultOptions = defaults?.image?.options || {}
+    }
+  }
+
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
   }
@@ -246,6 +265,7 @@ export async function getImageModel(
   // Merge default settings with override options
   const finalOptions = {
     ...(provider.options?.image || {}),
+    ...globalDefaultOptions,
     ...(options || {}),
   }
 
@@ -300,6 +320,15 @@ export async function getTTSModel(
     }
   }
 
+  // Extract global default options if we are using the default provider
+  let globalDefaultOptions = {}
+  if (providerId) {
+    const defaults = await getGlobalDefaults(payload)
+    if (defaults?.tts?.provider === providerId) {
+      globalDefaultOptions = defaults?.tts?.options || {}
+    }
+  }
+
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
   }
@@ -314,6 +343,7 @@ export async function getTTSModel(
   // Merge default settings with override options
   const finalOptions = {
     ...(provider.options?.tts || {}),
+    ...globalDefaultOptions,
     ...(options || {}),
   }
 

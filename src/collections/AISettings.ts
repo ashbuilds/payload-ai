@@ -8,16 +8,16 @@ export const aiSettingsGlobal: GlobalConfig = {
     read: ({ req }) => !!req.user,
     update: ({ req }) => !!req.user,
   },
-  // admin: {
-  //   description: 'Configure AI providers, models, and default settings',
-  // },
+  admin: {
+    description: 'Configure AI providers, models, and default settings',
+  },
   fields: [
     {
       name: 'providers',
       type: 'blocks',
       admin: {
         description: 'Configure which AI providers to use and their settings',
-        initCollapsed: false,
+        initCollapsed: true,
       },
       blocks: allProviderBlocks,
       label: 'AI Providers',
@@ -27,48 +27,195 @@ export const aiSettingsGlobal: GlobalConfig = {
       name: 'defaults',
       type: 'group',
       admin: {
-        description: 'Default provider/model for each use case',
+        description: 'Default provider/model behavior for each use case',
       },
       fields: [
         {
-          name: 'text',
-          type: 'group',
-          fields: [
+          type: 'tabs',
+          tabs: [
             {
-              name: 'provider',
-              type: 'text',
-              admin: { description: 'Auto-populated from blocks' },
+              fields: [
+                {
+                  name: 'text',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'provider',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                        },
+                      },
+                      label: 'Default Provider',
+                    },
+                    {
+                      name: 'model',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                        },
+                      },
+                      label: 'Default Model',
+                    },
+                    {
+                      name: 'options',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
+                        },
+                        description: 'Default options for this model (global)',
+                      },
+                      label: 'Global Model Options',
+                    },
+                  ],
+                  label: '',
+                },
+              ],
+              label: 'Text Generation',
             },
-            { name: 'model', type: 'text' },
+            {
+              fields: [
+                {
+                  name: 'image',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'provider',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                        },
+                      },
+                      label: 'Default Provider',
+                    },
+                    {
+                      name: 'model',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                        },
+                      },
+                      label: 'Default Model',
+                    },
+                    {
+                      name: 'options',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
+                        },
+                        description: 'Default options for this model (global)',
+                      },
+                      label: 'Global Model Options',
+                    },
+                  ],
+                  label: '',
+                },
+              ],
+              label: 'Image Generation',
+            },
+            {
+              fields: [
+                {
+                  name: 'video',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'provider',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                        },
+                      },
+                      label: 'Default Provider',
+                    },
+                    {
+                      name: 'model',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                        },
+                      },
+                      label: 'Default Model',
+                    },
+                    {
+                      name: 'options',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
+                        },
+                        description: 'Default options for this model (global)',
+                      },
+                      label: 'Global Model Options',
+                    },
+                  ],
+                  label: '',
+                },
+              ],
+              label: 'Video Generation',
+            },
+            {
+              fields: [
+                {
+                  name: 'tts',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'provider',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                        },
+                      },
+                      label: 'Default Provider',
+                    },
+                    {
+                      name: 'model',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                        },
+                      },
+                      label: 'Default Model',
+                    },
+                    {
+                      name: 'voice',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicVoiceSelect',
+                        },
+                      },
+                      label: 'Default Voice',
+                    },
+                    {
+                      name: 'options',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
+                        },
+                        description: 'Default options for this model (global)',
+                      },
+                      label: 'Global Model Options',
+                    },
+                  ],
+                  label: '',
+                },
+              ],
+              label: 'Text-to-Speech',
+            },
           ],
-          label: 'Text Generation',
-        },
-        {
-          name: 'image',
-          type: 'group',
-          fields: [
-            { name: 'provider', type: 'text' },
-            { name: 'model', type: 'text' },
-          ],
-          label: 'Image Generation',
-        },
-        {
-          name: 'video',
-          type: 'group',
-          fields: [
-            { name: 'provider', type: 'text' },
-            { name: 'model', type: 'text' },
-          ],
-          label: 'Video Generation',
-        },
-        {
-          name: 'tts',
-          type: 'group',
-          fields: [
-            { name: 'provider', type: 'text' },
-            { name: 'model', type: 'text' },
-          ],
-          label: 'Text-to-Speech',
         },
       ],
       label: 'Default Models',

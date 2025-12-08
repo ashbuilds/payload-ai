@@ -122,10 +122,10 @@ export type ProviderRegistry = Record<string, ProviderConfig>
 // AI Settings global data structure
 export interface AISettingsData {
   defaults: {
-    image?: { model: string; provider: string }
-    text?: { model: string; provider: string }
-    tts?: { model: string; provider: string }
-    video?: { model: string; provider: string }
+    image?: { model: string; options?: Record<string, any>; provider: string }
+    text?: { model: string; options?: Record<string, any>; provider: string }
+    tts?: { model: string; options?: Record<string, any>; provider: string; voice?: string }
+    video?: { model: string; options?: Record<string, any>; provider: string }
   }
   providers: ProviderBlockData[]
 }
