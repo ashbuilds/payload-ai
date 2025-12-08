@@ -50,6 +50,22 @@ export const Characters: CollectionConfig = {
       unique: true,
     },
     {
+      type: 'collapsible',
+      admin: {
+        position: 'sidebar',
+      },
+      fields: [
+        {
+          name: 'referenceImages',
+          type: 'upload',
+          hasMany: true,
+          label: "",
+          relationTo: 'media',
+        },
+      ],
+      label :"Reference Images",
+    },
+    {
       name: 'name',
       type: 'text',
       admin: {

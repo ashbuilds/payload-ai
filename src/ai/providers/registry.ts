@@ -127,8 +127,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
     }
 
     // Filter enabled models only
-    // console.log("providerBlock.models : ", JSON.stringify(providerBlock.models, null, 2))
-    const enabledModels = providerBlock.models //.filter((m) => m.enabled) //TODO fix to get only enabled model
+    const enabledModels = providerBlock.models.filter((m) => m.enabled)
 
     // Extract provider options
     const options = {
