@@ -186,7 +186,6 @@ export const googleBlock: Block = {
                   label: 'Speaking Rate',
                   max: 4.0,
                   min: 0.25,
-                  step: 0.25,
                 },
                 {
                   name: 'volumeGainDb',
@@ -257,7 +256,6 @@ export const googleBlock: Block = {
                   label: 'Default Temperature',
                   max: 2.0,
                   min: 0.0,
-                  step: 0.1,
                 },
                 {
                   name: 'maxOutputTokens',
@@ -291,6 +289,9 @@ export const googleBlock: Block = {
                         {
                           name: 'category',
                           type: 'select',
+                          admin: {
+                            width: '50%',
+                          },
                           dbName: 'google-safety-category',
                           label: 'Category',
                           options: [
@@ -300,11 +301,13 @@ export const googleBlock: Block = {
                             { label: 'Dangerous Content', value: 'HARM_CATEGORY_DANGEROUS_CONTENT' },
                           ],
                           required: true,
-                          width: '50%',
                         },
                         {
                           name: 'threshold',
                           type: 'select',
+                          admin: {
+                            width: '50%',
+                          },
                           dbName: 'google-safety-threshold',
                           label: 'Threshold',
                           options: [
@@ -314,7 +317,6 @@ export const googleBlock: Block = {
                             { label: 'Block High', value: 'BLOCK_ONLY_HIGH' },
                           ],
                           required: true,
-                          width: '50%',
                         },
                       ],
                     },
