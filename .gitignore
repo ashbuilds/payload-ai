@@ -25,3 +25,7 @@ dist-ssr
 *.sw?
 
 tsconfig.tsbuildinfo
+dev/.next
+public/media
+dev/public/provider-icons
+.env
