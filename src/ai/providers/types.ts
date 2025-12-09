@@ -48,7 +48,10 @@ export interface AnthropicBlockData extends BaseProviderBlock {
 export interface GoogleBlockData extends BaseProviderBlock {
   apiKey: string
   blockType: 'google'
-  supportedUseCases: ('image' | 'text')[]
+  imageProviderOptions?: Record<string, any>
+  supportedUseCases: ('image' | 'text' | 'tts')[]
+  textProviderOptions?: Record<string, any>
+  ttsProviderOptions?: Record<string, any>
 }
 
 export interface XAIBlockData extends BaseProviderBlock {

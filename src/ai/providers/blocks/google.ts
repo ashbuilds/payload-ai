@@ -1,9 +1,20 @@
 import type { Block } from 'payload'
 
-import { type GoogleGenerativeAIProviderOptions } from '@ai-sdk/google';
-
 export const googleBlock: Block = {
   slug: 'google',
+  custom: {
+    providerOptionsSchemas: {
+      image: {
+        fields: ['aspectRatio', 'personGeneration', 'seed', 'addWatermark'],
+      },
+      text: {
+        fields: ['temperature', 'maxOutputTokens', 'topP', 'topK', 'safetySettings'],
+      },
+      tts: {
+        fields: ['speed', 'volumeGainDb', 'speakingRate'],
+      },
+    },
+  },
   fields: [
     {
       type: 'tabs',
@@ -34,7 +45,7 @@ export const googleBlock: Block = {
           label: 'Setup',
         },
 
-        // 2. Connection / HTTP tab
+        // 2. Connection tab
         {
           fields: [
             {
@@ -98,7 +109,226 @@ export const googleBlock: Block = {
           label: 'Connection',
         },
 
-        // 3. Models tab
+        // 3. Voices tab (NEW)
+        {
+          fields: [
+            {
+              name: 'voices',
+              type: 'array',
+              admin: {
+                description: 'Available voices for Gemini TTS models.',
+                initCollapsed: false,
+              },
+              defaultValue: [
+                { id: 'Puck', name: 'Puck (Upbeat)', enabled: true },
+                { id: 'Charon', name: 'Charon (Informative)', enabled: true },
+                { id: 'Kore', name: 'Kore (Firm)', enabled: true },
+                { id: 'Fenrir', name: 'Fenrir (Excitable)', enabled: true },
+                { id: 'Aoede', name: 'Aoede (Breezy)', enabled: true },
+                { id: 'Zephyr', name: 'Zephyr (Bright)', enabled: true },
+              ],
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'id',
+                      type: 'text',
+                      admin: {
+                        description: 'Voice ID used by Google API',
+                        width: '40%',
+                      },
+                      label: 'Voice ID',
+                      required: true,
+                    },
+                    {
+                      name: 'name',
+                      type: 'text',
+                      admin: {
+                        width: '40%',
+                      },
+                      label: 'Display Name',
+                      required: true,
+                    },
+                    {
+                      name: 'enabled',
+                      type: 'checkbox',
+                      admin: {
+                        width: '20%',
+                      },
+                      defaultValue: true,
+                      label: 'Enabled',
+                    },
+                  ],
+                },
+              ],
+              label: 'Available Voices',
+            },
+          ],
+          label: 'Voices',
+        },
+
+        // 4. Provider Options (NEW - One group per use case)
+        {
+          fields: [
+            // TTS Settings
+            {
+              name: 'ttsProviderOptions',
+              type: 'group',
+              admin: {
+                description: 'Default provider options for TTS models.',
+              },
+              fields: [
+                {
+                  name: 'speed',
+                  type: 'number',
+                  defaultValue: 1.0,
+                  label: 'Speaking Rate',
+                  max: 4.0,
+                  min: 0.25,
+                  step: 0.25,
+                },
+                {
+                  name: 'volumeGainDb',
+                  type: 'number',
+                  defaultValue: 0,
+                  label: 'Volume Gain (dB)',
+                },
+              ],
+              label: 'TTS Provider Options',
+            },
+
+            // Image Settings
+            {
+              name: 'imageProviderOptions',
+              type: 'group',
+              admin: {
+                description: 'Default provider options for image generation models.',
+              },
+              fields: [
+                {
+                  name: 'aspectRatio',
+                  type: 'select',
+                  dbName: 'google-image-aspectRatio',
+                  defaultValue: '1:1',
+                  label: 'Default Aspect Ratio',
+                  options: [
+                    { label: '1:1 (Square)', value: '1:1' },
+                    { label: '16:9 (Landscape)', value: '16:9' },
+                    { label: '9:16 (Portrait)', value: '9:16' },
+                    { label: '4:3', value: '4:3' },
+                    { label: '3:4', value: '3:4' },
+                  ],
+                },
+                {
+                  name: 'personGeneration',
+                  type: 'select',
+                  dbName: 'google-image-personGeneration',
+                  defaultValue: 'allow_adult',
+                  label: 'Person Generation (Imagen)',
+                  options: [
+                    { label: 'Allow Adults Only', value: 'allow_adult' },
+                    { label: 'Allow All', value: 'allow_all' },
+                    { label: 'Do Not Allow', value: 'dont_allow' },
+                  ],
+                },
+                {
+                  name: 'addWatermark',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  label: 'Add SynthID Watermark',
+                },
+              ],
+              label: 'Image Provider Options',
+            },
+
+            // Text Settings
+            {
+              name: 'textProviderOptions',
+              type: 'group',
+              admin: {
+                description: 'Default provider options for text generation models.',
+              },
+              fields: [
+                {
+                  name: 'temperature',
+                  type: 'number',
+                  defaultValue: 1.0,
+                  label: 'Default Temperature',
+                  max: 2.0,
+                  min: 0.0,
+                  step: 0.1,
+                },
+                {
+                  name: 'maxOutputTokens',
+                  type: 'number',
+                  label: 'Max Output Tokens',
+                },
+                {
+                  name: 'topP',
+                  type: 'number',
+                  defaultValue: 0.95,
+                  label: 'Top P',
+                  max: 1.0,
+                  min: 0.0,
+                },
+                {
+                  name: 'topK',
+                  type: 'number',
+                  defaultValue: 40,
+                  label: 'Top K',
+                },
+                {
+                  name: 'safetySettings',
+                  type: 'array',
+                  admin: {
+                    description: 'Safety filter settings',
+                  },
+                  fields: [
+                    {
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'category',
+                          type: 'select',
+                          dbName: 'google-safety-category',
+                          label: 'Category',
+                          options: [
+                            { label: 'Harassment', value: 'HARM_CATEGORY_HARASSMENT' },
+                            { label: 'Hate Speech', value: 'HARM_CATEGORY_HATE_SPEECH' },
+                            { label: 'Sexually Explicit', value: 'HARM_CATEGORY_SEXUALLY_EXPLICIT' },
+                            { label: 'Dangerous Content', value: 'HARM_CATEGORY_DANGEROUS_CONTENT' },
+                          ],
+                          required: true,
+                          width: '50%',
+                        },
+                        {
+                          name: 'threshold',
+                          type: 'select',
+                          dbName: 'google-safety-threshold',
+                          label: 'Threshold',
+                          options: [
+                            { label: 'Block None', value: 'BLOCK_NONE' },
+                            { label: 'Block Low+', value: 'BLOCK_LOW_AND_ABOVE' },
+                            { label: 'Block Medium+', value: 'BLOCK_MEDIUM_AND_ABOVE' },
+                            { label: 'Block High', value: 'BLOCK_ONLY_HIGH' },
+                          ],
+                          required: true,
+                          width: '50%',
+                        },
+                      ],
+                    },
+                  ],
+                  label: 'Default Safety Settings',
+                },
+              ],
+              label: 'Text Provider Options',
+            },
+          ],
+          label: 'Provider Options',
+        },
+
+        // 5. Models tab (Simplified)
         {
           fields: [
             {
@@ -106,7 +336,6 @@ export const googleBlock: Block = {
               type: 'array',
               admin: {
                 components: {
-                  // Adjust the path to wherever you put the component
                   RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
                 },
                 description: 'Keep this list short. Enable only the models you actually use.',
@@ -117,52 +346,59 @@ export const googleBlock: Block = {
                 plural: 'Models',
                 singular: 'Model',
               },
-              // keep this concise and current
               defaultValue: [
-                // Text / multimodal text models
+                // Text models
                 {
                   id: 'gemini-3-pro-preview',
-                  name: 'Gemini 3 Pro (Preview)',
+                  name: 'Gemini 3.0 Pro (Preview)',
                   enabled: true,
-                  temperature: 1.0,
-                  topK: 40,
-                  topP: 0.95,
                   useCase: 'text',
                 },
                 {
                   id: 'gemini-2.5-pro',
                   name: 'Gemini 2.5 Pro',
                   enabled: true,
-                  temperature: 1.0,
-                  topK: 40,
-                  topP: 0.95,
                   useCase: 'text',
                 },
                 {
                   id: 'gemini-2.5-flash',
                   name: 'Gemini 2.5 Flash',
                   enabled: true,
-                  temperature: 1.0,
-                  topK: 40,
-                  topP: 0.95,
                   useCase: 'text',
                 },
-                // Image capable models via response modalities
                 {
-                  id: 'gemini-3-pro-image-preview',
-                  name: 'Gemini 3 Pro Image (Preview)',
-                  aspectRatio: '1:1',
+                  id: 'gemini-1.5-pro-latest',
+                  name: 'Gemini 1.5 Pro (Latest)',
                   enabled: true,
-                  responseModalities: ['IMAGE', 'TEXT'],
-                  useCase: 'image',
+                  useCase: 'text',
                 },
-                // Imagen 3 via google.image(...)
+                {
+                  id: 'gemini-1.5-flash-latest',
+                  name: 'Gemini 1.5 Flash (Latest)',
+                  enabled: true,
+                  useCase: 'text',
+                },
+
+                // Image models
                 {
                   id: 'imagen-3.0-generate-002',
-                  name: 'Imagen 3 (002)',
-                  aspectRatio: '1:1',
+                  name: 'Imagen 3 (Fast)',
                   enabled: true,
                   useCase: 'image',
+                },
+
+                // TTS Models
+                {
+                  id: 'gemini-2.5-pro-preview-tts', // As requested
+                  name: 'Gemini 2.5 Pro TTS (Preview)',
+                  enabled: true,
+                  useCase: 'tts',
+                },
+                {
+                  id: 'gemini-2.5-flash-preview-tts', // As requested
+                  name: 'Gemini 2.5 Flash TTS (Preview)',
+                  enabled: true,
+                  useCase: 'tts',
                 },
               ],
               fields: [
@@ -175,7 +411,7 @@ export const googleBlock: Block = {
                       type: 'text',
                       admin: {
                         description:
-                          'Exact model id as used with @ai-sdk/google, for example gemini-3-pro-preview.',
+                          'Exact model id as used with @ai-sdk/google.',
                         width: '33%',
                       },
                       label: 'Model ID',
@@ -193,6 +429,7 @@ export const googleBlock: Block = {
                     {
                       name: 'useCase',
                       type: 'select',
+                      dbName: 'google-model-useCase',
                       admin: {
                         width: '33%',
                       },
@@ -201,328 +438,17 @@ export const googleBlock: Block = {
                       options: [
                         { label: 'Text', value: 'text' },
                         { label: 'Image Generation', value: 'image' },
+                        { label: 'Text-to-Speech', value: 'tts' },
                         { label: 'Embeddings', value: 'embedding' },
                       ],
                     },
                   ],
                 },
-
-                // Basic sampling
                 {
-                  type: 'collapsible',
-                  admin: {
-                    initCollapsed: false,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'temperature',
-                          type: 'number',
-                          admin: {
-                            description:
-                              'Controls randomness. 0 = deterministic, 2 = very creative.',
-                            width: '50%',
-                          },
-                          defaultValue: 1.0,
-                          label: 'Temperature',
-                          max: 2,
-                          min: 0,
-                        },
-                        {
-                          name: 'maxTokens',
-                          type: 'number',
-                          admin: {
-                            description:
-                              'Optional upper limit for generated tokens. Leave empty to let the SDK decide.',
-                            width: '50%',
-                          },
-                          label: 'Max Output Tokens',
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Basic Settings',
-                },
-
-                // Advanced sampling (topP / topK)
-                {
-                  type: 'collapsible',
-                  admin: {
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'topP',
-                          type: 'number',
-                          admin: {
-                            description: 'Nucleus sampling probability threshold.',
-                            width: '50%',
-                          },
-                          defaultValue: 0.95,
-                          label: 'Top P',
-                          max: 1,
-                          min: 0,
-                        },
-                        {
-                          name: 'topK',
-                          type: 'number',
-                          admin: {
-                            description: 'Limit sampling to the K most probable tokens.',
-                            width: '50%',
-                          },
-                          defaultValue: 40,
-                          label: 'Top K',
-                          min: 1,
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Advanced Sampling',
-                },
-
-                // Output and response options
-                {
-                  type: 'collapsible',
-                  admin: {
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      name: 'responseModalities',
-                      type: 'select',
-                      admin: {
-                        condition: (_, siblingData) =>
-                          siblingData.useCase === 'text' || siblingData.useCase === 'image',
-                        description:
-                          'Gemini models that support it can return text, images, or both. Leave empty for text only.',
-                      },
-                      hasMany: true,
-                      label: 'Response Modalities',
-                      options: [
-                        { label: 'Text', value: 'TEXT' },
-                        { label: 'Image', value: 'IMAGE' },
-                      ],
-                    },
-                  ],
-                  label: 'Output & Response',
-                },
-
-                // Image specific
-                {
-                  type: 'collapsible',
-                  admin: {
-                    condition: (_, siblingData) => siblingData.useCase === 'image',
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'aspectRatio',
-                          type: 'select',
-                          admin: {
-                            description:
-                              'Used as imageConfig.aspectRatio for models that support it.',
-                            width: '50%',
-                          },
-                          defaultValue: '1:1',
-                          label: 'Aspect Ratio',
-                          options: [
-                            { label: '1:1 (Square)', value: '1:1' },
-                            { label: '2:3 (Classic Portrait)', value: '2:3' },
-                            { label: '3:2 (Classic Landscape)', value: '3:2' },
-                            { label: '3:4 (Portrait)', value: '3:4' },
-                            { label: '4:3 (Landscape)', value: '4:3' },
-                            { label: '4:5 (Social Portrait)', value: '4:5' },
-                            { label: '5:4 (Print)', value: '5:4' },
-                            { label: '9:16 (Mobile)', value: '9:16' },
-                            { label: '16:9 (Widescreen)', value: '16:9' },
-                            { label: '21:9 (Cinematic)', value: '21:9' },
-                          ],
-                        },
-                        {
-                          name: 'personGeneration',
-                          type: 'select',
-                          admin: {
-                            description:
-                              'Imagen models option. Controls whether people can be generated.',
-                            width: '50%',
-                          },
-                          defaultValue: 'allow_adult',
-                          label: 'Person Generation',
-                          options: [
-                            { label: 'Allow Adults Only', value: 'allow_adult' },
-                            { label: 'Allow All', value: 'allow_all' },
-                            { label: 'Do Not Allow', value: 'dont_allow' },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'seed',
-                          type: 'number',
-                          admin: {
-                            description:
-                              'For consistent outputs, use the same seed. Requires addWatermark to be false.',
-                            width: '50%',
-                          },
-                          label: 'Seed',
-                          min: 0,
-                        },
-                        {
-                          name: 'addWatermark',
-                          type: 'checkbox',
-                          admin: {
-                            description:
-                              'Enable SynthID watermark. Must be false to use seed for deterministic output.',
-                            width: '50%',
-                          },
-                          defaultValue: true,
-                          label: 'Add Watermark (SynthID)',
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Image Settings',
-                },
-
-                // Thinking settings (Gemini 2.5 / 3)
-                {
-                  type: 'collapsible',
-                  admin: {
-                    condition: (_, siblingData) =>
-                      typeof siblingData.id === 'string' &&
-                      (siblingData.id.includes('gemini-2.5') ||
-                        siblingData.id.includes('gemini-3')),
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'thinkingLevel',
-                          type: 'select',
-                          admin: {
-                            description: 'For Gemini 3 models. Controls depth of reasoning.',
-                            width: '33%',
-                          },
-                          label: 'Thinking Level (Gemini 3)',
-                          options: [
-                            { label: 'Low (Faster)', value: 'low' },
-                            { label: 'High (Better Reasoning)', value: 'high' },
-                          ],
-                        },
-                        {
-                          name: 'thinkingBudget',
-                          type: 'number',
-                          admin: {
-                            description:
-                              'Approx token budget for thinking step. For Gemini 2.5 models.',
-                            width: '33%',
-                          },
-                          label: 'Thinking Budget (Gemini 2.5)',
-                        },
-                        {
-                          name: 'includeThoughts',
-                          type: 'checkbox',
-                          admin: {
-                            description:
-                              'If true, exposes high level reasoning summaries in the response metadata.',
-                            width: '33%',
-                          },
-                          label: 'Include Thought Summaries',
-                        },
-                      ],
-                    },
-                  ],
-                  label: 'Thinking Settings',
-                },
-
-                // Safety settings per model
-                {
-                  type: 'collapsible',
-                  admin: {
-                    initCollapsed: true,
-                  },
-                  fields: [
-                    {
-                      name: 'safetySettings',
-                      type: 'array',
-                      fields: [
-                        {
-                          type: 'row',
-                          fields: [
-                            {
-                              name: 'category',
-                              type: 'select',
-                              admin: {
-                                width: '50%',
-                              },
-                              label: 'Category',
-                              options: [
-                                {
-                                  label: 'Harassment',
-                                  value: 'HARM_CATEGORY_HARASSMENT',
-                                },
-                                {
-                                  label: 'Hate Speech',
-                                  value: 'HARM_CATEGORY_HATE_SPEECH',
-                                },
-                                {
-                                  label: 'Sexually Explicit',
-                                  value: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-                                },
-                                {
-                                  label: 'Dangerous Content',
-                                  value: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                                },
-                              ],
-                              required: true,
-                            },
-                            {
-                              name: 'threshold',
-                              type: 'select',
-                              admin: {
-                                width: '50%',
-                              },
-                              label: 'Threshold',
-                              options: [
-                                {
-                                  label: 'Block None',
-                                  value: 'BLOCK_NONE',
-                                },
-                                {
-                                  label: 'Block Low and Above',
-                                  value: 'BLOCK_LOW_AND_ABOVE',
-                                },
-                                {
-                                  label: 'Block Medium and Above',
-                                  value: 'BLOCK_MEDIUM_AND_ABOVE',
-                                },
-                                {
-                                  label: 'Block Only High',
-                                  value: 'BLOCK_ONLY_HIGH',
-                                },
-                              ],
-                              required: true,
-                            },
-                          ],
-                        },
-                      ],
-                      label: 'Safety Filters',
-                    },
-                  ],
-                  label: 'Safety Settings',
+                  name: 'enabled',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  label: 'Enabled',
                 },
               ],
             },
