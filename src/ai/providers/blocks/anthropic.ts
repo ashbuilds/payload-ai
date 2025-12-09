@@ -125,6 +125,7 @@ export const anthropicBlock: Block = {
                       name: 'useCase',
                       type: 'select',
                       admin: { width: '33%' },
+                      dbName: 'anthropic-model-useCase',
                       defaultValue: 'text',
                       label: 'Use Case',
                       options: [{ label: 'Text Generation', value: 'text' }],

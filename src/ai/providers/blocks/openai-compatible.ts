@@ -109,6 +109,7 @@ export const openaiCompatibleBlock: Block = {
                 {
                   name: 'quality',
                   type: 'select',
+                  dbName: 'compat-image-quality',
                   defaultValue: 'standard',
                   label: 'Quality',
                   options: [
@@ -119,6 +120,7 @@ export const openaiCompatibleBlock: Block = {
                 {
                   name: 'style',
                   type: 'select',
+                  dbName: 'compat-image-style',
                   defaultValue: 'vivid',
                   label: 'Style',
                   options: [
@@ -147,6 +149,7 @@ export const openaiCompatibleBlock: Block = {
                 {
                   name: 'response_format',
                   type: 'select',
+                  dbName: 'compat-tts-format',
                   defaultValue: 'mp3',
                   label: 'Response Format',
                   options: [
@@ -198,6 +201,7 @@ export const openaiCompatibleBlock: Block = {
                       name: 'useCase',
                       type: 'select',
                       admin: { width: '33%' },
+                      dbName: 'compat-model-useCase',
                       label: 'Use Case',
                       options: [
                         { label: 'Text Generation', value: 'text' },

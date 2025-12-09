@@ -1,7 +1,5 @@
 import type { Block } from 'payload'
 
-import { type ElevenLabsSpeechVoiceId } from '@ai-sdk/elevenlabs'
-
 export const elevenlabsBlock: Block = {
   slug: 'elevenlabs',
   custom: {
@@ -172,6 +170,7 @@ export const elevenlabsBlock: Block = {
                       admin: {
                         width: '50%',
                       },
+                      dbName: 'eleven-voice-category',
                       label: 'Category',
                       options: [
                         { label: 'Premade', value: 'premade' },
@@ -263,7 +262,7 @@ export const elevenlabsBlock: Block = {
                 {
                   name: 'apply_text_normalization',
                   type: 'select',
-                  dbName: 'openai-tts-apply_text_normalization',
+                  dbName: 'eleven-tts-normalization',
                   defaultValue: 'auto',
                   label: 'Text Normalization',
                   options: [
@@ -362,6 +361,7 @@ export const elevenlabsBlock: Block = {
                       admin: {
                         width: '50%',
                       },
+                      dbName: 'eleven-model-useCase',
                       defaultValue: 'tts',
                       label: 'Use Case',
                       options: [{ label: 'Text-to-Speech', value: 'tts' }],

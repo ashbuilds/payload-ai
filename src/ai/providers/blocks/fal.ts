@@ -76,6 +76,7 @@ export const falBlock: Block = {
                 {
                   name: 'image_size',
                   type: 'select',
+                  dbName: 'fal-image-size',
                   defaultValue: 'landscape_16_9',
                   label: 'Image Size',
                   options: [
@@ -114,6 +115,7 @@ export const falBlock: Block = {
                 {
                   name: 'aspect_ratio',
                   type: 'select',
+                  dbName: 'fal-video-aspectRatio',
                   defaultValue: '16:9',
                   label: 'Aspect Ratio',
                   options: [
@@ -177,6 +179,7 @@ export const falBlock: Block = {
                       name: 'useCase',
                       type: 'select',
                       admin: { width: '33%' },
+                      dbName: 'fal-model-useCase',
                       label: 'Use Case',
                       options: [
                         { label: 'Image Generation', value: 'image' },

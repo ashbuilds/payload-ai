@@ -1,7 +1,5 @@
 import type { Block } from 'payload'
 
-import { type OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
-
 
 export const openaiBlock: Block = {
   slug: 'openai',
@@ -259,6 +257,7 @@ export const openaiBlock: Block = {
                 {
                   name: 'quality',
                   type: 'select',
+                  dbName: 'openai-image-quality',
                   defaultValue: 'standard',
                   label: 'Default Quality',
                   options: [
@@ -269,6 +268,7 @@ export const openaiBlock: Block = {
                 {
                   name: 'style',
                   type: 'select',
+                  dbName: 'openai-image-style',
                   defaultValue: 'vivid',
                   label: 'Default Style',
                   options: [
@@ -462,6 +462,7 @@ export const openaiBlock: Block = {
                       admin: {
                         width: '33%',
                       },
+                      dbName: 'openai-model-useCase',
                       defaultValue: 'text',
                       label: 'Use Case',
                       options: [
