@@ -1,4 +1,4 @@
-import type { ImagePart, JSONValue } from 'ai'
+import type { ImagePart, JSONValue, ModelMessage } from 'ai'
 import type { Payload } from 'payload'
 import type { z } from 'zod'
 
@@ -14,6 +14,7 @@ export type ProviderOptions = Record<string, Record<string, JSONValue>>
 export interface PayloadGenerationBaseArgs {
   extractAttachments?: boolean
   maxTokens?: number
+  messages?: ModelMessage[]
   model?: string
   payload: Payload
   prompt: string

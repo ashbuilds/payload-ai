@@ -30,7 +30,7 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
   } = args
   
   // Extract attachments if needed
-  const processedPrompt = (rest as any).extractAttachments 
+  const processedPrompt = (rest as { extractAttachments?: boolean }).extractAttachments 
     ? extractPromptAttachments(prompt) 
     : prompt
   
@@ -41,11 +41,16 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
   const options: Record<string, unknown> = {
     mode: mode || 'auto',
     model,
-    prompt: processedPrompt,
-    schema: schema ? (isZodSchema(schema) ? schema : jsonSchema(schema as any)) : undefined,
+    schema: schema ? (isZodSchema(schema) ? schema : jsonSchema(schema as Record<string, unknown>)) : undefined,
     system,
     temperature: temperature ?? 0.7,
     ...(maxTokens ? { maxOutputTokens: maxTokens } : {}),
+  }
+
+  if (args.messages) {
+    options.messages = args.messages
+  } else {
+    options.prompt = processedPrompt
   }
 
   if (providerOptions) {

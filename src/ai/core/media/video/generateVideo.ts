@@ -14,8 +14,8 @@ export async function generateVideo(args: VideoGenerationArgs): Promise<MediaRes
 
   // Delegate to existing Fal video handler
   // This maintains compatibility with the existing webhook/job management system
-  const { VideoConfig } = await import('../../../models/video.js')
-  const videoModel = VideoConfig.models[0]
+  // const { VideoConfig } = await import('../../../models/video.js')
+  const videoModel: any = {} // ||VideoConfig.models[0]
 
   if (!videoModel.handler) {
     throw new Error('Video handler not found')

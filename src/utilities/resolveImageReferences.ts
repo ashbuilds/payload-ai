@@ -6,7 +6,7 @@ interface ImageReference {
   fullMatch: string
 }
 
-interface ResolvedImage {
+export interface ResolvedImage {
   image: {
     mimeType?: string
     name: string
@@ -191,9 +191,9 @@ function matchesFilename(mediaDoc: Record<string, unknown>, filename: string): b
 function formatImageData(mediaDoc: Record<string, unknown>): ResolvedImage {
   return {
     image: {
-      mimeType: (mediaDoc.mimeType || mediaDoc.mimetype) as string | undefined,
       name: (mediaDoc.filename || mediaDoc.name || 'unknown') as string,
       type: extractFileExtension((mediaDoc.filename || mediaDoc.name || '') as string),
+      mimeType: (mediaDoc.mimeType || mediaDoc.mimetype) as string | undefined,
       thumbnailURL: mediaDoc.thumbnailURL as string | undefined,
       url: mediaDoc.url as string,
     },

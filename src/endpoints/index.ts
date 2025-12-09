@@ -1,4 +1,4 @@
-import type { ImagePart } from 'ai'
+import type { ImagePart, ModelMessage, TextPart } from 'ai'
 import type { PayloadRequest } from 'payload'
 
 import * as process from 'node:process'
@@ -18,6 +18,7 @@ import {
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 import { extractImageData } from '../utilities/extractImageData.js'
+import { type FetchableImage, fetchImages } from '../utilities/fetchImages.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { resolveImageReferences } from '../utilities/resolveImageReferences.js'
@@ -153,15 +154,48 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           const modelSettings = instructions[settingsName] || {}
 
+          // Resolve @field:filename references from the prompt
+          const { images: resolvedImages, processedPrompt } = await resolveImageReferences(
+            prompts.prompt,
+            contextData,
+            req,
+          )
+
+          // Extract hardcoded URLs from the processed prompt
+          const hardcodedImages = extractImageData(processedPrompt)
+
+          // Combine images
+          const allImages = [...hardcodedImages, ...resolvedImages] as FetchableImage[]
+
+          let messages: ModelMessage[] | undefined
+
+          if (allImages.length > 0) {
+            const imageParts = await fetchImages(req, allImages)
+
+            if (imageParts.length > 0) {
+              // Construct multimodal message
+              const content: Array<ImagePart | TextPart> = [
+                { type: 'text', text: processedPrompt },
+                ...imageParts,
+              ]
+
+              messages = [
+                ...(prompts.system ? [{ content: prompts.system, role: 'system' as const }] : []),
+                { content, role: 'user' as const },
+              ]
+            }
+          }
+
           // Use payload.ai.streamObject directly! 🎉
           const streamResult = await req.payload.ai.streamObject({
             extractAttachments: modelSettings.extractAttachments as boolean | undefined,
             maxTokens: modelSettings.maxTokens as number | undefined,
+            messages,
             model: modelSettings.model as string,
-            prompt: prompts.prompt,
+            prompt: !messages ? prompts.prompt : '', // Fallback to prompt if no messages
             provider: modelSettings.provider as string,
             schema: jsonSchema,
-            system: prompts.system,
+            system: !messages ? prompts.system : undefined, // System passed in messages if multimodal
             temperature: modelSettings.temperature as number | undefined,
           })
 
@@ -255,44 +289,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             ...extractImageData(processedPrompt),
             ...resolvedImages,
             ...(sampleImages as unknown[]),
-          ] as any
+          ] as FetchableImage[]
 
-          // Process images - convert to ImagePart format
-          const editImages: ImagePart[] = []
-          for (const img of images) {
-            const serverURL =
-              req.payload.config?.serverURL ||
-              process.env.SERVER_URL ||
-              process.env.NEXT_PUBLIC_SERVER_URL
-
-            let url = img.image.thumbnailURL || img.image.url
-            if (!url.startsWith('http')) {
-              url = `${serverURL}${url}`
-            }
-
-            try {
-              const response = await fetch(url, {
-                headers: {
-                  Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
-                },
-                method: 'GET',
-              })
-
-              const blob = await response.blob()
-              const arrayBuffer = await blob.arrayBuffer()
-
-              editImages.push({
-                type: 'image',
-                image: arrayBuffer,
-                mediaType: img.image.mimeType || blob.type || 'image/png',
-              })
-            } catch (e) {
-              req.payload.logger.error(e, `Error fetching reference image ${url}`)
-              throw Error(
-                "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
-              )
-            }
-          }
+          // Process images - convert to ImagePart format using helper
+          const editImages: ImagePart[] = await fetchImages(req, images)
 
           if (pluginConfig.debugging) {
             req.payload.logger.info({ text }, `— AI Plugin: Executing media generation`)
@@ -398,7 +398,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           throw new Error('Unexpected model response.')
         } catch (error) {
           req.payload.logger.error(
-            // @ts-ignore
+            // @ts-expect-error
             error?.type || (error as Error).message,
             'Error generating upload: ',
           )
