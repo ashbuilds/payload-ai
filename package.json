@@ -183,9 +183,9 @@
     "@anthropic-ai/sdk": "^0.62.0",
     "@fal-ai/client": "^1.7.0",
     "@google/genai": "^1.30.0",
-    "ai": "^5.0.39",
+    "ai": "5.1.0-beta.9",
     "ajv": "^8.17.1",
-    "elevenlabs": "^0.8.2",
+    "elevenlabs": "0.8.2",
     "get-input-selection": "^1.1.4",
     "handlebars": "4.7.8",
     "handlebars-async-helpers": "^1.0.6",
@@ -196,5 +196,15 @@
     "scroll-into-view-if-needed": "^3.1.0",
     "textarea-caret": "^3.0.2",
     "zod": "^4.1.7"
+  },
+  "resolutions": {
+    "form-data": "4.0.4",
+    "playwright": "1.55.1",
+    "cross-spawn": "7.0.5",
+    "jws": "4.0.1",
+    "@babel/runtime": "7.26.10",
+    "vite": "7.1.11",
+    "js-yaml": "4.1.1",
+    "esbuild": "0.25.0"
   }
 }
