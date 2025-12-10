@@ -1,2 +1,2 @@
-export { generateImage } from './generateImage.js'
 export type * from '../types.js'
+export { generateImage } from './generateImage.js'

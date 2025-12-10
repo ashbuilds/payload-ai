@@ -52,7 +52,7 @@ export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => 
       if (urlCollectionSlug === activeCollection && urlId && urlId !== 'create') {
          const fetchDocument = async () => {
            try {
-             // eslint-disable-next-line @typescript-eslint/no-base-to-string
+              
              const response = await fetch(`${String(config.serverURL)}${String(config.routes.api)}/${String(urlCollectionSlug)}/${String(urlId)}`)
              if (response.ok) {
                const data = await response.json()

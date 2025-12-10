@@ -100,10 +100,10 @@ const commonTextParams = [
       {
         name: 'maxTokens',
         type: 'number' as const,
-        label: 'Max Tokens',
         admin: {
           placeholder: 'Model Default',
         },
+        label: 'Max Tokens',
       },
       {
         name: 'temperature',

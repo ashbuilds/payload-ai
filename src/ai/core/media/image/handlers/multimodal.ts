@@ -1,4 +1,4 @@
-import { generateText, type LanguageModel } from 'ai'
+import { generateText, type LanguageModel, ModelMessage } from 'ai'
 
 import type { ImageGenerationArgs, MediaResult, MultimodalImageFile } from '../../types.js'
 
@@ -13,22 +13,31 @@ export async function generateMultimodalImage(
   args: ImageGenerationArgs,
 ): Promise<MediaResult> {
   const { images = [], prompt, providerOptions = {} } = args
-
-  const promptParts: Array<{ text: string; type: 'text' } | (typeof images)[number]> = [
-    { type: 'text' as const, text: prompt },
-    ...images,
-  ]
-
-  const messages = [
-    {
-      content: promptParts,
-      role: 'user' as const,
-    },
-  ]
+  //
+  // const promptParts: ModelMessage[] = [
+  //   { role: 'user', content: [{ type: 'text', text: prompt } }],
+  //   ...,
+  // ]
+  //
+  // const messages = [
+  //   {
+  //     content: promptParts,
+  //     role: 'user' as const,
+  //   },
+  // ]
 
   const result = await generateText({
     model,
-    prompt: messages,
+    // onStepFinish: (step) => {
+    //   console.log('step finish: ', step.files)
+    //   console.log('step finish: ', step.response)
+    // },
+    messages: [
+      {
+        content: [{ type: 'text', text: prompt }, ...images],
+        role: 'user',
+      },
+    ],
     providerOptions: {
       google: {
         imageConfig: {
@@ -36,9 +45,12 @@ export async function generateMultimodalImage(
         },
         responseModalities: ['IMAGE', 'TEXT'],
       },
-      ...providerOptions,
+      // ...providerOptions,//TODO: ENDABLE THIS, BUT Properly merge it with defaults otherwise image will not eb generated
     },
   })
+
+  console.log("model -->", model)
+  console.log('result... ', result)
 
   // Extract images from result.files
   const resultImages = (result.files?.filter((f: MultimodalImageFile) =>

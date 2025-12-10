@@ -8,7 +8,7 @@
  * Arrays are emitted only when field.hasMany is true and the field type supports hasMany
  * (text, textarea, select; for others only if your config truly sets hasMany).
  */
-import { Field } from 'payload'
+import type { Field } from 'payload'
 
 export type JsonSchema = Record<string, any>;
 
@@ -145,6 +145,59 @@ export function fieldToJsonSchema(
   let valueSchema: null | Record<string, any> = null;
 
   switch (type) {
+    case 'array':
+    case 'group': {
+      if ('fields' in field && Array.isArray(field.fields)) {
+        const properties: Record<string, any> = {}
+        const required: string[] = []
+        
+        const processFields = (fields: any[]) => {
+          for (const subField of fields) {
+            if (subField.type === 'row' || subField.type === 'collapsible') {
+               if (subField.fields) {processFields(subField.fields)}
+               continue
+            }
+            if (!subField.name) {continue}
+
+            const subSchema = fieldToJsonSchema(subField, { wrapObject: false })
+            if (subSchema && Object.keys(subSchema).length > 0) {
+              properties[subField.name] = subSchema
+              if (subField.required) {required.push(subField.name)}
+            }
+          }
+        }
+        
+        processFields(field.fields)
+
+        const objSchema = {
+          type: 'object',
+          additionalProperties: false,
+          properties,
+          required: required.length ? required : undefined
+        }
+
+        if (type === 'array') {
+          valueSchema = {
+            type: 'array',
+            items: objSchema
+          }
+        } else {
+          valueSchema = objSchema
+        }
+        
+        const description = getDescription(field);
+        if (description) {valueSchema.description = description;}
+      }
+      break;
+    }
+
+    case 'checkbox': {
+      valueSchema = { type: 'boolean' };
+      const description = getDescription(field);
+      if (description) {valueSchema.description = description;}
+      break;
+    }
+
     case 'code': {
       const base = codeSchema(field);
       if (field.hasMany) {
@@ -154,6 +207,7 @@ export function fieldToJsonSchema(
       }
       break;
     }
+
     case 'date': {
       const base = dateSchema(field);
       if (field.hasMany) {
@@ -184,13 +238,6 @@ export function fieldToJsonSchema(
       break;
     }
 
-    case 'checkbox': {
-      valueSchema = { type: 'boolean' };
-      const description = getDescription(field);
-      if (description) {valueSchema.description = description;}
-      break;
-    }
-
     case 'number': {
       const base = numberWithBounds(field);
       if (field.hasMany) {
@@ -200,7 +247,6 @@ export function fieldToJsonSchema(
       }
       break;
     }
-
     case 'select': {
       const { values, valueType } = normalizeSelectOptions(field);
       const baseSingle: Record<string, any> = { type: valueType, enum: values };
@@ -233,52 +279,6 @@ export function fieldToJsonSchema(
         valueSchema = arr;
       } else {
         valueSchema = base;
-      }
-      break;
-    }
-
-    case 'group':
-    case 'array': {
-      if ('fields' in field && Array.isArray(field.fields)) {
-        const properties: Record<string, any> = {}
-        const required: string[] = []
-        
-        const processFields = (fields: any[]) => {
-          for (const subField of fields) {
-            if (subField.type === 'row' || subField.type === 'collapsible') {
-               if (subField.fields) processFields(subField.fields)
-               continue
-            }
-            if (!subField.name) continue
-
-            const subSchema = fieldToJsonSchema(subField, { wrapObject: false })
-            if (subSchema && Object.keys(subSchema).length > 0) {
-              properties[subField.name] = subSchema
-              if (subField.required) required.push(subField.name)
-            }
-          }
-        }
-        
-        processFields(field.fields)
-
-        const objSchema = {
-          type: 'object',
-          additionalProperties: false,
-          properties,
-          required: required.length ? required : undefined
-        }
-
-        if (type === 'array') {
-          valueSchema = {
-            type: 'array',
-            items: objSchema
-          }
-        } else {
-          valueSchema = objSchema
-        }
-        
-        const description = getDescription(field);
-        if (description) {valueSchema.description = description;}
       }
       break;
     }

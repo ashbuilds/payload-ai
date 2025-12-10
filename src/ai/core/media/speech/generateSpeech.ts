@@ -40,7 +40,7 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
     model,
     speed: args.speed,
     text: prompt,
-    voice: voice,
+    voice,
   })
   console.log("result", result)
  // Extract audio from result

@@ -66,7 +66,7 @@ export const init = async (
         continue
       }
 
-      let generatedPrompt: string | undefined = '{{ title }}'
+      const generatedPrompt: string | undefined = '{{ title }}'
       if ('prompt' in seed) {
         // Prompt generation currently disabled during migration to AI SDK Providers
         // TODO: Re-enable using a default provider from AI Settings if available

@@ -1,3 +1,4 @@
+import type { GenerateObjectResult } from 'ai'
 // Type definitions for payload.ai API
 import type { Payload } from 'payload'
 
@@ -7,7 +8,6 @@ import type {
   PayloadGenerateObjectArgs,
   PayloadGenerateTextArgs,
 } from './ai/core/types.js'
-import { GenerateObjectResult } from 'ai'
 
 declare module 'payload' {
   interface BasePayload {

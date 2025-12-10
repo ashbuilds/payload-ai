@@ -14,8 +14,8 @@ import type {
 } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
 
+import type { MediaResult } from './ai/core/index.js'
 import type {PLUGIN_INSTRUCTIONS_TABLE} from "./defaults.js";
-import { MediaResult } from './ai/core/index.js'
 
 export interface PluginConfigAccess {
   /**

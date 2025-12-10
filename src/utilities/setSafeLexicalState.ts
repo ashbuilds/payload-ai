@@ -5,7 +5,7 @@ type EditorAction = 'replace' | 'update'
 export const setSafeLexicalState = (
   state: unknown,
   editorInstance: LexicalEditor,
-  action: EditorAction = 'replace',
+  // action: EditorAction = 'replace',
 ) => {
   try {
     const editorState = editorInstance.parseEditorState(state as any)

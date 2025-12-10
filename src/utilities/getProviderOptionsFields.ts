@@ -2,7 +2,7 @@ import type { Block, ClientField, Field } from 'payload'
 
 import { allProviderBlocks } from '../ai/providers/blocks/index.js'
 
-type UseCase = 'text' | 'image' | 'tts' | 'video'
+type UseCase = 'image' | 'text' | 'tts' | 'video'
 
 /**
  * Get the provider options field group name for a given use case
@@ -23,12 +23,12 @@ function findFieldInBlock(block: Block, fieldName: string): Field | undefined {
       if (field.type === 'tabs' && 'tabs' in field) {
         for (const tab of field.tabs) {
           const found = searchFields(tab.fields)
-          if (found) return found
+          if (found) {return found}
         }
       }
       if (field.type === 'group' && 'fields' in field) {
         const found = searchFields(field.fields)
-        if (found) return found
+        if (found) {return found}
       }
     }
     return undefined

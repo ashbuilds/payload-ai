@@ -148,7 +148,7 @@ export const DynamicModelSelect: React.FC<Props> = (props) => {
       const typeKey = `providers.${i}.blockType`
       const typeField = formProviders[typeKey]
       
-      if (!typeField) break // Stop if no more blocks (or gap)
+      if (!typeField) {break} // Stop if no more blocks (or gap)
       
       if (typeof typeField === 'object' && 'value' in typeField && typeField.value === providerValue) {
         foundInForm = true
@@ -161,12 +161,12 @@ export const DynamicModelSelect: React.FC<Props> = (props) => {
           const enabledKey = `providers.${i}.models.${j}.enabled`
           
           const idField = formProviders[idKey]
-          if (!idField) break // Stop if no more models
+          if (!idField) {break} // Stop if no more models
           
-          const modelId = (idField as any).value as string
-          const modelName = (formProviders[nameKey] as any)?.value as string
-          const modelUseCase = (formProviders[useCaseKey] as any)?.value as string
-          const modelEnabled = (formProviders[enabledKey] as any)?.value
+          const modelId = (idField).value as string
+          const modelName = (formProviders[nameKey])?.value as string
+          const modelUseCase = (formProviders[useCaseKey])?.value as string
+          const modelEnabled = (formProviders[enabledKey])?.value
           
           // Check use case and enabled status (default to enabled if undefined)
           if (modelUseCase === inferredUseCase && modelEnabled !== false) {

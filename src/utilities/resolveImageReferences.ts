@@ -38,8 +38,9 @@ export async function resolveImageReferences(
   contextData: Record<string, unknown>,
   req: PayloadRequest,
 ): Promise<ResolveImageReferencesResult> {
-  // Pattern matches: @fieldName or @fieldName:filename.ext
-  const pattern = /@([\w.]+)(?::(\S+))?/g
+  // Pattern matches: @fieldName or @fieldName:filename.ext (filename can have spaces)
+  // The filename part matches everything up to and including an image extension
+  const pattern = /@([\w.]+)(?::(.+?\.(?:png|jpe?g|webp|gif)))?/gi
   const references: ImageReference[] = []
   let match: null | RegExpExecArray
 

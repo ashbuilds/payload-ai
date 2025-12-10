@@ -1,10 +1,10 @@
 import type { ImageModel, LanguageModel } from 'ai'
 
 import type { ImageGenerationArgs, MediaResult } from '../types.js'
-import { generateMultimodalImage } from './handlers/multimodal.js'
-import { generateStandardImage } from './handlers/standard.js'
 
 import { getImageModel, getProviderRegistry } from '../../../providers/registry.js'
+import { generateMultimodalImage } from './handlers/multimodal.js'
+import { generateStandardImage } from './handlers/standard.js'
 
 /**
  * Main image generation handler
@@ -12,7 +12,7 @@ import { getImageModel, getProviderRegistry } from '../../../providers/registry.
  */
 export async function generateImage(args: ImageGenerationArgs): Promise<MediaResult> {
   const { model: modelId, payload, provider } = args
-
+  console.log('args: ', args.images)
   // Get provider registry and model configuration
   const registry = await getProviderRegistry(payload)
   const providerConfig = registry[provider || '']
@@ -27,7 +27,13 @@ export async function generateImage(args: ImageGenerationArgs): Promise<MediaRes
   const isMultimodalText = modelConfig?.responseModalities?.includes('IMAGE') ?? false
 
   // Get appropriate model instance
-  const model = await getImageModel(payload, provider, modelId, args.providerOptions, isMultimodalText)
+  const model = await getImageModel(
+    payload,
+    provider,
+    modelId,
+    args.providerOptions,
+    isMultimodalText,
+  )
   console.log('isMultimodalText : ', isMultimodalText)
   console.log('modelConfig : ', modelConfig)
   console.log('model : ', model)
