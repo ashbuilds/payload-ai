@@ -424,12 +424,6 @@ export const openaiBlock: Block = {
                   enabled: true,
                   useCase: 'tts',
                 },
-                {
-                  id: 'whisper-1',
-                  name: 'Whisper (Speech-to-Text)',
-                  enabled: true,
-                  useCase: 'text',
-                },
               ],
               fields: [
                 // Basic model info

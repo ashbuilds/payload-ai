@@ -343,11 +343,6 @@ export const googleBlock: Block = {
                 description: 'Keep this list short. Enable only the models you actually use.',
                 initCollapsed: false,
               },
-              label: 'Available Models',
-              labels: {
-                plural: 'Models',
-                singular: 'Model',
-              },
               defaultValue: [
                 // Text models
                 {
@@ -385,6 +380,18 @@ export const googleBlock: Block = {
                 {
                   id: 'imagen-3.0-generate-002',
                   name: 'Imagen 3 (Fast)',
+                  enabled: true,
+                  useCase: 'image',
+                },
+                {
+                  id: 'gemini-2.5-flash-image',
+                  name: 'Gemini 2.5 Flash Image',
+                  enabled: true,
+                  useCase: 'image',
+                },
+                {
+                  id: 'gemini-3-pro-image-preview',
+                  name: 'Gemini 3.0 Pro Image (Preview)',
                   enabled: true,
                   useCase: 'image',
                 },
@@ -431,10 +438,10 @@ export const googleBlock: Block = {
                     {
                       name: 'useCase',
                       type: 'select',
-                      dbName: 'google-model-useCase',
                       admin: {
                         width: '33%',
                       },
+                      dbName: 'google-model-useCase',
                       defaultValue: 'text',
                       label: 'Use Case',
                       options: [
@@ -453,6 +460,11 @@ export const googleBlock: Block = {
                   label: 'Enabled',
                 },
               ],
+              label: 'Available Models',
+              labels: {
+                plural: 'Models',
+                singular: 'Model',
+              },
             },
           ],
           label: 'Models',
