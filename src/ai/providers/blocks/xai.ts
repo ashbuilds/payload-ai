@@ -98,12 +98,12 @@ export const xaiBlock: Block = {
                 initCollapsed: true,
               },
               defaultValue: [
-                { id: 'grok-4', name: 'Grok 4', enabled: true, useCase: 'text' },
-                { id: 'grok-3', name: 'Grok 3', enabled: true, useCase: 'text' },
-                { id: 'grok-3-fast', name: 'Grok 3 Fast', enabled: true, useCase: 'text' },
-                { id: 'grok-2-1212', name: 'Grok 2', enabled: true, useCase: 'text' },
-                { id: 'grok-2-vision-1212', name: 'Grok 2 Vision', enabled: true, useCase: 'image' },
-                { id: 'grok-vision-beta', name: 'Grok Vision Beta', enabled: true, useCase: 'image' },
+                { id: 'grok-4', name: 'Grok 4', enabled: true, responseModalities: ['TEXT'], useCase: 'text' },
+                { id: 'grok-3', name: 'Grok 3', enabled: true, responseModalities: ['TEXT'], useCase: 'text' },
+                { id: 'grok-3-fast', name: 'Grok 3 Fast', enabled: true, responseModalities: ['TEXT'], useCase: 'text' },
+                { id: 'grok-2-1212', name: 'Grok 2', enabled: true, responseModalities: ['TEXT'], useCase: 'text' },
+                { id: 'grok-2-vision-1212', name: 'Grok 2 Vision', enabled: true, responseModalities: ['TEXT'], useCase: 'image' },
+                { id: 'grok-vision-beta', name: 'Grok Vision Beta', enabled: true, responseModalities: ['TEXT'], useCase: 'image' },
               ],
               fields: [
                 {
@@ -138,8 +138,27 @@ export const xaiBlock: Block = {
                   ],
                 },
                 {
+                  name: 'responseModalities',
+                  type: 'select',
+                  admin: {
+                    description: 'Output capabilities of this model',
+                    width: '50%',
+                  },
+                  dbName: 'xai-model-modalities',
+                  hasMany: true,
+                  label: 'Response Modalities',
+                  options: [
+                    { label: 'Text', value: 'TEXT' },
+                    { label: 'Image', value: 'IMAGE' },
+                    { label: 'Audio', value: 'AUDIO' },
+                  ],
+                },
+                {
                   name: 'enabled',
                   type: 'checkbox',
+                  admin: {
+                    width: '50%',
+                  },
                   defaultValue: true,
                   label: 'Enabled',
                 },

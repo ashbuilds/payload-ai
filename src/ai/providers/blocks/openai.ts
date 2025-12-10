@@ -370,36 +370,42 @@ export const openaiBlock: Block = {
                   id: 'gpt-5',
                   name: 'GPT-5 (Latest Flagship)',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'gpt-5-mini',
                   name: 'GPT-5 Mini (Fast & Efficient)',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'chatgpt-4o-latest',
                   name: 'ChatGPT-4o (Always Updated)',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'gpt-4o',
                   name: 'GPT-4o (Multimodal)',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'gpt-4o-mini',
                   name: 'GPT-4o Mini (Best Value)',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'gpt-4-turbo',
                   name: 'GPT-4 Turbo',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
 
@@ -422,6 +428,7 @@ export const openaiBlock: Block = {
                   id: 'tts-1-hd',
                   name: 'TTS HD (Text-to-Speech)',
                   enabled: true,
+                  responseModalities: ['AUDIO'],
                   useCase: 'tts',
                 },
               ],
@@ -468,10 +475,29 @@ export const openaiBlock: Block = {
                     },
                   ],
                 },
-                // Enabled checkbox
+                // Response modalities and enabled checkbox
+                {
+                  name: 'responseModalities',
+                  type: 'select',
+                  admin: {
+                    description: 'Output capabilities of this model',
+                    width: '50%',
+                  },
+                  dbName: 'openai-model-modalities',
+                  hasMany: true,
+                  label: 'Response Modalities',
+                  options: [
+                    { label: 'Text', value: 'TEXT' },
+                    { label: 'Image', value: 'IMAGE' },
+                    { label: 'Audio', value: 'AUDIO' },
+                  ],
+                },
                 {
                   name: 'enabled',
                   type: 'checkbox',
+                  admin: {
+                    width: '50%',
+                  },
                   defaultValue: true,
                   label: 'Enabled',
                 },

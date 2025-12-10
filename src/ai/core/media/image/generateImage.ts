@@ -28,7 +28,9 @@ export async function generateImage(args: ImageGenerationArgs): Promise<MediaRes
 
   // Get appropriate model instance
   const model = await getImageModel(payload, provider, modelId, args.providerOptions, isMultimodalText)
-
+  console.log('isMultimodalText : ', isMultimodalText)
+  console.log('modelConfig : ', modelConfig)
+  console.log('model : ', model)
   if (isMultimodalText) {
     return generateMultimodalImage(model as LanguageModel, args)
   }

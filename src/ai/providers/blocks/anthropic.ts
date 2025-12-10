@@ -87,19 +87,21 @@ export const anthropicBlock: Block = {
                 initCollapsed: true,
               },
               defaultValue: [
-                { id: 'claude-opus-4-1', name: 'Claude Opus 4.1', enabled: true, useCase: 'text' },
-                { id: 'claude-opus-4-0', name: 'Claude Opus 4.0', enabled: true, useCase: 'text' },
-                { id: 'claude-sonnet-4-0', name: 'Claude Sonnet 4.0', enabled: true, useCase: 'text' },
+                { id: 'claude-opus-4-1', name: 'Claude Opus 4.1', enabled: true, responseModalities: ['TEXT'], useCase: 'text' },
+                { id: 'claude-opus-4-0', name: 'Claude Opus 4.0', enabled: true, responseModalities: ['TEXT'], useCase: 'text' },
+                { id: 'claude-sonnet-4-0', name: 'Claude Sonnet 4.0', enabled: true, responseModalities: ['TEXT'], useCase: 'text' },
                 {
                   id: 'claude-3-5-sonnet-latest',
                   name: 'Claude 3.5 Sonnet',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'claude-3-5-haiku-latest',
                   name: 'Claude 3.5 Haiku',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
               ],
@@ -133,8 +135,27 @@ export const anthropicBlock: Block = {
                   ],
                 },
                 {
+                  name: 'responseModalities',
+                  type: 'select',
+                  admin: {
+                    description: 'Output capabilities of this model',
+                    width: '50%',
+                  },
+                  dbName: 'anthropic-model-modalities',
+                  hasMany: true,
+                  label: 'Response Modalities',
+                  options: [
+                    { label: 'Text', value: 'TEXT' },
+                    { label: 'Image', value: 'IMAGE' },
+                    { label: 'Audio', value: 'AUDIO' },
+                  ],
+                },
+                {
                   name: 'enabled',
                   type: 'checkbox',
+                  admin: {
+                    width: '50%',
+                  },
                   defaultValue: true,
                   label: 'Enabled',
                 },

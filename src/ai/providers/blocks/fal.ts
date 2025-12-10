@@ -192,8 +192,28 @@ export const falBlock: Block = {
                 {
                   name: 'enabled',
                   type: 'checkbox',
+                  admin: {
+                    width: '50%',
+                  },
                   defaultValue: true,
                   label: 'Enabled',
+                },
+                {
+                  name: 'responseModalities',
+                  type: 'select',
+                  admin: {
+                    description: 'Output capabilities of this model',
+                    width: '50%',
+                  },
+                  dbName: 'fal-model-modalities',
+                  hasMany: true,
+                  label: 'Response Modalities',
+                  options: [
+                    { label: 'Text', value: 'TEXT' },
+                    { label: 'Image', value: 'IMAGE' },
+                    { label: 'Audio', value: 'AUDIO' },
+                    { label: 'Video', value: 'VIDEO' },
+                  ],
                 },
               ],
               label: 'Available Models',

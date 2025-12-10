@@ -349,30 +349,35 @@ export const googleBlock: Block = {
                   id: 'gemini-3-pro-preview',
                   name: 'Gemini 3.0 Pro (Preview)',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'gemini-2.5-pro',
                   name: 'Gemini 2.5 Pro',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'gemini-2.5-flash',
                   name: 'Gemini 2.5 Flash',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'gemini-1.5-pro-latest',
                   name: 'Gemini 1.5 Pro (Latest)',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
                 {
                   id: 'gemini-1.5-flash-latest',
                   name: 'Gemini 1.5 Flash (Latest)',
                   enabled: true,
+                  responseModalities: ['TEXT'],
                   useCase: 'text',
                 },
 
@@ -387,26 +392,30 @@ export const googleBlock: Block = {
                   id: 'gemini-2.5-flash-image',
                   name: 'Gemini 2.5 Flash Image',
                   enabled: true,
+                  responseModalities: ['IMAGE'],
                   useCase: 'image',
                 },
                 {
                   id: 'gemini-3-pro-image-preview',
                   name: 'Gemini 3.0 Pro Image (Preview)',
                   enabled: true,
+                  responseModalities: ['IMAGE'],
                   useCase: 'image',
                 },
 
                 // TTS Models
                 {
-                  id: 'gemini-2.5-pro-preview-tts', // As requested
+                  id: 'gemini-2.5-pro-preview-tts',
                   name: 'Gemini 2.5 Pro TTS (Preview)',
                   enabled: true,
+                  responseModalities: ['AUDIO'],
                   useCase: 'tts',
                 },
                 {
-                  id: 'gemini-2.5-flash-preview-tts', // As requested
+                  id: 'gemini-2.5-flash-preview-tts',
                   name: 'Gemini 2.5 Flash TTS (Preview)',
                   enabled: true,
+                  responseModalities: ['AUDIO'],
                   useCase: 'tts',
                 },
               ],
@@ -454,8 +463,27 @@ export const googleBlock: Block = {
                   ],
                 },
                 {
+                  name: 'responseModalities',
+                  type: 'select',
+                  admin: {
+                    description: 'Output capabilities of this model',
+                    width: '50%',
+                  },
+                  dbName: 'google-model-modalities',
+                  hasMany: true,
+                  label: 'Response Modalities',
+                  options: [
+                    { label: 'Text', value: 'TEXT' },
+                    { label: 'Image', value: 'IMAGE' },
+                    { label: 'Audio', value: 'AUDIO' },
+                  ],
+                },
+                {
                   name: 'enabled',
                   type: 'checkbox',
+                  admin: {
+                    width: '50%',
+                  },
                   defaultValue: true,
                   label: 'Enabled',
                 },
