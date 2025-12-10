@@ -1,8 +1,7 @@
-import { jsonSchema, streamObject as sdkStreamObject } from 'ai'
+import { type ImagePart, jsonSchema, streamObject as sdkStreamObject, type TextPart } from 'ai'
 
 import type { PayloadGenerateObjectArgs } from './types.js'
 
-import { extractPromptAttachments } from '../../utilities/extractPromptAttachments.js'
 import { getLanguageModel } from '../providers/registry.js'
 
 function isZodSchema(schema: unknown): boolean {
@@ -29,11 +28,6 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
     ...rest
   } = args
   
-  // Extract attachments if needed
-  const processedPrompt = (rest as { extractAttachments?: boolean }).extractAttachments 
-    ? extractPromptAttachments(prompt) 
-    : prompt
-  
   // Resolve model from registry
   const model = await getLanguageModel(payload, provider, modelId, providerOptions)
   
@@ -47,11 +41,28 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
     ...(maxTokens ? { maxOutputTokens: maxTokens } : {}),
   }
 
-  if (args.messages) {
-    options.messages = args.messages
+  // Handle multimodal input
+  if ((args.images && args.images.length > 0) || (args.messages && args.messages.length > 0)) {
+    if (args.messages) {
+      options.messages = args.messages
+    } else {
+      // Construct multimodal message from prompt and images
+      const content: Array<ImagePart | TextPart> = [
+        { type: 'text', text: prompt },
+        ...(args.images || []),
+      ]
+
+      options.messages = [
+        { content, role: 'user' as const },
+      ]
+    }
   } else {
-    options.prompt = processedPrompt
+    options.prompt = prompt
   }
+
+  console.log("options.messages  : ",options.messages)
+  console.log('prompt  : ', prompt)
+  console.log('args.images   : ', args.images)
 
   if (providerOptions) {
     options.providerOptions = providerOptions

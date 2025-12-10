@@ -28,6 +28,7 @@ export interface PayloadGenerationBaseArgs {
  * Arguments for generateObject - structured output generation
  */
 export interface PayloadGenerateObjectArgs extends PayloadGenerationBaseArgs {
+  images?: ImagePart[]
   mode?: 'auto' | 'json' | 'tool'
   schema?: Record<string, unknown> | z.ZodTypeAny
 }

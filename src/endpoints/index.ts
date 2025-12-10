@@ -1,4 +1,4 @@
-import type { ImagePart, ModelMessage, TextPart } from 'ai'
+import type { ImagePart } from 'ai'
 import type { PayloadRequest } from 'payload'
 
 import * as process from 'node:process'
@@ -161,41 +161,34 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             req,
           )
 
+          console.log('resolvedImagesL  ', resolvedImages)
+
           // Extract hardcoded URLs from the processed prompt
           const hardcodedImages = extractImageData(processedPrompt)
 
           // Combine images
           const allImages = [...hardcodedImages, ...resolvedImages] as FetchableImage[]
 
-          let messages: ModelMessage[] | undefined
+          let images: ImagePart[] | undefined
 
           if (allImages.length > 0) {
             const imageParts = await fetchImages(req, allImages)
 
             if (imageParts.length > 0) {
-              // Construct multimodal message
-              const content: Array<ImagePart | TextPart> = [
-                { type: 'text', text: processedPrompt },
-                ...imageParts,
-              ]
-
-              messages = [
-                ...(prompts.system ? [{ content: prompts.system, role: 'system' as const }] : []),
-                { content, role: 'user' as const },
-              ]
+              images = imageParts
             }
           }
 
           // Use payload.ai.streamObject directly! 🎉
           const streamResult = await req.payload.ai.streamObject({
-            extractAttachments: modelSettings.extractAttachments as boolean | undefined,
+            // extractAttachments: modelSettings.extractAttachments as boolean | undefined,
+            images,
             maxTokens: modelSettings.maxTokens as number | undefined,
-            messages,
             model: modelSettings.model as string,
-            prompt: !messages ? prompts.prompt : '', // Fallback to prompt if no messages
+            prompt: processedPrompt,
             provider: modelSettings.provider as string,
             schema: jsonSchema,
-            system: !messages ? prompts.system : undefined, // System passed in messages if multimodal
+            system: prompts.system,
             temperature: modelSettings.temperature as number | undefined,
           })
 
