@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@ai-stack/payloadcms"><img src="https://img.shields.io/npm/v/@ai-stack/payloadcms.svg" alt="npm version"></a>
-  <a href="LICENSE.md"><img src="https://img.shields.io/github/license/ashbuilds/payload-ai" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/ashbuilds/payload-ai" alt="License"></a>
   <a href="https://discord.com/channels/967097582721572934/1264949995656843345"><img src="https://img.shields.io/badge/discord-join-7289DA.svg" alt="Discord"></a>
 </p>
 
@@ -296,15 +296,17 @@ payloadAiPlugin({
 ---
 
 ## 💪 Support This Project
+
 This plugin is built and maintained as an independent project. If it's helped you ship faster or saved you development time, consider supporting its continued development:
 
 <a href="https://www.buymeacoffee.com/ashbuilds" target="_blank">
 <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
 </a>
 
- - ⭐ **Star the repo** — It helps others discover the project
- - 🐛 **Report issues** — Help improve stability  
- - 💡 **Share feedback** — Your ideas shape the roadmap
+- ⭐ **Star the repo** — It helps others discover the project
+- 🐛 **Report issues** — Help improve stability
+- 💡 **Share feedback** — Your ideas shape the roadmap
+
 ---
 
 ## 👥 Contributing
