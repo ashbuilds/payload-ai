@@ -302,9 +302,9 @@ This plugin is built and maintained as an independent project. If it's helped yo
 <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
 </a>
 
-⭐ **Star the repo** — It helps others discover the project  
-🐛 **Report issues** — Help improve stability  
-💡 **Share feedback** — Your ideas shape the roadmap
+ - ⭐ **Star the repo** — It helps others discover the project
+ - 🐛 **Report issues** — Help improve stability  
+ - 💡 **Share feedback** — Your ideas shape the roadmap
 ---
 
 ## 👥 Contributing
