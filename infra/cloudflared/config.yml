@@ -1,5 +1,0 @@
-tunnel: 95b36272-8c89-4b49-a82e-f8a87f72ccd1
-ingress:
-  - hostname: payload-ai.zenstax.ai
-    service: http://localhost:3000
-  - service: http_status:404

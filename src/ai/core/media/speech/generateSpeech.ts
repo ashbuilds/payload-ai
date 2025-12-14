@@ -38,6 +38,7 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
   // TODO: fix with proper error handling
   const result = await generateSpeechFn({
     model,
+    providerOptions: args.providerOptions,
     speed: args.speed,
     text: prompt,
     voice,

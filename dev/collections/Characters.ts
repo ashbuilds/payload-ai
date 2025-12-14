@@ -10,7 +10,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 
 import { fieldToJsonSchema } from '../../src/utilities/fieldToJsonSchema.js'
-import { orgCreateAccess, orgDeleteAccess, orgReadAccess, orgUpdateAccess } from '../access/org.js'
+import { anyone } from '../access/anyone.js'
 
 /**
  * NPCs are reusable characters that can appear across multiple stories and hunts.
@@ -19,25 +19,15 @@ import { orgCreateAccess, orgDeleteAccess, orgReadAccess, orgUpdateAccess } from
 export const Characters: CollectionConfig = {
   slug: 'characters',
   access: {
-    create: orgCreateAccess,
-    delete: orgDeleteAccess,
-    read: orgReadAccess,
-    update: orgUpdateAccess,
+    create: anyone,
+    delete: anyone,
+    read: anyone,
+    update: anyone,
   },
   admin: {
     useAsTitle: 'name',
   },
   fields: [
-    {
-      name: 'organization',
-      type: 'relationship',
-      admin: {
-        description: 'The organization that owns this NPC.',
-        position: 'sidebar',
-      },
-      relationTo: 'organizations',
-      required: false,
-    },
     {
       name: 'slug',
       type: 'text',
@@ -59,11 +49,11 @@ export const Characters: CollectionConfig = {
           name: 'referenceImages',
           type: 'upload',
           hasMany: true,
-          label: "",
+          label: '',
           relationTo: 'media',
         },
       ],
-      label :"Reference Images",
+      label: 'Reference Images',
     },
     {
       name: 'name',
@@ -445,16 +435,6 @@ export const Characters: CollectionConfig = {
         },
       }),
       label: 'Bio',
-    },
-    {
-      name: 'linkedStories',
-      type: 'relationship',
-      admin: {
-        description: 'Stories this NPC appears in (many-to-many).',
-      },
-      hasMany: true,
-      label: 'Linked Stories',
-      relationTo: 'stories',
     },
     {
       name: 'reusableAcrossHunts',

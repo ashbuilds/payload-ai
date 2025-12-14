@@ -8,13 +8,7 @@ import { fileURLToPath } from 'url'
 
 import { Characters } from './collections/Characters.js'
 import { Media } from './collections/Media.js'
-import { Organizations } from './collections/Organizations.js'
 import { Posts } from './collections/Posts.js'
-import { Stories } from './collections/Stories.js'
-import { StoryChapters } from './collections/StoryChapters.js'
-import { StoryEvents } from './collections/StoryEvents.js'
-import { StoryNodes } from './collections/StoryNodes.js'
-import { StoryUniverses } from './collections/StoryUniverses.js'
 import { testEmailAdapter } from './helpers/testEmailAdapter.js'
 
 const filename = fileURLToPath(import.meta.url)
@@ -41,20 +35,14 @@ const buildConfigWithMemoryDB = async () => {
     collections: [
       Media,
       // Posts,
-      Organizations,
-      StoryUniverses,
-      Stories,
-      StoryChapters,
       Characters,
-      StoryNodes,
-      StoryEvents,
     ],
     db: sqliteAdapter({
       client: {
         url: process.env.DATABASE_URI || `file:${path.resolve(dirname, 'dev.db')}`,
       },
-      // Automatically push schema changes in non-production for frictionless dev
-      push: process.env.NODE_ENV !== 'production',
+      // // Automatically push schema changes in non-production for frictionless dev
+      // push: process.env.NODE_ENV !== 'production',
     }),
     editor: lexicalEditor(),
     email: testEmailAdapter,
@@ -63,10 +51,6 @@ const buildConfigWithMemoryDB = async () => {
         collections: {
           [Characters.slug]: true,
           [Posts.slug]: true,
-          [Stories.slug]: true,
-          [StoryChapters.slug]: true,
-          [StoryNodes.slug]: true,
-          [StoryUniverses.slug]: true,
         },
         debugging: true,
         disableSponsorMessage: false,

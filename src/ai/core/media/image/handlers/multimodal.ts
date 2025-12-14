@@ -26,31 +26,39 @@ export async function generateMultimodalImage(
   //   },
   // ]
 
+  console.log('providerOptions: ', providerOptions)
+  
+  // Build Google-specific options with required defaults
+  const googleOptions = {
+    imageConfig: {
+      aspectRatio: args.aspectRatio || providerOptions?.aspectRatio || '16:9',
+      ...(providerOptions?.personGeneration && { personGeneration: providerOptions.personGeneration }),
+      ...(providerOptions?.addWatermark !== undefined && { addWatermark: providerOptions.addWatermark }),
+    },
+    responseModalities: ['IMAGE', 'TEXT'],
+  }
+  
   const result = await generateText({
     model,
     // onStepFinish: (step) => {
     //   console.log('step finish: ', step.files)
     //   console.log('step finish: ', step.response)
     // },
-    messages: [
+    prompt: [
       {
         content: [{ type: 'text', text: prompt }, ...images],
         role: 'user',
       },
     ],
     providerOptions: {
-      google: {
-        imageConfig: {
-          aspectRatio: args.aspectRatio || '16:9',
-        },
-        responseModalities: ['IMAGE', 'TEXT'],
-      },
-      // ...providerOptions,//TODO: ENDABLE THIS, BUT Properly merge it with defaults otherwise image will not eb generated
+      google: googleOptions,
     },
   })
 
-  console.log("model -->", model)
-  console.log('result... ', result)
+  // console.log("model -->", model)
+  // console.log('result.files: ', result.files)
+  // console.log('result.text: ', result.text)
+  // console.log('result.response: ', JSON.stringify(result.response, null, 2))
 
   // Extract images from result.files
   const resultImages = (result.files?.filter((f: MultimodalImageFile) =>
@@ -58,6 +66,17 @@ export async function generateMultimodalImage(
   ) || []) as MultimodalImageFile[]
 
   if (resultImages.length === 0) {
+    // Check if Google returned a specific error message
+    const responseBody = result.response?.body as { candidates?: Array<{ finishMessage?: string; finishReason?: string }> } | undefined
+    const candidate = responseBody?.candidates?.[0]
+    
+    if (candidate?.finishMessage) {
+      throw new Error(`Image generation failed: ${candidate.finishMessage}`)
+    }
+    if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
+      throw new Error(`Image generation failed with reason: ${candidate.finishReason}`)
+    }
+    
     throw new Error('No images returned from the model. The model may have generated only text.')
   }
 

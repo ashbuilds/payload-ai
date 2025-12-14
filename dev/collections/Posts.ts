@@ -9,10 +9,12 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
+import { anyone } from '../access/anyone.js'
+
 export const Posts: CollectionConfig = {
   slug: 'posts',
   access: {
-    read: () => true,
+    read: anyone,
   },
   admin: {
     // Keep using the top-level `title` field (it sits inside a Tab but not inside a Group),
@@ -44,25 +46,25 @@ export const Posts: CollectionConfig = {
               hasMany: true,
               label: 'keywords',
               maxRows: 5,
-              required: false
+              required: false,
             },
             {
-              name: "number",
+              name: 'number',
               type: 'number',
               admin: {
-                description: "Any random number 1-10",
+                description: 'Any random number 1-10',
               },
               hasMany: true,
             },
             {
-              name: "select",
-              type: "select",
-              options: ["gpt-4o-mini", "gpt-4", "gpt-5"],
+              name: 'select',
+              type: 'select',
+              options: ['gpt-4o-mini', 'gpt-4', 'gpt-5'],
             },
             {
-              name: "description",
-              type: "textarea"
-            }
+              name: 'description',
+              type: 'textarea',
+            },
           ],
           label: 'AI Title',
         },

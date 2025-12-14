@@ -69,6 +69,7 @@ export interface MediaResult {
   progress?: number
   status?: 'completed' | 'failed' | 'queued' | 'running'
   taskId?: string
+  data?: any
 }
 
 /**
