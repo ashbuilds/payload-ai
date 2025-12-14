@@ -1,0 +1,38 @@
+name: Release (beta)
+
+on:
+  push:
+    tags:
+      - "beta.*.*.*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish_beta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Ensure npm version supports Trusted Publishing
+        run: npm i -g npm@11
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Publish beta to npm
+        run: npm publish --tag beta --access public
