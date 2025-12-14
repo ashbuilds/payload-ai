@@ -3,7 +3,7 @@ name: Release (beta)
 on:
   push:
     tags:
-      - "beta.*.*.*"
+      - "*-beta.*"
 
 permissions:
   contents: read
