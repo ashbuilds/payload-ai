@@ -1,9 +1,9 @@
-name: Release (beta)
+name: Release
 
 on:
   push:
     tags:
-      - "*-beta.*"
+      - "*"
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 jobs:
-  publish_beta:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,5 +35,15 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Publish beta to npm
-        run: npm publish --tag beta --access public
+      - name: Select npm tag
+        id: tag
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          if [[ "$TAG" == *beta* ]]; then
+            echo "npm_tag=beta" >> "$GITHUB_OUTPUT"
+          else
+            echo "npm_tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm (Trusted Publishing)
+        run: npm publish --tag ${{ steps.tag.outputs.npm_tag }} --access public
