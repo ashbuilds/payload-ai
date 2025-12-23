@@ -62,12 +62,58 @@ const securityMessage = `
 ╚═══════════════════════════════════════════════════════════════╝
 `
 
+const isLocalizationEnabled = (config: Config['localization']) => {
+  return (
+    config !== false &&
+    typeof config === 'object' &&
+    config !== null &&
+    'locales' in config &&
+    Array.isArray(config.locales) &&
+    config.locales.length > 0
+  )
+}
+
+const extractLocales = (
+  config: Config['localization'],
+): { defaultLocale?: string; locales: string[] } => {
+  if (
+    config &&
+    typeof config === 'object' &&
+    'locales' in config &&
+    Array.isArray(config.locales)
+  ) {
+    return {
+      defaultLocale:
+        'defaultLocale' in config && typeof config.defaultLocale === 'string'
+          ? config.defaultLocale
+          : undefined,
+      locales: config.locales.map((locale) =>
+        typeof locale === 'string' ? locale : (locale as { code: string }).code,
+      ),
+    }
+  }
+  return { locales: [] }
+}
+
 const payloadAiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
+    const localizationConfig = incomingConfig.localization
+    const hasLocalization = isLocalizationEnabled(localizationConfig)
+    const localizationData = hasLocalization ? extractLocales(localizationConfig) : { locales: [] }
+
     pluginConfig = {
       ...defaultPluginConfig,
       ...pluginConfig,
+      _localization: hasLocalization
+        ? {
+            enabled: true,
+            ...localizationData,
+          }
+        : {
+            enabled: false,
+            locales: [],
+          },
       access: {
         ...defaultPluginConfig.access,
         ...pluginConfig.access,
@@ -78,7 +124,10 @@ const payloadAiPlugin =
 
     const isActivated = isPluginActivated(pluginConfig)
     let updatedConfig: Config = { ...incomingConfig }
-    let collectionsFieldPathMap = {}
+    const collectionsFieldPathMap: Record<
+      string,
+      { label: string; relationTo?: string; type: string }
+    > = {}
 
     if (isActivated) {
       const Instructions = instructionsCollection(pluginConfig)
@@ -124,20 +173,19 @@ const payloadAiPlugin =
       }
 
       const pluginEndpoints = endpoints(pluginConfig)
+
+      const processedCollections = collections.map((collection) => {
+        if (collectionSlugs[collection.slug]) {
+          const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(collection)
+          Object.assign(collectionsFieldPathMap, schemaPathMap)
+          return updatedCollectionConfig as CollectionConfig
+        }
+        return collection
+      })
+
       updatedConfig = {
         ...incomingConfig,
-        collections: collections.map((collection) => {
-          if (collectionSlugs[collection.slug]) {
-            const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(collection)
-            collectionsFieldPathMap = {
-              ...collectionsFieldPathMap,
-              ...schemaPathMap,
-            }
-            return updatedCollectionConfig as CollectionConfig
-          }
-
-          return collection
-        }),
+        collections: processedCollections,
         endpoints: [
           ...(incomingConfig.endpoints ?? []),
           pluginEndpoints.textarea,
@@ -145,15 +193,11 @@ const payloadAiPlugin =
           fetchFields(pluginConfig),
         ],
         globals: globals.map((global) => {
-          if (globalsSlugs && globalsSlugs[global.slug]) {
+          if (globalsSlugs?.[global.slug]) {
             const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(global)
-            collectionsFieldPathMap = {
-              ...collectionsFieldPathMap,
-              ...schemaPathMap,
-            }
+            Object.assign(collectionsFieldPathMap, schemaPathMap)
             return updatedCollectionConfig as GlobalConfig
           }
-
           return global
         }),
         i18n: {
@@ -166,28 +210,30 @@ const payloadAiPlugin =
     }
 
     updatedConfig.onInit = async (payload) => {
-      if (incomingConfig.onInit) await incomingConfig.onInit(payload)
+      if (incomingConfig.onInit) {
+        await incomingConfig.onInit(payload)
+      }
 
       if (!isActivated) {
         payload.logger.warn(`— AI Plugin: Not activated. Please verify your environment keys.`)
         return
       }
 
-        await init(payload, collectionsFieldPathMap, pluginConfig)
-          .catch((error) => {
-            payload.logger.error(error, `— AI Plugin: Initialization Error`)
-          })
-          .finally(() => {
-            if (!pluginConfig.disableSponsorMessage) {
-              setTimeout(() => {
-                payload.logger.info(securityMessage)
-              }, 1000)
-              setTimeout(() => {
-                payload.logger.info(sponsorMessage)
-              }, 3000)
-            }
-          })
-      }
+      await init(payload, collectionsFieldPathMap, pluginConfig)
+        .catch((error) => {
+          payload.logger.error(error, `— AI Plugin: Initialization Error`)
+        })
+        .finally(() => {
+          if (!pluginConfig.disableSponsorMessage) {
+            setTimeout(() => {
+              payload.logger.info(securityMessage)
+            }, 1000)
+            setTimeout(() => {
+              payload.logger.info(sponsorMessage)
+            }, 3000)
+          }
+        })
+    }
 
     return updatedConfig
   }
