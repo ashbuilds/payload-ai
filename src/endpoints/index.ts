@@ -184,7 +184,7 @@ const assignPrompt = async (
     layout: updatedLayout,
     // TODO: revisit this toLexicalHTML
     prompt: await replacePlaceholders(`{{${toLexicalHTML} ${field}}}`, extendedContext),
-    system: type === 'richText' ? buildRichTextSystem(system, updatedLayout) : system,
+    system,
   }
 }
 
