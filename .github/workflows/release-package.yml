@@ -60,4 +60,4 @@ jobs:
         run: pnpm build
 
       - name: Publish to npm (Trusted Publishing)
-        run: pnpm publish --provenance --no-git-checks
+        run: npm publish --tag beta --access public
