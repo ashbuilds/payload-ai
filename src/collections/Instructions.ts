@@ -22,25 +22,25 @@ const modelOptions = (pluginConfig: PluginConfig) =>
   })
 
 const defaultAccessConfig = {
-  create: ({ req }: { req: { user?: any } }) => {
+  create: ({ req }: { req: { user?: unknown } }) => {
     if (!req.user) {
       return false
     }
     return true
   },
-  delete: ({ req }: { req: { user?: any } }) => {
+  delete: ({ req }: { req: { user?: unknown } }) => {
     if (!req.user) {
       return false
     }
     return true
   },
-  read: ({ req }: { req: { user?: any } }) => {
+  read: ({ req }: { req: { user?: unknown } }) => {
     if (!req.user) {
       return false
     }
     return true
   },
-  update: ({ req }: { req: { user?: any } }) => {
+  update: ({ req }: { req: { user?: unknown } }) => {
     if (!req.user) {
       return false
     }
@@ -53,8 +53,11 @@ const defaultAdminConfig = {
   hidden: true,
 }
 
-export const instructionsCollection = (pluginConfig: PluginConfig) =>
-  <CollectionConfig>{
+export const instructionsCollection = (pluginConfig: PluginConfig) => {
+  const isLocalized =
+    pluginConfig._localization?.enabled && pluginConfig._localization.locales.length > 0
+
+  return <CollectionConfig>{
     labels: {
       plural: 'Compose Settings',
       singular: 'Compose Setting',
@@ -69,6 +72,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
       ...defaultAdminConfig,
       ...pluginConfig.overrideInstructions?.admin,
     },
+    ...(isLocalized ? { localization: true } : {}),
     fields: [
       {
         name: 'schema-path',
@@ -109,7 +113,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
         name: 'relation-to',
         type: 'text',
         admin: {
-          condition: (_, current) => {
+          condition: (_: unknown, current: Record<string, unknown>) => {
             return current['field-type'] === 'upload'
           },
         },
@@ -157,6 +161,8 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
               {
                 name: 'prompt',
                 type: 'textarea',
+                // Make prompt localized if localization is enabled
+                ...(isLocalized ? { localized: true } : {}),
                 admin: {
                   components: {
                     Field: '@ai-stack/payloadcms/fields#PromptEditorField',
@@ -170,7 +176,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
           },
           {
             admin: {
-              condition: (_, current) => {
+              condition: (_: unknown, current: Record<string, unknown>) => {
                 return current['field-type'] === 'upload' && current['model-id'] === 'gpt-image-1'
               },
             },
@@ -198,7 +204,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
           },
           {
             admin: {
-              condition: (_, current) => {
+              condition: (_: unknown, current: Record<string, unknown>) => {
                 return current['field-type'] === 'richText'
               },
             },
@@ -207,6 +213,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
               {
                 name: 'system',
                 type: 'textarea',
+                ...(isLocalized ? { localized: true } : {}),
                 defaultValue: `INSTRUCTIONS:
 You are a highly skilled and professional blog writer,
 renowned for crafting engaging and well-organized articles.
@@ -219,7 +226,7 @@ informative and accurate but also captivating and beautifully structured.`,
           },
           {
             admin: {
-              condition: (_, current) => {
+              condition: (_: unknown, current: Record<string, unknown>) => {
                 return current['field-type'] === 'richText'
               },
             },
@@ -234,8 +241,9 @@ informative and accurate but also captivating and beautifully structured.`,
                  */
                 name: 'layout',
                 type: 'textarea',
+                ...(isLocalized ? { localized: true } : {}),
                 admin: {
-                  condition: (_, current) => {
+                  condition: (_: unknown, current: Record<string, unknown>) => {
                     return current['field-type'] === 'richText'
                   },
                 },
@@ -257,3 +265,4 @@ informative and accurate but also captivating and beautifully structured.`,
       ...groupSettings(pluginConfig),
     ],
   }
+}
