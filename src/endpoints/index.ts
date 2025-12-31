@@ -300,8 +300,12 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             const targetCollection = req.payload.config.collections.find(
               (c) => c.slug === collectionName,
             )
-            if (targetCollection && fieldName) {
-              const targetField = getFieldBySchemaPath(targetCollection, schemaPath)
+            const targetGlobal = req.payload.config.globals?.find(
+              (g) => g.slug === collectionName,
+            )
+            const targetConfig = targetCollection || targetGlobal
+            if (targetConfig && fieldName) {
+              const targetField = getFieldBySchemaPath(targetConfig, schemaPath)
               const supported = ['text', 'textarea', 'select', 'number', 'date', 'code', 'email', 'json']
               const t = String(targetField?.type || '')
               if (targetField && supported.includes(t)) {
