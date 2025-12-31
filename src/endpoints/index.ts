@@ -65,7 +65,7 @@ const extendContextWithPromptFields = (
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
       }
       // {{prop}} escapes content by default. Here we make sure it won't be escaped.
-      const value = typeof target === "object" ? (target as any)[prop] : undefined
+      const value = typeof target === 'object' ? (target as any)[prop] : undefined
       return typeof value === 'string' ? new asyncHandlebars.SafeString(value) : value
     },
     // It's used by the handlebars library to determine if the property is enumerable
@@ -106,8 +106,8 @@ ADDITIONAL GUIDELINES:
 - Ensure coherence and logical flow between all sections.
 - Maintain a consistent tone and style throughout the content.
 - Use clear and concise language appropriate for the target audience.
-`;
-};
+`
+}
 
 const assignPrompt = async (
   action: ActionMenuItems,
@@ -209,10 +209,16 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             )
           }
 
+          const { defaultLocale, locales = [] } = req.payload.config.localization || {}
+          const localeData = locales.find((l) => {
+            return l.code === locale
+          })
+
           // Verify user has access to the specific instruction
           const instructions = await req.payload.findByID({
             id: instructionId,
             collection: PLUGIN_INSTRUCTIONS_TABLE,
+            locale: locales.length > 0 && locale ? locale : undefined,
             req, // Pass req to ensure access control is applied
           })
 
@@ -241,11 +247,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           registerEditorHelper(req.payload, schemaPath)
 
-          const { defaultLocale, locales = [] } = req.payload.config.localization || {}
-          const localeData = locales.find((l) => {
-            return l.code === locale
-          })
-
           let localeInfo = locale
           if (
             localeData &&
@@ -267,7 +268,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             throw new Error('Model not found')
           }
 
-          const settingsName = model.settings && "name" in model.settings ? model.settings.name : undefined
+          const settingsName =
+            model.settings && 'name' in model.settings ? model.settings.name : undefined
           if (!settingsName) {
             req.payload.logger.error('— AI Plugin: Error fetching settings name!')
           }
@@ -295,14 +297,23 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           // Build per-field JSON schema for structured generation when applicable
-          let jsonSchema= allowedEditorSchema
+          let jsonSchema = allowedEditorSchema
           try {
             const targetCollection = req.payload.config.collections.find(
               (c) => c.slug === collectionName,
             )
             if (targetCollection && fieldName) {
               const targetField = getFieldBySchemaPath(targetCollection, schemaPath)
-              const supported = ['text', 'textarea', 'select', 'number', 'date', 'code', 'email', 'json']
+              const supported = [
+                'text',
+                'textarea',
+                'select',
+                'number',
+                'date',
+                'code',
+                'email',
+                'json',
+              ]
               const t = String(targetField?.type || '')
               if (targetField && supported.includes(t)) {
                 jsonSchema = fieldToJsonSchema(targetField as any, { nameOverride: fieldName })
@@ -374,10 +385,16 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           let instructions: Record<string, any> = { images: [], 'model-id': '', prompt: '' }
 
           if (instructionId) {
+            // Get locale from request if available
+            const { locale: requestLocale } = data
+            const { locales = [] } = req.payload.config.localization || {}
+
             // Verify user has access to the specific instruction
+            // Pass locale if localization is enabled for the Instructions collection
             instructions = await req.payload.findByID({
               id: instructionId,
               collection: PLUGIN_INSTRUCTIONS_TABLE,
+              locale: locales.length > 0 && requestLocale ? requestLocale : undefined,
               req, // Pass req to ensure access control is applied
             })
           }
@@ -401,9 +418,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const editImages = []
           for (const img of images) {
             const serverURL =
-            req.payload.config?.serverURL ||
-            process.env.SERVER_URL ||
-            process.env.NEXT_PUBLIC_SERVER_URL
+              req.payload.config?.serverURL ||
+              process.env.SERVER_URL ||
+              process.env.NEXT_PUBLIC_SERVER_URL
 
             let url = img.image.thumbnailURL || img.image.url
             if (!url.startsWith('http')) {
@@ -411,7 +428,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
 
             try {
-
               const response = await fetch(url, {
                 headers: {
                   //TODO: Further testing needed or so find a proper way.
