@@ -22,23 +22,37 @@ export const init = async (
 
   const paths = Object.keys(fieldSchemaPaths)
 
+  // Note: schema-path is globally unique, so we create one entry per path regardless of localization
+  // Localization info is kept for potential future use or debugging
+  const _isLocalized =
+    pluginConfig._localization?.enabled && pluginConfig._localization.locales.length > 0
+  const _locales = pluginConfig._localization?.locales || []
+
   // Get all instructions for faster initialization
+  // Query with locale: 'all' to get entries from all locales when localization is enabled
   const { docs: allInstructions } = await payload.find({
     collection: PLUGIN_INSTRUCTIONS_TABLE,
     depth: 0,
+    locale: 'all',
     pagination: false,
     select: {
+      id: true,
       'field-type': true,
       'schema-path': true,
     },
   })
 
-  const fieldInstructionsMap: Record<string, { fieldType: any; id: any }> = {}
+  const fieldInstructionsMap: Record<string, { fieldType: string; id: number | string }> = {}
+
+  type InstructionDoc = (typeof allInstructions)[0]
 
   for (let i = 0; i < paths.length; i++) {
     const path = paths[i]
     const { type: fieldType, label: fieldLabel, relationTo } = fieldSchemaPaths[path]
-    let instructions = allInstructions.find((entry) => entry['schema-path'] === path)
+    // Find existing entry for this path (schema-path is globally unique, not per locale)
+    let instructions: InstructionDoc | undefined = allInstructions.find(
+      (entry) => entry['schema-path'] === path,
+    )
 
     if (!instructions) {
       let seed
@@ -49,8 +63,12 @@ export const init = async (
         path,
       }
 
-      if (pluginConfig.seedPrompts) {seed = await pluginConfig.seedPrompts(seedOptions)}
-      if (seed === undefined) {seed = await defaultSeedPrompts(seedOptions)}
+      if (pluginConfig.seedPrompts) {
+        seed = await pluginConfig.seedPrompts(seedOptions)
+      }
+      if (seed === undefined) {
+        seed = await defaultSeedPrompts(seedOptions)
+      }
       // Field should be ignored
       if (!seed) {
         if (pluginConfig.debugging) {
@@ -98,14 +116,50 @@ export const init = async (
         `Prompt seeded for "${path}" field`,
       )
 
-      instructions = (await payload
-        .create({
+      try {
+        instructions = (await payload.create({
           collection: PLUGIN_INSTRUCTIONS_TABLE,
           data,
-        })
-        .catch((err) => {
-          payload.logger.error(err, '— AI Plugin: Error creating Compose settings-')
-        })) as (typeof allInstructions)[0]
+        })) as InstructionDoc
+      } catch (err: unknown) {
+        // Handle unique constraint violation - entry might already exist for another locale
+        const error = err as { data?: { errors?: Array<{ path?: string }> }; name?: string }
+        if (
+          error?.name === 'ValidationError' &&
+          error?.data?.errors?.some((e) => e.path === 'schema-path')
+        ) {
+          // Try to find the existing entry across all locales
+          const { docs } = await payload.find({
+            collection: PLUGIN_INSTRUCTIONS_TABLE,
+            limit: 1,
+            locale: 'all',
+            select: {
+              id: true,
+              'field-type': true,
+              'schema-path': true,
+            },
+            where: {
+              'schema-path': {
+                equals: path,
+              },
+            },
+          })
+
+          const existingEntry = docs[0] as InstructionDoc | undefined
+          if (existingEntry) {
+            instructions = existingEntry
+            if (pluginConfig.debugging) {
+              payload.logger.info(
+                `— AI Plugin: Entry already exists for ${path}, using existing entry`,
+              )
+            }
+          } else {
+            payload.logger.error(err, `— AI Plugin: Error creating Compose settings for ${path}`)
+          }
+        } else {
+          payload.logger.error(err, `— AI Plugin: Error creating Compose settings for ${path}`)
+        }
+      }
 
       if (instructions?.id) {
         fieldInstructionsMap[path] = {
@@ -115,8 +169,9 @@ export const init = async (
       }
     } else {
       if (instructions['field-type'] !== fieldType) {
+        const currentFieldType = instructions['field-type'] as string
         payload.logger.warn(
-          `— AI Plugin: Field type mismatch for ${path}! Was "${fieldType}", it is "${instructions['field-type']}" now. Updating...`,
+          `— AI Plugin: Field type mismatch for ${path}! Was "${fieldType}", it is "${currentFieldType}" now. Updating...`,
         )
         await payload.update({
           id: instructions.id,

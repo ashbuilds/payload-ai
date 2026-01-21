@@ -5,8 +5,12 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
 
-
 const warnedOnceOnNoInstructionId = new Set<string>()
+
+const normalizePath = (path: string): string => {
+  return path.replace(/\._index-\d+-\d+/g, '')
+}
+
 const warnOnceOnMissingInstructions = (path: string) => {
   if (!warnedOnceOnNoInstructionId.has(path)) {
     warnedOnceOnNoInstructionId.add(path)
@@ -22,7 +26,7 @@ export const useInstructions = (
 ) => {
   const context = useContext(InstructionsContext)
   const { collectionSlug } = useDocumentInfo()
-  const { activeCollection, hasInstructions, instructions, promptFields, setActiveCollection, debugging } = context
+  const { activeCollection, debugging, hasInstructions, instructions, promptFields, setActiveCollection } = context
 
   const [schemaPath, setSchemaPath] = useState(update.schemaPath as string)
 
@@ -44,7 +48,6 @@ export const useInstructions = (
 
   const groupedFields = useMemo(() => {
     const result: Record<string, string[]> = {}
-
     for (const fullKey of Object.keys(instructions || {})) {
       const [collection, ...pathParts] = fullKey.split('.')
       const path = pathParts.join('.')
@@ -53,21 +56,18 @@ export const useInstructions = (
       }
       result[collection].push(path)
     }
-
     return result
   }, [instructions])
 
   // Suggestions for prompt editor
   const promptEditorSuggestions = useMemo(() => {
     const activeFields = groupedFields[activeCollection as string] || []
-
     const suggestions: string[] = []
 
     activeFields.forEach((f) => {
       const fieldKey = Object.keys(instructions).find((k) => k.endsWith(f))
       const fieldInfo = fieldKey ? instructions[fieldKey] : undefined
-
-      if (!fieldInfo) {return}
+      if (!fieldInfo) { return }
 
       if (fieldInfo.fieldType === 'upload') {
         suggestions.push(`${f}.url`)
@@ -88,8 +88,7 @@ export const useInstructions = (
     }, [])
 
     promptFields.forEach(({ name, collections }) => {
-      if (!activeCollection) {return}
-
+      if (!activeCollection) { return }
       if (!collections || collections.includes(activeCollection)) {
         suggestions.push(name)
       }
@@ -98,12 +97,13 @@ export const useInstructions = (
     return suggestions
   }, [groupedFields, activeCollection, instructions, promptFields])
 
-  const pathInstructions = instructions[schemaPath]
+  const normalizedPath = schemaPath ? normalizePath(schemaPath) : ''
+  const pathInstructions = instructions[normalizedPath]
 
   if (debugging && !pathInstructions && schemaPath && hasInstructions) {
     warnOnceOnMissingInstructions(schemaPath)
   }
-  
+
   return {
     ...context,
     ...(pathInstructions || {}),
