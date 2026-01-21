@@ -1,6 +1,16 @@
-import type { ClientCollectionConfig, CollectionConfig, Field } from 'payload'
+import type {
+  Field,
+  GlobalConfig,
+  CollectionConfig,
+  ClientGlobalConfig,
+  ClientCollectionConfig,
+} from 'payload'
 
-type AnyCollectionConfig = ClientCollectionConfig | CollectionConfig
+type AnyCollectionConfig =
+  | GlobalConfig
+  | CollectionConfig
+  | ClientGlobalConfig
+  | ClientCollectionConfig
 
 /**
  * Resolve a Payload field definition by a full schemaPath like:

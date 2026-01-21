@@ -299,11 +299,19 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           // Build per-field JSON schema for structured generation when applicable
           let jsonSchema = allowedEditorSchema
           try {
+            
             const targetCollection = req.payload.config.collections.find(
               (c) => c.slug === collectionName,
             )
-            if (targetCollection && fieldName) {
-              const targetField = getFieldBySchemaPath(targetCollection, schemaPath)
+
+            const targetGlobal = req.payload.config.globals?.find(
+              (g) => g.slug === collectionName,
+            )
+
+            const targetConfig = targetCollection || targetGlobal
+
+            if (targetConfig && fieldName) {
+              const targetField = getFieldBySchemaPath(targetConfig, schemaPath)
               const supported = [
                 'text',
                 'textarea',
@@ -314,6 +322,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 'email',
                 'json',
               ]
+
               const t = String(targetField?.type || '')
               if (targetField && supported.includes(t)) {
                 jsonSchema = fieldToJsonSchema(targetField as any, { nameOverride: fieldName })
