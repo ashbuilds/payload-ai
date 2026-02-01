@@ -1,13 +1,86 @@
-import type { GenerateObjectResult } from 'ai'
-// Type definitions for payload.ai API
-import type { Payload } from 'payload'
+// Global type definitions for @ai-stack/payloadcms
+// This file augments the Payload types using inline type definitions
 
-import type {
-  MediaResult,
-  PayloadGenerateMediaArgs,
-  PayloadGenerateObjectArgs,
-  PayloadGenerateTextArgs,
-} from './ai/core/types.js'
+import type { GenerateObjectResult, ImagePart, JSONValue, ModelMessage } from 'ai'
+import type { z } from 'zod'
+
+/**
+ * Provider options compatible with AI SDK
+ */
+type ProviderOptions = Record<string, Record<string, JSONValue>>
+
+/**
+ * Base arguments for all generation methods
+ */
+interface PayloadGenerationBaseArgs {
+  extractAttachments?: boolean
+  maxTokens?: number
+  messages?: ModelMessage[]
+  model?: string
+  prompt: string
+  provider?: string
+  providerOptions?: ProviderOptions
+  system?: string
+  temperature?: number
+}
+
+/**
+ * Arguments for generateObject - structured output generation
+ */
+interface PayloadGenerateObjectArgs extends PayloadGenerationBaseArgs {
+  images?: ImagePart[]
+  mode?: 'auto' | 'json' | 'tool'
+  schema?: Record<string, unknown> | z.ZodTypeAny
+}
+
+/**
+ * Arguments for generateText - simple text generation
+ */
+interface PayloadGenerateTextArgs extends PayloadGenerationBaseArgs {
+  // No additional fields needed for basic text generation
+}
+
+/**
+ * Arguments for generateMedia - image/video generation
+ */
+interface PayloadGenerateMediaArgs {
+  aspectRatio?: string
+  audioFormat?: string
+  callbackUrl?: string
+  duration?: number
+  fps?: number
+  images?: ImagePart[]
+  instructionId?: number | string
+  mode?: 'i2v' | 't2v'
+  model?: string
+  n?: number
+  prompt: string
+  provider?: string
+  providerOptions?: ProviderOptions
+  seed?: number
+  size?: { height: number; width: number }
+  speed?: number
+  voice?: string
+}
+
+/**
+ * Result from generateMedia - can be immediate file or async job
+ */
+interface MediaResult {
+  // Immediate result (image generation)
+  file?: {
+    data: Buffer
+    mimetype: string
+    name: string
+    size: number
+  }
+  
+  // Async job result (video generation)
+  jobId?: string
+  progress?: number
+  status?: 'completed' | 'failed' | 'queued' | 'running'
+  taskId?: string
+}
 
 declare module 'payload' {
   interface BasePayload {
@@ -23,21 +96,21 @@ declare module 'payload' {
        * @param args - Generation arguments including provider, model, prompt, and media options
        * @returns Promise resolving to either a file or async job info
        */
-      generateMedia: (args: Omit<PayloadGenerateMediaArgs, 'payload'>) => Promise<MediaResult>
+      generateMedia: (args: PayloadGenerateMediaArgs) => Promise<MediaResult>
 
       /**
        * Generate structured output with schema validation
        * @param args - Generation arguments including provider, model, prompt, and schema
        * @returns Promise resolving to the generated object
        */
-      generateObject: <T = unknown>(args: Omit<PayloadGenerateObjectArgs, 'payload'>) => Promise<GenerateObjectResult<T>>
+      generateObject: <T = unknown>(args: PayloadGenerateObjectArgs) => Promise<GenerateObjectResult<T>>
 
       /**
        * Generate simple text output
        * @param args - Generation arguments including provider, model, and prompt
        * @returns Promise resolving to the generated text
        */
-      generateText: (args: Omit<PayloadGenerateTextArgs, 'payload'>) => Promise<string>
+      generateText: (args: PayloadGenerateTextArgs) => Promise<string>
 
       /**
        * Get a specific model instance
@@ -60,7 +133,7 @@ declare module 'payload' {
        * @returns Response stream
        */
       streamObject: <T = unknown>(
-        args: Omit<PayloadGenerateObjectArgs, 'payload'>,
+        args: PayloadGenerateObjectArgs,
       ) => Promise<Response>
 
       /**
@@ -68,7 +141,9 @@ declare module 'payload' {
        * @param args - Generation arguments including provider, model, and prompt
        * @returns Response stream
        */
-      streamText: (args: Omit<PayloadGenerateTextArgs, 'payload'>) => Promise<Response>
+      streamText: (args: PayloadGenerateTextArgs) => Promise<Response>
     }
   }
 }
+
+export {}
