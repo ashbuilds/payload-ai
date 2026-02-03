@@ -168,6 +168,48 @@ export const ArrayTestCases: CollectionConfig = {
     },
 
     // ========================================
+    // SCENARIO 3a: Image-Only Array (Simple)
+    // ========================================
+    {
+      type: 'collapsible',
+      admin: {
+        description: 'Array with only upload/image fields (for batch image generation)',
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'productContext',
+          type: 'textarea',
+          admin: {
+            description: 'Describe the product for consistent image generation',
+          },
+        },
+        {
+          name: 'productPhotos',
+          type: 'array',
+          admin: {
+            description: 'Generate multiple product images at different angles',
+          },
+          fields: [
+            {
+              name: 'photo',
+              type: 'upload',
+              admin: {
+                description: 'A product photo',
+              },
+              relationTo: 'media',
+              required: true,
+            },
+          ],
+          label: 'Product Photos',
+          maxRows: 6,
+          minRows: 2,
+        },
+      ],
+      label: 'Scenario 3a: Image-Only Array',
+    },
+
+    // ========================================
     // SCENARIO 4: Character Views (Your Use Case)
     // ========================================
     {
