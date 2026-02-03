@@ -159,9 +159,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             prompts.prompt,
             contextData,
             req,
+            collectionName,
           )
 
-          console.log('resolvedImagesL  ', resolvedImages)
+
 
           // Extract hardcoded URLs from the processed prompt
           const hardcodedImages = extractImageData(processedPrompt)
@@ -275,6 +276,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             text,
             contextData,
             req,
+            collectionSlug,
           )
 
           // Extract hardcoded URLs from the processed prompt and merge with resolved images and sample images

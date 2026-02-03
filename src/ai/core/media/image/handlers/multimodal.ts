@@ -27,6 +27,7 @@ export async function generateMultimodalImage(
   // ]
 
   console.log('providerOptions: ', providerOptions)
+  console.log('images to pass to AI model: ', images.length, 'items', images.map((img: any) => ({ type: img.type, hasData: !!img.image, mediaType: img.mediaType })))
   
   // Build Google-specific options with required defaults
   const googleOptions = {

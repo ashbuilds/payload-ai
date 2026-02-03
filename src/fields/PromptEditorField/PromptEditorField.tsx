@@ -163,8 +163,11 @@ export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => 
   }, [payloadValue])
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setLocalValue(e.target.value)
-  }, [])
+    const newValue = e.target.value
+    setLocalValue(newValue)
+    // Also update Payload value immediately to prevent loss when Save is clicked
+    setValue(newValue)
+  }, [setValue])
 
   const handleBlur = useCallback(() => {
     setValue(localValue)

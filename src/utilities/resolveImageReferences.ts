@@ -22,21 +22,37 @@ interface ResolveImageReferencesResult {
 }
 
 /**
+ * Retrieves a nested value from an object using dot-notation path.
+ * For example, getNestedValue(obj, 'a.b.c') returns obj.a.b.c
+ */
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  return path.split('.').reduce((current, key) => {
+    if (current && typeof current === 'object' && key in current) {
+      return (current as Record<string, unknown>)[key]
+    }
+    return undefined
+  }, obj as unknown)
+}
+
+/**
  * Parses and resolves image references in prompts.
  * 
  * Supports two formats:
  * - @fieldName - for single upload fields
+ * - @collection.fieldName - schema path format (collection prefix is stripped)
  * - @fieldName:filename.jpg - for specific images in hasMany fields
  * 
  * @param prompt - The prompt text containing @field references
  * @param contextData - The document data to resolve field values from
  * @param req - Payload request object for fetching media
+ * @param collectionSlug - Optional collection slug to strip from schema path references
  * @returns Processed prompt with references removed and array of resolved images
  */
 export async function resolveImageReferences(
   prompt: string,
   contextData: Record<string, unknown>,
   req: PayloadRequest,
+  collectionSlug?: string,
 ): Promise<ResolveImageReferencesResult> {
   // Pattern matches: @fieldName or @fieldName:filename.ext (filename can have spaces)
   // The filename part matches everything up to and including an image extension
@@ -63,7 +79,14 @@ export async function resolveImageReferences(
   // Resolve each reference
   for (const ref of references) {
     try {
-      const fieldValue = contextData[ref.fieldName]
+      // Strip collection prefix from schema path if it matches the current collection
+      // e.g., "characters.ortho3d.frame" becomes "ortho3d.frame" when collectionSlug is "characters"
+      let fieldPath = ref.fieldName
+      if (collectionSlug && fieldPath.startsWith(`${collectionSlug}.`)) {
+        fieldPath = fieldPath.slice(collectionSlug.length + 1)
+      }
+
+      const fieldValue = getNestedValue(contextData, fieldPath)
 
       if (!fieldValue) {
         req.payload.logger.warn(

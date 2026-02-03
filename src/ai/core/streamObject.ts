@@ -60,9 +60,6 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
     options.prompt = prompt
   }
 
-  console.log("options.messages  : ",options.messages)
-  console.log('prompt  : ', prompt)
-  console.log('args.images   : ', args.images)
 
   if (providerOptions) {
     options.providerOptions = providerOptions
