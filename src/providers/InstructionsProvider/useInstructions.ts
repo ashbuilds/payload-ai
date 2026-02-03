@@ -5,6 +5,22 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
 
+/**
+ * Normalize a schema path by removing array indices.
+ * This allows fields inside arrays to match their instruction records.
+ * 
+ * Example:
+ *   'array-test-cases.keywords.0.keyword' -> 'array-test-cases.keywords.keyword'
+ *   'characters.views.2.description' -> 'characters.views.description'
+ *   'posts.title' -> 'posts.title' (no change)
+ */
+const normalizeSchemaPath = (path: string): string => {
+  if (!path) {
+    return path
+  }
+  // Remove numeric path segments (array indices)
+  return path.split('.').filter(segment => !/^\d+$/.test(segment)).join('.')
+}
 
 const warnedOnceOnNoInstructionId = new Set<string>()
 const warnOnceOnMissingInstructions = (path: string) => {
@@ -103,7 +119,9 @@ export const useInstructions = (
     return suggestions
   }, [groupedFields, activeCollection, instructions, promptFields])
 
-  const pathInstructions = instructions[schemaPath]
+  // Normalize the schema path to handle array indices
+  const normalizedSchemaPath = normalizeSchemaPath(schemaPath)
+  const pathInstructions = instructions[normalizedSchemaPath]
 
   if (debugging && !pathInstructions && schemaPath && hasInstructions) {
     warnOnceOnMissingInstructions(schemaPath)
@@ -115,3 +133,4 @@ export const useInstructions = (
     promptEditorSuggestions,
   }
 }
+

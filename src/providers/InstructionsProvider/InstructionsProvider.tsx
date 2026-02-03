@@ -6,9 +6,13 @@ import React, { useCallback, useEffect, useState } from 'react'
 import type { SerializedPromptField } from '../../types.js'
 
 import { PLUGIN_FETCH_FIELDS_ENDPOINT, PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
+import { useActiveFieldTracking } from '../../ui/Compose/hooks/useActiveFieldTracking.js'
 import { InstructionsContext } from './context.js'
 
 export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Initialize field tracking globally so ai-plugin-active class is added on field focus
+  useActiveFieldTracking()
+  
   const [instructions, setInstructionsState] = useState({})
   const [promptFields, setPromptFields] = useState<SerializedPromptField[]>([])
   const [activeCollection, setActiveCollection] = useState('')

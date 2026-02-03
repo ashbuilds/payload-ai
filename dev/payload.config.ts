@@ -6,6 +6,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { ArrayTestCases } from './collections/ArrayTestCases.js'
 import { Characters } from './collections/Characters.js'
 import { Media } from './collections/Media.js'
 import { Posts } from './collections/Posts.js'
@@ -36,6 +37,7 @@ const buildConfigWithMemoryDB = async () => {
       Media,
       // Posts,
       Characters,
+      ArrayTestCases,
     ],
     db: sqliteAdapter({
       client: {
@@ -49,8 +51,9 @@ const buildConfigWithMemoryDB = async () => {
     plugins: [
       payloadAiPlugin({
         collections: {
-          [Characters.slug]: true,
-          [Posts.slug]: true,
+          [ArrayTestCases.slug]: true,
+          [Characters.slug]: false,
+          [Posts.slug]: false,
         },
         debugging: true,
         disableSponsorMessage: false,
