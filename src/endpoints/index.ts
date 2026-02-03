@@ -17,6 +17,7 @@ import {
 } from '../defaults.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
 import { extractImageData } from '../utilities/extractImageData.js'
 import { type FetchableImage, fetchImages } from '../utilities/fetchImages.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
@@ -63,7 +64,24 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
           const { schema: editorSchema = {} } = editorConfig
-          const { prompt: promptTemplate = '' } = instructions
+          let { prompt: promptTemplate = '' } = instructions
+
+          // Smart fallback: if prompt is generic, build a contextual prompt from field metadata
+          if (isGenericPrompt(promptTemplate)) {
+            const schemaPath = String(instructions['schema-path'])
+            promptTemplate = buildSmartPrompt({
+              documentData: contextData,
+              payload: req.payload,
+              schemaPath,
+            })
+
+            if (pluginConfig.debugging) {
+              req.payload.logger.info(
+                { smartPrompt: promptTemplate },
+                `— AI Plugin: Using smart fallback prompt for ${schemaPath}`,
+              )
+            }
+          }
 
           let allowedEditorSchema = editorSchema
           if (allowedEditorNodes.length) {
@@ -162,8 +180,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             collectionName,
           )
 
-
-
           // Extract hardcoded URLs from the processed prompt
           const hardcodedImages = extractImageData(processedPrompt)
 
@@ -258,9 +274,26 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             })
           }
 
-          const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
+          let { prompt: promptTemplate = '' } = instructions
+          const { images: sampleImages = [] } = instructions
           const schemaPath = String(instructions['schema-path'])
           registerEditorHelper(req.payload, schemaPath)
+
+          // Smart fallback: if prompt is generic, build a contextual prompt from field metadata
+          if (isGenericPrompt(promptTemplate as string)) {
+            promptTemplate = buildSmartPrompt({
+              documentData: contextData,
+              payload: req.payload,
+              schemaPath,
+            })
+
+            if (pluginConfig.debugging) {
+              req.payload.logger.info(
+                { smartPrompt: promptTemplate },
+                `— AI Plugin: Using smart fallback prompt for ${schemaPath}`,
+              )
+            }
+          }
 
           const extendedContext = extendContextWithPromptFields(
             contextData,
@@ -316,30 +349,72 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             throw new Error(`Unsupported model-id: ${modelId}`)
           }
 
-          const modelSettings = instructions[settingsName] || {}
+          // Get model settings from instruction
+          const instructionSettings = (instructions[settingsName] || {}) as Record<string, unknown>
+
+          // Fallback to AISettings global defaults if instruction-level settings are missing
+          let globalDefaults: Record<string, unknown> = {}
+          if (!instructionSettings.provider || !instructionSettings.model) {
+            try {
+              const aiSettings = await req.payload.findGlobal({
+                slug: 'ai-settings',
+                context: { unsafe: true }, // Get decrypted values for internal use
+              })
+
+              // Map modelId to the corresponding default settings key
+              const defaultsKey =
+                modelId === 'image'
+                  ? 'image'
+                  : modelId === 'video'
+                    ? 'video'
+                    : modelId === 'tts'
+                      ? 'tts'
+                      : undefined
+
+              if (defaultsKey && aiSettings?.defaults?.[defaultsKey]) {
+                globalDefaults = aiSettings.defaults[defaultsKey] as Record<string, unknown>
+
+                if (pluginConfig.debugging) {
+                  req.payload.logger.info(
+                    { globalDefaults },
+                    `— AI Plugin: Using AISettings defaults for ${modelId}`,
+                  )
+                }
+              }
+            } catch (e) {
+              req.payload.logger.error(e, '— AI Plugin: Error fetching AISettings defaults')
+            }
+          }
+
+          // Merge: instruction settings take priority over global defaults
+          // Filter out null/undefined values so they don't overwrite valid defaults
+          const filteredInstructionSettings = Object.fromEntries(
+            Object.entries(instructionSettings).filter(([_, v]) => v != null),
+          )
+          const modelSettings = {
+            ...globalDefaults,
+            ...filteredInstructionSettings,
+          }
 
           // Use payload.ai.generateMedia directly! 🎉
           const result = await req.payload.ai.generateMedia({
             callbackUrl,
             images: editImages,
             instructionId,
-            model: (modelSettings as Record<string, unknown>).model as string,
+            model: modelSettings.model as string,
             prompt: text,
-            provider: (modelSettings as Record<string, unknown>).provider as string,
-            ...(modelSettings as Record<string, unknown>),
+            provider: modelSettings.provider as string,
+            ...modelSettings,
           })
 
           // If model returned a file immediately, proceed with upload
           if (result && 'file' in result) {
             let assetData: { alt?: string; id: number | string }
             if (typeof pluginConfig.mediaUpload === 'function') {
-              assetData = await pluginConfig.mediaUpload(
-                result,
-                {
-                  collection: uploadCollectionSlug as string,
-                  request: req,
-                },
-              )
+              assetData = await pluginConfig.mediaUpload(result, {
+                collection: uploadCollectionSlug as string,
+                request: req,
+              })
             } else {
               assetData = await req.payload.create({
                 collection: uploadCollectionSlug as string,

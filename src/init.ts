@@ -66,7 +66,8 @@ export const init = async (
         continue
       }
 
-      const generatedPrompt: string | undefined = '{{ title }}'
+      // Empty prompt - smart fallback will generate a contextual prompt at runtime
+      const generatedPrompt: string | undefined = ''
       if ('prompt' in seed) {
         // Prompt generation currently disabled during migration to AI SDK Providers
         // TODO: Re-enable using a default provider from AI Settings if available
