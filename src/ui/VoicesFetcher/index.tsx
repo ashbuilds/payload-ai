@@ -2,10 +2,19 @@
 
 import type { FieldClientComponent } from 'payload'
 
-import { Button, useForm } from '@payloadcms/ui'
+import { Button, useForm, useFormFields } from '@payloadcms/ui'
 import React, { useCallback, useState } from 'react'
 
 import { PLUGIN_API_ENDPOINT_FETCH_VOICES } from '../../defaults.js'
+
+interface Voice {
+  category?: string
+  enabled?: boolean
+  id: string
+  labels?: Record<string, unknown>
+  name: string
+  preview_url?: string
+}
 
 /**
  * VoicesFetcher Component
@@ -14,12 +23,19 @@ import { PLUGIN_API_ENDPOINT_FETCH_VOICES } from '../../defaults.js'
  */
 export const VoicesFetcher: FieldClientComponent = ({ path }) => {
   const [loading, setLoading] = useState(false)
-  const { getFields, replaceState } = useForm()
+  const { dispatchFields } = useForm()
 
   // Get the parent path (the block path)
   const fieldPath = (path as string) || ''
   const blockPath = fieldPath.split('.').slice(0, -1).join('.')
   const voicesPath = `${blockPath}.voices`
+
+  // Get the current voices array to know how many rows to remove
+  const voicesField = useFormFields(([fields]) => fields[voicesPath])
+  const currentRowCount =
+    voicesField && 'rows' in voicesField && Array.isArray(voicesField.rows)
+      ? voicesField.rows.length
+      : 0
 
   const fetchVoices = useCallback(async () => {
     setLoading(true)
@@ -39,57 +55,32 @@ export const VoicesFetcher: FieldClientComponent = ({ path }) => {
       }
 
       const data = await response.json()
-      const voices = data.voices || []
+      const voices: Voice[] = data.voices || []
 
-      // Get current form state and update the voices array
-      // For array fields, we need to use replaceState to properly trigger UI re-render
-      const currentFields = getFields()
-      const newFields = { ...currentFields }
-
-      // First, remove existing voice rows from the fields
-      Object.keys(newFields).forEach((key) => {
-        if (key.startsWith(`${voicesPath}.`)) {
-          delete newFields[key]
-        }
-      })
-
-      // Update the voices array field count
-      newFields[voicesPath] = {
-        ...newFields[voicesPath],
-        rows: voices.map((voice: { id: string }, index: number) => ({
-          id: voice.id || `voice-${index}`,
-        })),
-        value: voices.length,
+      // Remove existing rows first (in reverse order to maintain indices)
+      for (let i = currentRowCount - 1; i >= 0; i--) {
+        dispatchFields({
+          type: 'REMOVE_ROW',
+          path: voicesPath,
+          rowIndex: i,
+        })
       }
 
-      // Add individual voice fields
-      voices.forEach(
-        (
-          voice: {
-            category?: string
-            enabled?: boolean
-            id: string
-            labels?: Record<string, unknown>
-            name: string
-            preview_url?: string
+      // Add new rows for each voice using ADD_ROW action
+      for (const voice of voices) {
+        dispatchFields({
+          type: 'ADD_ROW',
+          path: voicesPath,
+          subFieldState: {
+            id: { initialValue: voice.id, valid: true, value: voice.id },
+            name: { initialValue: voice.name, valid: true, value: voice.name },
+            category: { initialValue: voice.category || 'premade', valid: true, value: voice.category || 'premade' },
+            enabled: { initialValue: voice.enabled !== false, valid: true, value: voice.enabled !== false },
+            labels: { initialValue: voice.labels || {}, valid: true, value: voice.labels || {} },
+            preview_url: { initialValue: voice.preview_url || '', valid: true, value: voice.preview_url || '' },
           },
-          index: number,
-        ) => {
-          const rowPath = `${voicesPath}.${index}`
-          newFields[`${rowPath}.id`] = { initialValue: voice.id, value: voice.id }
-          newFields[`${rowPath}.name`] = { initialValue: voice.name, value: voice.name }
-          newFields[`${rowPath}.category`] = { initialValue: voice.category, value: voice.category }
-          newFields[`${rowPath}.enabled`] = { initialValue: voice.enabled, value: voice.enabled }
-          newFields[`${rowPath}.preview_url`] = {
-            initialValue: voice.preview_url,
-            value: voice.preview_url,
-          }
-          newFields[`${rowPath}.labels`] = { initialValue: voice.labels, value: voice.labels }
-        },
-      )
-
-      // Replace the entire form state to trigger re-render of array fields
-      replaceState(newFields)
+        })
+      }
 
       alert(`Successfully fetched ${voices.length} voices!`)
     } catch (error) {
@@ -97,7 +88,7 @@ export const VoicesFetcher: FieldClientComponent = ({ path }) => {
     } finally {
       setLoading(false)
     }
-  }, [getFields, replaceState, voicesPath])
+  }, [currentRowCount, dispatchFields, voicesPath])
 
   return (
     <div style={{ marginBottom: '20px' }}>
@@ -111,3 +102,6 @@ export const VoicesFetcher: FieldClientComponent = ({ path }) => {
     </div>
   )
 }
+
+
+
