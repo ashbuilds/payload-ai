@@ -116,18 +116,33 @@
 }
 
 /* Ensure field wrapper is positioned for absolute children */
+/* Ensure field wrapper is positioned for absolute children */
 .arrayFieldWrapper {
   position: relative !important;
 }
 
-/* Position Compose button at bottom right, opposite the Add button */
+/* Position Compose button - Base */
 .composePortal {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  z-index: 5;
-  
   display: flex !important;
   align-items: center;
   height: min-content;
+  z-index: 5;
+}
+
+/* When Add Row is present: Overlay at bottom right */
+.composePortalAbsolute {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+/* When Add Row is missing: Normal flow at bottom right */
+.composePortalStatic {
+  position: relative;
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: -32px;
+  /* Reset absolute positioning styles */
+  bottom: auto;
+  right: auto;
 }

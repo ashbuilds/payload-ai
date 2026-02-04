@@ -41,9 +41,9 @@ export const ArrayTestCases: CollectionConfig = {
         {
           name: 'keywords',
           type: 'array',
-          // admin: {
-          //   description: 'Generate a list of SEO keywords for this content',
-          // },
+          admin: {
+            description: 'Generate a list of SEO keywords for this content',
+          },
           fields: [
             {
               name: 'keyword',

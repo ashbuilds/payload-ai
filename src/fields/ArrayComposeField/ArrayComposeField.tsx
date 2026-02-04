@@ -42,15 +42,33 @@ export const ArrayComposeField = (props: ArrayComposeFieldProps) => {
   // Portal target state
   const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null)
 
+  // State to track if the "Add Row" button is present in the DOM
+  const [isAddRowPresent, setIsAddRowPresent] = React.useState(true)
+
   React.useEffect(() => {
     if (props.field && 'name' in props.field) {
       const fieldId = `field-${props.field.name}`
       const fieldElement = document.getElementById(fieldId)
       
       if (fieldElement) {
-        // Just set the target. We will position via CSS relative to the field container.
         fieldElement.classList.add(styles.arrayFieldWrapper)
+        // Force relative position via inline style to prevent class application delays/overrides
+        fieldElement.style.position = 'relative'
         setPortalTarget(fieldElement)
+
+        // Check initial state
+        const checkAddRow = () => {
+          const btn = fieldElement.querySelector('.array-field__add-row')
+          setIsAddRowPresent(!!btn)
+        }
+        
+        checkAddRow()
+
+        // Observe for changes (e.g. when max rows reached and button is removed)
+        const observer = new MutationObserver(checkAddRow)
+        observer.observe(fieldElement, { childList: true, subtree: true })
+
+        return () => observer.disconnect()
       }
     }
   }, [props.field])
@@ -73,7 +91,12 @@ export const ArrayComposeField = (props: ArrayComposeFieldProps) => {
       {/* Portal the Compose button to the bottom of the field wrapper */}
       {hasInstructions && instructionId && !disabled && portalTarget
         ? createPortal(
-            <div className={styles.composePortal}>
+            <div 
+              className={`
+                ${styles.composePortal} 
+                ${isAddRowPresent ? styles.composePortalAbsolute : styles.composePortalStatic}
+              `}
+            >
               <Compose
                 descriptionProps={{
                   ...props,
