@@ -1,6 +1,7 @@
 'use client'
 
-import { useField } from '@payloadcms/ui'
+import { useForm } from '@payloadcms/ui'
+import { getSiblingData } from 'payload/shared'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import type { ActionMenuItems, UseMenuEvents, UseMenuOptions } from '../../../../types.js'
@@ -24,14 +25,30 @@ const getActiveComponent = (ac: ActionMenuItems) => {
 }
 
 export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
-  const { field:{ type: fieldType } = {}, path: pathFromContext } = useFieldProps()
-  const field = useField({ path: pathFromContext ?? '' })
+  const { field: { type: fieldType } = {}, path } = useFieldProps()
+  const { getData } = useForm()
   const [activeComponent, setActiveComponent] = useState<ActionMenuItems>('Rephrase')
 
-  const { initialValue, value } = field
-
+  // Check value once on mount or when path/type changes
   useEffect(() => {
-    if (!value) {
+    let hasValue = false
+
+    try {
+      const data = getData()
+      if (path) {
+        const val = getSiblingData(data, path)
+        hasValue = val !== undefined && val !== null && val !== ''
+        // For richTextFields, we might need a more robust check (e.g. check for root.children.length > 0)
+        // But for now, simple truthiness covers most cases or at least defaults safely
+        if (fieldType === 'richText' && val && typeof val === 'object' && 'root' in val) {
+           // Basic lexical check could go here if needed
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    if (!hasValue) {
       setActiveComponent('Compose')
       return
     }
@@ -41,12 +58,9 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
       return
     }
 
-    if (typeof value === 'string' && value !== initialValue) {
-      setActiveComponent('Proofread')
-    } else {
-      setActiveComponent('Rephrase')
-    }
-  }, [initialValue, value, fieldType])
+    // Default to Rephrase if value exists
+    setActiveComponent('Rephrase')
+  }, [fieldType, getData, path])
 
   const MemoizedActiveComponent = useMemo(() => {
     return ({ isLoading, loadingLabel, stop }: { isLoading: boolean; loadingLabel?: string; stop: () => void }) => {
@@ -117,3 +131,4 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
     Menu: MemoizedMenu,
   }
 }
+

@@ -25,6 +25,11 @@ const CAPABILITIES = [
     name: 'Text to Speech',
     fields: ['upload'],
   },
+  {
+    id: 'array',
+    name: 'Array Generation',
+    fields: ['array'],
+  },
 ]
 
 const defaultAccessConfig = {
@@ -174,6 +179,10 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
           {
             label: 'richText',
             value: 'richText',
+          },
+          {
+            label: 'array',
+            value: 'array',
           },
         ],
       },
@@ -395,6 +404,32 @@ informative and accurate but also captivating and beautifully structured.`,
           providerOptionsJson,
         ],
         label: 'TTS Settings',
+      },
+      
+      // Array Settings
+      {
+        name: 'array-settings',
+        type: 'group',
+        admin: {
+          condition: (data) => data['model-id'] === 'array',
+        },
+        fields: [
+          providerSelect,
+          modelSelect,
+          {
+            name: 'count',
+            type: 'number',
+            admin: {
+              description: 'Number of items to generate',
+            },
+            defaultValue: 3,
+            label: 'Items to Generate',
+            max: 20,
+            min: 1,
+          },
+          providerOptionsJson,
+        ],
+        label: 'Array Settings',
       },
     ],
   }

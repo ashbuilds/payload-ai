@@ -1,10 +1,10 @@
-import type { MouseEventHandler} from 'react';
+import type { MouseEventHandler } from 'react'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { memo, useCallback, useEffect, useState } from 'react'
 
 import { useHistory } from './hooks/useHistory.js'
 
-export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void }) => {
+export const UndoRedoActions = memo(({ onChange }: { onChange: (val: unknown) => void }) => {
   const { canRedo, canUndo, redo, undo } = useHistory()
 
   const redoHistoryValue = useCallback<MouseEventHandler>(
@@ -16,7 +16,7 @@ export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void
         onChange(value)
       }
     },
-    [redo],
+    [redo, onChange],
   )
 
   const undoHistoryValue = useCallback<MouseEventHandler>(
@@ -28,7 +28,7 @@ export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void
         onChange(value)
       }
     },
-    [undo],
+    [undo, onChange],
   )
 
   // Delay rendering until the client-side hydration is complete
@@ -38,7 +38,9 @@ export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void
     setIsMounted(true)
   }, [])
 
-  if (!isMounted || (!canUndo && !canRedo)) {return null}
+  if (!isMounted || (!canUndo && !canRedo)) {
+    return null
+  }
 
   return (
     <React.Fragment>
@@ -62,4 +64,6 @@ export const UndoRedoActions = ({ onChange }: { onChange: (val: unknown) => void
       </button>
     </React.Fragment>
   )
-}
+})
+
+UndoRedoActions.displayName = 'UndoRedoActions'

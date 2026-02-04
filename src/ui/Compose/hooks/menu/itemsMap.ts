@@ -13,23 +13,23 @@ type MenuItemsMapType = {
 }
 
 export const menuItemsMap: MenuItemsMapType[] = [
-  { name: 'Proofread', component: Proofread, excludedFor: ['upload'], loadingText: 'Proofreading' },
-  { name: 'Rephrase', component: Rephrase, excludedFor: ['upload'], loadingText: 'Rephrasing' },
+  { name: 'Proofread', component: Proofread, excludedFor: ['upload', 'array'], loadingText: 'Proofreading' },
+  { name: 'Rephrase', component: Rephrase, excludedFor: ['upload', 'array'], loadingText: 'Rephrasing' },
   {
     name: 'Translate',
     component: MemoizedTranslateMenu,
-    excludedFor: ['upload'],
+    excludedFor: ['upload', 'array'],
     loadingText: 'Translating',
   },
-  { name: 'Expand', component: Expand, excludedFor: ['upload', 'text'], loadingText: 'Expanding' },
+  { name: 'Expand', component: Expand, excludedFor: ['upload', 'text', 'array'], loadingText: 'Expanding' },
   {
     // Turned off - WIP
     name: 'Summarize',
     component: Summarize,
-    excludedFor: ['upload', 'text', 'richText'],
+    excludedFor: ['upload', 'text', 'richText', 'array'],
     loadingText: 'Summarizing',
   },
-  { name: 'Simplify', component: Simplify, excludedFor: ['upload'], loadingText: 'Simplifying' },
+  { name: 'Simplify', component: Simplify, excludedFor: ['upload', 'array'], loadingText: 'Simplifying' },
   { name: 'Compose', component: Compose, loadingText: 'Composing' },
   { name: 'Settings', component: Settings },
 ]

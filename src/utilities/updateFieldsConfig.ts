@@ -25,7 +25,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
     // Map field path for global fieldInstructionsMap to load related instructions
     // This is done due to save extra API call to get instructions when Field components are loaded in admin
     // Doing is will only call instructions data when user clicks on settings
-    if (['richText', 'text', 'textarea', 'upload'].includes(field.type)) {
+    if (['array', 'richText', 'text', 'textarea', 'upload'].includes(field.type)) {
       schemaPathMap = {
         ...schemaPathMap,
         [currentSchemaPath]: {
@@ -37,7 +37,8 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
     }
 
     // Inject AI actions, richText is not included here as it has to be explicitly defined by user
-    if (['text', 'textarea', 'upload'].includes(field.type)) {
+    // Array fields also get AI injection for bulk generation
+    if (['array', 'text', 'textarea', 'upload'].includes(field.type)) {
       let customField = {}
 
       // Custom fields don't fully adhere to the Payload schema, making it difficult to
@@ -47,6 +48,12 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
         // by overriding Description. If you need both, consider composing your own wrapper.
         customField = {}
       }
+
+      // Array fields use ArrayComposeField (always visible) since they don't have focus events
+      // Other fields use ComposeField with focus-dependent visibility
+      const componentPath = field.type === 'array'
+        ? '@ai-stack/payloadcms/fields#ArrayComposeField'
+        : '@ai-stack/payloadcms/fields#ComposeField'
 
       return {
         ...field,
@@ -58,7 +65,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
               clientProps: {
                 schemaPath: currentSchemaPath,
               },
-              path: '@ai-stack/payloadcms/fields#ComposeField',
+              path: componentPath,
             },
             ...customField,
           },

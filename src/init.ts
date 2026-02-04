@@ -11,6 +11,7 @@ const CAPABILITY_MAP = [
   { id: 'text', fields: ['text', 'textarea'] },
   { id: 'richtext', fields: ['richText'] },
   { id: 'image', fields: ['upload'] },
+  { id: 'array', fields: ['array'] },
   // TTS usually outputs to upload, but init logic maps field types to capabilities
 ]
 
@@ -118,18 +119,30 @@ export const init = async (
         }
       }
     } else {
-      if (instructions['field-type'] !== fieldType) {
+      const modelForId = CAPABILITY_MAP.find((a) => a.fields.includes(fieldType))
+
+      if (instructions['field-type'] !== fieldType || !instructions['model-id']) {
         payload.logger.warn(
-          `— AI Plugin: Field type mismatch for ${path}! Was "${fieldType}", it is "${instructions['field-type']}" now. Updating...`,
+          `— AI Plugin: Field config mismatch for ${path}! Updating...`,
         )
+        const updateData: any = {
+           'field-type': fieldType,
+        }
+        
+        // Only set model-id if it's missing or we have a better default
+        if (!instructions['model-id'] && modelForId?.id) {
+           updateData['model-id'] = modelForId.id
+        }
+        
         await payload.update({
           id: instructions.id,
           collection: PLUGIN_INSTRUCTIONS_TABLE,
-          data: {
-            'field-type': fieldType,
-          },
+          data: updateData,
         })
         instructions['field-type'] = fieldType
+        if (updateData['model-id']) {
+          instructions['model-id'] = updateData['model-id']
+        }
       }
 
       fieldInstructionsMap[path] = {

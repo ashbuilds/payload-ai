@@ -23,11 +23,12 @@ export type ComposeProps = {
     path: string
     schemaPath: string
   }
+  forceVisible?: boolean
   instructionId: string
   isConfigAllowed: boolean
 }
 
-export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isConfigAllowed }) => {
+export const Compose: FC<ComposeProps> = ({ descriptionProps, forceVisible, instructionId, isConfigAllowed }) => {
   const pathFromContext = descriptionProps?.path
   const { editor: lexicalEditor } = useEditorConfigContext()
   
@@ -190,7 +191,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
 
   return (
     <label
-      className={`payloadai-compose__actions ${styles.actions}`}
+      className={`payloadai-compose__actions ${styles.actions} ${forceVisible ? styles.actionsVisible : ''}`}
       onClick={(e) => e.preventDefault()}
       role="presentation"
     >

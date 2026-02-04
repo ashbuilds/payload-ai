@@ -140,6 +140,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             if (targetCollection && fieldName) {
               const targetField = getFieldBySchemaPath(targetCollection, schemaPath)
               const supported = [
+                'array',
                 'text',
                 'textarea',
                 'select',
@@ -151,7 +152,20 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               ]
               const t = String(targetField?.type || '')
               if (targetField && supported.includes(t)) {
-                jsonSchema = fieldToJsonSchema(targetField, { nameOverride: fieldName })
+                // For array fields, use count from array-settings if available
+                if (t === 'array') {
+                  const arraySettings = (instructions['array-settings'] || {}) as Record<string, unknown>
+                  const count = (arraySettings.count as number) || 3
+                  // Override the field's maxRows with the requested count
+                  const modifiedField = {
+                    ...targetField,
+                    maxRows: count,
+                    minRows: count,
+                  } as typeof targetField
+                  jsonSchema = fieldToJsonSchema(modifiedField, { nameOverride: fieldName })
+                } else {
+                  jsonSchema = fieldToJsonSchema(targetField, { nameOverride: fieldName })
+                }
               }
             }
           } catch (e) {
@@ -164,7 +178,9 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               ? 'richtext-settings'
               : instructions['model-id'] === 'text'
                 ? 'text-settings'
-                : undefined
+                : instructions['model-id'] === 'array'
+                  ? 'array-settings'
+                  : undefined
 
           if (!settingsName) {
             throw new Error(`Unsupported model-id: ${instructions['model-id']}`)

@@ -1,12 +1,14 @@
 'use client'
 
-import { useDocumentInfo, useField } from '@payloadcms/ui'
+import { useDocumentInfo, useForm } from '@payloadcms/ui'
 import { useCallback, useEffect, useRef } from 'react'
+import { getSiblingData } from 'payload/shared'
 
 import { PLUGIN_NAME } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 
 const STORAGE_KEY = `${PLUGIN_NAME}-fields-history`
+const MAX_HISTORY_SIZE = 50
 
 interface HistoryState {
   [path: string]: {
@@ -20,10 +22,8 @@ let globalHistoryCache: HistoryState | null = null
 
 export const useHistory = () => {
   const { id } = useDocumentInfo()
-  const { path: pathFromContext, schemaPath } = useFieldProps()
-  const { value: currentFieldValue } = useField<string>({
-    path: pathFromContext ?? '',
-  })
+  const { path, schemaPath } = useFieldProps()
+  const { getData } = useForm()
 
   const fieldKey = `${id}.${schemaPath}`
 
@@ -63,22 +63,30 @@ export const useHistory = () => {
       clearTimeout(saveTimerRef.current)
     }
 
-    // Debounce the save operation by 300ms
+    // Debounce the save operation by 500ms
     saveTimerRef.current = setTimeout(() => {
       // Use requestIdleCallback if available to avoid blocking the main thread
       if (typeof requestIdleCallback !== 'undefined') {
         requestIdleCallback(
           () => {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+            } catch (e) {
+              console.warn('Failed to save history to localStorage', e)
+            }
           },
           { timeout: 2000 },
         )
       } else {
         // Fallback for browsers without requestIdleCallback
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(newGlobalHistory))
+        } catch (e) {
+          console.warn('Failed to save history to localStorage', e)
+        }
       }
       saveTimerRef.current = null
-    }, 300)
+    }, 500)
   }, [])
 
   // Sync with other tabs
@@ -102,13 +110,18 @@ export const useHistory = () => {
   // Clear previous history
   const clearHistory = useCallback(() => {
     const latestHistory = { ...getLatestHistory() }
+    let hasChanges = false
     Object.keys(latestHistory).forEach((k) => {
       if (!k.startsWith(id?.toString() ?? '')) {
         delete latestHistory[k]
+        hasChanges = true
       }
     })
-    saveToLocalStorage(latestHistory)
-  }, [id, fieldKey, getLatestHistory, saveToLocalStorage])
+    
+    if (hasChanges) {
+      saveToLocalStorage(latestHistory)
+    }
+  }, [id, getLatestHistory, saveToLocalStorage])
 
   useEffect(() => {
     // This is applied to clear out the document history which is not currently in use
@@ -121,20 +134,38 @@ export const useHistory = () => {
     }
 
     let newIndex = currentIndex
+    let historyUpdated = false
+    const newHistoryArray = [...history]
+
     if (currentIndex == -1) {
       newIndex = 0
-      if (currentFieldValue) {
-        history[newIndex] = currentFieldValue
+      
+      // Get initial value from form data instead of subscribing to useField
+      // This implementation avoids re-rendering on every keystroke
+      try {
+        const data = getData()
+        // We need to resolve the value from the data object using the path
+        // path might be 'group.subgroup.field'
+        if (path) {
+          const value = getSiblingData(data, path)
+          if (value) {
+            newHistoryArray[newIndex] = value
+            historyUpdated = true
+          }
+        }
+      } catch (e) {
+        // If we can't get the data, just ignore
       }
     }
 
-    const newGlobalHistory = {
-      ...latestHistory,
-      [fieldKey]: { currentIndex: newIndex, history },
+    if (historyUpdated) {
+      const newGlobalHistory = {
+        ...latestHistory,
+        [fieldKey]: { currentIndex: newIndex, history: newHistoryArray },
+      }
+      saveToLocalStorage(newGlobalHistory)
     }
-
-    saveToLocalStorage(newGlobalHistory)
-  }, [fieldKey])
+  }, [fieldKey, getData, path, clearHistory, getLatestHistory, saveToLocalStorage])
 
   const set = useCallback(
     (data: any) => {
@@ -143,7 +174,15 @@ export const useHistory = () => {
         currentIndex: -1,
         history: [],
       }
-      const newHistory = [...history.slice(0, currentIndex + 1), data]
+      
+      // Create new history array slice, appending new data
+      let newHistory = [...history.slice(0, currentIndex + 1), data]
+      
+      // Enforce Max History Size
+      if (newHistory.length > MAX_HISTORY_SIZE) {
+        newHistory = newHistory.slice(newHistory.length - MAX_HISTORY_SIZE)
+      }
+      
       const newGlobalHistory = {
         ...latestHistory,
         [fieldKey]: { currentIndex: newHistory.length - 1, history: newHistory },
@@ -195,12 +234,13 @@ export const useHistory = () => {
 
   const canUndo = fieldHistory.currentIndex > 0
   const canRedo = fieldHistory.currentIndex < fieldHistory.history.length - 1
-  const currentValue = fieldHistory.history[fieldHistory.currentIndex]
+  
+  // Note: We deliberately do not return currentValue to avoid subscription re-renders
+  // The consumers of this hook (UndoRedoActions) didn't use it anyway.
 
   return {
     canRedo,
     canUndo,
-    currentValue,
     redo,
     set,
     undo,

@@ -25,6 +25,9 @@
       "@ai-stack/payloadcms/client": [
         "../src/exports/client.ts"
       ],
+      "@ai-stack/payloadcms/fields": [
+        "../src/exports/fields.ts"
+      ],
       "@ai-stack/payloadcms/rsc": [
         "../src/exports/rsc.ts"
       ]
