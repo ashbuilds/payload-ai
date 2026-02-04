@@ -48,23 +48,28 @@ export const ArrayComposeField = (props: ArrayComposeFieldProps) => {
         schemaPath: finalSchemaPath,
       }}
     >
-      {/* Always render Compose for arrays (no focus-dependent placeholder) */}
-      {hasInstructions && instructionId && !disabled ? (
-        <Compose
-          descriptionProps={{
-            ...props,
-            field: props?.field,
-            path: props?.path ?? '',
-            schemaPath: finalSchemaPath,
-          }}
-          forceVisible={true}
-          instructionId={instructionId}
-          isConfigAllowed={isConfigAllowed}
-        />
-      ) : null}
-
-      <div>
-        <FieldDescription description={description as any} path={props?.path as string} />
+      <div style={{
+        display: 'flex',
+        gap: '1rem',
+        justifyContent:"space-between"
+      }}>
+        <div>
+          <FieldDescription description={description as any} path={props?.path as string} />
+        </div>
+        {/* Always render Compose for arrays (no focus-dependent placeholder) */}
+        {hasInstructions && instructionId && !disabled ? (
+          <Compose
+            descriptionProps={{
+              ...props,
+              field: props?.field,
+              path: props?.path ?? '',
+              schemaPath: finalSchemaPath,
+            }}
+            forceVisible={true}
+            instructionId={instructionId}
+            isConfigAllowed={isConfigAllowed}
+          />
+        ) : null}
       </div>
     </FieldProvider>
   )

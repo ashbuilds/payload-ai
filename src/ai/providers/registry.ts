@@ -3,13 +3,6 @@ import type { Payload } from 'payload'
 
 export type { ProviderId } from './types.js'
 
-import { createAnthropic } from '@ai-sdk/anthropic'
-import { createElevenLabs } from '@ai-sdk/elevenlabs'
-import { fal } from '@ai-sdk/fal'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { createOpenAI } from '@ai-sdk/openai'
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
-import { createXai } from '@ai-sdk/xai'
 import * as process from 'node:process'
 
 import type {
@@ -28,17 +21,22 @@ import type {
 
 // Type-safe provider factory functions
 const providerFactories = {
-  anthropic: (block: AnthropicBlockData) =>
-    createAnthropic({
+  anthropic: async (block: AnthropicBlockData) => {
+    const { createAnthropic } = await import('@ai-sdk/anthropic')
+    return createAnthropic({
       apiKey: block.apiKey,
-    }),
+    })
+  },
 
-  elevenlabs: (block: ElevenLabsBlockData) =>
-    createElevenLabs({
+  elevenlabs: async (block: ElevenLabsBlockData) => {
+    const { createElevenLabs } = await import('@ai-sdk/elevenlabs')
+    return createElevenLabs({
       apiKey: block.apiKey,
-    }),
+    })
+  },
 
-  fal: (block: FalBlockData) => {
+  fal: async (block: FalBlockData) => {
+    const { fal } = await import('@ai-sdk/fal')
     // Fal uses global instance, configure with apiKey
     process.env.FAL_KEY = block.apiKey
     if (block.webhookSecret) {
@@ -47,20 +45,25 @@ const providerFactories = {
     return fal
   },
 
-  google: (block: GoogleBlockData) =>
-    createGoogleGenerativeAI({
+  google: async (block: GoogleBlockData) => {
+    const { createGoogleGenerativeAI } = await import('@ai-sdk/google')
+    return createGoogleGenerativeAI({
       apiKey: block.apiKey,
-    }),
+    })
+  },
 
-  openai: (block: OpenAIBlockData) =>
-    createOpenAI({
+  openai: async (block: OpenAIBlockData) => {
+    const { createOpenAI } = await import('@ai-sdk/openai')
+    return createOpenAI({
       apiKey: block.apiKey,
       baseURL: block.baseURL || 'https://api.openai.com/v1',
       organization: block.organization,
-    }),
+    })
+  },
 
-  'openai-compatible': (block: OpenAICompatibleBlockData) => {
+  'openai-compatible': async (block: OpenAICompatibleBlockData) => {
     console.log('OpenAI compatible, ', block)
+    const { createOpenAICompatible } = await import('@ai-sdk/openai-compatible')
     return createOpenAICompatible({
       name: block.providerName,
       apiKey: block.apiKey || '',
@@ -68,10 +71,12 @@ const providerFactories = {
     })
   },
 
-  xai: (block: XAIBlockData) =>
-    createXai({
+  xai: async (block: XAIBlockData) => {
+    const { createXai } = await import('@ai-sdk/xai')
+    return createXai({
       apiKey: block.apiKey,
-    }),
+    })
+  },
 }
 
 /**
@@ -103,7 +108,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
     const { blockType } = providerBlock
 
     // Type-safe factory lookup and invocation
-    let factory: (() => any) | undefined
+    let factory: (() => Promise<any>) | undefined
 
     if (isProviderBlock<OpenAIBlockData>(providerBlock, 'openai')) {
       factory = () => providerFactories.openai(providerBlock)
@@ -143,7 +148,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
       apiKey: 'apiKey' in providerBlock ? providerBlock.apiKey : undefined,
       enabled: true,
       factory,
-      instance: blockType === 'fal' ? fal : undefined,
+      instance: undefined, // Fal is now loaded dynamically via factory
       models: enabledModels,
       options,
     }
@@ -205,11 +210,12 @@ export async function getLanguageModel(
     throw new Error(`Provider ${providerId} is not enabled`)
   }
 
+  // We only support factory now for dynamic loading, instance is legacy/cache
   let providerInstance: any
   if (provider.instance) {
     providerInstance = provider.instance
   } else if (provider.factory) {
-    providerInstance = provider.factory()
+    providerInstance = await provider.factory()
   } else {
     throw new Error(`Provider ${providerId} has no factory or instance`)
   }
@@ -274,7 +280,7 @@ export async function getImageModel(
 
   if (provider.factory) {
     console.log('modelId:  ', modelId)
-    const instance = provider.factory()
+    const instance = await provider.factory()
 
     // Type-safe check for image support
     if (
@@ -347,7 +353,7 @@ export async function getTTSModel(
   }
 
   if (provider.factory) {
-    const instance = provider.factory()
+    const instance = await provider.factory()
     if (instance?.speech) {
       return instance.speech(modelId, finalOptions)
     }
