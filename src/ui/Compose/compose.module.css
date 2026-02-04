@@ -101,13 +101,33 @@
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  padding: 5px 0;
-  margin: 5px 0;
   max-height: 100px;
   transform: scaleY(1) skewX(0) translateY(0) translateZ(0);
+  
+/* User requested overrides */
+  margin: 0;
+  padding: 0;
+  /* flex-direction: row-reverse; - Reverted */
 }
 
 .actions.actionsVisible > * {
   opacity: 1;
   transform: translateY(0) translateZ(0);
+}
+
+/* Ensure field wrapper is positioned for absolute children */
+.arrayFieldWrapper {
+  position: relative !important;
+}
+
+/* Position Compose button at bottom right, opposite the Add button */
+.composePortal {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 5;
+  
+  display: flex !important;
+  align-items: center;
+  height: min-content;
 }

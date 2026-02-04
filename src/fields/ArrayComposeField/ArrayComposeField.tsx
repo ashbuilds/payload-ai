@@ -4,10 +4,12 @@ import type { ClientField } from 'payload'
 
 import { FieldDescription, useDocumentInfo } from '@payloadcms/ui'
 import React from 'react'
+import { createPortal } from 'react-dom'
 
 import { FieldProvider } from '../../providers/FieldProvider/FieldProvider.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { Compose } from '../../ui/Compose/Compose.js'
+import styles from '../../ui/Compose/compose.module.css'
 
 type ArrayComposeFieldProps = {
   [key: string]: any
@@ -37,8 +39,24 @@ export const ArrayComposeField = (props: ArrayComposeFieldProps) => {
     schemaPath: finalSchemaPath,
   })
 
+  // Portal target state
+  const [portalTarget, setPortalTarget] = React.useState<HTMLElement | null>(null)
+
+  React.useEffect(() => {
+    if (props.field && 'name' in props.field) {
+      const fieldId = `field-${props.field.name}`
+      const fieldElement = document.getElementById(fieldId)
+      
+      if (fieldElement) {
+        // Just set the target. We will position via CSS relative to the field container.
+        fieldElement.classList.add(styles.arrayFieldWrapper)
+        setPortalTarget(fieldElement)
+      }
+    }
+  }, [props.field])
+
   const adminDescription = props?.field?.admin || {}
-  const description = "description" in adminDescription ? adminDescription.description : ""
+  const description = 'description' in adminDescription ? adminDescription.description : ''
 
   return (
     <FieldProvider
@@ -48,29 +66,29 @@ export const ArrayComposeField = (props: ArrayComposeFieldProps) => {
         schemaPath: finalSchemaPath,
       }}
     >
-      <div style={{
-        display: 'flex',
-        gap: '1rem',
-        justifyContent:"space-between"
-      }}>
-        <div>
-          <FieldDescription description={description as any} path={props?.path as string} />
-        </div>
-        {/* Always render Compose for arrays (no focus-dependent placeholder) */}
-        {hasInstructions && instructionId && !disabled ? (
-          <Compose
-            descriptionProps={{
-              ...props,
-              field: props?.field,
-              path: props?.path ?? '',
-              schemaPath: finalSchemaPath,
-            }}
-            forceVisible={true}
-            instructionId={instructionId}
-            isConfigAllowed={isConfigAllowed}
-          />
-        ) : null}
+      <div>
+        <FieldDescription description={description as any} path={props?.path as string} />
       </div>
+
+      {/* Portal the Compose button to the bottom of the field wrapper */}
+      {hasInstructions && instructionId && !disabled && portalTarget
+        ? createPortal(
+            <div className={styles.composePortal}>
+              <Compose
+                descriptionProps={{
+                  ...props,
+                  field: props?.field,
+                  path: props?.path ?? '',
+                  schemaPath: finalSchemaPath,
+                }}
+                forceVisible={true}
+                instructionId={instructionId}
+                isConfigAllowed={isConfigAllowed}
+              />
+            </div>,
+            portalTarget,
+          )
+        : null}
     </FieldProvider>
   )
 }
