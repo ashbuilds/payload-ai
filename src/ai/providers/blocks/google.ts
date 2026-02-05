@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { GoogleIcon } from '../icons.js'
+
 export const googleBlock: Block = {
   slug: 'google',
   custom: {
@@ -500,7 +502,7 @@ export const googleBlock: Block = {
       ],
     },
   ],
-  imageURL: '/provider-icons/google-gemini.webp',
+  imageURL: GoogleIcon,
   labels: {
     plural: 'Google Providers',
     singular: 'Google Gemini',

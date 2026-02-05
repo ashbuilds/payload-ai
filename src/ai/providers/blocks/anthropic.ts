@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { AnthropicIcon } from '../icons.js'
+
 export const anthropicBlock: Block = {
   slug: 'anthropic',
   fields: [
@@ -168,7 +170,7 @@ export const anthropicBlock: Block = {
       ],
     },
   ],
-  imageURL: '/provider-icons/anthropic.webp',
+  imageURL: AnthropicIcon,
   labels: {
     plural: 'Anthropic Providers',
     singular: 'Anthropic',

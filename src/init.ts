@@ -37,6 +37,7 @@ export const init = async (
     pagination: false,
     select: {
       'field-type': true,
+      'model-id': true,
       'schema-path': true,
     },
   })

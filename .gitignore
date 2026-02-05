@@ -28,5 +28,4 @@ dev/.next
 tsconfig.tsbuildinfo
 
 public/media
-dev/public/provider-icons
 .env

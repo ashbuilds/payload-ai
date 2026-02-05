@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { ElevenLabsIcon } from '../icons.js'
+
 export const elevenlabsBlock: Block = {
   slug: 'elevenlabs',
   custom: {
@@ -409,7 +411,7 @@ export const elevenlabsBlock: Block = {
       ],
     },
   ],
-  imageURL: '/provider-icons/elevenlabs.webp',
+  imageURL: ElevenLabsIcon,
   labels: {
     plural: 'ElevenLabs Providers',
     singular: 'ElevenLabs',

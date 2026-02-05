@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { CustomProviderIcon } from '../icons.js'
+
 export const openaiCompatibleBlock: Block = {
   slug: 'openai-compatible',
   fields: [
@@ -247,7 +249,7 @@ export const openaiCompatibleBlock: Block = {
       ],
     },
   ],
-  imageURL: '/provider-icons/custom-provider.png',
+  imageURL: CustomProviderIcon,
   labels: {
     plural: 'Custom Providers',
     singular: 'Custom Provider',

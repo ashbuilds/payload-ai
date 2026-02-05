@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { FalIcon } from '../icons.js'
+
 export const falBlock: Block = {
   slug: 'fal',
   fields: [
@@ -224,7 +226,7 @@ export const falBlock: Block = {
       ],
     },
   ],
-  imageURL: '/provider-icons/fai-ai.webp',
+  imageURL: FalIcon,
   labels: {
     plural: 'Fal Providers',
     singular: 'Fal AI',

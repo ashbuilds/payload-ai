@@ -1,5 +1,7 @@
 import type { Block } from 'payload'
 
+import { XAIIcon } from '../icons.js'
+
 export const xaiBlock: Block = {
   slug: 'xai',
   fields: [
@@ -171,7 +173,7 @@ export const xaiBlock: Block = {
       ],
     },
   ],
-  imageURL: '/provider-icons/xai-grok.webp',
+  imageURL: XAIIcon,
   labels: {
     plural: 'xAI Providers',
     singular: 'xAI Grok',

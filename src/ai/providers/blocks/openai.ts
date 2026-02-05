@@ -1,6 +1,8 @@
 import type { Block } from 'payload'
 
 
+import { OpenAIIcon } from '../icons.js'
+
 export const openaiBlock: Block = {
   slug: 'openai',
   custom: {
@@ -509,7 +511,7 @@ export const openaiBlock: Block = {
       ],
     },
   ],
-  imageURL: '/provider-icons/openai.webp',
+  imageURL: OpenAIIcon,
   labels: {
     plural: 'OpenAI Providers',
     singular: 'OpenAI',

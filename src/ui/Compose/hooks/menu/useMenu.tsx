@@ -37,7 +37,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
       const data = getData()
       if (path) {
         const val = getSiblingData(data, path)
-        hasValue = val !== undefined && val !== null && val !== ''
+        hasValue = val !== undefined && val !== null
         // For richTextFields, we might need a more robust check (e.g. check for root.children.length > 0)
         // But for now, simple truthiness covers most cases or at least defaults safely
         if (fieldType === 'richText' && val && typeof val === 'object' && 'root' in val) {
