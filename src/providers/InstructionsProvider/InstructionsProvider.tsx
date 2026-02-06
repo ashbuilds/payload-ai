@@ -85,7 +85,9 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         isConfigAllowed,
         openDrawer,
         promptFields,
+        promptFields,
         setActiveCollection,
+        setEnabledCollections,
       }}
     >
       {children}

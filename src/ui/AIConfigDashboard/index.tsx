@@ -3,8 +3,9 @@
 import { toast, useConfig } from '@payloadcms/ui'
 // @ts-expect-error - Next.js types are not resolving correctly with nodenext but runtime is fine
 import { useRouter } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
+import { InstructionsContext } from '../../providers/InstructionsProvider/context.js'
 import { excludeCollections } from '../../defaults.js'
 
 export const AIConfigDashboard: React.FC = () => {
@@ -15,6 +16,7 @@ export const AIConfigDashboard: React.FC = () => {
     },
   } = useConfig()
   const router = useRouter()
+  const { setEnabledCollections: setEnabledCollectionsInContext } = useContext(InstructionsContext)
 
   const [enabledCollections, setEnabledCollections] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -72,6 +74,9 @@ export const AIConfigDashboard: React.FC = () => {
 
       if (response.ok) {
         toast.success('Settings saved successfully')
+        if (setEnabledCollectionsInContext) {
+          setEnabledCollectionsInContext(enabledCollections)
+        }
         router.refresh()
       } else {
         toast.error('Failed to save settings')

@@ -280,12 +280,19 @@ export const aiSettingsGlobal: GlobalConfig = {
         if (data.providers) {
           data.providers = data.providers.map((provider: any) => {
             if (provider.apiKey) {
-              // If it looks like a masked key, don't re-encrypt (it means it wasn't changed)
+              const originalProvider = originalDoc?.providers?.find(
+                (p: any) => p.id === provider.id,
+              )
+
+              // If the key strictly equals the existing one (e.g. partial update merge), do nothing.
+              // This prevents re-encrypting an already encrypted key.
+              if (originalProvider?.apiKey && provider.apiKey === originalProvider.apiKey) {
+                return provider
+              }
+
+              // If it looks like a masked key, don't re-encrypt (it means it wasn't changed via UI)
               if (provider.apiKey.startsWith('sk-') && provider.apiKey.includes('****')) {
                 // Restore the original encrypted key from originalDoc
-                const originalProvider = originalDoc?.providers?.find(
-                  (p: any) => p.id === provider.id,
-                )
                 if (originalProvider?.apiKey) {
                   provider.apiKey = originalProvider.apiKey
                 }

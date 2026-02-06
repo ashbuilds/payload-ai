@@ -30,7 +30,8 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
     const { schemaPathMap } = updateFieldsConfig(collectionConfig)
 
     for (const [schemaPath, fieldInfo] of Object.entries(schemaPathMap)) {
-      const { label, relationTo, type } = fieldInfo as {
+      const { custom, label, relationTo, type } = fieldInfo as {
+        custom?: any
         label: string
         relationTo?: string
         type: string
@@ -53,12 +54,20 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
       }
 
       // Generate seed prompts
-      const { prompt, system } = defaultSeedPrompts({
+      let { prompt, system } = defaultSeedPrompts({
         fieldLabel: label,
         fieldSchemaPaths: {}, // We might not need the full map here for individual seeding
         fieldType: type,
         path: schemaPath,
       })
+
+      // Override with custom prompts if defined
+      if (custom?.ai?.prompt) {
+        prompt = custom.ai.prompt
+      }
+      if (custom?.ai?.system) {
+        system = custom.ai.system
+      }
 
       // Determine model-id based on field type
       let modelId = 'text'

@@ -50,7 +50,7 @@ export const Characters: CollectionConfig = {
           type: 'upload',
           hasMany: true,
           label: '',
-          relationTo: 'media',
+          relationTo: 'media'
         },
       ],
       label: 'Reference Images',
