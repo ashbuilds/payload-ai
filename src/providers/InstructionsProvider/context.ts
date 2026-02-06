@@ -20,7 +20,6 @@ export type InstructionsContextValue = {
   path?: string
   promptFields: SerializedPromptField[]
   schemaPath?: unknown
-  schemaPath?: unknown
   setActiveCollection?: React.Dispatch<React.SetStateAction<string>>
   setEnabledCollections?: React.Dispatch<React.SetStateAction<string[] | undefined>>
 }

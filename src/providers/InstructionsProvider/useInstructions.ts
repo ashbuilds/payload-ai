@@ -132,7 +132,7 @@ export const useInstructions = (
   return {
     ...context,
     ...(pathInstructions || {}),
-    disabled: !isCollectionEnabled,
+    disabled: !isCollectionEnabled || (pathInstructions?.disabled ?? false),
     promptEditorSuggestions,
   }
 }

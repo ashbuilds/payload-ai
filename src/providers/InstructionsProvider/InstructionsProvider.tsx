@@ -12,7 +12,7 @@ import { InstructionsContext } from './context.js'
 export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Initialize field tracking globally so ai-plugin-active class is added on field focus
   useActiveFieldTracking()
-  
+
   const [instructions, setInstructionsState] = useState({})
   const [promptFields, setPromptFields] = useState<SerializedPromptField[]>([])
   const [activeCollection, setActiveCollection] = useState('')
@@ -48,6 +48,22 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       openPayloadDrawer()
     }
   }, [drawerOpenCount, openPayloadDrawer])
+
+  const handleSave = useCallback(
+    ({ doc }) => {
+      setInstructionsState((prev) => {
+        return {
+          ...prev,
+          [doc['schema-path']]: {
+            id: doc.id,
+            disabled: !!doc.disabled,
+            fieldType: doc['field-type'],
+          },
+        }
+      })
+    },
+    [setInstructionsState],
+  )
 
   // This is here because each field have separate instructions and
   // their ID is needed to edit them for Drawer
@@ -85,13 +101,12 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         isConfigAllowed,
         openDrawer,
         promptFields,
-        promptFields,
         setActiveCollection,
         setEnabledCollections,
       }}
     >
       {children}
-      <DocumentDrawer />
+      <DocumentDrawer onSave={handleSave} />
     </InstructionsContext.Provider>
   )
 }
