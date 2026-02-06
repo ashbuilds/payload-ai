@@ -50,7 +50,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [drawerOpenCount, openPayloadDrawer])
 
   const handleSave = useCallback(
-    ({ doc }) => {
+    ({ doc }: { doc: any }) => {
       setInstructionsState((prev) => {
         return {
           ...prev,

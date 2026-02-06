@@ -30,7 +30,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
     const { schemaPathMap } = updateFieldsConfig(collectionConfig)
 
     for (const [schemaPath, fieldInfo] of Object.entries(schemaPathMap)) {
-      const { custom, label, relationTo, type } = fieldInfo as {
+      const { type, custom, label, relationTo } = fieldInfo as {
         custom?: any
         label: string
         relationTo?: string
@@ -42,6 +42,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
         collection: PLUGIN_INSTRUCTIONS_TABLE,
         depth: 0,
         limit: 1,
+        overrideAccess: true,
         where: {
           'schema-path': {
             equals: schemaPath,
@@ -50,16 +51,59 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
       })
 
       if (existingInstruction.totalDocs > 0) {
+        // If developer has provided custom prompts in the schema, update the existing record
+        // but only if the values have actually changed.
+        if (custom?.ai?.prompt || custom?.ai?.system) {
+          const doc = existingInstruction.docs[0] as any
+          const currentPrompt = doc['ai-prompts-tabs']?.prompt
+          const currentSystem = doc['ai-prompts-tabs']?.system
+
+          let needsUpdate = false
+          const updateData: any = {
+            'ai-prompts-tabs': {
+              ...(doc['ai-prompts-tabs'] || {}),
+            },
+          }
+
+          if (custom?.ai?.prompt && custom.ai.prompt !== currentPrompt) {
+            updateData['ai-prompts-tabs'].prompt = custom.ai.prompt
+            needsUpdate = true
+          }
+          if (custom?.ai?.system && custom.ai.system !== currentSystem) {
+            updateData['ai-prompts-tabs'].system = custom.ai.system
+            needsUpdate = true
+          }
+
+          if (needsUpdate) {
+            try {
+              await payload.update({
+                id: doc.id,
+                collection: PLUGIN_INSTRUCTIONS_TABLE,
+                data: updateData,
+                overrideAccess: true,
+              })
+            } catch (error) {
+              payload.logger.error(`Failed to update instruction for ${schemaPath}: ${error}`)
+            }
+          }
+        }
         continue
       }
 
       // Generate seed prompts
-      let { prompt, system } = defaultSeedPrompts({
+      const seeded = await defaultSeedPrompts({
         fieldLabel: label,
         fieldSchemaPaths: {}, // We might not need the full map here for individual seeding
         fieldType: type,
         path: schemaPath,
       })
+
+      if (!seeded || typeof seeded !== 'object') {
+        continue
+      }
+
+      let prompt = 'prompt' in seeded ? seeded.prompt : ''
+      let system = 'system' in seeded ? seeded.system : ''
 
       // Override with custom prompts if defined
       if (custom?.ai?.prompt) {
@@ -71,9 +115,15 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
 
       // Determine model-id based on field type
       let modelId = 'text'
-      if (type === 'richText') {modelId = 'richtext'}
-      if (type === 'upload') {modelId = 'image'} // defaulting to image generation for uploads
-      if (type === 'array') {modelId = 'array'}
+      if (type === 'richText') {
+        modelId = 'richtext'
+      }
+      if (type === 'upload') {
+        modelId = 'image'
+      } // defaulting to image generation for uploads
+      if (type === 'array') {
+        modelId = 'array'
+      }
 
       // Create new instruction
       try {
@@ -84,12 +134,13 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
               prompt,
               system,
             },
-           'field-type': type,
-           'model-id': modelId,
-           'relation-to': relationTo,
-           'schema-path': schemaPath,
-           'disabled': false,
+            disabled: false,
+            'field-type': type,
+            'model-id': modelId,
+            'relation-to': relationTo,
+            'schema-path': schemaPath,
           },
+          overrideAccess: true,
         })
       } catch (error) {
         payload.logger.error(`Failed to seed instruction for ${schemaPath}: ${error}`)

@@ -92,6 +92,11 @@ export const Characters: CollectionConfig = {
             description: 'Very short description used in UI and in prompts.',
             placeholder: 'A calm archivist who sees patterns others miss.',
           },
+          custom: {
+            ai: {
+              prompt: 'Write a one-sentence descriptive blurb for {{ name }}, who is a {{ role }}. Focus on their personality and presence.',
+            }
+          },
           label: 'Description',
         },
         {
@@ -388,6 +393,11 @@ export const Characters: CollectionConfig = {
       admin: {
         description: '2D portrait image used for UI/dialogue.',
       },
+      custom: {
+        ai: {
+          prompt: 'A professional character portrait of {{ name }}, a {{ role }}. Style: Realistic fantasy. Context: {{ description }}. Features: {{ visualProfile.demographics.ethnicity }}, {{ visualProfile.faceStructure.eyeColor }} eyes, {{ visualProfile.hair.hairStyle }} hair. Wearing {{ visualProfile.culturalEra.clothingStyle }}. Lighting: Dramatic cinematic lighting.',
+        }
+      },
       label: 'Portrait',
       relationTo: 'media',
     },
@@ -418,6 +428,12 @@ export const Characters: CollectionConfig = {
       admin: {
         description:
           'A longer biography/personality profile. Use AI Compose to generate consistent backstory and voice.',
+      },
+      custom: {
+        ai: {
+          prompt: 'Write a three-paragraph biography for {{ name }}. First paragraph: Background and origin as a {{ role }}. Second paragraph: Key personality traits based on "{{ description }}". Third paragraph: Current motivations and secrets.',
+          system: 'You are a master storyteller for a high-fantasy RPG world. Your prose is evocative, immersive, and captures the nuances of the Swahili coast and Indian Ocean trade regions.',
+        }
       },
       editor: lexicalEditor({
         features: ({ defaultFeatures, rootFeatures }) => {

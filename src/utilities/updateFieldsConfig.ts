@@ -1,7 +1,7 @@
 import type { CollectionConfig, GlobalConfig } from 'payload'
 
 interface UpdateFieldsConfig {
-  schemaPathMap: Record<string, string>
+  schemaPathMap: Record<string, any>
   updatedCollectionConfig: CollectionConfig | GlobalConfig
 }
 
@@ -30,9 +30,9 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
         ...schemaPathMap,
         [currentSchemaPath]: {
           type: field.type,
+          custom: field.custom,
           label: field.label || field.name,
           relationTo: field.relationTo,
-          custom: field.custom,
         },
       }
     }
