@@ -14,3 +14,12 @@ export const PLUGIN_API_ENDPOINT_FETCH_VOICES = `${PLUGIN_API_ENDPOINT_BASE}/ele
 // LLM Settings
 export const PLUGIN_DEFAULT_OPENAI_MODEL = `gpt-4o-mini`
 export const PLUGIN_DEFAULT_ANTHROPIC_MODEL = `claude-3-5-sonnet-latest`
+
+export const excludeCollections = [
+  'payload-preferences',
+  'payload-migrations',
+  'payload-locked-documents',
+  'ai-settings',
+  PLUGIN_INSTRUCTIONS_TABLE,
+  PLUGIN_AI_JOBS_TABLE,
+]

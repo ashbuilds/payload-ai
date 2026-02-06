@@ -12,7 +12,6 @@ import { PLUGIN_NAME } from './defaults.js'
 import { fetchFields } from './endpoints/fetchFields.js'
 import { fetchVoices } from './endpoints/fetchVoices.js'
 import { endpoints } from './endpoints/index.js'
-import { init } from './init.js'
 import { translations } from './translations/index.js'
 import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
@@ -22,9 +21,7 @@ const defaultPluginConfig: PluginConfig = {
     generate: ({ req }) => !!req.user,
     settings: ({ req }) => !!req.user,
   },
-  collections: {},
   disableSponsorMessage: false,
-  generatePromptOnInit: true,
 }
 
 const sponsorMessage = `
@@ -76,7 +73,6 @@ const payloadAiPlugin =
 
     const isActivated = isPluginActivated(pluginConfig)
     let updatedConfig: Config = { ...incomingConfig }
-    let collectionsFieldPathMap = {}
 
     if (isActivated) {
       const Instructions = instructionsCollection(pluginConfig)
@@ -104,7 +100,7 @@ const payloadAiPlugin =
 
       const collections = [...(incomingConfig.collections ?? []), Instructions, AIJobs]
       const globals = [...(incomingConfig.globals ?? []), aiSettingsGlobal]
-      const { collections: collectionSlugs, globals: globalsSlugs } = pluginConfig
+      const { globals: globalsSlugs } = pluginConfig
 
       const { components: { providers = [] } = {} } = incomingConfig.admin || {}
       const updatedProviders = [
@@ -126,16 +122,9 @@ const payloadAiPlugin =
       updatedConfig = {
         ...incomingConfig,
         collections: collections.map((collection) => {
-          if (collectionSlugs[collection.slug]) {
-            const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(collection)
-            collectionsFieldPathMap = {
-              ...collectionsFieldPathMap,
-              ...schemaPathMap,
-            }
-            return updatedCollectionConfig as CollectionConfig
-          }
-
-          return collection
+          // Always inject fields, but they will be dynamically enabled/disabled by the InstructionsProvider
+          const { updatedCollectionConfig } = updateFieldsConfig(collection)
+          return updatedCollectionConfig as CollectionConfig
         }),
         endpoints: [
           ...(incomingConfig.endpoints ?? []),
@@ -147,11 +136,7 @@ const payloadAiPlugin =
         ],
         globals: globals.map((global) => {
           if (globalsSlugs && globalsSlugs[global.slug]) {
-            const { schemaPathMap, updatedCollectionConfig } = updateFieldsConfig(global)
-            collectionsFieldPathMap = {
-              ...collectionsFieldPathMap,
-              ...schemaPathMap,
-            }
+            const { updatedCollectionConfig } = updateFieldsConfig(global)
             return updatedCollectionConfig as GlobalConfig
           }
 
@@ -176,20 +161,14 @@ const payloadAiPlugin =
         return
       }
 
-      await init(payload, collectionsFieldPathMap, pluginConfig)
-        .catch((error) => {
-          payload.logger.error(error, `— AI Plugin: Initialization Error`)
-        })
-        .finally(() => {
-          if (!pluginConfig.disableSponsorMessage) {
-            setTimeout(() => {
-              payload.logger.info(securityMessage)
-            }, 1000)
-            setTimeout(() => {
-              payload.logger.info(sponsorMessage)
-            }, 3000)
-          }
-        })
+      if (!pluginConfig.disableSponsorMessage) {
+        setTimeout(() => {
+          payload.logger.info(securityMessage)
+        }, 1000)
+        setTimeout(() => {
+          payload.logger.info(sponsorMessage)
+        }, 3000)
+      }
 
       // Inject AI capabilities with enhanced abstraction layer
       ;(payload as any).ai = {

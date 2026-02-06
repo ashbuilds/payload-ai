@@ -18,6 +18,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [activeCollection, setActiveCollection] = useState('')
   const [isConfigAllowed, setIsConfigAllowed] = useState(false)
   const [enabledLanguages, setEnabledLanguages] = useState<string[]>()
+  const [enabledCollections, setEnabledCollections] = useState<string[]>()
   const [debugging, setDebugging] = useState(false)
   const { user } = useAuth()
 
@@ -61,6 +62,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         await res.json().then((data) => {
           setIsConfigAllowed(data?.isConfigAllowed || false)
           setEnabledLanguages(data?.enabledLanguages || [])
+          setEnabledCollections(data?.enabledCollections || [])
           setInstructionsState(data?.fields || {})
           setPromptFields(data?.promptFields || [])
           setDebugging(data?.debugging || false)
@@ -76,6 +78,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       value={{
         activeCollection,
         debugging,
+        enabledCollections,
         enabledLanguages,
         hasInstructions: instructions && Object.keys(instructions).length > 0,
         instructions,

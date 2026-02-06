@@ -14,6 +14,16 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (config) => {
       })
 
       let isConfigAllowed = true // Users allowed to update prompts by default
+      let enabledCollections: string[] = []
+
+      try {
+        const { enabledCollections: storedEnabledCollections } = await req.payload.findGlobal({
+          slug: 'ai-settings',
+        })
+        enabledCollections = (storedEnabledCollections as string[]) || []
+      } catch (e) {
+        req.payload.logger.error('Failed to fetch AI settings')
+      }
 
       if (access?.settings) {
         try {
@@ -35,6 +45,7 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (config) => {
       return Response.json({
         ...options,
         debugging: config.debugging,
+        enabledCollections,
         fields: fieldMap,
         isConfigAllowed,
         promptFields: promptFields.map(({ getter: _getter, ...field }): SerializedPromptField => {

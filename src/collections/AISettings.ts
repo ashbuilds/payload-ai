@@ -24,6 +24,13 @@ export const aiSettingsGlobal: GlobalConfig = {
       required: true,
     },
     {
+      name: 'enabledCollections',
+      type: 'json',
+      admin: {
+        hidden: true,
+      },
+    },
+    {
       name: 'defaults',
       type: 'group',
       admin: {
@@ -244,6 +251,18 @@ export const aiSettingsGlobal: GlobalConfig = {
               }
             }
             return provider
+          })
+        }
+        return doc
+      },
+    ],
+    afterChange: [
+      async ({ doc, req }) => {
+        if (doc.enabledCollections && doc.enabledCollections.length > 0) {
+          const { seedProperties } = await import('../utilities/seedProperties.js')
+          await seedProperties({
+            enabledCollections: doc.enabledCollections,
+            req,
           })
         }
         return doc

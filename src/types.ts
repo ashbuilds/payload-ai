@@ -57,9 +57,6 @@ export interface PluginConfig {
    * By default, all AI features require authentication
    */
   access?: PluginConfigAccess
-  collections: {
-    [key: CollectionSlug]: boolean
-  }
   debugging?: boolean
   disableSponsorMessage?: boolean
   editorConfig?: { nodes: JSONSchema[] }
