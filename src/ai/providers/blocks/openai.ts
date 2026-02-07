@@ -358,7 +358,7 @@ export const openaiBlock: Block = {
                   RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
                 },
                 description: 'Keep this list short. Enable only the models you actually use.',
-                initCollapsed: false,
+                initCollapsed: true,
               },
               label: 'Available Models',
               labels: {

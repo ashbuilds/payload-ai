@@ -343,7 +343,7 @@ export const googleBlock: Block = {
                   RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
                 },
                 description: 'Keep this list short. Enable only the models you actually use.',
-                initCollapsed: false,
+                initCollapsed: true,
               },
               defaultValue: [
                 // Text models
@@ -388,7 +388,8 @@ export const googleBlock: Block = {
                   id: 'imagen-3.0-fast-generate-001',
                   name: 'Imagen 3 (Fast)',
                   enabled: true,
-                  responseModalities: ['IMAGE'],
+                  // TODO: fix this with proper definition for multimodel or image model only
+                  // responseModalities: ['IMAGE'],
                   useCase: 'image',
                 },
                 {

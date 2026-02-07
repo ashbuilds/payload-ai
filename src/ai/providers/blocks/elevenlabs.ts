@@ -300,7 +300,7 @@ export const elevenlabsBlock: Block = {
                 },
                 description:
                   'Configure TTS models. Use the Voices and Provider Options tabs for detailed settings.',
-                initCollapsed: false,
+                initCollapsed: true,
               },
               defaultValue: [
                 {
