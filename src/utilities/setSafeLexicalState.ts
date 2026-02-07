@@ -62,6 +62,43 @@ const sanitizeLexicalState = (state: any): any => {
       node.style = node.style || ''
       node.detail = node.detail ?? 0
       node.format = node.format ?? 0
+    } else {
+      // Auto-fixing: If a block node has 'text' property but no children (LLM hallucination),
+      // convert it to a TextNode child.
+      if (node.text && typeof node.text === 'string' && (!node.children || node.children.length === 0)) {
+        node.children = [
+          {
+            type: 'text',
+            text: node.text,
+            mode: 0,
+            style: '',
+            detail: 0,
+            format: 0,
+            version: 1,
+          }
+        ]
+        delete node.text
+      }
+
+      // Element/Block Node Defaults
+      // Most block nodes (paragraph, list, listitem, heading, quote) require these
+      node.indent = node.indent ?? 0
+      node.format = node.format ?? ''
+      node.direction = node.direction || 'ltr'
+      
+      if (node.type === 'list') {
+        node.listType = node.listType || 'bullet'
+        node.tag = node.tag || 'ul'
+        node.start = node.start ?? 1
+      }
+      
+      if (node.type === 'listitem') {
+        node.value = node.value ?? 1
+      }
+      
+      if (node.type === 'heading') {
+         node.tag = node.tag || 'h1'
+      }
     }
 
     return node
@@ -94,6 +131,7 @@ export const setSafeLexicalState = (state: unknown, editorInstance: LexicalEdito
 
     editorInstance.setEditorState(editorState)
   } catch (_error) {
+    console.log("errrro", _error, state)
     // Silently catch errors during streaming to avoid console noise.
     // Lexical's parseEditorState is very strict and will throw if the
     // object structure is even slightly incomplete during the stream.

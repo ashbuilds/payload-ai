@@ -1,452 +1,314 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
 
-import { isObjectSchema } from '../utils/isObjectSchema.js'
+// Reusable individual node schemas (OpenAI Strict Mode Compliant)
+// All properties in 'properties' MUST be listed in 'required'.
+// 'additionalProperties' MUST be false.
 
-export interface LexicalNodeSchema extends JSONSchema {
-  $schema?: string
-  additionalProperties?: boolean
-  definitions?: Record<string, any>
-  properties: {
-    [key: string]: any
-    children?: {
-      items: {
-        $ref?: string
-        anyOf?: { $ref: string }[]
-      }
-      type: 'array'
-    }
-    type?: {
-      enum: string[]
-      type: 'string'
-    }
-  }
-  required?: string[]
-  type: 'object'
-}
-
-export const documentSchema: LexicalNodeSchema = {
+const TextNodeSchema = {
   type: 'object',
-  $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
-  definitions: {
-    LineBreakNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['linebreak'] },
-        version: { type: 'number' },
-      },
-      required: ['type', 'version'],
-    },
-    TabNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['tab'] },
-        version: { type: 'number' },
-      },
-      required: ['type', 'version'],
-    },
-    // Text Node (Leaf Node)
-    TextNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['text'] },
-        detail: {
-          type: 'number',
-          description: 'Text detail flags',
-          enum: [
-            0, // No details
-            1, // IS_DIRECTIONLESS
-            2, // IS_UNMERGEABLE
-            3, // IS_DIRECTIONLESS + IS_UNMERGEABLE
-          ],
-          examples: [
-            { description: 'No special details', value: 0 },
-            { description: 'Directionless', value: 1 },
-            { description: 'Unmergeable', value: 2 },
-            { description: 'Directionless + Unmergeable', value: 3 },
-          ],
-        },
-        direction: {
-          type: ['string', 'null'],
-          enum: ['ltr', null],
-        },
-        format: {
-          type: 'number',
-          description: `Format flags for text:
-    0 = No format
-    1 = Bold
-    2 = Italic
-    3 = Bold + Italic (1|2)
-    4 = Strikethrough
-    8 = Underline
-    9 = Bold + Underline (1|8)
-    16 = Code
-    32 = Subscript
-    64 = Superscript
-    128 = Highlight
-    
-    Formats can be combined using binary OR (|).
-    Example combinations:
-    - Bold + Italic = 1|2 = 3
-    - Bold + Underline = 1|8 = 9
-    - Italic + Underline = 2|8 = 10
-    - Bold + Italic + Underline = 1|2|8 = 11`,
-        },
-        indent: { type: 'number' },
-        mode: {
-          type: 'number',
-          description: 'Text mode flags',
-          enum: [
-            0, // Normal
-            1, // Token
-            2, // Segmented
-          ],
-          examples: [
-            { description: 'Normal text', value: 0 },
-            { description: 'Token text', value: 1 },
-            { description: 'Segmented text', value: 2 },
-          ],
-        },
-        style: {
-          type: 'string',
-          description: 'CSS style string (e.g., "color: red; font-size: 12px;")',
-        },
-        text: { type: 'string' },
-        version: { type: 'number' },
-      },
-      required: [
-        'type',
-        'text',
-        'format',
-        'style',
-        'mode',
-        'detail',
-        'direction',
-        'indent',
-        'version',
-      ],
-    },
-    // Styled Table Cell Node
-    TableCellNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['tablecell'] },
-        children: {
-          type: 'array',
-          items: {
-            $ref: '#/definitions/TextNode',
-          },
-        },
-        colSpan: { type: 'number' },
-        direction: {
-          type: ['string', 'null'],
-          enum: ['ltr', null],
-        },
-        headerState: { type: 'number' },
-        indent: { type: 'number' },
-        version: { type: 'number' },
-        width: {
-          type: ['null'],
-          enum: [null],
-        },
-      },
-      required: [
-        'type',
-        'children',
-        'headerState',
-        'colSpan',
-        'width',
-        'direction',
-        'indent',
-        'version',
-      ],
-    },
-    // Styled Table Row Node
-    TableRowNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['tablerow'] },
-        children: {
-          type: 'array',
-          items: {
-            $ref: '#/definitions/TableCellNode',
-          },
-        },
-        height: { type: 'number' },
-      },
-      required: ['type', 'children', 'height'],
-    },
-    // Styled Table Node
-    TableNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['table'] },
-        children: {
-          type: 'array',
-          items: {
-            $ref: '#/definitions/TableRowNode',
-          },
-        },
-      },
-      required: ['type', 'children'],
-    },
-    // Heading Node
-    HeadingNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['heading'] },
-        children: {
-          type: 'array',
-          items: {
-            anyOf: [
-              { $ref: '#/definitions/TextNode' },
-              { $ref: '#/definitions/LinkNode' },
-              { $ref: '#/definitions/LineBreakNode' },
-              { $ref: '#/definitions/TabNode' },
-            ],
-          },
-        },
-        direction: {
-          type: ['string', 'null'],
-          enum: ['ltr', null],
-        },
-        indent: { type: 'number' },
-        tag: { type: 'string', enum: ['h1', 'h2', 'h3'] },
-        version: { type: 'number' },
-      },
-      required: ['type', 'tag', 'children', 'direction', 'indent', 'version'],
-    },
-    // Paragraph Node
-    ParagraphNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['paragraph'] },
-        children: {
-          type: 'array',
-          items: {
-            anyOf: [
-              { $ref: '#/definitions/TextNode' },
-              { $ref: '#/definitions/LinkNode' },
-              { $ref: '#/definitions/CodeNode' },
-              { $ref: '#/definitions/LineBreakNode' },
-              { $ref: '#/definitions/TabNode' },
-            ],
-          },
-        },
-        direction: {
-          type: ['string', 'null'],
-          enum: ['ltr', null],
-        },
-        format: {
-          type: 'string',
-          description:
-            'Format alignment based on content. Prioritize "start", then "center", and use "right" only when appropriate.',
-          enum: ['start', 'center', 'right'],
-        },
-        indent: { type: 'number' },
-        textFormat: { type: 'number' },
-        textStyle: {
-          type: 'string',
-          description: 'CSS style string (e.g., "color: red; font-size: 12px;")',
-        },
-        version: { type: 'number' },
-      },
-      required: [
-        'type',
-        'children',
-        'direction',
-        'format',
-        'indent',
-        'textFormat',
-        'textStyle',
-        'version',
-      ],
-    },
-    // Link Node
-    LinkNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['link'] },
-        children: {
-          type: 'array',
-          items: {
-            $ref: '#/definitions/TextNode',
-          },
-        },
-        url: { type: 'string' },
-      },
-      required: ['type', 'url', 'children'],
-    },
-    // List Item Node
-    ListItemNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        // NOTE: Do not change the position of "indent", models like gpt generate properties as they are
-        //  defined in schema, moving the position of property "indent"
-        //  can cause issue with schema validation while streaming generated json to lexical editor
-        indent: { type: 'number', enum: [0, 1] },
-
-        type: { type: 'string', enum: ['listitem'] },
-        children: {
-          type: 'array',
-          items: {
-            anyOf: [
-              { $ref: '#/definitions/ParagraphNode' },
-              { $ref: '#/definitions/ListNode' },
-              { $ref: '#/definitions/LineBreakNode' },
-            ],
-          },
-        },
-      },
-      required: ['indent', 'type', 'children'],
-    },
-    // List Node
-    ListNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['list'] },
-        children: {
-          type: 'array',
-          items: {
-            $ref: '#/definitions/ListItemNode',
-          },
-        },
-        listType: { type: 'string', enum: ['bullet', 'number'] },
-      },
-      required: ['type', 'listType', 'children'],
-    },
-    // Quote Node
-    QuoteNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['quote'] },
-        children: {
-          type: 'array',
-          items: {
-            anyOf: [
-              { $ref: '#/definitions/TextNode' },
-              { $ref: '#/definitions/ParagraphNode' },
-              { $ref: '#/definitions/LineBreakNode' },
-              { $ref: '#/definitions/TabNode' },
-            ],
-          },
-        },
-      },
-      required: ['type', 'children'],
-    },
-    // Code Node
-    CodeNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['code'] },
-        code: { type: 'string' },
-        language: { type: 'string' },
-      },
-      required: ['type', 'code', 'language'],
-    },
-    // Horizontal Rule Node
-    HorizontalRuleNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['horizontalrule'] },
-      },
-      required: ['type'],
-    },
-    // Image Node
-    ImageNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['image'] },
-        alt: { type: 'string' },
-        caption: {
-          type: 'array',
-          items: {
-            $ref: '#/definitions/TextNode',
-          },
-        },
-        src: { type: 'string' },
-      },
-      required: ['type', 'src', 'alt', 'caption'],
-    },
-    // Root Node
-    RootNode: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        type: { type: 'string', enum: ['root'] },
-        children: {
-          type: 'array',
-          items: {
-            anyOf: [
-              { $ref: '#/definitions/TextNode' },
-              { $ref: '#/definitions/HeadingNode' },
-              { $ref: '#/definitions/ParagraphNode' },
-              { $ref: '#/definitions/LinkNode' },
-              { $ref: '#/definitions/ListNode' },
-              { $ref: '#/definitions/QuoteNode' },
-              { $ref: '#/definitions/CodeNode' },
-              { $ref: '#/definitions/HorizontalRuleNode' },
-              { $ref: '#/definitions/ImageNode' },
-              { $ref: '#/definitions/TableNode' },
-            ],
-          },
-        },
-        direction: {
-          type: ['string', 'null'],
-          enum: ['ltr', null],
-        },
-        indent: { type: 'number' },
-        version: { type: 'number' },
-      },
-      required: ['type', 'children', 'direction', 'indent', 'version'],
-    },
-  },
   properties: {
-    root: {
-      $ref: '#/definitions/RootNode',
-    },
+    type: { type: 'string', enum: ['text'] },
+    detail: { type: 'number' },
+    direction: { type: ['string', 'null'], enum: ['ltr', null] },
+    format: { type: 'number' },
+    indent: { type: 'number' },
+    mode: { type: 'number' },
+    style: { type: 'string' },
+    text: { type: 'string' },
+    version: { type: 'number' },
   },
-  required: ['root'],
+  required: [
+    'type',
+    'text',
+    'format',
+    'style',
+    'mode',
+    'detail',
+    'direction',
+    'indent',
+    'version',
+  ],
 }
 
-export const lexicalJsonSchema = (customNodes: JSONSchema[] | undefined) => {
-  const schema = structuredClone(documentSchema)
+const LinkNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['link'] },
+    children: {
+      type: 'array',
+      items: { $ref: '#/definitions/TextNode' }, // Links only contain text usually
+    },
+    direction: { type: ['string', 'null'], enum: ['ltr', null] },
+    format: { type: 'string' }, // sometimes link has format?
+    indent: { type: 'number' },
+    url: { type: 'string' },
+    version: { type: 'number' },
+  },
+  required: ['type', 'url', 'children', 'version', 'format', 'indent', 'direction'],
+}
 
-  if (Array.isArray(customNodes) && customNodes.length > 0) {
-    customNodes.forEach((nodeObj) => {
-      for (const [nodeName, nodeDefinition] of Object.entries(nodeObj)) {
-        // @ts-ignore
-        schema.definitions[nodeName] = nodeDefinition
+const LineBreakNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['linebreak'] },
+    version: { type: 'number' },
+  },
+  required: ['type', 'version'],
+}
 
-        // @ts-ignore
-        const rootNode = schema.definitions['RootNode']
-        if (isObjectSchema(rootNode)) {
-          const children = rootNode.properties?.children
-          const items = children?.items
-          const anyOfList = (items as any)?.anyOf
+const TabNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['tab'] },
+    version: { type: 'number' },
+  },
+  required: ['type', 'version'],
+}
 
-          if (Array.isArray(anyOfList)) {
-            anyOfList.push({ $ref: `#/definitions/${nodeName}` })
-          }
-        }
-      }
-    })
+// Block Nodes (Recursive Children)
+
+const ParagraphNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['paragraph'] },
+    children: {
+      type: 'array',
+      items: { $ref: '#/definitions/InlineNode' },
+    },
+    direction: { type: ['string', 'null'], enum: ['ltr', null] },
+    format: { type: 'string', enum: ['start', 'center', 'right', 'justify', ''] },
+    indent: { type: 'number' },
+    textFormat: { type: 'number' },
+    textStyle: { type: 'string' },
+    version: { type: 'number' },
+  },
+  required: [
+    'type',
+    'children',
+    'direction',
+    'format',
+    'indent',
+    'textFormat',
+    'textStyle',
+    'version',
+  ],
+}
+
+const HeadingNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['heading'] },
+    children: {
+      type: 'array',
+      items: { $ref: '#/definitions/InlineNode' },
+    },
+    direction: { type: ['string', 'null'], enum: ['ltr', null] },
+    format: { type: 'string' }, // Headings can have alignment
+    indent: { type: 'number' },
+    tag: { type: 'string', enum: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] },
+    version: { type: 'number' },
+  },
+  required: ['type', 'tag', 'children', 'direction', 'indent', 'format', 'version'],
+}
+
+const QuoteNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['quote'] },
+    children: {
+      type: 'array',
+      items: { $ref: '#/definitions/InlineNode' },
+    },
+    direction: { type: ['string', 'null'], enum: ['ltr', null] },
+    format: { type: 'string' },
+    indent: { type: 'number' },
+    version: { type: 'number' },
+  },
+  required: ['type', 'children', 'direction', 'format', 'indent', 'version'],
+}
+
+const CodeNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['code'] },
+    children: { // Code usually contains raw text nodes or tab/newline
+       type: 'array', 
+       items: { $ref: '#/definitions/InlineNode' } // simplified
+    },
+    direction: { type: ['string', 'null'], enum: ['ltr', null] },
+    format: { type: 'string' },
+    indent: { type: 'number' },
+    language: { type: ['string', 'null'] },
+    version: { type: 'number' },
+  },
+  required: ['type', 'children', 'language', 'version', 'format', 'indent', 'direction'],
+}
+
+// List related schemas
+const ListItemNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['listitem'] },
+    children: {
+      type: 'array',
+      items: { $ref: '#/definitions/BlockNode' }, // ListItems contain blocks (paragraphs, lists)
+    },
+    direction: { type: ['string', 'null'], enum: ['ltr', null] },
+    format: { type: 'string' },
+    // NOTE: Do not change the position of "indent", models like gpt generate properties as they are
+    //  defined in schema, moving the position of property "indent"
+    //  can cause issue with schema validation while streaming generated json to lexical editor
+    indent: { type: 'number', enum: [0, 1] },
+    value: { type: 'number' },
+    version: { type: 'number' },
+  },
+  required: ['type', 'value', 'indent', 'children', 'direction', 'format', 'version'],
+}
+
+const ListNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['list'] },
+    children: {
+      type: 'array',
+      items: { $ref: '#/definitions/ListItemNode' },
+    },
+    direction: { type: ['string', 'null'], enum: ['ltr', null] },
+    format: { type: 'string' },
+    indent: { type: 'number' },
+    listType: { type: 'string', enum: ['number', 'bullet', 'check'] },
+    start: { type: 'number' },
+    tag: { type: 'string', enum: ['ul', 'ol'] },
+    version: { type: 'number' },
+  },
+  required: ['type', 'listType', 'start', 'children', 'direction', 'format', 'indent', 'version', 'tag'],
+}
+
+const HorizontalRuleNodeSchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', enum: ['horizontalrule'] },
+    version: { type: 'number' },
+  },
+  required: ['type', 'version'],
+}
+
+// Map mapping node types to their schema definitions and names
+const NODE_DEFINITIONS: Record<string, { name: string; schema: any }> = {
+  code: { name: 'CodeNode', schema: CodeNodeSchema },
+  heading: { name: 'HeadingNode', schema: HeadingNodeSchema },
+  horizontalrule: { name: 'HorizontalRuleNode', schema: HorizontalRuleNodeSchema },
+  linebreak: { name: 'LineBreakNode', schema: LineBreakNodeSchema },
+  link: { name: 'LinkNode', schema: LinkNodeSchema },
+  list: { name: 'ListNode', schema: ListNodeSchema },
+  listitem: { name: 'ListItemNode', schema: ListItemNodeSchema },
+  paragraph: { name: 'ParagraphNode', schema: ParagraphNodeSchema },
+  quote: { name: 'QuoteNode', schema: QuoteNodeSchema },
+  tab: { name: 'TabNode', schema: TabNodeSchema },
+  text: { name: 'TextNode', schema: TextNodeSchema },
+}
+
+export const ALL_SUPPORTED_NODES = Object.keys(NODE_DEFINITIONS)
+
+/**
+ * Dynamically builds a Lexical JSON Schema based on enabled nodes.
+ * @param enabledNodeTypes Array of enabled node type strings (e.g., ['paragraph', 'text', 'heading'])
+ */
+export const buildLexicalSchema = (enabledNodeTypes: string[]): JSONSchema => {
+  // Always enable core nodes
+  const activeTypes = new Set(enabledNodeTypes)
+  activeTypes.add('root')
+  activeTypes.add('text')
+  activeTypes.add('paragraph')
+  activeTypes.add('linebreak')
+  activeTypes.add('tab') // often implicitly available
+
+  const definitions: Record<string, any> = {}
+  const blockNodeRefs: { $ref: string }[] = []
+  const inlineNodeRefs: { $ref: string }[] = []
+
+  // Helper to add definition if not present
+  const addDef = (type: string) => {
+    const def = NODE_DEFINITIONS[type]
+    if (def && !definitions[def.name]) {
+      definitions[def.name] = def.schema
+    }
   }
 
-  return schema
+  // 1. Populate Definitions based on enabled types
+  activeTypes.forEach((type) => {
+    addDef(type)
+    
+    // Dependencies
+    if (type === 'list') {
+      addDef('listitem') 
+    }
+  })
+
+  // 2. Build Refs groups for polymorphism
+  // Inline: Text, Link, LineBreak, Tab
+  if (activeTypes.has('text')) { inlineNodeRefs.push({ $ref: '#/definitions/TextNode' }) }
+  if (activeTypes.has('link')) { inlineNodeRefs.push({ $ref: '#/definitions/LinkNode' }) }
+  if (activeTypes.has('linebreak')) { inlineNodeRefs.push({ $ref: '#/definitions/LineBreakNode' }) }
+  if (activeTypes.has('tab')) { inlineNodeRefs.push({ $ref: '#/definitions/TabNode' }) }
+
+  // Block: Paragraph, Heading, Quote, Code, List, HorizontalRule, Image...
+  if (activeTypes.has('paragraph')) { blockNodeRefs.push({ $ref: '#/definitions/ParagraphNode' }) }
+  if (activeTypes.has('heading')) { blockNodeRefs.push({ $ref: '#/definitions/HeadingNode' }) }
+  if (activeTypes.has('quote')) { blockNodeRefs.push({ $ref: '#/definitions/QuoteNode' }) }
+  if (activeTypes.has('code')) { blockNodeRefs.push({ $ref: '#/definitions/CodeNode' }) }
+  if (activeTypes.has('list')) { blockNodeRefs.push({ $ref: '#/definitions/ListNode' }) }
+  if (activeTypes.has('horizontalrule')) { blockNodeRefs.push({ $ref: '#/definitions/HorizontalRuleNode' }) }
+
+  // Add the groupings to definitions
+  definitions.InlineNode = {
+    anyOf: inlineNodeRefs
+  }
+  
+  definitions.BlockNode = {
+    anyOf: blockNodeRefs
+  }
+
+  // Root Schema
+  const RootNodeSchema = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      type: { type: 'string', enum: ['root'] },
+      children: {
+        type: 'array',
+        items: { $ref: '#/definitions/BlockNode' },
+      },
+      direction: { type: ['string', 'null'], enum: ['ltr', null] },
+      format: { type: 'string' },
+      indent: { type: 'number' },
+      version: { type: 'number' },
+    },
+    required: ['type', 'children', 'direction', 'format', 'indent', 'version'],
+  }
+
+  definitions.RootNode = RootNodeSchema
+
+  return {
+    type: 'object',
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    additionalProperties: false,
+    definitions,
+    properties: {
+      root: { $ref: '#/definitions/RootNode' },
+      version: { type: 'number' } // Only if wrapped in { root: ..., version: ... }
+    },
+    required: ['root'],
+  } as unknown as JSONSchema
 }

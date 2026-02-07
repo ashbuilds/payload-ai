@@ -6,7 +6,7 @@ import * as process from 'node:process'
 import type { Endpoints, PluginConfig } from '../types.js'
 
 import { checkAccess } from '../access/checkAccess.js'
-import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
+import { buildLexicalSchema } from '../ai/schemas/lexicalJsonSchema.js'
 import {
   PLUGIN_AI_JOBS_TABLE,
   PLUGIN_API_ENDPOINT_GENERATE,
@@ -85,7 +85,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           let allowedEditorSchema = editorSchema
           if (allowedEditorNodes.length) {
-            allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
+            allowedEditorSchema = buildLexicalSchema(allowedEditorNodes) as any
           }
 
           const schemaPath = String(instructions['schema-path'])

@@ -1,5 +1,6 @@
-import { useForm } from '@payloadcms/ui'
 import type { LexicalEditor } from 'lexical'
+
+import { useForm } from '@payloadcms/ui'
 import { useEffect, useRef } from 'react'
 
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
@@ -17,6 +18,7 @@ export const useStreamingUpdate = ({ editor, isLoading, object }: UseStreamingUp
 
   // Ref for latest object to avoid effect re-runs during high-frequency streaming
   const objectRef = useRef(object)
+  console.log('currentObject : ', object)
   objectRef.current = object
 
   useEffect(() => {

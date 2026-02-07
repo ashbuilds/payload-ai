@@ -1,14 +1,14 @@
 import { experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
+import { toast, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCallback, useMemo, useRef } from 'react'
 
 import type { ActionMenuItems } from '../../../types.js'
 
-import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../../../defaults.js'
+import { buildLexicalSchema } from '../../../ai/schemas/lexicalJsonSchema.js'
+import { PLUGIN_API_ENDPOINT_GENERATE } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
-import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
 import { fieldToJsonSchema } from '../../../utilities/fieldToJsonSchema.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useGenerateUpload } from './useGenerateUpload.js'
@@ -25,8 +25,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { field, path: pathFromContext } = useFieldProps()
   const { editor } = useEditorConfigContext()
 
-  const { config } = useConfig()
-  const { collections } = config
 
   // Use dispatchFields to update values without subscribing to them, avoiding re-renders during streaming
   // dispatchFields is handled inside useStreamingUpdate now, so we don't need it here
@@ -43,42 +41,29 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const localFromContext = useLocale()
 
   // Editor Schema Setup
-  const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
-  const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection?.admin ?? {}
-  const { schema: editorSchema = {} } = editorConfig
+  // We no longer need editorSchema for streaming validation as we use a permissive schema.
+  // const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection?.admin ?? {}
+  // const { schema: editorSchema = {} } = editorConfig
 
-  const memoizedValidator = useMemo(() => {
-    return editorSchemaValidator(editorSchema)
-  }, [editorSchema])
+  // Define a permissive schema for real-time streaming to avoid blocking "loose" AI output.
+  // We rely on setSafeLexicalState to sanitize and repair the structure for the editor.
+  // Dynamic Schema Generation (OpenAI Strict Mode Compliant)
+  // We identify enabled nodes from the editor instance to build a schema that only allows supported features.
+  const enabledNodes = useMemo(() => {
+    return editor ? Array.from(editor._nodes.keys()) : []
+  }, [editor])
 
-  const memoizedSchema = useMemo(
-    () =>
-      jsonSchema(editorSchema, {
-        validate: (value) => {
-          const isValid = memoizedValidator(value)
+  const dynamicSchema = useMemo(() => {
+    return jsonSchema(buildLexicalSchema(enabledNodes) as any)
+  }, [enabledNodes])
 
-          if (isValid) {
-            return {
-              success: true,
-              value,
-            }
-          } else {
-            return {
-              error: new Error('Invalid schema'),
-              success: false,
-            }
-          }
-        },
-      }),
-    [memoizedValidator],
-  )
 
   // Active JSON schema for useObject based on field type
   const activeSchema = useMemo(() => {
     const f = field as any
     const fieldType = f?.type as string | undefined
     if (fieldType === 'richText') {
-      return memoizedSchema
+      return dynamicSchema
     }
     if (f && f.name && fieldType) {
       const schemaJson = fieldToJsonSchema(f)
@@ -87,7 +72,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       }
     }
     return undefined
-  }, [field, memoizedSchema])
+  }, [field, dynamicSchema])
 
   const {
     isLoading: loadingObject,

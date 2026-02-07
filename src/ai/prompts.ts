@@ -130,9 +130,9 @@ export const defaultSeedPrompts: SeedPromptFunction = ({
 field-name: ${fieldLabel}
 schema-path: ${path}
 
-Give me a prompt that relate to the given field type and schema path.
+Give me a content that relate to the given field type and schema path.
 
-Generated prompt:
+Generated content:
 `,
     system: `# AI Assistant for CMS Prompt Generation
 

@@ -59,7 +59,7 @@ export interface PluginConfig {
   access?: PluginConfigAccess
   debugging?: boolean
   disableSponsorMessage?: boolean
-  editorConfig?: { nodes: JSONSchema[] }
+  editorConfig?: { nodes: string[] }
   fields?: Field[]
   generatePromptOnInit?: boolean
   generationModels?: ((defaultModels: GenerationModel[]) => GenerationModel[]) | GenerationModel[]

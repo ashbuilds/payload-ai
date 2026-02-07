@@ -4,6 +4,7 @@ const algorithm = 'aes-256-cbc'
 const ivLength = 16
 
 export function encrypt(text: string, secret: string): string {
+  console.log('[Encryption] Encrypting text', { length: text?.length })
   if (!text) {return text}
   if (!secret) {throw new Error('No secret provided for encryption')}
 
@@ -13,10 +14,13 @@ export function encrypt(text: string, secret: string): string {
   const cipher = crypto.createCipheriv(algorithm, key, iv)
   let encrypted = cipher.update(text)
   encrypted = Buffer.concat([encrypted, cipher.final()])
-  return iv.toString('hex') + ':' + encrypted.toString('hex')
+  const result = iv.toString('hex') + ':' + encrypted.toString('hex')
+  console.log('[Encryption] Encrypted result', { length: result.length })
+  return result
 }
 
 export function decrypt(text: string, secret: string): string {
+  console.log('[Encryption] Decrypting text', { length: text?.length, isEncryptedFormat: text?.includes(':') })
   if (!text) {return text}
   if (!secret) {throw new Error('No secret provided for decryption')}
 
