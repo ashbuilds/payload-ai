@@ -41,6 +41,10 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     serverURL,
   } = config
 
+  // Use dispatchFields to update values without subscribing to them, avoiding re-renders during streaming
+  const { dispatchFields } = useForm()
+  
+  // Keep setValue for non-streaming updates (one-off), but do NOT destructure 'value' to avoid subscriptions
   const { setValue } = useField<any>({
     path: pathFromContext ?? '',
   })
@@ -120,8 +124,17 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     onFinish: (result) => {
       if (result.object && field) {
         if (field.type === 'richText') {
+          // Set state directly to editor first for immediate feedback
+          setSafeLexicalState(result.object, editor)
+
+          // Update history
           setHistory(result.object)
-          setValue(result.object)
+
+          // Delay Payload's setValue slightly to ensure editor stability
+          // and prevent field-level re-renders from interfering with the final state.
+          setTimeout(() => {
+            setValue(result.object)
+          }, 150)
         } else if ('name' in field) {
           setHistory(result.object[field.name])
           setValue(result.object[field.name])
@@ -133,19 +146,32 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     schema: activeSchema as any,
   })
 
+  // Active richText object that updates in real-time.
+  // The recursive sanitization in setSafeLexicalState will ensure
+  // that we only apply valid, partial states to the editor,
+  // preventing errors while allowing smooth streaming.
   useEffect(() => {
     if (!object) {
       return
     }
 
-    requestAnimationFrame(() => {
+    const reqId = requestAnimationFrame(() => {
       if (field?.type === 'richText') {
-      setSafeLexicalState(object, editor)
+        setSafeLexicalState(object, editor)
       } else if (field && 'name' in field && object[field.name]) {
-        setValue(object[field.name])
+         // Use dispatchFields for high-frequency streaming updates to avoid re-renders
+         dispatchFields({
+          type: 'UPDATE',
+          path: pathFromContext ?? '',
+          value: object[field.name],
+        } as any)
       }
     })
-  }, [object, editor, field, setValue])
+
+    return () => {
+      cancelAnimationFrame(reqId)
+    }
+  }, [object, editor, field, dispatchFields, pathFromContext])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
@@ -191,6 +217,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         'Content-Type': 'application/json',
       },
       method: 'POST',
+      
     })
       .then(async (uploadResponse) => {
         if (uploadResponse.ok) {

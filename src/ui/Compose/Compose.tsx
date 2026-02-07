@@ -161,13 +161,15 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, forceVisible, inst
     path: pathFromContext,
   })
 
-  const setIfValueIsLexicalState = useCallback((val: any) => {
-    if (val && typeof val === 'object' && 'root' in val && lexicalEditor) {
-      setSafeLexicalState(JSON.stringify(val), lexicalEditor)
-    }
-
-    // DO NOT PROVIDE lexicalEditor as a dependency, it freaks out and does not update the editor after first undo/redo - revisit
-  }, [])
+  const setIfValueIsLexicalState = useCallback(
+    (val: any) => {
+      if (val && typeof val === 'object' && 'root' in val && lexicalEditor) {
+        // Pass the object directly to our safe setter which handles validation
+        setSafeLexicalState(val, lexicalEditor)
+      }
+    },
+    [lexicalEditor],
+  )
 
   const popupRender = useCallback(
     ({ close }: { close: () => void }) => {
