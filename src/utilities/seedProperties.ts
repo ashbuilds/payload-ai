@@ -55,22 +55,18 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
         // but only if the values have actually changed.
         if (custom?.ai?.prompt || custom?.ai?.system) {
           const doc = existingInstruction.docs[0] as any
-          const currentPrompt = doc['ai-prompts-tabs']?.prompt
-          const currentSystem = doc['ai-prompts-tabs']?.system
+          const currentPrompt = doc.prompt
+          const currentSystem = doc.system
 
           let needsUpdate = false
-          const updateData: any = {
-            'ai-prompts-tabs': {
-              ...(doc['ai-prompts-tabs'] || {}),
-            },
-          }
+          const updateData: any = {}
 
           if (custom?.ai?.prompt && custom.ai.prompt !== currentPrompt) {
-            updateData['ai-prompts-tabs'].prompt = custom.ai.prompt
+            updateData.prompt = custom.ai.prompt
             needsUpdate = true
           }
           if (custom?.ai?.system && custom.ai.system !== currentSystem) {
-            updateData['ai-prompts-tabs'].system = custom.ai.system
+            updateData.system = custom.ai.system
             needsUpdate = true
           }
 
@@ -130,10 +126,8 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
         await payload.create({
           collection: PLUGIN_INSTRUCTIONS_TABLE,
           data: {
-            'ai-prompts-tabs': {
-              prompt,
-              system,
-            },
+            prompt,
+            system,
             disabled: false,
             'field-type': type,
             'model-id': modelId,

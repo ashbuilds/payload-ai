@@ -1,6 +1,6 @@
 'use client'
 
-import { useField } from '@payloadcms/ui'
+import { Button, useField } from '@payloadcms/ui'
 import React, { useState } from 'react'
 
 type Props = {
@@ -40,16 +40,16 @@ export const EncryptedTextField: React.FC<Props> = ({ label, path, required }) =
               ✓ Configured
             </span>
           </div>
-          <button
-            className="btn btn--style-secondary btn--size-small"
+          <Button
+            buttonStyle="secondary"
             onClick={() => {
               setValue('')
               setIsEditing(true)
             }}
-            type="button"
+            size="medium"
           >
             Change
-          </button>
+          </Button>
         </div>
       ) : (
         <input

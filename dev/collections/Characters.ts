@@ -40,22 +40,6 @@ export const Characters: CollectionConfig = {
       unique: true,
     },
     {
-      type: 'collapsible',
-      admin: {
-        position: 'sidebar',
-      },
-      fields: [
-        {
-          name: 'referenceImages',
-          type: 'upload',
-          hasMany: true,
-          label: '',
-          relationTo: 'media'
-        },
-      ],
-      label: 'Reference Images',
-    },
-    {
       name: 'name',
       type: 'text',
       admin: {
@@ -94,8 +78,9 @@ export const Characters: CollectionConfig = {
           },
           custom: {
             ai: {
-              prompt: 'Write a one-sentence descriptive blurb for {{ name }}, who is a {{ role }}. Focus on their personality and presence.',
-            }
+              prompt:
+                'Write a one-sentence descriptive blurb for {{ name }}, who is a {{ role }}. Focus on their personality and presence.',
+            },
           },
           label: 'Description',
         },
@@ -106,6 +91,9 @@ export const Characters: CollectionConfig = {
             {
               name: 'autoApply',
               type: 'checkbox',
+              admin: {
+                description: 'Click save to generate below data using payload.ai inside hook',
+              },
               defaultValue: true,
             },
             // ----------------------------
@@ -114,7 +102,7 @@ export const Characters: CollectionConfig = {
             {
               type: 'collapsible',
               admin: {
-                initCollapsed: false,
+                initCollapsed: true,
               },
               fields: [
                 {
@@ -166,7 +154,7 @@ export const Characters: CollectionConfig = {
             {
               type: 'collapsible',
               admin: {
-                initCollapsed: false,
+                initCollapsed: true,
               },
               fields: [
                 {
@@ -241,7 +229,7 @@ export const Characters: CollectionConfig = {
             {
               type: 'collapsible',
               admin: {
-                initCollapsed: false,
+                initCollapsed: true,
               },
               fields: [
                 {
@@ -292,7 +280,7 @@ export const Characters: CollectionConfig = {
             {
               type: 'collapsible',
               admin: {
-                initCollapsed: false,
+                initCollapsed: true,
               },
               fields: [
                 {
@@ -344,7 +332,7 @@ export const Characters: CollectionConfig = {
             {
               type: 'collapsible',
               admin: {
-                initCollapsed: false,
+                initCollapsed: true,
               },
               fields: [
                 {
@@ -395,22 +383,12 @@ export const Characters: CollectionConfig = {
       },
       custom: {
         ai: {
-          prompt: 'A professional character portrait of {{ name }}, a {{ role }}. Style: Realistic fantasy. Context: {{ description }}. Features: {{ visualProfile.demographics.ethnicity }}, {{ visualProfile.faceStructure.eyeColor }} eyes, {{ visualProfile.hair.hairStyle }} hair. Wearing {{ visualProfile.culturalEra.clothingStyle }}. Lighting: Dramatic cinematic lighting.',
-        }
+          prompt:
+            'A professional character portrait of {{ name }}, a {{ role }}. Style: Realistic fantasy. Context: {{ description }}. Features: {{ visualProfile.demographics.ethnicity }}, {{ visualProfile.faceStructure.eyeColor }} eyes, {{ visualProfile.hair.hairStyle }} hair. Wearing {{ visualProfile.culturalEra.clothingStyle }}. Lighting: Dramatic cinematic lighting.',
+        },
       },
       label: 'Portrait',
       relationTo: 'media',
-    },
-    {
-      name: 'model3D',
-      type: 'upload',
-      admin: {
-        description:
-          'Optional 3D model reference. Can be replaced with a dedicated assets collection later.',
-      },
-      label: '3D Model',
-      relationTo: 'media',
-      required: false,
     },
     {
       name: 'Speech',
@@ -431,9 +409,11 @@ export const Characters: CollectionConfig = {
       },
       custom: {
         ai: {
-          prompt: 'Write a three-paragraph biography for {{ name }}. First paragraph: Background and origin as a {{ role }}. Second paragraph: Key personality traits based on "{{ description }}". Third paragraph: Current motivations and secrets.',
-          system: 'You are a master storyteller for a high-fantasy RPG world. Your prose is evocative, immersive, and captures the nuances of the Swahili coast and Indian Ocean trade regions.',
-        }
+          prompt:
+            'Write a three-paragraph biography for {{ name }}. First paragraph: Background and origin as a {{ role }}. Second paragraph: Key personality traits based on "{{ description }}". Third paragraph: Current motivations and secrets.',
+          system:
+            'You are a master storyteller for a high-fantasy RPG world. Your prose is evocative, immersive, and captures the nuances of the Swahili coast and Indian Ocean trade regions.',
+        },
       },
       editor: lexicalEditor({
         features: ({ defaultFeatures, rootFeatures }) => {
@@ -452,36 +432,15 @@ export const Characters: CollectionConfig = {
       }),
       label: 'Bio',
     },
-    {
-      name: 'reusableAcrossHunts',
-      type: 'checkbox',
-      admin: {
-        description:
-          'Mark as a library NPC that can be reused across experiences for the same organization.',
-      },
-      defaultValue: false,
-      label: 'Reusable Across Hunts',
-    },
-    {
-      name: 'meta',
-      type: 'json',
-      admin: {
-        description:
-          'Optional engine metadata (dialogue IDs, voice actor ID, behavior flags, etc).',
-      },
-      label: 'Meta',
-    },
   ],
   hooks: {
     beforeChange: [
       async ({ data, req }) => {
-        // console.log("originalDoc : ", data.description)
         if (data.description && data.visualProfile.autoApply) {
           // Find the group/collapsible field safely
           const identityGroup = req.payload.collections.characters.config.fields.find(
             (f) => 'label' in f && f.label === 'Identity',
           )
-          console.log('identityGroup :', identityGroup)
 
           if (!identityGroup || !('fields' in identityGroup)) {
             return data
@@ -490,7 +449,6 @@ export const Characters: CollectionConfig = {
             (f) => 'name' in f && f.name === 'visualProfile',
           )
           if (visualProfileField && 'fields' in visualProfileField) {
-            console.log('visualProfileField.fields : ', visualProfileField.fields)
             // Convert group field to JSON schema
             const schema = fieldToJsonSchema(visualProfileField, { wrapObject: false })
 
@@ -498,7 +456,6 @@ export const Characters: CollectionConfig = {
               prompt: `Generate a visual profile for a character described as: ${data.description}`,
               schema,
             })
-            // console.log('object', object)
 
             data.visualProfile = object
             data.visualProfile.autoApply = false

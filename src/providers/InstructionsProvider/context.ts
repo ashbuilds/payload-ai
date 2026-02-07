@@ -19,6 +19,7 @@ export type InstructionsContextValue = {
   openDrawer: (instructionId: string) => void
   path?: string
   promptFields: SerializedPromptField[]
+  refresh: () => Promise<void>
   schemaPath?: unknown
   setActiveCollection?: React.Dispatch<React.SetStateAction<string>>
   setEnabledCollections?: React.Dispatch<React.SetStateAction<string[] | undefined>>
@@ -34,6 +35,7 @@ export const initialContext: InstructionsContextValue = {
   openDrawer: () => null,
   path: '',
   promptFields: [],
+  refresh: () => Promise.resolve(),
   schemaPath: '',
 }
 

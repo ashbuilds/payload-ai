@@ -1,12 +1,12 @@
 'use client'
 
-import { toast, useConfig } from '@payloadcms/ui'
+import { Button, toast, useConfig } from '@payloadcms/ui'
 // @ts-expect-error - Next.js types are not resolving correctly with nodenext but runtime is fine
 import { useRouter } from 'next/navigation'
 import React, { useContext, useEffect, useState } from 'react'
 
-import { InstructionsContext } from '../../providers/InstructionsProvider/context.js'
 import { excludeCollections } from '../../defaults.js'
+import { InstructionsContext } from '../../providers/InstructionsProvider/context.js'
 
 export const AIConfigDashboard: React.FC = () => {
   const {
@@ -16,7 +16,8 @@ export const AIConfigDashboard: React.FC = () => {
     },
   } = useConfig()
   const router = useRouter()
-  const { setEnabledCollections: setEnabledCollectionsInContext } = useContext(InstructionsContext)
+  const { refresh, setEnabledCollections: setEnabledCollectionsInContext } =
+    useContext(InstructionsContext)
 
   const [enabledCollections, setEnabledCollections] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -25,7 +26,7 @@ export const AIConfigDashboard: React.FC = () => {
   const availableCollections = collections.filter(
     (c) =>
       !excludeCollections.includes(c.slug) &&
-      !((c.admin as unknown as { hidden?: boolean | ((args: any) => boolean) })?.hidden),
+      !(c.admin as unknown as { hidden?: ((args: any) => boolean) | boolean })?.hidden,
   )
 
   useEffect(() => {
@@ -45,7 +46,9 @@ export const AIConfigDashboard: React.FC = () => {
       }
     }
 
-     fetchSettings().catch((e)=>{console.log(e)})
+    fetchSettings().catch((e) => {
+      console.log(e)
+    })
   }, [apiRoute])
 
   const handleToggle = (slug: string) => {
@@ -76,6 +79,9 @@ export const AIConfigDashboard: React.FC = () => {
         toast.success('Settings saved successfully')
         if (setEnabledCollectionsInContext) {
           setEnabledCollectionsInContext(enabledCollections)
+        }
+        if (refresh) {
+          await refresh()
         }
         router.refresh()
       } else {
@@ -119,17 +125,15 @@ export const AIConfigDashboard: React.FC = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <a href={`${adminRoute}/globals/ai-settings`}>
-            <button className="btn btn--style-secondary btn--size-small">Settings</button>
-          </a>
-          <button
-            className="btn btn--style-primary btn--size-small"
+          <Button buttonStyle="secondary" el="link" to={`${adminRoute}/globals/ai-settings`}>
+            Settings
+          </Button>
+          <Button
             disabled={isSaving}
             onClick={handleSave}
-            type="button"
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -192,8 +196,7 @@ export const AIConfigDashboard: React.FC = () => {
                 <span style={{ fontWeight: 500 }}>
                   {typeof collection.labels?.singular === 'string'
                     ? collection.labels.singular
-                    : (collection.labels?.singular)?.en ||
-                      collection.slug}
+                    : collection.labels?.singular?.en || collection.slug}
                 </span>
               </button>
             )

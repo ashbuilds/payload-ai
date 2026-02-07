@@ -385,9 +385,10 @@ export const googleBlock: Block = {
 
                 // Image models
                 {
-                  id: 'imagen-3.0-generate-002',
+                  id: 'imagen-3.0-fast-generate-001',
                   name: 'Imagen 3 (Fast)',
                   enabled: true,
+                  responseModalities: ['IMAGE'],
                   useCase: 'image',
                 },
                 {

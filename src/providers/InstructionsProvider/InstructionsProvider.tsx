@@ -65,29 +65,33 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     [setInstructionsState],
   )
 
-  // This is here because each field have separate instructions and
-  // their ID is needed to edit them for Drawer
-  useEffect(() => {
+  const fetchFieldsData = useCallback(async () => {
     // Only fetch if we have a user ID - prevents fetching on every user object reference change
     if (!user?.id) {
       return
     }
 
-    fetch(`${serverURL}${api}${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
-      .then(async (res) => {
-        await res.json().then((data) => {
-          setIsConfigAllowed(data?.isConfigAllowed || false)
-          setEnabledLanguages(data?.enabledLanguages || [])
-          setEnabledCollections(data?.enabledCollections || [])
-          setInstructionsState(data?.fields || {})
-          setPromptFields(data?.promptFields || [])
-          setDebugging(data?.debugging || false)
-        })
-      })
-      .catch((err) => {
-        console.error('InstructionsProvider:', err)
-      })
+    try {
+      const res = await fetch(`${serverURL}${api}${PLUGIN_FETCH_FIELDS_ENDPOINT}`)
+      const data = await res.json()
+      setIsConfigAllowed(data?.isConfigAllowed || false)
+      setEnabledLanguages(data?.enabledLanguages || [])
+      setEnabledCollections(data?.enabledCollections || [])
+      setInstructionsState(data?.fields || {})
+      setPromptFields(data?.promptFields || [])
+      setDebugging(data?.debugging || false)
+    } catch (err) {
+      console.error('InstructionsProvider:', err)
+    }
   }, [api, serverURL, user?.id])
+
+  useEffect(() => {
+    void fetchFieldsData()
+  }, [fetchFieldsData])
+
+  const refresh = useCallback(async () => {
+    await fetchFieldsData()
+  }, [fetchFieldsData])
 
   return (
     <InstructionsContext.Provider
@@ -101,6 +105,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         isConfigAllowed,
         openDrawer,
         promptFields,
+        refresh,
         setActiveCollection,
         setEnabledCollections,
       }}
