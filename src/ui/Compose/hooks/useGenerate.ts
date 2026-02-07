@@ -146,32 +146,49 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     schema: activeSchema as any,
   })
 
+  // Ref for latest object to avoid effect re-runs during high-frequency streaming
+  const objectRef = useRef(object)
+  objectRef.current = object
+
   // Active richText object that updates in real-time.
   // The recursive sanitization in setSafeLexicalState will ensure
   // that we only apply valid, partial states to the editor,
   // preventing errors while allowing smooth streaming.
   useEffect(() => {
-    if (!object) {
+    // Only run the animation loop while loading (streaming)
+    if (!loadingObject) {
       return
     }
 
-    const reqId = requestAnimationFrame(() => {
-      if (field?.type === 'richText') {
-        setSafeLexicalState(object, editor)
-      } else if (field && 'name' in field && object[field.name]) {
-         // Use dispatchFields for high-frequency streaming updates to avoid re-renders
-         dispatchFields({
-          type: 'UPDATE',
-          path: pathFromContext ?? '',
-          value: object[field.name],
-        } as any)
+    let reqId: number
+
+    const loop = () => {
+      const currentObject = objectRef.current
+      
+      if (currentObject) {
+        if (field?.type === 'richText') {
+          setSafeLexicalState(currentObject, editor)
+        } else if (field && 'name' in field && currentObject[field.name]) {
+           // Use dispatchFields for high-frequency streaming updates to avoid re-renders
+           dispatchFields({
+            type: 'UPDATE',
+            path: pathFromContext ?? '',
+            value: currentObject[field.name],
+          } as any)
+        }
       }
-    })
+      
+      // Continue loop
+      reqId = requestAnimationFrame(loop)
+    }
+
+    // Start loop
+    loop()
 
     return () => {
       cancelAnimationFrame(reqId)
     }
-  }, [object, editor, field, dispatchFields, pathFromContext])
+  }, [loadingObject, editor, field, dispatchFields, pathFromContext])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
