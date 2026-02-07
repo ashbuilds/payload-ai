@@ -6,7 +6,7 @@ import * as process from 'node:process'
 import type { Endpoints, PluginConfig } from '../types.js'
 
 import { checkAccess } from '../access/checkAccess.js'
-import { buildLexicalSchema } from '../ai/schemas/lexicalJsonSchema.js'
+import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
 import {
   PLUGIN_AI_JOBS_TABLE,
   PLUGIN_API_ENDPOINT_GENERATE,
@@ -85,7 +85,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           let allowedEditorSchema = editorSchema
           if (allowedEditorNodes.length) {
-            allowedEditorSchema = buildLexicalSchema(allowedEditorNodes) as any
+            allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
           }
 
           const schemaPath = String(instructions['schema-path'])
@@ -154,7 +154,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               if (targetField && supported.includes(t)) {
                 // For array fields, use count from array-settings if available
                 if (t === 'array') {
-                  const arraySettings = (instructions['array-settings'] || {}) as Record<string, unknown>
+                  const arraySettings = (instructions['array-settings'] || {}) as Record<
+                    string,
+                    unknown
+                  >
                   const count = (arraySettings.count as number) || 3
                   // Override the field's maxRows with the requested count
                   const modifiedField = {

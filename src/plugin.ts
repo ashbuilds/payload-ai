@@ -4,7 +4,7 @@ import { deepMerge } from 'payload/shared'
 
 import type { PluginConfig } from './types.js'
 
-import { ALL_SUPPORTED_NODES, buildLexicalSchema } from './ai/schemas/lexicalJsonSchema.js'
+import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { aiJobsCollection } from './collections/AIJobs.js'
 import { aiSettingsGlobal } from './collections/AISettings.js'
 import { instructionsCollection } from './collections/Instructions.js'
@@ -78,7 +78,7 @@ const payloadAiPlugin =
       const Instructions = instructionsCollection(pluginConfig)
       const AIJobs = aiJobsCollection()
       // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit
-      const lexicalSchema = buildLexicalSchema(pluginConfig.editorConfig?.nodes || ALL_SUPPORTED_NODES)
+      const lexicalSchema = lexicalJsonSchema(pluginConfig.editorConfig?.nodes)
 
       Instructions.admin = {
         ...Instructions.admin,
