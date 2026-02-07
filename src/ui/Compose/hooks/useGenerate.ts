@@ -2,68 +2,47 @@ import { experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
-import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
+import type { ActionMenuItems } from '../../../types.js'
 
-import {
-  PLUGIN_AI_JOBS_TABLE,
-  PLUGIN_API_ENDPOINT_GENERATE,
-  PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
-  PLUGIN_INSTRUCTIONS_TABLE,
-  PLUGIN_NAME,
-} from '../../../defaults.js'
+import { PLUGIN_API_ENDPOINT_GENERATE, PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
 import { fieldToJsonSchema } from '../../../utilities/fieldToJsonSchema.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
+import { useGenerateUpload } from './useGenerateUpload.js'
 import { useHistory } from './useHistory.js'
+import { useStreamingUpdate } from './useStreamingUpdate.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
 
 export const useGenerate = ({ instructionId }: { instructionId: string }) => {
-  // Create a ref to hold the current instructionId
   const instructionIdRef = useRef(instructionId)
-
-  // Update the ref whenever instructionId changes
-  useEffect(() => {
-    instructionIdRef.current = instructionId
-  }, [instructionId])
+  // Sync ref
+  instructionIdRef.current = instructionId
 
   const { field, path: pathFromContext } = useFieldProps()
-  const editorConfigContext = useEditorConfigContext()
-
-  const { editor } = editorConfigContext
+  const { editor } = useEditorConfigContext()
 
   const { config } = useConfig()
-  const {
-    routes: { api },
-    serverURL,
-  } = config
+  const { collections } = config
 
   // Use dispatchFields to update values without subscribing to them, avoiding re-renders during streaming
-  const { dispatchFields } = useForm()
-  
+  // dispatchFields is handled inside useStreamingUpdate now, so we don't need it here
+  // const { dispatchFields } = useForm()
+
   // Keep setValue for non-streaming updates (one-off), but do NOT destructure 'value' to avoid subscriptions
   const { setValue } = useField<any>({
     path: pathFromContext ?? '',
   })
 
   const { set: setHistory } = useHistory()
-
-  // Async job UI state
-  const [jobStatus, setJobStatus] = useState<string | undefined>(undefined)
-  const [jobProgress, setJobProgress] = useState<number>(0)
-  const [isJobActive, setIsJobActive] = useState<boolean>(false)
-
   const { getData } = useForm()
-  const { id: documentId, collectionSlug } = useDocumentInfo()
-
+  const { id: documentId } = useDocumentInfo()
   const localFromContext = useLocale()
-  
-  // Reuse config from above instead of calling useConfig again
-  const { collections } = config
 
+  // Editor Schema Setup
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection?.admin ?? {}
   const { schema: editorSchema = {} } = editorConfig
@@ -146,49 +125,18 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     schema: activeSchema as any,
   })
 
-  // Ref for latest object to avoid effect re-runs during high-frequency streaming
-  const objectRef = useRef(object)
-  objectRef.current = object
+  // Hook 1: Handle high-frequency streaming updates
+  useStreamingUpdate({
+    editor,
+    isLoading: loadingObject,
+    object,
+  })
 
-  // Active richText object that updates in real-time.
-  // The recursive sanitization in setSafeLexicalState will ensure
-  // that we only apply valid, partial states to the editor,
-  // preventing errors while allowing smooth streaming.
-  useEffect(() => {
-    // Only run the animation loop while loading (streaming)
-    if (!loadingObject) {
-      return
-    }
-
-    let reqId: number
-
-    const loop = () => {
-      const currentObject = objectRef.current
-      
-      if (currentObject) {
-        if (field?.type === 'richText') {
-          setSafeLexicalState(currentObject, editor)
-        } else if (field && 'name' in field && currentObject[field.name]) {
-           // Use dispatchFields for high-frequency streaming updates to avoid re-renders
-           dispatchFields({
-            type: 'UPDATE',
-            path: pathFromContext ?? '',
-            value: currentObject[field.name],
-          } as any)
-        }
-      }
-      
-      // Continue loop
-      reqId = requestAnimationFrame(loop)
-    }
-
-    // Start loop
-    loop()
-
-    return () => {
-      cancelAnimationFrame(reqId)
-    }
-  }, [loadingObject, editor, field, dispatchFields, pathFromContext])
+  // Hook 2: Handle Upload generation and polling
+  const { generateUpload, isJobActive, jobProgress, jobStatus } = useGenerateUpload({
+    instructionIdRef,
+    setValue,
+  })
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
@@ -212,111 +160,8 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         options,
       })
     },
-    [localFromContext?.code, instructionIdRef, documentId],
+    [localFromContext?.code, instructionIdRef, documentId, getData, submit, editor],
   )
-
-  const generateUpload = useCallback(async () => {
-    const doc = getData()
-    const currentInstructionId = instructionIdRef.current
-
-    return fetch(`${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
-      body: JSON.stringify({
-        collectionSlug: collectionSlug ?? '',
-        doc,
-        documentId,
-        locale: localFromContext?.code,
-        options: {
-          instructionId: currentInstructionId,
-        },
-      } satisfies Parameters<GenerateTextarea>[0]),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-      
-    })
-      .then(async (uploadResponse) => {
-        if (uploadResponse.ok) {
-          const json = await uploadResponse.json()
-          const { job, result } = json || {}
-          if (result) {
-            // Set the upload ID
-            setValue(result?.id)
-            setHistory(result?.id)
-            
-            // Show toast to prompt user to save
-            toast.success('Image generated successfully! Click Save to see the preview.')
-            
-            return uploadResponse
-          }
-
-          // Async job: poll AI Jobs collection for status/progress/result_id
-          if (job && job.id) {
-            setIsJobActive(true)
-            const cancelled = false
-            let attempts = 0
-            const maxAttempts = 600 // up to ~10 minutes @ 1s
-
-            // Basic in-hook state via closure variables; UI will re-render off fetches below
-            const poll = async (): Promise<void> => {
-              if (cancelled) {
-                return
-              }
-              try {
-                const res = await fetch(
-                  `${serverURL}${api}/${PLUGIN_AI_JOBS_TABLE}/${job.id}`,
-                  { credentials: 'include' },
-                )
-                if (res.ok) {
-                  const jobDoc = await res.json()
-                  const { progress, result_id, status } = jobDoc || {}
-                  setJobStatus(status)
-                  setJobProgress(progress ?? 0)
-                  // When result present, set field and finish
-                  if (status === 'completed' && result_id) {
-                    // Force upload field to refetch by clearing then setting the ID
-                    setValue(null)
-                    setTimeout(() => {
-                      setValue(result_id)
-                    }, 0)
-                    setHistory(result_id)
-                    setIsJobActive(false)
-                    return
-                  }
-                  if (status === 'failed') {
-                    setIsJobActive(false)
-                    throw new Error('Video generation failed')
-                  }
-                }
-              } catch (e) {
-                // silent retry
-              }
-
-              attempts += 1
-              if (!cancelled && attempts < maxAttempts) {
-                setTimeout(poll, 1000)
-              }
-            }
-            setTimeout(poll, 1000)
-            return uploadResponse
-          }
-
-          throw new Error('generateUpload: Unexpected response')
-        } else {
-          const { errors = [] } = await uploadResponse.json()
-          const errStr = errors.map((error: any) => error.message).join(', ')
-          throw new Error(errStr)
-        }
-      })
-      .catch((error) => {
-        toast.error(`Failed to generate: ${error.message}`)
-        console.error(
-          'Error generating or setting your upload, please set it manually if its saved in your media files.',
-          error,
-        )
-      })
-  }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {

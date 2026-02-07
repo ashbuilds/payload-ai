@@ -12,7 +12,6 @@ import { generateStandardImage } from './handlers/standard.js'
  */
 export async function generateImage(args: ImageGenerationArgs): Promise<MediaResult> {
   const { model: modelId, payload, provider } = args
-  console.log('args: ', args.images)
   // Get provider registry and model configuration
   const registry = await getProviderRegistry(payload)
   const providerConfig = registry[provider || '']
@@ -24,7 +23,10 @@ export async function generateImage(args: ImageGenerationArgs): Promise<MediaRes
   const modelConfig = providerConfig.models?.find((m) => m.id === modelId)
 
   // Determine if this is a multimodal text-to-image model
-  const isMultimodalText = modelConfig?.responseModalities?.includes('IMAGE') ?? false
+  // It must support both TEXT and IMAGE modalities (or at least TEXT) to be treated as a language model
+  const isMultimodalText =
+    modelConfig?.responseModalities?.includes('IMAGE') &&
+    modelConfig?.responseModalities?.includes('TEXT')
 
   // Merge provider's default image options with instruction-level overrides
   const mergedProviderOptions = {
@@ -40,11 +42,6 @@ export async function generateImage(args: ImageGenerationArgs): Promise<MediaRes
     mergedProviderOptions,
     isMultimodalText,
   )
-  console.log('isMultimodalText : ', isMultimodalText)
-  console.log('modelConfig : ', modelConfig)
-  console.log('mergedProviderOptions : ', mergedProviderOptions)
-  console.log('model : ', model)
-
   // Pass merged options to handlers
   const argsWithMergedOptions = { ...args, providerOptions: mergedProviderOptions }
 

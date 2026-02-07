@@ -299,8 +299,14 @@ export const googleBlock: Block = {
                           options: [
                             { label: 'Harassment', value: 'HARM_CATEGORY_HARASSMENT' },
                             { label: 'Hate Speech', value: 'HARM_CATEGORY_HATE_SPEECH' },
-                            { label: 'Sexually Explicit', value: 'HARM_CATEGORY_SEXUALLY_EXPLICIT' },
-                            { label: 'Dangerous Content', value: 'HARM_CATEGORY_DANGEROUS_CONTENT' },
+                            {
+                              label: 'Sexually Explicit',
+                              value: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                            },
+                            {
+                              label: 'Dangerous Content',
+                              value: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+                            },
                           ],
                           required: true,
                         },
@@ -385,17 +391,17 @@ export const googleBlock: Block = {
 
                 // Image models
                 {
-                  id: 'imagen-3.0-fast-generate-001',
-                  name: 'Imagen 3 (Fast)',
-                  enabled: true,
-                  // TODO: fix this with proper definition for multimodel or image model only
-                  // responseModalities: ['IMAGE'],
-                  useCase: 'image',
-                },
-                {
                   id: 'gemini-2.5-flash-image',
                   name: 'Gemini 2.5 Flash Image',
                   enabled: true,
+                  responseModalities: ['IMAGE'],
+                  useCase: 'image',
+                },
+                {
+                  id: 'imagen-4.0-generate-001',
+                  name: 'Imagen 4',
+                  enabled: true,
+                  // TODO: fix this with proper definition for multimodel or image model only
                   responseModalities: ['IMAGE'],
                   useCase: 'image',
                 },
@@ -432,8 +438,7 @@ export const googleBlock: Block = {
                       name: 'id',
                       type: 'text',
                       admin: {
-                        description:
-                          'Exact model id as used with @ai-sdk/google.',
+                        description: 'Exact model id as used with @ai-sdk/google.',
                         width: '33%',
                       },
                       label: 'Model ID',
