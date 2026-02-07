@@ -34,7 +34,7 @@ export const aiSettingsGlobal: GlobalConfig = {
       name: 'defaults',
       type: 'group',
       admin: {
-        description: 'Default provider/model behavior for each use case',
+        description: 'Please provide default provider/model behavior for each use case',
       },
       fields: [
         {
@@ -129,49 +129,6 @@ export const aiSettingsGlobal: GlobalConfig = {
             {
               fields: [
                 {
-                  name: 'video',
-                  type: 'group',
-                  fields: [
-                    {
-                      name: 'provider',
-                      type: 'text',
-                      admin: {
-                        components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
-                        },
-                      },
-                      label: 'Default Provider',
-                    },
-                    {
-                      name: 'model',
-                      type: 'text',
-                      admin: {
-                        components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
-                        },
-                      },
-                      label: 'Default Model',
-                    },
-                    {
-                      name: 'options',
-                      type: 'json',
-                      admin: {
-                        components: {
-                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
-                        },
-                        description: 'Default options for this model (global)',
-                      },
-                      label: 'Global Model Options',
-                    },
-                  ],
-                  label: '',
-                },
-              ],
-              label: 'Video Generation',
-            },
-            {
-              fields: [
-                {
                   name: 'tts',
                   type: 'group',
                   fields: [
@@ -220,7 +177,53 @@ export const aiSettingsGlobal: GlobalConfig = {
                   label: '',
                 },
               ],
-              label: 'Text-to-Speech',
+              label: 'Speech Generation',
+            },
+            {
+              admin: {
+                disabled: true,
+              },
+              fields: [
+                {
+                  name: 'video',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'provider',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                        },
+                      },
+                      label: 'Default Provider',
+                    },
+                    {
+                      name: 'model',
+                      type: 'text',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                        },
+                      },
+                      label: 'Default Model',
+                    },
+                    {
+                      name: 'options',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
+                        },
+                        description: 'Default options for this model (global)',
+                      },
+                      label: 'Global Model Options',
+                    },
+                  ],
+                  label: '',
+                },
+              ],
+              label: 'Video Generation',
             },
           ],
         },
@@ -229,6 +232,18 @@ export const aiSettingsGlobal: GlobalConfig = {
     },
   ],
   hooks: {
+    afterChange: [
+      async ({ doc, req }) => {
+        if (doc.enabledCollections && doc.enabledCollections.length > 0) {
+          const { seedProperties } = await import('../utilities/seedProperties.js')
+          await seedProperties({
+            enabledCollections: doc.enabledCollections,
+            req,
+          })
+        }
+        return doc
+      },
+    ],
     afterRead: [
       async ({ context, doc, req }) => {
         if (!req.payload.secret) {
@@ -251,18 +266,6 @@ export const aiSettingsGlobal: GlobalConfig = {
               }
             }
             return provider
-          })
-        }
-        return doc
-      },
-    ],
-    afterChange: [
-      async ({ doc, req }) => {
-        if (doc.enabledCollections && doc.enabledCollections.length > 0) {
-          const { seedProperties } = await import('../utilities/seedProperties.js')
-          await seedProperties({
-            enabledCollections: doc.enabledCollections,
-            req,
           })
         }
         return doc
