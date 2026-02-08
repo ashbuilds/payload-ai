@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
+import { filterEditorSchemaByNodes } from '../../../ai/utils/filterEditorSchemaByNodes.js'
 import {
   PLUGIN_AI_JOBS_TABLE,
   PLUGIN_API_ENDPOINT_GENERATE,
@@ -52,25 +53,51 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const [jobProgress, setJobProgress] = useState<number>(0)
   const [isJobActive, setIsJobActive] = useState<boolean>(false)
 
+  // Track completion state for richText fields to prevent streaming errors
+  const [richTextCompletedObject, setRichTextCompletedObject] = useState<any>(null)
+  const [_isRichTextStreaming, setIsRichTextStreaming] = useState<boolean>(false)
+  const isRichTextField = field?.type === 'richText'
+
   const { getData } = useForm()
   const { id: documentId, collectionSlug } = useDocumentInfo()
 
   const localFromContext = useLocale()
-  
+
   // Reuse config from above instead of calling useConfig again
   const { collections } = config
 
   const collection = collections.find((collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE)
   const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection?.admin ?? {}
-  const { schema: editorSchema = {} } = editorConfig
+  const { schema: fullEditorSchema = {} } = editorConfig
+
+  // Get the current editor's allowed nodes and filter the schema
+  // This ensures client-side validation matches what the server expects
+  const allowedEditorNodes = useMemo(() => {
+    const nodes = Array.from(editor?._nodes?.keys() || [])
+    // Debug: Log what nodes are registered in the editor
+    if (nodes.length > 0) {
+      console.log('[useGenerate] Editor registered nodes:', nodes)
+    }
+    return nodes
+  }, [editor])
+
+  const filteredEditorSchema = useMemo(() => {
+    if (allowedEditorNodes.length > 0 && fullEditorSchema && Object.keys(fullEditorSchema).length > 0) {
+      const filtered = filterEditorSchemaByNodes(fullEditorSchema, allowedEditorNodes)
+      // Debug: Log what schema definitions remain after filtering
+      console.log('[useGenerate] Filtered schema definitions:', Object.keys(filtered.definitions || {}))
+      return filtered
+    }
+    return fullEditorSchema
+  }, [fullEditorSchema, allowedEditorNodes])
 
   const memoizedValidator = useMemo(() => {
-    return editorSchemaValidator(editorSchema)
-  }, [editorSchema])
+    return editorSchemaValidator(filteredEditorSchema)
+  }, [filteredEditorSchema])
 
   const memoizedSchema = useMemo(
     () =>
-      jsonSchema(editorSchema, {
+      jsonSchema(filteredEditorSchema, {
         validate: (value) => {
           const isValid = memoizedValidator(value)
 
@@ -87,7 +114,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
           }
         },
       }),
-    [memoizedValidator],
+    [filteredEditorSchema, memoizedValidator],
   )
 
   // Active JSON schema for useObject based on field type
@@ -116,12 +143,47 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     onError: (error: any) => {
       toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating object:', error)
+      // Reset completion state on error for richText fields
+      if (isRichTextField) {
+        setRichTextCompletedObject(null)
+        setIsRichTextStreaming(false)
+      }
     },
     onFinish: (result) => {
       if (result.object && field) {
         if (field.type === 'richText') {
+          // Mark streaming as complete FIRST
+          setIsRichTextStreaming(false)
+
+          // Store completed object in state for richText fields
+          setRichTextCompletedObject(result.object)
           setHistory(result.object)
-          setValue(result.object)
+
+          // Validate that the state is complete before setting
+          if (
+            editor &&
+            result.object &&
+            result.object.root &&
+            result.object.root.children &&
+            Array.isArray(result.object.root.children) &&
+            result.object.root.children.length > 0 &&
+            result.object.root.type === 'root'
+          ) {
+            // For richText: Set editor state directly, then setValue after a delay
+            // This prevents triggering field watchers with incomplete states during streaming
+            requestAnimationFrame(() => {
+              setSafeLexicalState(result.object, editor)
+              // Set value AFTER editor state is set and streaming is complete
+              // Use a longer delay to ensure editor state is fully applied
+              setTimeout(() => {
+                setValue(result.object)
+              }, 150)
+            })
+          } else {
+            // Validation failed - still try to set value but log warning
+            console.warn('[useGenerate] RichText object validation failed, setting value anyway')
+            setValue(result.object)
+          }
         } else if ('name' in field) {
           setHistory(result.object[field.name])
           setValue(result.object[field.name])
@@ -130,25 +192,46 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         console.log('onFinish: result, field ', result, field)
       }
     },
-    schema: activeSchema as any,
+    // schema: activeSchema as any,
   })
 
+  // For richText fields, only expose object after completion to prevent streaming errors
+  // This prevents Lexical from trying to parse incomplete states during streaming
+  const safeObject = useMemo(() => {
+    if (isRichTextField) {
+      // For richText: only return object if streaming is complete
+      // Return null during streaming to prevent any parsing attempts
+      return richTextCompletedObject
+    }
+    // For other field types, return object normally (streaming is safe)
+    return object
+  }, [isRichTextField, richTextCompletedObject, object])
+
   useEffect(() => {
-    if (!object) {
+    if (!safeObject) {
       return
     }
 
     requestAnimationFrame(() => {
+      // Skip useEffect for richText fields - handle them in onFinish instead
+      // This prevents errors from incomplete streaming states
       if (field?.type === 'richText') {
-      setSafeLexicalState(object, editor)
-      } else if (field && 'name' in field && object[field.name]) {
-        setValue(object[field.name])
+        return
+      }
+      if (field && 'name' in field && safeObject[field.name]) {
+        setValue(safeObject[field.name])
       }
     })
-  }, [object, editor, field, setValue])
+  }, [safeObject, editor, field, setValue])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
+      // Reset completion state when starting new generation for richText fields
+      if (isRichTextField) {
+        setRichTextCompletedObject(null)
+        setIsRichTextStreaming(true)
+      }
+
       const doc = getData()
 
       const currentInstructionId = instructionIdRef.current
@@ -169,7 +252,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         options,
       })
     },
-    [localFromContext?.code, instructionIdRef, documentId],
+    [localFromContext?.code, instructionIdRef, documentId, isRichTextField, getData, submit, editor],
   )
 
   const generateUpload = useCallback(async () => {
@@ -200,10 +283,10 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
             // Set the upload ID
             setValue(result?.id)
             setHistory(result?.id)
-            
+
             // Show toast to prompt user to save
             toast.success('Image generated successfully! Click Save to see the preview.')
-            
+
             return uploadResponse
           }
 
@@ -272,7 +355,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
           error,
         )
       })
-  }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
+  }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug, serverURL, api, setHistory])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {
@@ -288,7 +371,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const stop = useCallback(() => {
     console.log('Stopping...')
     objectStop()
-  }, [objectStop])
+    // Reset streaming state when stopped
+    if (isRichTextField) {
+      setIsRichTextStreaming(false)
+    }
+  }, [objectStop, isRichTextField])
 
   return {
     generate,

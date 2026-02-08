@@ -86,6 +86,16 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           let allowedEditorSchema = editorSchema
           if (allowedEditorNodes.length) {
             allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
+            // Debug: Log what nodes were received and what definitions remain
+            if (pluginConfig.debugging) {
+              req.payload.logger.info(
+                {
+                  receivedNodes: allowedEditorNodes,
+                  remainingDefinitions: Object.keys(allowedEditorSchema.definitions || {}),
+                },
+                '— AI Plugin: Schema filtering debug',
+              )
+            }
           }
 
           const schemaPath = String(instructions['schema-path'])
@@ -214,6 +224,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               images = imageParts
             }
           }
+          console.log('jsonSchema: ', JSON.stringify(jsonSchema, null, 2))
 
           // Use payload.ai.streamObject directly! 🎉
           const streamResult = await req.payload.ai.streamObject({
@@ -223,6 +234,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             model: modelSettings.model as string,
             prompt: processedPrompt,
             provider: modelSettings.provider as string,
+            providerOptions: {
+              openai: {
+                strictJsonSchema: true,
+              },
+            },
             schema: jsonSchema,
             system: prompts.system,
             temperature: modelSettings.temperature as number | undefined,
