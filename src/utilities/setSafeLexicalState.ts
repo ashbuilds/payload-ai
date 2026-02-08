@@ -1,131 +1,102 @@
-import type { LexicalEditor, SerializedEditorState } from 'lexical'
+import type { LexicalEditor } from 'lexical'
 
-/**
- * Validates and safely sets Lexical editor state.
- * This function implements comprehensive validation to prevent errors during
- * streaming when incomplete JSON states are passed to the editor.
- *
- * Validation steps:
- * 1. Basic null/undefined check
- * 2. Parse string states
- * 3. Must be an object
- * 4. Must have root property
- * 5. Root must not be empty
- * 6. Root must have valid type
- * 7. Must have children array
- * 8. Children array must not be empty
- * 9. All children must have valid types
- * 10. Recursively validate nested children
- */
-export const setSafeLexicalState = (
-  state: SerializedEditorState | string,
-  editorInstance: LexicalEditor,
-) => {
-  try {
-    // Step 1: Basic null/undefined check
-    if (!state || !editorInstance) {
-      return
+const sanitizeLexicalState = (state: any): any => {
+  // 1. Ensure root exists and is valid
+  if (!state || typeof state !== 'object') {
+    return null
+  }
+
+  // If no root, or root is not an object, it's invalid
+  if (!state.root || typeof state.root !== 'object') {
+    return null
+  }
+
+  // 2. Clone to avoid mutation
+  const cleanState = JSON.parse(JSON.stringify(state))
+
+  // 3. Ensure root has required props
+  cleanState.root.type = 'root'
+  cleanState.root.format = cleanState.root.format || ''
+  cleanState.root.indent = cleanState.root.indent || 0
+  cleanState.root.version = cleanState.root.version || 1
+
+  // 4. Recursive sanitizer for children
+  const sanitizeNode = (node: any): any => {
+    if (!node || typeof node !== 'object') {
+      return null
     }
 
-    // Step 2: Parse string states first
-    let parsedState: SerializedEditorState
-    if (typeof state === 'string') {
-      try {
-        parsedState = JSON.parse(state) as SerializedEditorState
-      } catch {
-        // Invalid JSON string, skip silently (likely streaming fragment)
-        return
-      }
+    // Must have a type. If streaming incomplete node (type is missing/empty), discard it.
+    if (!node.type || typeof node.type !== 'string') {
+      return null
+    }
+
+    // Default version if missing
+    node.version = node.version || 1
+
+    // If node has children, sanitize them
+    if (Array.isArray(node.children)) {
+      node.children = node.children
+        .map(sanitizeNode)
+        .filter((child: any) => child !== null)
     } else {
-      parsedState = state
-    }
-
-    // Step 3: Must be an object
-    if (typeof parsedState !== 'object' || parsedState === null) {
-      return
-    }
-
-    // Step 4: Must have root property
-    if (!parsedState.root || typeof parsedState.root !== 'object') {
-      return
-    }
-
-    // Step 5: Root must not be empty (common streaming issue: { root: {} })
-    if (Object.keys(parsedState.root).length === 0) {
-      return
-    }
-
-    // Step 6: Root must have valid type
-    if (!parsedState.root.type || parsedState.root.type !== 'root') {
-      return
-    }
-
-    // Step 7: Must have children array
-    if (!parsedState.root.children || !Array.isArray(parsedState.root.children)) {
-      return
-    }
-
-    // Step 8: Children array must not be empty
-    if (parsedState.root.children.length === 0) {
-      return
-    }
-
-    // Step 9 & 10: Validate all children have valid types (deep validation)
-    const hasInvalidChild = (children: any[]): boolean => {
-      for (const child of children) {
-        // Child must exist and be an object
-        if (!child || typeof child !== 'object') {
-          return true
-        }
-
-        // Child must have a valid type (not undefined, not empty string)
-        if (
-          !child.type ||
-          child.type === 'undefined' ||
-          child.type === '' ||
-          typeof child.type !== 'string'
-        ) {
-          return true
-        }
-
-        // Recursively validate nested children
-        if (child.children && Array.isArray(child.children) && child.children.length > 0) {
-          if (hasInvalidChild(child.children)) {
-            return true
-          }
-        }
+      // Ensure children is at least an empty array if it's supposed to be there? 
+      // Actually lots of leaf nodes don't have children. 
+      // But Root, Paragraph, etc do. 
+      // Let's safe-guard standard ElementNodes:
+      if (['heading', 'link', 'list', 'listitem', 'paragraph', 'quote', 'root'].includes(node.type)) {
+        node.children = node.children || []
       }
-      return false
     }
 
-    if (hasInvalidChild(parsedState.root.children)) {
+    // Specific node fixes
+    if (node.type === 'text') {
+      // Text nodes must have text prop
+      if (typeof node.text !== 'string') {
+        // If text is missing, it might be incomplete. 
+        // We can either discard or default to empty string.
+        // For streaming, empty string is safer than discarding early if we want to show cursor?
+        node.text = node.text || ''
+      }
+      node.mode = node.mode ?? 0
+      node.style = node.style || ''
+      node.detail = node.detail ?? 0
+      node.format = node.format ?? 0
+    }
+
+    return node
+  }
+
+  // 5. Sanitize root's children
+  if (Array.isArray(cleanState.root.children)) {
+    cleanState.root.children = cleanState.root.children
+      .map(sanitizeNode)
+      .filter((child: any) => child !== null)
+  } else {
+    cleanState.root.children = []
+  }
+
+  return cleanState
+}
+
+export const setSafeLexicalState = (state: unknown, editorInstance: LexicalEditor) => {
+  try {
+    const validState = sanitizeLexicalState(state)
+    
+    if (!validState) {
       return
     }
 
-    // All validation passed, parse and set the state
-    const editorState = editorInstance.parseEditorState(parsedState)
+    const editorState = editorInstance.parseEditorState(validState)
     if (editorState.isEmpty()) {
       return
     }
 
     editorInstance.setEditorState(editorState)
-  } catch (error) {
-    // Suppress console errors for known streaming states to prevent spam
-    // Only log if it's a completely unexpected error
-    const isLikelyStreamingError =
-      !state ||
-      (typeof state === 'object' &&
-        (!state.root || Object.keys(state.root as object).length === 0)) ||
-      (error instanceof Error &&
-        (error.message?.includes('undefined') || error.message?.includes('Reconciliation')))
-
-    if (!isLikelyStreamingError) {
-      console.error('[setSafeLexicalState] Unexpected error:', {
-        error,
-        statePreview:
-          state && typeof state === 'object' ? JSON.stringify(state).substring(0, 200) : state,
-      })
-    }
-    // Otherwise, silently ignore invalid streaming states
+  } catch (_error) {
+    // Silently catch errors during streaming to avoid console noise.
+    // Lexical's parseEditorState is very strict and will throw if the
+    // object structure is even slightly incomplete during the stream.
   }
 }
+
