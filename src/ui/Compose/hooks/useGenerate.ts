@@ -71,11 +71,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         if (field.type === 'richText') {
           setHistory(result.object)
           setSafeLexicalState(result.object, editor)
-        } else if ('name' in field) {
-          if (result.object[field.name]){
-            setHistory(result.object[field.name] as unknown)
-            setValue(result.object[field.name] as unknown)
-          }
+        } else if ('name' in field && result.object[field.name]) {
+          setHistory(result.object[field.name])
+          setValue(result.object[field.name])
         }
       } else {
         console.log('onFinish: result, field ', result, field)
