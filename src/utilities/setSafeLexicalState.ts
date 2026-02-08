@@ -16,7 +16,7 @@ const sanitizeLexicalState = (state: any): any => {
 
   // 3. Ensure root has required props
   cleanState.root.type = 'root'
-  cleanState.root.format = cleanState.root.format || ''
+  cleanState.root.format = cleanState.root.format || 'left'
   cleanState.root.indent = cleanState.root.indent || 0
   cleanState.root.version = cleanState.root.version || 1
 
@@ -61,7 +61,6 @@ const sanitizeLexicalState = (state: any): any => {
       node.mode = node.mode ?? 0
       node.style = node.style || ''
       node.detail = node.detail ?? 0
-      node.format = node.format ?? 0
     }
 
     return node

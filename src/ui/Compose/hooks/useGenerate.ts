@@ -1,18 +1,17 @@
 import { experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
+import { toast, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
-import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
+import type { ActionMenuItems } from '../../../types.js'
 
 import {
-  PLUGIN_AI_JOBS_TABLE,
   PLUGIN_API_ENDPOINT_GENERATE,
-  PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
 } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
+import { useGenerateUpload } from './useGenerateUpload.js'
 import { useHistory } from './useHistory.js'
 import { useStreamingUpdate } from './useStreamingUpdate.js'
 
@@ -29,30 +28,12 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
 
   const { field, path: pathFromContext } = useFieldProps()
   const editorConfigContext = useEditorConfigContext()
-
-  const { editor } = editorConfigContext
-  const { config } = useConfig()
-  const {
-    routes: { api },
-    serverURL,
-  } = config
-
   const { setValue } = useField<any>({
     path: pathFromContext ?? '',
   })
-
   const { set: setHistory } = useHistory()
-
-  // Async job UI state
-  const [jobStatus, setJobStatus] = useState<string | undefined>(undefined)
-  const [jobProgress, setJobProgress] = useState<number>(0)
-  const [isJobActive, setIsJobActive] = useState<boolean>(false)
-
-  const isRichTextField = field?.type === 'richText'
-
   const { getData } = useForm()
-  const { id: documentId, collectionSlug } = useDocumentInfo()
-
+  const { id: documentId } = useDocumentInfo()
   const localFromContext = useLocale()
 
   const {
@@ -86,11 +67,19 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     }) as any,
   })
 
+  const { editor } = editorConfigContext
+
   // Hook: Handle high-frequency streaming updates
   useStreamingUpdate({
     editor,
     isLoading: loadingObject,
     object,
+  })
+
+  // Hook 2: Handle Upload generation and polling
+  const { generateUpload, isJobActive, jobProgress, jobStatus } = useGenerateUpload({
+    instructionIdRef,
+    setValue,
   })
 
   const streamObject = useCallback(
@@ -119,123 +108,13 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       localFromContext?.code,
       instructionIdRef,
       documentId,
-      isRichTextField,
       getData,
       submit,
       editor,
     ],
   )
 
-  const generateUpload = useCallback(async () => {
-    const doc = getData()
-    const currentInstructionId = instructionIdRef.current
 
-    return fetch(`${serverURL}${api}${PLUGIN_API_ENDPOINT_GENERATE_UPLOAD}`, {
-      body: JSON.stringify({
-        collectionSlug: collectionSlug ?? '',
-        doc,
-        documentId,
-        locale: localFromContext?.code,
-        options: {
-          instructionId: currentInstructionId,
-        },
-      } satisfies Parameters<GenerateTextarea>[0]),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    })
-      .then(async (uploadResponse) => {
-        if (uploadResponse.ok) {
-          const json = await uploadResponse.json()
-          const { job, result } = json || {}
-          if (result) {
-            // Set the upload ID
-            setValue(result?.id)
-            setHistory(result?.id)
-
-            // Show toast to prompt user to save
-            toast.success('Image generated successfully! Click Save to see the preview.')
-
-            return uploadResponse
-          }
-
-          // Async job: poll AI Jobs collection for status/progress/result_id
-          if (job && job.id) {
-            setIsJobActive(true)
-            const cancelled = false
-            let attempts = 0
-            const maxAttempts = 600 // up to ~10 minutes @ 1s
-
-            // Basic in-hook state via closure variables; UI will re-render off fetches below
-            const poll = async (): Promise<void> => {
-              if (cancelled) {
-                return
-              }
-              try {
-                const res = await fetch(`${serverURL}${api}/${PLUGIN_AI_JOBS_TABLE}/${job.id}`, {
-                  credentials: 'include',
-                })
-                if (res.ok) {
-                  const jobDoc = await res.json()
-                  const { progress, result_id, status } = jobDoc || {}
-                  setJobStatus(status)
-                  setJobProgress(progress ?? 0)
-                  // When result present, set field and finish
-                  if (status === 'completed' && result_id) {
-                    // Force upload field to refetch by clearing then setting the ID
-                    setValue(null)
-                    setTimeout(() => {
-                      setValue(result_id)
-                    }, 0)
-                    setHistory(result_id)
-                    setIsJobActive(false)
-                    return
-                  }
-                  if (status === 'failed') {
-                    setIsJobActive(false)
-                    throw new Error('Video generation failed')
-                  }
-                }
-              } catch (e) {
-                // silent retry
-              }
-
-              attempts += 1
-              if (!cancelled && attempts < maxAttempts) {
-                setTimeout(poll, 1000)
-              }
-            }
-            setTimeout(poll, 1000)
-            return uploadResponse
-          }
-
-          throw new Error('generateUpload: Unexpected response')
-        } else {
-          const { errors = [] } = await uploadResponse.json()
-          const errStr = errors.map((error: any) => error.message).join(', ')
-          throw new Error(errStr)
-        }
-      })
-      .catch((error) => {
-        toast.error(`Failed to generate: ${error.message}`)
-        console.error(
-          'Error generating or setting your upload, please set it manually if its saved in your media files.',
-          error,
-        )
-      })
-  }, [
-    getData,
-    localFromContext?.code,
-    instructionIdRef,
-    setValue,
-    documentId,
-    collectionSlug,
-    serverURL,
-    api,
-    setHistory,
-  ])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {

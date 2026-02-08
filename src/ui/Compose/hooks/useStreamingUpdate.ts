@@ -1,5 +1,6 @@
-import { useForm } from '@payloadcms/ui'
 import type { LexicalEditor } from 'lexical'
+
+import { useForm } from '@payloadcms/ui'
 import { useEffect, useRef } from 'react'
 
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
