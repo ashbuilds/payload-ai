@@ -1,10 +1,9 @@
 import type { ImagePart } from 'ai'
-import type { PayloadRequest } from 'payload'
+import type { Field, PayloadRequest } from 'payload'
 
 import * as process from 'node:process'
 
 import type { Endpoints, PluginConfig } from '../types.js'
-import type { Field } from 'payload'
 
 import { checkAccess } from '../access/checkAccess.js'
 import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
@@ -230,7 +229,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           let promptToUse = processedPrompt
           let systemToUse = prompts.system
-          let messagesToUse: any = undefined
+          // let messagesToUse: any = undefined
 
           // Execute beforeGenerate hooks
           if (targetField && (targetField as any).custom?.ai?.beforeGenerate) {
@@ -243,7 +242,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 field: targetField,
                 headers: req.headers,
                 instructions,
-                messages: messagesToUse,
                 payload: req.payload,
                 prompt: promptToUse,
                 req,
@@ -253,17 +251,15 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               if (result) {
                 if (result.prompt) promptToUse = result.prompt
                 if (result.system) systemToUse = result.system
-                if (result.messages) messagesToUse = result.messages
               }
             }
           }
 
-          // Use payload.ai.streamObject directly! 🎉
           const streamResult = await req.payload.ai.streamObject({
             // extractAttachments: modelSettings.extractAttachments as boolean | undefined,
             images,
             maxTokens: modelSettings.maxTokens as number | undefined,
-            messages: messagesToUse,
+            // messages: messagesToUse,
             model: modelSettings.model as string,
             onFinish: async ({ object }) => {
               if (targetField && (targetField as any).custom?.ai?.afterGenerate) {
@@ -283,7 +279,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 }
               }
             },
-            prompt: messagesToUse ? undefined : promptToUse,
+            prompt: processedPrompt,
             provider: modelSettings.provider as string,
             providerOptions: {
               openai: {
@@ -387,7 +383,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             pluginConfig,
           )
           const text = await replacePlaceholders(promptTemplate as string, extendedContext)
-          const modelId = instructions['model-id']
           const uploadCollectionSlug = instructions['relation-to']
 
           // Resolve @field:filename references from the prompt
@@ -415,8 +410,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             const targetCollection = req.payload.config.collections.find(
               (c) => c.slug === collectionSlug,
             )
-            // We don't have schemaPath directly here on instructions for upload?
-            // Actually instructions has schema-path
             if (targetCollection && schemaPath) {
               targetField = getFieldBySchemaPath(targetCollection, schemaPath)
             }
@@ -437,17 +430,27 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
                 payload: req.payload,
                 prompt: promptToUse,
                 req,
-                system: '', // No system prompt for media generation usually
               })
 
-              if (result && result.prompt) {
-                promptToUse = result.prompt
+              if (result) {
+                if (result.prompt) {
+                  promptToUse = result.prompt
+                }
+                if (result.instructions) {
+                  instructions = {
+                    ...instructions,
+                    ...result.instructions,
+                  }
+                }
               }
             }
           }
 
           if (pluginConfig.debugging) {
-            req.payload.logger.info({ text: promptToUse }, `— AI Plugin: Executing media generation`)
+            req.payload.logger.info(
+              { text: promptToUse },
+              `— AI Plugin: Executing media generation`,
+            )
           }
 
           // Prepare callback URL for async jobs
@@ -461,6 +464,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             : undefined
 
           // Get model settings
+          // Re-evaluate settings name and settings in case instructions changed
+          const modelId = instructions['model-id']
           const settingsName =
             modelId === 'image'
               ? 'image-settings'

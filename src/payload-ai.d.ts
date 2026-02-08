@@ -120,7 +120,11 @@ declare module 'payload' {
        * @param type - Model type ('text', 'image', or 'tts')
        * @returns Promise resolving to the model instance
        */
-      getModel: (provider: string, modelId: string, type?: 'image' | 'text' | 'tts') => Promise<unknown>
+      getModel: (
+        provider: string,
+        modelId: string,
+        type?: 'image' | 'text' | 'tts',
+      ) => Promise<unknown>
 
       /**
        * Get the provider registry
@@ -133,9 +137,7 @@ declare module 'payload' {
        * @param args - Generation arguments including provider, model, prompt, and schema
        * @returns Response stream
        */
-      streamObject: <T = unknown>(
-        args: PayloadGenerateObjectArgs,
-      ) => Promise<Response>
+      streamObject: <T = unknown>(args: PayloadGenerateObjectArgs) => Promise<Response>
 
       /**
        * Stream text output

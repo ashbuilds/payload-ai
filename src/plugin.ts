@@ -170,7 +170,7 @@ const payloadAiPlugin =
         }, 3000)
       }
 
-      // Inject AI capabilities with enhanced abstraction layer
+      // Inject AI capabilities with the abstraction layer
       ;(payload as any).ai = {
         // Core generation methods
         generateObject: async (args: any) => {

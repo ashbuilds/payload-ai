@@ -397,12 +397,96 @@ export const Characters: CollectionConfig = {
         description: 'Generate character speech sample',
       },
       custom: {
-        // TODO: to be implemented
         ai: {
           beforeGenerate: [
-            () => {
-              console.log('hey this is ai before gen')
-              throw Error("this is not gonna work")
+            async ({ doc, instructions, req }: any) => {
+              try {
+                // 1. Fetch available voices from global settings
+                const aiSettings = await req.payload.findGlobal({
+                  slug: 'ai-settings',
+                  context: { unsafe: true },
+                })
+
+                if (!aiSettings.providers) {
+                  return
+                }
+
+                const elevenLabs = aiSettings.providers.find(
+                  (p: any) => p.blockType === 'elevenlabs',
+                )
+
+                if (!elevenLabs || !elevenLabs.voices) {
+                  req.payload.logger.warn('ElevenLabs provider or voices not found in AI Settings')
+                  return
+                }
+
+                const voices = elevenLabs.voices.map((v: any) => ({
+                  id: v.id,
+                  name: v.name,
+                  category: v.category,
+                  labels: v.labels,
+                }))
+
+                if (voices.length === 0) {
+                  return
+                }
+
+                // 2. Prepare character profile
+                const profile = {
+                  name: doc.name,
+                  description: doc.description,
+                  role: doc.role,
+                  visualProfile: doc.visualProfile,
+                }
+
+                // 3. Let AI pick the voice
+                const { object } = await req.payload.ai.generateObject({
+                  model: 'gpt-4o', // Use a smart model for this reasoning
+                  prompt: `You are a casting director. Select the most suitable voice for this character based on their profile.
+                  
+                  Character Profile:
+                  ${JSON.stringify(profile, null, 2)}
+                  
+                  Available Voices:
+                  ${JSON.stringify(voices, null, 2)}
+                  
+                  Choose the voice that best matches the character's demographics (gender, age, ethnicity) and personality/vibe.`,
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      reasoning: {
+                        type: 'string',
+                        description: 'Why this voice fits the character',
+                      },
+                      voiceId: { type: 'string', description: 'The ID of the selected voice' },
+                    },
+                    required: ['voiceId', 'reasoning'],
+                  },
+                })
+
+                if (object?.voiceId) {
+                  req.payload.logger.info(
+                    `Selected voice ${object.voiceId} for ${doc.name} because: ${object.reasoning}`,
+                  )
+
+                  // 4. Return updated instructions
+                  const ttsSettings =
+                    (instructions['tts-settings'] as Record<string, unknown>) || {}
+
+                  return {
+                    instructions: {
+                      'tts-settings': {
+                        ...ttsSettings,
+                        voice: object.voiceId,
+                      },
+                    },
+                  }
+                }
+              } catch (error) {
+                req.payload.logger.error(error, 'Error in voice selection hook')
+              }
+
+              return
             },
           ],
         },
