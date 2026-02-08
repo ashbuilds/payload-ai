@@ -30,6 +30,7 @@ export interface PayloadGenerationBaseArgs {
 export interface PayloadGenerateObjectArgs extends PayloadGenerationBaseArgs {
   images?: ImagePart[]
   mode?: 'auto' | 'json' | 'tool'
+  onFinish?: (event: { object?: any }) => Promise<void> | void
   schema?: Record<string, unknown> | z.ZodTypeAny
 }
 

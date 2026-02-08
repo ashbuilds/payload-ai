@@ -11,7 +11,7 @@ const defaultAccessConfig = {
 
 const defaultAdminConfig = {
   group: 'Plugins',
-  hidden: false,
+  hidden: true,
 }
 
 export const aiJobsCollection = (): CollectionConfig => ({

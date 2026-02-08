@@ -65,5 +65,9 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
     options.providerOptions = providerOptions
   }
 
+  if (rest.onFinish) {
+    options.onFinish = rest.onFinish
+  }
+
   return sdkStreamObject(options as Parameters<typeof sdkStreamObject>[0])
 }

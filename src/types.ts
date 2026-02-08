@@ -14,6 +14,7 @@ import type {
 } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
 
+import type { GenerateObjectResult, ModelMessage } from 'ai'
 import type { MediaResult } from './ai/core/index.js'
 import type {PLUGIN_INSTRUCTIONS_TABLE} from "./defaults.js";
 
@@ -231,3 +232,46 @@ export type PromptField = {
   // If not provided, the value will be returned from the data object as-is
   getter?: (data: object, ctx: PromptFieldGetterContext) => Promise<string> | string
 } & SerializedPromptField
+
+export interface BeforeGenerateArgs<T = any> {
+  doc: T
+  field: Field
+  headers: Record<string, string>
+  instructions: Record<string, unknown> // The instruction document
+  messages?: ModelMessage[]
+  payload: PayloadRequest['payload']
+  prompt: string
+  req: PayloadRequest
+  system: string
+}
+
+export type BeforeGenerateResult =
+  | {
+      messages?: ModelMessage[]
+      prompt?: string
+      system?: string
+    }
+  | void
+
+export type BeforeGenerateHook<T = any> = (
+  args: BeforeGenerateArgs<T>,
+) => BeforeGenerateResult | Promise<BeforeGenerateResult>
+
+export interface AfterGenerateArgs<T = any> {
+  doc: T
+  field: Field
+  headers: Record<string, string>
+  instructions: Record<string, unknown>
+  payload: PayloadRequest['payload']
+  req: PayloadRequest
+  result: GenerateObjectResult<any> | MediaResult | string // depends on context
+}
+
+export type AfterGenerateHook<T = any> = (args: AfterGenerateArgs<T>) => Promise<void> | void
+
+// Add to PluginConfig or a new interface if accessed via custom.ai
+export interface AIFieldConfig {
+  afterGenerate?: AfterGenerateHook[]
+  beforeGenerate?: BeforeGenerateHook[]
+  [key: string]: unknown
+}

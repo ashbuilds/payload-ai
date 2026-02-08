@@ -396,6 +396,17 @@ export const Characters: CollectionConfig = {
       admin: {
         description: 'Generate character speech sample',
       },
+      custom: {
+        // TODO: to be implemented
+        ai: {
+          beforeGenerate: [
+            () => {
+              console.log('hey this is ai before gen')
+              throw Error("this is not gonna work")
+            },
+          ],
+        },
+      },
       label: 'Speech',
       relationTo: 'media',
       required: false,

@@ -4,6 +4,7 @@ import type { PayloadRequest } from 'payload'
 import * as process from 'node:process'
 
 import type { Endpoints, PluginConfig } from '../types.js'
+import type { Field } from 'payload'
 
 import { checkAccess } from '../access/checkAccess.js'
 import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
@@ -143,12 +144,14 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           // Build per-field JSON schema for structured generation when applicable
           let jsonSchema = allowedEditorSchema
+          let targetField: Field | null | undefined
+
           try {
             const targetCollection = req.payload.config.collections.find(
               (c) => c.slug === collectionName,
             )
             if (targetCollection && fieldName) {
-              const targetField = getFieldBySchemaPath(targetCollection, schemaPath)
+              targetField = getFieldBySchemaPath(targetCollection, schemaPath)
               const supported = [
                 'array',
                 'text',
@@ -225,13 +228,62 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
           }
 
+          let promptToUse = processedPrompt
+          let systemToUse = prompts.system
+          let messagesToUse: any = undefined
+
+          // Execute beforeGenerate hooks
+          if (targetField && (targetField as any).custom?.ai?.beforeGenerate) {
+            const beforeHooks = (targetField as any).custom.ai.beforeGenerate as Array<
+              (args: any) => Promise<any>
+            >
+            for (const hook of beforeHooks) {
+              const result = await hook({
+                doc: contextData,
+                field: targetField,
+                headers: req.headers,
+                instructions,
+                messages: messagesToUse,
+                payload: req.payload,
+                prompt: promptToUse,
+                req,
+                system: systemToUse,
+              })
+
+              if (result) {
+                if (result.prompt) promptToUse = result.prompt
+                if (result.system) systemToUse = result.system
+                if (result.messages) messagesToUse = result.messages
+              }
+            }
+          }
+
           // Use payload.ai.streamObject directly! 🎉
           const streamResult = await req.payload.ai.streamObject({
             // extractAttachments: modelSettings.extractAttachments as boolean | undefined,
             images,
             maxTokens: modelSettings.maxTokens as number | undefined,
+            messages: messagesToUse,
             model: modelSettings.model as string,
-            prompt: processedPrompt,
+            onFinish: async ({ object }) => {
+              if (targetField && (targetField as any).custom?.ai?.afterGenerate) {
+                const afterHooks = (targetField as any).custom.ai.afterGenerate as Array<
+                  (args: any) => Promise<any>
+                >
+                for (const hook of afterHooks) {
+                  await hook({
+                    doc: contextData,
+                    field: targetField,
+                    headers: req.headers,
+                    instructions,
+                    payload: req.payload,
+                    req,
+                    result: object,
+                  })
+                }
+              }
+            },
+            prompt: messagesToUse ? undefined : promptToUse,
             provider: modelSettings.provider as string,
             providerOptions: {
               openai: {
@@ -239,7 +291,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               },
             },
             schema: jsonSchema,
-            system: prompts.system,
+            system: systemToUse,
             temperature: modelSettings.temperature as number | undefined,
           })
 
@@ -280,7 +332,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             try {
               docData = await req.payload.findByID({
                 id: documentId,
-                collection: collectionSlug,
+                collection: collectionSlug as string,
                 draft: true,
                 req, // Pass req to ensure access control is applied
               })
@@ -356,8 +408,46 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           // Process images - convert to ImagePart format using helper
           const editImages: ImagePart[] = await fetchImages(req, images)
 
+          let promptToUse = text
+          let targetField: Field | null | undefined
+
+          try {
+            const targetCollection = req.payload.config.collections.find(
+              (c) => c.slug === collectionSlug,
+            )
+            // We don't have schemaPath directly here on instructions for upload?
+            // Actually instructions has schema-path
+            if (targetCollection && schemaPath) {
+              targetField = getFieldBySchemaPath(targetCollection, schemaPath)
+            }
+          } catch (e) {
+            req.payload.logger.error(e, '— AI Plugin: Error finding field for hooks')
+          }
+
+          if (targetField && (targetField as any).custom?.ai?.beforeGenerate) {
+            const beforeHooks = (targetField as any).custom.ai.beforeGenerate as Array<
+              (args: any) => Promise<any>
+            >
+            for (const hook of beforeHooks) {
+              const result = await hook({
+                doc: contextData,
+                field: targetField,
+                headers: req.headers,
+                instructions,
+                payload: req.payload,
+                prompt: promptToUse,
+                req,
+                system: '', // No system prompt for media generation usually
+              })
+
+              if (result && result.prompt) {
+                promptToUse = result.prompt
+              }
+            }
+          }
+
           if (pluginConfig.debugging) {
-            req.payload.logger.info({ text }, `— AI Plugin: Executing media generation`)
+            req.payload.logger.info({ text: promptToUse }, `— AI Plugin: Executing media generation`)
           }
 
           // Prepare callback URL for async jobs
@@ -436,10 +526,27 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             images: editImages,
             instructionId,
             model: modelSettings.model as string,
-            prompt: text,
+            prompt: promptToUse,
             provider: modelSettings.provider as string,
             ...modelSettings,
           })
+
+          if (targetField && (targetField as any).custom?.ai?.afterGenerate) {
+            const afterHooks = (targetField as any).custom.ai.afterGenerate as Array<
+              (args: any) => Promise<any>
+            >
+            for (const hook of afterHooks) {
+              await hook({
+                doc: contextData,
+                field: targetField,
+                headers: req.headers,
+                instructions,
+                payload: req.payload,
+                req,
+                result,
+              })
+            }
+          }
 
           // If model returned a file immediately, proceed with upload
           if (result && 'file' in result) {

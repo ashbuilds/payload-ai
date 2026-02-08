@@ -8,9 +8,9 @@ export const aiSettingsGlobal: GlobalConfig = {
     read: ({ req }) => !!req.user,
     update: ({ req }) => !!req.user,
   },
-  // admin: {
-  //   description: 'Configure AI providers, models, and default settings',
-  // },
+  admin: {
+    group: false,
+  },
   fields: [
     {
       name: 'providers',
