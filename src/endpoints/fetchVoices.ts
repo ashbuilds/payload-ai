@@ -48,37 +48,51 @@ export const fetchVoices: Endpoint = {
         )
       }
 
-      // Call ElevenLabs API to fetch voices
-      const response = await fetch('https://api.elevenlabs.io/v1/voices', {
-        headers: {
-          'xi-api-key': apiKey,
-        },
-      })
+      // Call ElevenLabs API to fetch voices with timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        return Response.json(
-          { message: `ElevenLabs API error: ${errorText}` },
-          { status: response.status },
-        )
+      try {
+        const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+          headers: {
+            'xi-api-key': apiKey,
+          },
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          return Response.json(
+            { message: `ElevenLabs API error: ${errorText}` },
+            { status: response.status },
+          )
+        }
+
+        const data = await response.json()
+
+        // Transform voices to match our schema
+        const voices = (data.voices || []).map((voice: ElevenLabsVoice) => ({
+          id: voice.voice_id,
+          name: voice.name,
+          category: voice.category || 'premade',
+          enabled: true,
+          labels: voice.labels || {},
+          preview_url: voice.preview_url || '',
+        }))
+
+        return Response.json({
+          success: true,
+          voices,
+        })
+      } catch (error: unknown) {
+        clearTimeout(timeoutId)
+        if (error instanceof Error && error.name === 'AbortError') {
+          return Response.json({ message: 'ElevenLabs API request timed out' }, { status: 504 })
+        }
+        throw error
       }
-
-      const data = await response.json()
-
-      // Transform voices to match our schema
-      const voices = (data.voices || []).map((voice: ElevenLabsVoice) => ({
-        id: voice.voice_id,
-        name: voice.name,
-        category: voice.category || 'premade',
-        enabled: true,
-        labels: voice.labels || {},
-        preview_url: voice.preview_url || '',
-      }))
-
-      return Response.json({
-        success: true,
-        voices,
-      })
     } catch (error) {
       req.payload.logger.error(error, 'Error fetching ElevenLabs voices')
       return Response.json(

@@ -2,7 +2,7 @@
 
 import type { FieldClientComponent } from 'payload'
 
-import { Button, useForm, useFormFields } from '@payloadcms/ui'
+import { Button, toast, useField, useFormFields } from '@payloadcms/ui'
 import React, { useCallback, useState } from 'react'
 
 import { PLUGIN_API_ENDPOINT_FETCH_VOICES } from '../../defaults.js'
@@ -23,22 +23,19 @@ interface Voice {
  */
 export const VoicesFetcher: FieldClientComponent = ({ path }) => {
   const [loading, setLoading] = useState(false)
-  const { dispatchFields } = useForm()
 
   // Get the parent path (the block path)
   const fieldPath = (path as string) || ''
   const blockPath = fieldPath.split('.').slice(0, -1).join('.')
   const voicesPath = `${blockPath}.voices`
 
-  // Get the current voices array to know how many rows to remove
-  const voicesField = useFormFields(([fields]) => fields[voicesPath])
-  const currentRowCount =
-    voicesField && 'rows' in voicesField && Array.isArray(voicesField.rows)
-      ? voicesField.rows.length
-      : 0
+  const { setValue } = useField<Voice[]>({ path: voicesPath })
 
   const fetchVoices = useCallback(async () => {
     setLoading(true)
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30s timeout
 
     try {
       // Call server endpoint - it will read the API key from the database
@@ -47,53 +44,48 @@ export const VoicesFetcher: FieldClientComponent = ({ path }) => {
           'Content-Type': 'application/json',
         },
         method: 'POST',
+        signal: controller.signal,
       })
 
+      clearTimeout(timeoutId)
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to fetch voices')
+        let errorMessage = 'Failed to fetch voices'
+        try {
+          const error = await response.json()
+          errorMessage = error.message || errorMessage
+        } catch (e) {
+          // If response is not JSON (e.g. 504 Gateway Timeout HTML), use status text
+          errorMessage = `Error ${response.status}: ${response.statusText}`
+        }
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
       const voices: Voice[] = data.voices || []
 
-      // Remove existing rows first (in reverse order to maintain indices)
-      for (let i = currentRowCount - 1; i >= 0; i--) {
-        dispatchFields({
-          type: 'REMOVE_ROW',
-          path: voicesPath,
-          rowIndex: i,
-        })
-      }
+      // Replace the entire array value at once
+      // This is much more performant than dispatching ADD_ROW actions in a loop
+      setValue(voices)
 
-      // Add new rows for each voice using ADD_ROW action
-      for (const voice of voices) {
-        dispatchFields({
-          type: 'ADD_ROW',
-          path: voicesPath,
-          subFieldState: {
-            id: { initialValue: voice.id, valid: true, value: voice.id },
-            name: { initialValue: voice.name, valid: true, value: voice.name },
-            category: { initialValue: voice.category || 'premade', valid: true, value: voice.category || 'premade' },
-            enabled: { initialValue: voice.enabled !== false, valid: true, value: voice.enabled !== false },
-            labels: { initialValue: voice.labels || {}, valid: true, value: voice.labels || {} },
-            preview_url: { initialValue: voice.preview_url || '', valid: true, value: voice.preview_url || '' },
-          },
-        })
+      toast.success(`Successfully fetched ${voices.length} voices!`)
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to fetch voices'
+      if (error instanceof Error && error.name === 'AbortError') {
+        toast.error('Request timed out. Please try again.')
+      } else {
+        toast.error(`Error: ${msg}`)
       }
-
-      alert(`Successfully fetched ${voices.length} voices!`)
-    } catch (error) {
-      alert(`Error: ${error instanceof Error ? error.message : 'Failed to fetch voices'}`)
     } finally {
       setLoading(false)
+      clearTimeout(timeoutId)
     }
-  }, [currentRowCount, dispatchFields, voicesPath])
+  }, [setValue])
 
   return (
     <div style={{ marginBottom: '20px' }}>
-      <Button buttonStyle="secondary" disabled={loading} onClick={fetchVoices} size="medium">
-        {loading ? 'Fetching Voices...' : 'Fetch Voices from ElevenLabs'}
+      <Button buttonStyle="secondary" disabled={loading} margin={false} onClick={fetchVoices} size="medium">
+        {loading ? 'Fetching Voices...' : 'Fetch Voices'}
       </Button>
       <p style={{ color: 'var(--theme-elevation-600)', fontSize: '13px', marginTop: '8px' }}>
         This will fetch all available voices from your ElevenLabs account. Make sure you have saved
@@ -102,6 +94,3 @@ export const VoicesFetcher: FieldClientComponent = ({ path }) => {
     </div>
   )
 }
-
-
-
