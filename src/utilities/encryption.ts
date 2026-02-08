@@ -4,9 +4,12 @@ const algorithm = 'aes-256-cbc'
 const ivLength = 16
 
 export function encrypt(text: string, secret: string): string {
-  console.log('[Encryption] Encrypting text', { length: text?.length })
-  if (!text) {return text}
-  if (!secret) {throw new Error('No secret provided for encryption')}
+  if (!text) {
+    return text
+  }
+  if (!secret) {
+    throw new Error('No secret provided for encryption')
+  }
 
   // Ensure secret is 32 bytes
   const key = crypto.createHash('sha256').update(secret).digest()
@@ -15,14 +18,17 @@ export function encrypt(text: string, secret: string): string {
   let encrypted = cipher.update(text)
   encrypted = Buffer.concat([encrypted, cipher.final()])
   const result = iv.toString('hex') + ':' + encrypted.toString('hex')
-  console.log('[Encryption] Encrypted result', { length: result.length })
+
   return result
 }
 
 export function decrypt(text: string, secret: string): string {
-  console.log('[Encryption] Decrypting text', { length: text?.length, isEncryptedFormat: text?.includes(':') })
-  if (!text) {return text}
-  if (!secret) {throw new Error('No secret provided for decryption')}
+  if (!text) {
+    return text
+  }
+  if (!secret) {
+    throw new Error('No secret provided for decryption')
+  }
 
   try {
     const textParts = text.split(':')

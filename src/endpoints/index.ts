@@ -224,7 +224,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               images = imageParts
             }
           }
-          console.log('jsonSchema: ', JSON.stringify(jsonSchema, null, 2))
 
           // Use payload.ai.streamObject directly! 🎉
           const streamResult = await req.payload.ai.streamObject({
