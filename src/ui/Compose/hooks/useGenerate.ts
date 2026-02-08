@@ -6,9 +6,7 @@ import { useCallback, useEffect, useRef } from 'react'
 
 import type { ActionMenuItems } from '../../../types.js'
 
-import {
-  PLUGIN_API_ENDPOINT_GENERATE,
-} from '../../../defaults.js'
+import { PLUGIN_API_ENDPOINT_GENERATE } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useGenerateUpload } from './useGenerateUpload.js'
@@ -79,7 +77,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   // Hook 2: Handle Upload generation and polling
   const { generateUpload, isJobActive, jobProgress, jobStatus } = useGenerateUpload({
     instructionIdRef,
-    setValue,
   })
 
   const streamObject = useCallback(
@@ -104,17 +101,8 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         options,
       })
     },
-    [
-      localFromContext?.code,
-      instructionIdRef,
-      documentId,
-      getData,
-      submit,
-      editor,
-    ],
+    [localFromContext?.code, instructionIdRef, documentId, getData, submit, editor],
   )
-
-
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {

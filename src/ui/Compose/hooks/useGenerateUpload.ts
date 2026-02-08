@@ -1,17 +1,17 @@
-import { toast, useConfig, useDocumentInfo, useForm, useLocale } from '@payloadcms/ui'
-import { useCallback, useState } from 'react'
+import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
+import { type RefObject, useCallback, useState } from 'react'
 
 import type { GenerateTextarea } from '../../../types.js'
 
 import { PLUGIN_AI_JOBS_TABLE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../../../defaults.js'
+import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 import { useHistory } from './useHistory.js'
 
 type UseGenerateUploadParams = {
-  instructionIdRef: React.MutableRefObject<string>
-  setValue: (value: any) => void
+  instructionIdRef: RefObject<string>
 }
 
-export const useGenerateUpload = ({ instructionIdRef, setValue }: UseGenerateUploadParams) => {
+export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams) => {
   const { config } = useConfig()
   const {
     routes: { api },
@@ -21,6 +21,11 @@ export const useGenerateUpload = ({ instructionIdRef, setValue }: UseGenerateUpl
   const localFromContext = useLocale()
   const { getData } = useForm()
   const { set: setHistory } = useHistory()
+
+  const { field, path: pathFromContext } = useFieldProps()
+  const { setValue } = useField<any>({
+    path: pathFromContext ?? '',
+  })
 
   // Async job UI state
   const [jobStatus, setJobStatus] = useState<string | undefined>(undefined)
@@ -52,7 +57,6 @@ export const useGenerateUpload = ({ instructionIdRef, setValue }: UseGenerateUpl
           const json = await uploadResponse.json()
           const { job, result } = json || {}
           if (result) {
-            // Set the upload ID
             setValue(result?.id)
             setHistory(result?.id)
 
@@ -85,11 +89,39 @@ export const useGenerateUpload = ({ instructionIdRef, setValue }: UseGenerateUpl
                   setJobProgress(progress ?? 0)
                   // When result present, set field and finish
                   if (status === 'completed' && result_id) {
-                    // Force upload field to refetch by clearing then setting the ID
-                    setValue(null)
-                    setTimeout(() => {
-                      setValue(result_id)
-                    }, 0)
+                    let valueToSet = result_id
+
+                    // Attempt to fetch full document for immediate preview
+                    if (field && 'relationTo' in field && typeof field.relationTo === 'string') {
+                      let attempts = 0
+                      const maxAttempts = 3
+                      while (attempts < maxAttempts) {
+                        try {
+                          const docRes = await fetch(
+                            `${serverURL}${api}/${field.relationTo}/${result_id}`,
+                            {
+                              credentials: 'include',
+                            },
+                          )
+                          if (docRes.ok) {
+                            const doc = await docRes.json()
+                            // Verify we have a URL for preview
+                            if (doc && doc.url) {
+                              valueToSet = doc
+                              break
+                            }
+                          }
+                        } catch (e) {
+                          console.error('Failed to fetch generated document for preview:', e)
+                        }
+                        attempts++
+                        if (attempts < maxAttempts) {
+                          await new Promise((resolve) => setTimeout(resolve, 500))
+                        }
+                      }
+                    }
+
+                    setValue(valueToSet)
                     setHistory(result_id)
                     setIsJobActive(false)
                     return
@@ -99,7 +131,7 @@ export const useGenerateUpload = ({ instructionIdRef, setValue }: UseGenerateUpl
                     throw new Error('Video generation failed')
                   }
                 }
-              } catch (e) {
+              } catch (_) {
                 // silent retry
               }
 
@@ -130,7 +162,7 @@ export const useGenerateUpload = ({ instructionIdRef, setValue }: UseGenerateUpl
     getData,
     localFromContext?.code,
     instructionIdRef,
-    setValue,
+    // setValue,
     documentId,
     collectionSlug,
     serverURL,
