@@ -161,15 +161,40 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, forceVisible, inst
     path: pathFromContext,
   })
 
-  const setIfValueIsLexicalState = useCallback(
-    (val: any) => {
-      if (val && typeof val === 'object' && 'root' in val && lexicalEditor) {
-        // Pass the object directly to our safe setter which handles validation
-        setSafeLexicalState(val, lexicalEditor)
-      }
-    },
-    [lexicalEditor],
-  )
+  const setIfValueIsLexicalState = useCallback((val: any) => {
+    // Prevent setting incomplete states during streaming
+    if (!val || typeof val !== 'object' || !('root' in val) || !lexicalEditor) {
+      return
+    }
+
+    // Validate that the state is complete before setting
+    // Check for common incomplete streaming states
+    if (!val.root || typeof val.root !== 'object' || Object.keys(val.root).length === 0) {
+      return
+    }
+
+    if (val.root.type !== 'root') {
+      return
+    }
+
+    if (!val.root.children || !Array.isArray(val.root.children) || val.root.children.length === 0) {
+      return
+    }
+
+    // Check for invalid child types (common streaming issue)
+    const hasInvalidChildren = val.root.children.some(
+      (child: any) => !child || !child.type || child.type === 'undefined' || child.type === '',
+    )
+
+    if (hasInvalidChildren) {
+      return
+    }
+
+    // State looks valid, proceed
+    setSafeLexicalState(JSON.stringify(val), lexicalEditor)
+
+    // DO NOT PROVIDE lexicalEditor as a dependency, it freaks out and does not update the editor after first undo/redo - revisit
+  }, [])
 
   const popupRender = useCallback(
     ({ close }: { close: () => void }) => {

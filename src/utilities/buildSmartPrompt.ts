@@ -34,20 +34,20 @@ const getFieldInfo = (schemaPath: string, payload: Payload): FieldInfo => {
   const collectionSlug = parts[0]
   const fieldPath = parts.slice(1)
   const fieldName = fieldPath[fieldPath.length - 1] || ''
-  
+
   // Get parent context (e.g., 'teamMembers' for 'teamMembers.name')
   let parentContext: null | string = null
   if (fieldPath.length > 1) {
     parentContext = fieldPath[fieldPath.length - 2]
   }
-  
+
   // Try to get the actual field configuration from the collection
   let field: Field | null = null
-  const collection = payload.config.collections.find(c => c.slug === collectionSlug)
+  const collection = payload.config.collections.find((c) => c.slug === collectionSlug)
   if (collection) {
     field = getFieldBySchemaPath(collection, schemaPath)
   }
-  
+
   return {
     name: fieldName,
     type: field?.type || 'text',
@@ -73,7 +73,9 @@ const humanize = (str: string): string => {
  * Get a description snippet from field admin config
  */
 const getFieldDescription = (field: Field | null): null | string => {
-  if (!field) {return null}
+  if (!field) {
+    return null
+  }
   const admin = (field as { admin?: { description?: string } }).admin
   if (admin?.description && typeof admin.description === 'string') {
     return admin.description
@@ -86,7 +88,7 @@ const getFieldDescription = (field: Field | null): null | string => {
  */
 const getTypeGuidance = (type: string, fieldName: string): string => {
   const nameHint = humanize(fieldName)
-  
+
   switch (type) {
     case 'code':
       return `Generate code for ${nameHint}`
@@ -120,68 +122,68 @@ const getParentContextPhrase = (parentContext: null | string): string => {
   if (!parentContext) {
     return ''
   }
-  
+
   const humanized = humanize(parentContext)
-  
+
   // Use singular form if the name ends with 's' (common for arrays)
   // e.g., "teamMembers" → "team member", "products" → "product"
   if (humanized.endsWith('s') && humanized.length > 2) {
     return `for a ${humanized.slice(0, -1)} entry`
   }
-  
+
   return `for ${humanized}`
 }
 
 /**
  * Build a smart contextual prompt based on field metadata.
  * This is used as a fallback when the user hasn't set a custom prompt.
- * 
+ *
  * @param context - The context containing schema path and document data
  * @returns A contextual prompt string that can be used for AI generation
  */
 export const buildSmartPrompt = (context: SmartPromptContext): string => {
   const { documentData, payload, schemaPath } = context
-  
+
   const fieldInfo = getFieldInfo(schemaPath, payload)
   const { name, type, field, label, parentContext } = fieldInfo
-  
+
   // Start with the field's own description if available
   const description = getFieldDescription(field)
-  
+
   // Build the prompt components
   const parts: string[] = []
-  
+
   // Use description as primary guidance if available
   if (description) {
-    parts.push(description)
-  } else {
-    // Fall back to type-based guidance, prefer label over name for better context
-    parts.push(getTypeGuidance(type, label || name))
+    parts.push(`Field description for user: ${description}\n`)
   }
-  
+
+  parts.push(getTypeGuidance(type, label || name))
+
   // Add parent context if nested
   const parentPhrase = getParentContextPhrase(parentContext)
   if (parentPhrase) {
     parts.push(parentPhrase)
   }
-  
+
   // Add document title context if available
-  const title = documentData?.title
+  const title = documentData?.title || documentData?.name
+
   if (title && typeof title === 'string') {
     parts.push(`in the context of "${title}"`)
   }
-  
+
   // Build the final prompt
   let prompt = parts.join(' ')
-  
+
   // Ensure first letter is capitalized
   prompt = prompt.charAt(0).toUpperCase() + prompt.slice(1)
-  
+
   // Add instruction suffix for clarity
   if (!prompt.endsWith('.')) {
     prompt += '.'
   }
-  
+
   return prompt
 }
 

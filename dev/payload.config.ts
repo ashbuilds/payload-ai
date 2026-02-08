@@ -35,7 +35,7 @@ const buildConfigWithMemoryDB = async () => {
     },
     collections: [
       Media,
-      // Posts,
+      Posts,
       Characters,
       ArrayTestCases,
     ],
@@ -50,11 +50,6 @@ const buildConfigWithMemoryDB = async () => {
     email: testEmailAdapter,
     plugins: [
       payloadAiPlugin({
-        collections: {
-          [ArrayTestCases.slug]: true,
-          [Characters.slug]: false,
-          [Posts.slug]: false,
-        },
         debugging: true,
         disableSponsorMessage: false,
         generatePromptOnInit: process.env.NODE_ENV !== 'production',

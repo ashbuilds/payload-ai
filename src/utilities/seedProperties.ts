@@ -1,6 +1,5 @@
 import type { PayloadRequest } from 'payload'
 
-import { defaultSeedPrompts } from '../ai/prompts.js'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 import { updateFieldsConfig } from './updateFieldsConfig.js'
 
@@ -30,9 +29,8 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
     const { schemaPathMap } = updateFieldsConfig(collectionConfig)
 
     for (const [schemaPath, fieldInfo] of Object.entries(schemaPathMap)) {
-      const { type, custom, label, relationTo } = fieldInfo as {
-        custom?: any
-        label: string
+      const { type, custom, relationTo } = fieldInfo as {
+        custom?: { ai?: { prompt?: string; system?: string } }
         relationTo?: string
         type: string
       }
@@ -86,28 +84,9 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
         continue
       }
 
-      // Generate seed prompts
-      const seeded = await defaultSeedPrompts({
-        fieldLabel: label,
-        fieldSchemaPaths: {}, // We might not need the full map here for individual seeding
-        fieldType: type,
-        path: schemaPath,
-      })
-
-      if (!seeded || typeof seeded !== 'object') {
-        continue
-      }
-
-      let prompt = 'prompt' in seeded ? seeded.prompt : ''
-      let system = 'system' in seeded ? seeded.system : ''
-
-      // Override with custom prompts if defined
-      if (custom?.ai?.prompt) {
-        prompt = custom.ai.prompt
-      }
-      if (custom?.ai?.system) {
-        system = custom.ai.system
-      }
+      // Use custom prompts if provided, otherwise leave empty
+      const prompt = custom?.ai?.prompt || ''
+      const system = custom?.ai?.system || ''
 
       // Determine model-id based on field type
       let modelId = 'text'
@@ -126,13 +105,13 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
         await payload.create({
           collection: PLUGIN_INSTRUCTIONS_TABLE,
           data: {
-            prompt,
-            system,
             disabled: false,
             'field-type': type,
             'model-id': modelId,
+            prompt,
             'relation-to': relationTo,
             'schema-path': schemaPath,
+            system,
           },
           overrideAccess: true,
         })

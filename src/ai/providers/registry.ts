@@ -279,7 +279,6 @@ export async function getImageModel(
   }
 
   if (provider.factory) {
-    console.log('modelId:  ', modelId)
     const instance = await provider.factory()
 
     // Type-safe check for image support

@@ -86,6 +86,16 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           let allowedEditorSchema = editorSchema
           if (allowedEditorNodes.length) {
             allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
+            // Debug: Log what nodes were received and what definitions remain
+            if (pluginConfig.debugging) {
+              req.payload.logger.info(
+                {
+                  receivedNodes: allowedEditorNodes,
+                  remainingDefinitions: Object.keys(allowedEditorSchema.definitions || {}),
+                },
+                '— AI Plugin: Schema filtering debug',
+              )
+            }
           }
 
           const schemaPath = String(instructions['schema-path'])
@@ -154,7 +164,10 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               if (targetField && supported.includes(t)) {
                 // For array fields, use count from array-settings if available
                 if (t === 'array') {
-                  const arraySettings = (instructions['array-settings'] || {}) as Record<string, unknown>
+                  const arraySettings = (instructions['array-settings'] || {}) as Record<
+                    string,
+                    unknown
+                  >
                   const count = (arraySettings.count as number) || 3
                   // Override the field's maxRows with the requested count
                   const modifiedField = {
@@ -220,6 +233,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             model: modelSettings.model as string,
             prompt: processedPrompt,
             provider: modelSettings.provider as string,
+            providerOptions: {
+              openai: {
+                strictJsonSchema: true,
+              },
+            },
             schema: jsonSchema,
             system: prompts.system,
             temperature: modelSettings.temperature as number | undefined,

@@ -80,8 +80,7 @@ export interface PluginConfig {
   prompts?: ActionPrompt[]
   /**
    * Custom seed prompt function for generating field-specific prompts
-   * If not provided, uses default seed prompt function
-   * You can access default seed prompts by importing { defaultSeedPrompts } from '@ai-stack/payloadcms'
+   * If not provided, fields will have empty prompts by default
    */
   seedPrompts?: SeedPromptFunction
   uploadCollectionSlug?: CollectionSlug
