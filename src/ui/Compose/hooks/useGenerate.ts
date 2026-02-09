@@ -106,7 +106,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     stop: objectStop,
     submit,
   } = useObject({
-    api: `/api${PLUGIN_API_ENDPOINT_GENERATE}`,
+    api: `${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error: any) => {
       toast.error(`Failed to generate: ${error.message}`)
       console.error('Error generating object:', error)
