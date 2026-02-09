@@ -18,8 +18,11 @@ const normalizeSchemaPath = (path: string): string => {
   if (!path) {
     return path
   }
-  // Remove numeric path segments (array indices)
-  return path.split('.').filter(segment => !/^\d+$/.test(segment)).join('.')
+  // Remove numeric path segments (array indices) and new Lexical _index- based keys
+  return path
+    .split('.')
+    .filter((segment) => !/^\d+$/.test(segment) && !segment.startsWith('_index-'))
+    .join('.')
 }
 
 const warnedOnceOnNoInstructionId = new Set<string>()
