@@ -157,7 +157,7 @@ export function fieldToJsonSchema(
                if (subField.fields) {processFields(subField.fields)}
                continue
             }
-            if (!subField.name) {continue}
+            if (!subField.name || subField.name === 'id') {continue}
 
             const subSchema = fieldToJsonSchema(subField, { wrapObject: false })
             if (subSchema && Object.keys(subSchema).length > 0) {
