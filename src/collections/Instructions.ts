@@ -152,6 +152,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
         type: 'text',
         admin: {
           description: "Please don't change this unless you're sure of what you're doing",
+          hidden: !pluginConfig.debugging,
         },
         unique: true,
       },
@@ -160,6 +161,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
         type: 'select',
         admin: {
           description: "Please don't change this unless you're sure of what you're doing",
+          hidden: !pluginConfig.debugging,
         },
         defaultValue: 'text',
         label: 'Field type',
@@ -193,6 +195,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
           condition: (_, current) => {
             return current['field-type'] === 'upload'
           },
+          hidden: !pluginConfig.debugging,
         },
         label: 'Relation to',
       },

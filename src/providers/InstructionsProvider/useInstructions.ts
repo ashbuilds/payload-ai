@@ -30,7 +30,7 @@ const warnOnceOnMissingInstructions = (path: string) => {
   if (!warnedOnceOnNoInstructionId.has(path)) {
     warnedOnceOnNoInstructionId.add(path)
     // eslint-disable-next-line no-console
-    console.info(`[AI Plugin] There are no AI instructions for this field: ${path}. Enable "generatePromptOnInit" option to enable them.`)
+    console.info(`[AI Plugin] There are no AI instructions for this field: ${path}.`)
   }
 }
 

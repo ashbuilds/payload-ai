@@ -62,7 +62,6 @@ export interface PluginConfig {
   disableSponsorMessage?: boolean
   editorConfig?: { nodes: JSONSchema[] }
   fields?: Field[]
-  generatePromptOnInit?: boolean
   generationModels?: ((defaultModels: GenerationModel[]) => GenerationModel[]) | GenerationModel[]
   globals?: {
     [key: GlobalConfig['slug']]: boolean
