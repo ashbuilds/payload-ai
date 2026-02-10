@@ -43,6 +43,10 @@ const buildConfigWithMemoryDB = async () => {
       push: process.env.NODE_ENV !== 'production',
     }),
     editor: lexicalEditor(),
+    localization: {
+      defaultLocale: 'en-US',
+      locales: ['en-US', 'ja-JA'],
+    },
     email: testEmailAdapter,
     plugins: [
       payloadAiPlugin({
