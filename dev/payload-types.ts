@@ -86,11 +86,11 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
   globalsSelect: {};
-  locale: null;
+  locale: 'en-US' | 'ja-JA';
   user: User & {
     collection: 'users';
   };
@@ -128,7 +128,7 @@ export interface UserAuthOperations {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt?: string | null;
   caption?: {
     root: {
@@ -220,25 +220,35 @@ export interface Media {
  * via the `definition` "posts".
  */
 export interface Post {
-  id: string;
+  id: number;
   /**
    * Demonstrates AI title generation. Use the AI plugin’s Compose action on this field to generate or iterate on a compelling, SEO-friendly headline.
    */
   title: string;
   /**
+   * SEO quality keywords
+   */
+  keywords?: string[] | null;
+  /**
+   * Any random number 1-10
+   */
+  number?: number[] | null;
+  select?: ('gpt-4o-mini' | 'gpt-4' | 'gpt-5') | null;
+  description?: string | null;
+  /**
    * Upload the source images used by the banner prompt template. The AI composes these into a single hero/banner image.
    */
   bannerInputs?: {
-    shirt?: (string | null) | Media;
-    pants?: (string | null) | Media;
-    person?: (string | null) | Media;
-    background?: (string | null) | Media;
+    shirt?: (number | null) | Media;
+    pants?: (number | null) | Media;
+    person?: (number | null) | Media;
+    background?: (number | null) | Media;
   };
   /**
    * Result of the AI banner generation (typically using OpenAI GPT-Image-1). Use the Compose action to generate and iterate on the final image.
    */
   bannerOutput?: {
-    heroImage?: (string | null) | Media;
+    heroImage?: (number | null) | Media;
   };
   /**
    * Rich text powered by Lexical with AI assistance. Use toolbars and the Compose menu to generate, refine, format, and translate content.
@@ -264,7 +274,7 @@ export interface Post {
    * Generates narration for the Content field. Only the audio file is stored here; model and generation options are configured in the AI plugin settings.
    */
   voice?: {
-    audio?: (string | null) | Media;
+    audio?: (number | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
@@ -275,7 +285,7 @@ export interface Post {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -299,7 +309,7 @@ export interface User {
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
-  id: string;
+  id: number;
   /**
    * Input data provided to the job
    */
@@ -391,28 +401,28 @@ export interface PayloadJob {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
       } | null)
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'payload-jobs';
-        value: string | PayloadJob;
+        value: number | PayloadJob;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -422,10 +432,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -445,7 +455,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -550,6 +560,10 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  keywords?: T;
+  number?: T;
+  select?: T;
+  description?: T;
   bannerInputs?:
     | T
     | {
@@ -672,10 +686,10 @@ export interface TaskSchedulePublish {
     locale?: string | null;
     doc?: {
       relationTo: 'posts';
-      value: string | Post;
+      value: number | Post;
     } | null;
     global?: string | null;
-    user?: (string | null) | User;
+    user?: (number | null) | User;
   };
   output?: unknown;
 }

@@ -1,3 +1,4 @@
+import { useLocale } from '@payloadcms/ui'
 import locales from 'locale-codes'
 import React, { memo, useState } from 'react'
 
@@ -10,6 +11,8 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
   const [show, setShow] = useState(false)
 
   const { enabledLanguages = [] } = useInstructions()
+  const currentLocale = useLocale()
+  const currentLocaleCode = currentLocale?.code
 
   let filteredLocales = locales.all.filter((a) => {
     return a.tag && a.location
@@ -43,9 +46,24 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
           className={`${styles.menu} ${styles.subMenu}`}
           style={{
             background: 'var(--popup-bg)',
-            // minHeight: '300px',
           }}
         >
+          {currentLocaleCode && (
+            <Item
+              onClick={() => {
+                onClick({ locale: currentLocaleCode })
+              }}
+              style={{                
+                marginBottom: '4px',
+                marginTop: "4px",
+                paddingBottom: '4px',
+              }}
+            >
+              <span className={styles.ellipsis}>
+                {`Current(${currentLocaleCode})`}
+              </span>
+            </Item>
+          )}
           <Item
             onClick={() => {}}
             style={{
