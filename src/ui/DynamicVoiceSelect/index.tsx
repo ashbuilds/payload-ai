@@ -43,7 +43,7 @@ export const DynamicVoiceSelect: React.FC<Props> = (props) => {
     const fetchSettings = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch('/api/globals/ai-settings?depth=1')
+        const response = await fetch('/api/globals/ai-providers?depth=1')
         if (response.ok) {
           const data = await response.json()
           setAiSettings(data)

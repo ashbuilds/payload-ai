@@ -486,7 +486,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           if (!instructionSettings.provider || !instructionSettings.model) {
             try {
               const aiSettings = await req.payload.findGlobal({
-                slug: 'ai-settings',
+                slug: 'ai-providers',
                 context: { unsafe: true }, // Get decrypted values for internal use
               })
 

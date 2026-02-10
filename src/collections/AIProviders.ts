@@ -2,13 +2,14 @@ import type { GlobalConfig } from 'payload'
 
 import { allProviderBlocks } from '../ai/providers/blocks/index.js'
 
-export const aiSettingsGlobal: GlobalConfig = {
-  slug: 'ai-settings',
+export const AIProvidersGlobal: GlobalConfig = {
+  slug: 'ai-providers',
   access: {
     read: ({ req }) => !!req.user,
     update: ({ req }) => !!req.user,
   },
   admin: {
+    description: 'Connect your providers and choose the default models used across your project.',
     group: false,
   },
   fields: [
@@ -16,7 +17,8 @@ export const aiSettingsGlobal: GlobalConfig = {
       name: 'providers',
       type: 'blocks',
       admin: {
-        description: 'Configure which AI providers to use and their settings',
+        description:
+          'Add one or more providers and set their credentials and settings. You can keep multiple providers and switch defaults below.',
         initCollapsed: true,
       },
       blocks: allProviderBlocks,
@@ -34,7 +36,8 @@ export const aiSettingsGlobal: GlobalConfig = {
       name: 'defaults',
       type: 'group',
       admin: {
-        description: 'Please provide default provider/model behavior for each use case',
+        description:
+          'Pick the default provider and model for each feature. These defaults are used unless a collection or field overrides them.',
       },
       fields: [
         {
@@ -311,5 +314,5 @@ export const aiSettingsGlobal: GlobalConfig = {
       },
     ],
   },
-  label: 'AI Configuration',
+  label: 'AI Providers',
 }

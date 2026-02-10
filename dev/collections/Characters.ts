@@ -403,7 +403,7 @@ export const Characters: CollectionConfig = {
               try {
                 // 1. Fetch available voices from global settings
                 const aiSettings = await req.payload.findGlobal({
-                  slug: 'ai-settings',
+                  slug: 'ai-providers',
                   context: { unsafe: true },
                 })
 

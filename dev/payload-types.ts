@@ -105,10 +105,10 @@ export interface Config {
     defaultIDType: number;
   };
   globals: {
-    'ai-settings': AiSetting;
+    'ai-providers': AiSetting;
   };
   globalsSelect: {
-    'ai-settings': AiSettingsSelect<false> | AiSettingsSelect<true>;
+    'ai-providers': AiSettingsSelect<false> | AiSettingsSelect<true>;
   };
   locale: null;
   user: User & {
@@ -1366,7 +1366,7 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ai-settings".
+ * via the `definition` "ai-providers".
  */
 export interface AiSetting {
   id: number;
@@ -1763,7 +1763,7 @@ export interface AiSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ai-settings_select".
+ * via the `definition` "ai-providers_select".
  */
 export interface AiSettingsSelect<T extends boolean = true> {
   providers?:

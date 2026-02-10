@@ -284,6 +284,7 @@ export const googleBlock: Block = {
                   admin: {
                     description: 'Safety filter settings',
                   },
+                  dbName: 'google-safety',
                   fields: [
                     {
                       type: 'row',

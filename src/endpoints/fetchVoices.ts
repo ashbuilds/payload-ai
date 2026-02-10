@@ -20,7 +20,7 @@ export const fetchVoices: Endpoint = {
 
       // Fetch AI Settings global to get the encrypted API key
       const aiSettings = await req.payload.findGlobal({
-        slug: 'ai-settings',
+        slug: 'ai-providers',
         context: { unsafe: true },
       })
 

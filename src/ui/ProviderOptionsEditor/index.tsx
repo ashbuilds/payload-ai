@@ -100,7 +100,7 @@ export const ProviderOptionsEditor: React.FC<ProviderOptionsEditorProps> = (prop
 
   // Fetch AI Settings to get current provider defaults
   useEffect(() => {
-    fetch('/api/globals/ai-settings?depth=1')
+    fetch('/api/globals/ai-providers?depth=1')
       .then((res) => res.json())
       .then((data) => setAiSettings(data))
       .catch((err) => console.error('Error fetching AI settings:', err))

@@ -94,7 +94,7 @@ function isProviderBlock<T extends ProviderBlockData>(
  */
 export async function getProviderRegistry(payload: Payload): Promise<ProviderRegistry> {
   const settings = (await payload.findGlobal({
-    slug: 'ai-settings',
+    slug: 'ai-providers',
     context: { unsafe: true },
   })) as unknown as AISettingsData
 
@@ -162,7 +162,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
  */
 export async function getGlobalDefaults(payload: Payload) {
   const settings = (await payload.findGlobal({
-    slug: 'ai-settings',
+    slug: 'ai-providers',
   })) as unknown as AISettingsData
   return settings.defaults
 }

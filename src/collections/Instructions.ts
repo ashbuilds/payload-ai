@@ -140,6 +140,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
       ...pluginConfig.overrideInstructions?.access,
     },
     admin: {
+      description: "Customize how AI interacts with specific fields within your enabled collections.",
       ...defaultAdminConfig,
       ...pluginConfig.overrideInstructions?.admin,
       components: {

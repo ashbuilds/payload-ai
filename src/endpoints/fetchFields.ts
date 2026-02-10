@@ -18,7 +18,7 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (config) => {
 
       try {
         const { enabledCollections: storedEnabledCollections } = await req.payload.findGlobal({
-          slug: 'ai-settings',
+          slug: 'ai-providers',
         })
         enabledCollections = (storedEnabledCollections as string[]) || []
       } catch (e) {

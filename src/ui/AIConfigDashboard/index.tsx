@@ -3,7 +3,7 @@
 import { Button, toast, useConfig } from '@payloadcms/ui'
 // @ts-expect-error - Next.js types are not resolving correctly with nodenext but runtime is fine
 import { useRouter } from 'next/navigation'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 
 import { excludeCollections } from '../../defaults.js'
 import { InstructionsContext } from '../../providers/InstructionsProvider/context.js'
@@ -17,7 +17,7 @@ export const AIConfigDashboard: React.FC = () => {
   } = useConfig()
   const router = useRouter()
   const { refresh, setEnabledCollections: setEnabledCollectionsInContext } =
-    useContext(InstructionsContext)
+    use(InstructionsContext)
 
   const [enabledCollections, setEnabledCollections] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -32,7 +32,7 @@ export const AIConfigDashboard: React.FC = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch(`${apiRoute}/globals/ai-settings`)
+        const response = await fetch(`${apiRoute}/globals/ai-providers`)
         if (response.ok) {
           const data = await response.json()
           // Handle both simple array and object wrapper if Payload wraps it
@@ -65,7 +65,7 @@ export const AIConfigDashboard: React.FC = () => {
     try {
       // First fetch current settings to get ID or just rely on global update behavior
       // We need to adhere to Payload's global update API
-      const response = await fetch(`${apiRoute}/globals/ai-settings`, {
+      const response = await fetch(`${apiRoute}/globals/ai-providers`, {
         body: JSON.stringify({
           enabledCollections,
         }),
@@ -96,7 +96,7 @@ export const AIConfigDashboard: React.FC = () => {
   }
 
   if (isLoading) {
-    return <div style={{ padding: '20px', textAlign: 'center' }}>Loading AI configuration...</div>
+    return <div style={{ padding: '20px', textAlign: 'center' }}>Loading configuration...</div>
   }
 
   return (
@@ -105,6 +105,8 @@ export const AIConfigDashboard: React.FC = () => {
         background: 'var(--theme-elevation-50)',
         // border: '1px solid var(--theme-elevation-150)',
         // borderRadius: '8px',
+        // borderBottom: '1px solid var(--theme-elevation-150)',
+        // borderTop: '1px solid var(--theme-elevation-150)',
         marginBottom: '20px',
         overflow: 'hidden',
       }}
@@ -115,30 +117,30 @@ export const AIConfigDashboard: React.FC = () => {
           borderBottom: '1px solid var(--theme-elevation-150)',
           display: 'flex',
           justifyContent: 'space-between',
-          padding: '20px',
+          padding: '8px var(--gutter-h)',
         }}
       >
         <div>
-          <h4 style={{ margin: '0 0 5px 0' }}>AI Configuration</h4>
+          <h2 style={{ margin: '0 0 5px 0' }}>Let's configure your AI Plugin</h2>
           <p style={{ color: 'var(--theme-elevation-500)', fontSize: '14px', margin: '0' }}>
-            Manage your AI providers, API keys, and enable AI for specific collections.
+            Set up the provider → Choose the content → Refine the behavior.
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <Button buttonStyle="secondary" el="link" to={`${adminRoute}/globals/ai-settings`}>
-            Settings
+          <Button buttonStyle="secondary" el="link" to={`${adminRoute}/globals/ai-providers`}>
+            Providers
           </Button>
-          <Button
-            disabled={isSaving}
-            onClick={handleSave}
-          >
+          <Button disabled={isSaving} onClick={handleSave}>
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </div>
 
-      <div style={{ padding: '20px' }}>
-        <h5 style={{ marginBottom: '15px' }}>Enabled Collections</h5>
+      <div style={{ padding: '24px var(--gutter-h)' }}>
+        <h5 style={{ marginBottom: '15px' }}>
+          Select the collections where AI features should be available, toggle them on or off, and
+          save your changes.
+        </h5>
         <div
           style={{
             display: 'grid',

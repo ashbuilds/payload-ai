@@ -19,7 +19,7 @@ export const excludeCollections = [
   'payload-preferences',
   'payload-migrations',
   'payload-locked-documents',
-  'ai-settings',
+  'ai-providers',
   PLUGIN_INSTRUCTIONS_TABLE,
   PLUGIN_AI_JOBS_TABLE,
 ]

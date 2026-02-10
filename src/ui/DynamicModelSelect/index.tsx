@@ -108,7 +108,7 @@ export const DynamicModelSelect: React.FC<Props> = (props) => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch('/api/globals/ai-settings?depth=1')
+        const response = await fetch('/api/globals/ai-providers?depth=1')
         if (response.ok) {
           const data = await response.json()
           if (data && data.providers) {
