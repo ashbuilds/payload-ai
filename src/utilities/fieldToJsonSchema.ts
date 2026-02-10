@@ -162,7 +162,31 @@ export function fieldToJsonSchema(
             const subSchema = fieldToJsonSchema(subField, { wrapObject: false })
             if (subSchema && Object.keys(subSchema).length > 0) {
               properties[subField.name] = subSchema
-              if (subField.required) {required.push(subField.name)}
+              // OpenAI Strict Mode: All fields must be required
+              required.push(subField.name)
+              
+              // If field is optional in Payload, allow null in schema
+              if (!subField.required) {
+                // Arrays usually default to empty array [], so we don't make them nullable
+                // Groups and other types can be null
+                 if (subSchema.type !== 'array') {
+                   if (Array.isArray(subSchema.type)) {
+                     if (!subSchema.type.includes('null')) {
+                       subSchema.type.push('null')
+                     }
+                   } else if (typeof subSchema.type === 'string' && subSchema.type !== 'null') {
+                     subSchema.type = [subSchema.type, 'null']
+                   }
+                   
+                   // If enum is present, we must allow null in enum or use anyOf? 
+                   // OpenAI strict mode: "enum values must be consistent with type". 
+                   // If type is [string, null], null is a valid value for the type, but if enum is ["a"], null is not in enum.
+                   // valid: { type: ["string", "null"], enum: ["a", null] } 
+                   if (Array.isArray(subSchema.enum) && !subSchema.enum.includes(null)) {
+                     subSchema.enum.push(null)
+                   }
+                 }
+              }
             }
           }
         }
@@ -180,6 +204,12 @@ export function fieldToJsonSchema(
           valueSchema = {
             type: 'array',
             items: objSchema
+          }
+          if (typeof field.maxRows === 'number') {
+            valueSchema.maxItems = field.maxRows
+          }
+           if (typeof field.minRows === 'number') {
+            valueSchema.minItems = field.minRows
           }
         } else {
           valueSchema = objSchema
