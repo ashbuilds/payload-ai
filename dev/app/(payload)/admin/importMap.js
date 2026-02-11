@@ -33,7 +33,7 @@ import { DynamicProviderSelect as DynamicProviderSelect_4490b89d4413c1ffaecdacfe
 import { DynamicModelSelect as DynamicModelSelect_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { ProviderOptionsEditor as ProviderOptionsEditor_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { DynamicVoiceSelect as DynamicVoiceSelect_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
-import { AIConfigDashboard as AIConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
+import { ConfigDashboard as ConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { EncryptedTextField as EncryptedTextField_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { ModelRowLabel as ModelRowLabel_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { VoicesFetcher as VoicesFetcher_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
@@ -76,7 +76,7 @@ export const importMap = {
   "@ai-stack/payloadcms/client#DynamicModelSelect": DynamicModelSelect_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#ProviderOptionsEditor": ProviderOptionsEditor_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#DynamicVoiceSelect": DynamicVoiceSelect_4490b89d4413c1ffaecdacfe72efaf73,
-  "@ai-stack/payloadcms/client#AIConfigDashboard": AIConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73,
+  "@ai-stack/payloadcms/client#ConfigDashboard": ConfigDashboard_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#EncryptedTextField": EncryptedTextField_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#ModelRowLabel": ModelRowLabel_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#VoicesFetcher": VoicesFetcher_4490b89d4413c1ffaecdacfe72efaf73,
