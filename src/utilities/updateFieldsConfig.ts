@@ -9,7 +9,11 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
   let schemaPathMap = {}
 
   function updateField(field: any, parentPath = ''): any {
-    const currentPath = parentPath ? `${parentPath}.${field.name}` : field.name
+    const currentPath = field.name
+      ? parentPath
+        ? `${parentPath}.${field.name}`
+        : field.name
+      : parentPath
     const currentSchemaPath = `${collectionConfig.slug}.${currentPath}`
 
     // Disabled fields/ field types
