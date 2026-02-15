@@ -8,3 +8,4 @@ export type {} from './payload-ai.d.ts'
 
 export { payloadAiPlugin } from './plugin.js'
 export { fieldToJsonSchema } from './utilities/fieldToJsonSchema.js'
+export { promptMentionsEndpoint } from './endpoints/promptMentions.js'

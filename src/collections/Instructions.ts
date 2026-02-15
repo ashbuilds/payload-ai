@@ -1,7 +1,10 @@
 import type { CollectionConfig } from 'payload'
 import type { PluginConfig } from 'src/types.js'
 
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
+import { PromptMentionsFeature } from '../fields/PromptEditorField/feature.server.js'
 
 // Defined capabilities replacing src/ai/models/
 const CAPABILITIES = [
@@ -243,13 +246,16 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
             fields: [
               {
                 name: 'prompt',
-                type: 'textarea',
+                type: 'richText',
                 admin: {
-                  components: {
-                    Field: '@ai-stack/payloadcms/fields#PromptEditorField',
-                  },
                   description: "Click 'Compose' to run this custom prompt and generate content",
                 },
+                editor: lexicalEditor({
+                  features: ({ defaultFeatures }) => [
+                    ...defaultFeatures,
+                    PromptMentionsFeature(),
+                  ],
+                }),
                 label: '',
               },
             ],

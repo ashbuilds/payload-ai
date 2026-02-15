@@ -47,6 +47,9 @@ importers:
       '@google/genai':
         specifier: ^1.30.0
         version: 1.30.0
+      '@lexical/react':
+        specifier: ^0.35.0
+        version: 0.35.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yjs@13.6.18)
       '@payloadcms/translations':
         specifier: ^3.55.1
         version: 3.55.1
@@ -68,6 +71,9 @@ importers:
       handlebars-async-helpers:
         specifier: ^1.0.6
         version: 1.0.6(handlebars@4.7.8)
+      lexical-beautiful-mentions:
+        specifier: ^0.1.48
+        version: 0.1.48(@lexical/react@0.35.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yjs@13.6.18))(@lexical/utils@0.35.0)(lexical@0.35.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       locale-codes:
         specifier: ^1.3.1
         version: 1.3.1
@@ -4409,6 +4415,15 @@ packages:
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
+
+  lexical-beautiful-mentions@0.1.48:
+    resolution: {integrity: sha512-ukiSAxMB9Hl88V19eT5uDSC7gDpeXKhgO6MEtmHKnj69VgwLVCKclIr2UO6yJs97QEw3cqJA5nM4j72obgXlmw==}
+    peerDependencies:
+      '@lexical/react': '>=0.11.0'
+      '@lexical/utils': '>=0.11.0'
+      lexical: '>=0.11.0'
+      react: '>=17.x'
+      react-dom: '>=17.x'
 
   lexical@0.35.0:
     resolution: {integrity: sha512-3VuV8xXhh5xJA6tzvfDvE0YBCMkIZUmxtRilJQDDdCgJCc+eut6qAv2qbN+pbqvarqcQqPN1UF+8YvsjmyOZpw==}
@@ -11015,6 +11030,14 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
+
+  lexical-beautiful-mentions@0.1.48(@lexical/react@0.35.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yjs@13.6.18))(@lexical/utils@0.35.0)(lexical@0.35.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      '@lexical/react': 0.35.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yjs@13.6.18)
+      '@lexical/utils': 0.35.0
+      lexical: 0.35.0
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   lexical@0.35.0: {}
 

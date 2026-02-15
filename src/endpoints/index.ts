@@ -23,6 +23,7 @@ import { type FetchableImage, fetchImages } from '../utilities/fetchImages.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { resolveImageReferences } from '../utilities/resolveImageReferences.js'
+import { lexicalToPromptTemplate } from '../utilities/lexicalToPromptTemplate.js'
 import { assignPrompt, extendContextWithPromptFields } from './buildPromptUtils.js'
 
 export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfig) =>
@@ -65,6 +66,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
           const { schema: editorSchema = {} } = editorConfig
           let { prompt: promptTemplate = '' } = instructions
+
+          // Convert Lexical JSON to string template if needed
+          if (promptTemplate && typeof promptTemplate === 'object') {
+             promptTemplate = lexicalToPromptTemplate(promptTemplate)
+          }
 
           // Smart fallback: if prompt is generic, build a contextual prompt from field metadata
           if (isGenericPrompt(promptTemplate)) {
@@ -357,6 +363,12 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           let { prompt: promptTemplate = '' } = instructions
+          
+          // Convert Lexical JSON to string template if needed
+          if (promptTemplate && typeof promptTemplate === 'object') {
+             promptTemplate = lexicalToPromptTemplate(promptTemplate)
+          }
+
           const { images: sampleImages = [] } = instructions
           const schemaPath = String(instructions['schema-path'])
           registerEditorHelper(req.payload, schemaPath)

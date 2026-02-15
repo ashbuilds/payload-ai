@@ -1,6 +1,7 @@
 import type { PayloadRequest } from 'payload'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
+import { stringToLexicalJSON } from './stringToLexicalJSON.js'
 import { updateFieldsConfig } from './updateFieldsConfig.js'
 
 interface SeedPropertiesArgs {
@@ -60,7 +61,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
           const updateData: any = {}
 
           if (custom?.ai?.prompt && custom.ai.prompt !== currentPrompt) {
-            updateData.prompt = custom.ai.prompt
+            updateData.prompt = stringToLexicalJSON(custom.ai.prompt)
             needsUpdate = true
           }
           if (custom?.ai?.system && custom.ai.system !== currentSystem) {
@@ -85,7 +86,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
       }
 
       // Use custom prompts if provided, otherwise leave empty
-      const prompt = custom?.ai?.prompt || ''
+      const prompt = custom?.ai?.prompt ? stringToLexicalJSON(custom.ai.prompt) : undefined
       const system = custom?.ai?.system || ''
 
       // Determine model-id based on field type
