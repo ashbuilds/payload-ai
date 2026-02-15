@@ -22,19 +22,37 @@ export const ArrayTestCases: CollectionConfig = {
     {
       name: 'title',
       type: 'text',
-      // admin: {
-      //   description: 'Name this test case',
-      // },
       required: true,
     },
     {
       name: 'images',
       type: 'upload',
+      admin: {
+        description: 'Generate multiple images',
+      },
+      custom: {
+        ai: {
+          prompt:
+            'Generate a completely random original character design.\n' +
+            'Create three orthographic 3D reference images of the same character:\n' +
+            'Output 3 images:' +
+            '\n' +
+            'Front view\n' +
+            'Side view (left profile)\n' +
+            'Back view\n' +
+            '\n' +
+            'The character must be consistent across all three views.\n' +
+            'Neutral pose, arms slightly away from body.\n' +
+            'Full body visible.\n' +
+            'Plain white background.\n' +
+            'No perspective distortion.\n' +
+            'No dynamic posing.\n' +
+            'Clean model sheet style suitable for 3D modeling reference.\n' +
+            'High detail, sharp lines, professional concept art.',
+        },
+      },
       hasMany: true,
-      relationTo: "media"
-      // admin: {
-      //   description: 'Name this test case',
-      // },
+      relationTo: 'media',
     },
 
     // ========================================
