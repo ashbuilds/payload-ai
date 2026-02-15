@@ -16,6 +16,7 @@ let pointerDownThrottleTimer: null | number = null
 let focusDebounceTimer: null | number = null
 
 let currentContainer: HTMLElement | null = null
+let lastContainer: HTMLElement | null = null // Track last valid container to restore if needed
 let rafId: null | number = null // Track RAF to cancel if needed
 
 /**
@@ -128,6 +129,7 @@ const setActiveContainer = (next: HTMLElement | null): void => {
   currentContainer?.classList.remove('ai-plugin-active')
   if (next) {
     next.classList.add('ai-plugin-active')
+    lastContainer = next // Update last known valid container
   }
   currentContainer = next
 }
@@ -136,6 +138,7 @@ const clearActiveContainer = (): void => {
   if (currentContainer) {
     currentContainer.classList.remove('ai-plugin-active')
     currentContainer = null
+    // Note: We do NOT clear lastContainer here, allowing restoration
   }
 
   // Cancel any pending RAF
@@ -167,6 +170,34 @@ const isInteractiveElement = (element: HTMLElement): boolean => {
   return false
 }
 
+// Helper for interactive menu check
+const checkInteractiveMenu = (e: Event): boolean => {
+  // Check global flag first (most reliable for mouse/hover interactions)
+  if (typeof window !== 'undefined' && window.__AI_MENU_INTERACTIVE) {
+    return true
+  }
+
+  const target = e.target as Element
+
+  // Check target directly
+  if (
+    target &&
+    target instanceof Element &&
+    (target.classList.contains('ai-interactive-menu') || target.hasAttribute('data-ai-interactive'))
+  ) {
+    return true
+  }
+
+  // Fallback: Check DOM path (for keyboard or specific events)
+  const path = e.composedPath()
+  return path.some((el) => {
+    return (
+      el instanceof Element &&
+      (el.classList.contains('ai-interactive-menu') || el.hasAttribute('data-ai-interactive'))
+    )
+  })
+}
+
 /**
  * Handle focus events - only activate if focus is on an interactive element within .field-type
  * Performance: Debounced by 10ms to handle rapid focus changes
@@ -184,6 +215,15 @@ const onFocusIn = (e: FocusEvent): void => {
 
   // Only activate if the focused element is actually interactive
   if (!isInteractiveElement(target)) {
+    return
+  }
+
+  // Check for interactive menu elements using composedPath for robustness
+  if (typeof window !== 'undefined' && window.__AI_MENU_INTERACTIVE || checkInteractiveMenu(e)) {
+    // If we lost the active state (e.g. due to pointerDown clearing it), restore it
+    if (!currentContainer && lastContainer?.isConnected) {
+       setActiveContainer(lastContainer)
+    }
     return
   }
 
@@ -207,6 +247,11 @@ const onFocusIn = (e: FocusEvent): void => {
 const onPointerDown = (e: PointerEvent): void => {
   const target = e.target
   if (!(target instanceof HTMLElement)) {
+    return
+  }
+
+  // Check for interactive menu elements using composedPath
+  if (typeof window !== 'undefined' && window.__AI_MENU_INTERACTIVE || checkInteractiveMenu(e)) {
     return
   }
 

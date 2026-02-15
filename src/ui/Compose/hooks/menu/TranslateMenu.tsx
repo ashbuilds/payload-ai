@@ -1,10 +1,16 @@
 import locales from 'locale-codes'
-import React, { memo, useState } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 
 import { useInstructions } from '../../../../providers/InstructionsProvider/useInstructions.js'
 import { Item } from './Item.js'
 import { Translate } from './items.js'
 import styles from './menu.module.scss'
+
+declare global {
+  interface Window {
+    __AI_MENU_INTERACTIVE?: boolean
+  }
+}
 
 export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string }) => void }) => {
   const [show, setShow] = useState(false)
@@ -22,10 +28,38 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
   const [languages, setLanguages] = useState(filteredLocales)
   const [inputFocus, setInputFocus] = useState(false)
 
+  // Cleanup global flag when menu unmounts or closes
+  useEffect(() => {
+    if (!show) {
+      if (typeof window !== 'undefined') {
+        window.__AI_MENU_INTERACTIVE = false
+      }
+    }
+    return () => {
+      if (show && typeof window !== 'undefined') {
+        window.__AI_MENU_INTERACTIVE = false
+      }
+    }
+  }, [show])
+
   return (
     <div
-      className={styles.menu}
+      className={`${styles.menu} ai-interactive-menu`}
+      data-ai-interactive="true"
+      onBlur={(e) => {
+        // Only clear if focus moves outside the menu container
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = false
+        }
+      }}
+      onFocus={() => {
+        if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = true
+      }}
+      onMouseEnter={() => {
+        if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = true
+      }}
       onMouseLeave={() => {
+        if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = false
         if (!inputFocus) {
           setShow(false)
         }
@@ -56,7 +90,8 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
             }}
           >
             <input
-              className={styles.menuInput}
+              className={`${styles.menuInput} ai-interactive-menu`}
+              data-ai-interactive="true"
               onBlur={() => setInputFocus(false)}
               onChange={(event) => {
                 const value = event.target.value
@@ -78,6 +113,8 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
           {languages.map((locale) => {
             return (
               <Item
+                className="ai-interactive-menu"
+                data-ai-interactive="true"
                 key={locale.tag}
                 onClick={() => {
                   onClick({ locale: locale.tag })
