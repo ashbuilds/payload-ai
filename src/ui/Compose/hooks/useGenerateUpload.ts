@@ -57,8 +57,14 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
           const json = await uploadResponse.json()
           const { job, result } = json || {}
           if (result) {
-            setValue(result?.id)
-            setHistory(result?.id)
+            if (Array.isArray(result)) {
+              const ids = result.map((r: any) => r.id)
+              setValue(ids)
+              setHistory(ids)
+            } else {
+              setValue(result?.id)
+              setHistory(result?.id)
+            }
 
             // Show toast to prompt user to save
             toast.success('Image generated successfully! Click Save to see the preview.')
