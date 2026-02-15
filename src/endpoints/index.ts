@@ -24,10 +24,12 @@ import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { resolveImageReferences } from '../utilities/resolveImageReferences.js'
 import { lexicalToPromptTemplate } from '../utilities/lexicalToPromptTemplate.js'
+import { promptMentionsEndpoint } from './promptMentions.js'
 import { assignPrompt, extendContextWithPromptFields } from './buildPromptUtils.js'
 
 export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfig) =>
   ({
+    promptMentions: promptMentionsEndpoint,
     textarea: {
       // Text/rich-text generation endpoint using payload.ai.streamObject
       handler: async (req: PayloadRequest) => {

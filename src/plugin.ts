@@ -128,6 +128,7 @@ const payloadAiPlugin =
         }),
         endpoints: [
           ...(incomingConfig.endpoints ?? []),
+          pluginEndpoints.promptMentions,
           pluginEndpoints.textarea,
           pluginEndpoints.upload,
           ...(pluginEndpoints.videogenWebhook ? [pluginEndpoints.videogenWebhook] : []),
