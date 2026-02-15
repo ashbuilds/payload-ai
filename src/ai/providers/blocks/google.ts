@@ -410,7 +410,7 @@ export const googleBlock: Block = {
                   id: 'gemini-3-pro-image-preview',
                   name: 'Gemini 3.0 Pro Image (Preview)',
                   enabled: true,
-                  responseModalities: ['IMAGE'],
+                  responseModalities: ['IMAGE', 'TEXT'],
                   useCase: 'image',
                 },
 

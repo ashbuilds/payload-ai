@@ -10,6 +10,8 @@ import { ArrayTestCases } from './collections/ArrayTestCases.js'
 import { Characters } from './collections/Characters.js'
 import { Media } from './collections/Media.js'
 import { Posts } from './collections/Posts.js'
+import { Products } from './collections/Products.js'
+import { Users } from './collections/Users.js'
 import { testEmailAdapter } from './helpers/testEmailAdapter.js'
 
 const filename = fileURLToPath(import.meta.url)
@@ -20,7 +22,6 @@ if (!process.env.ROOT_DIR) {
 }
 
 const buildConfigWithMemoryDB = async () => {
-
   return buildConfig({
     admin: {
       dependencies: {
@@ -33,18 +34,11 @@ const buildConfigWithMemoryDB = async () => {
         baseDir: path.resolve(dirname),
       },
     },
-    collections: [
-      Media,
-      Posts,
-      Characters,
-      ArrayTestCases,
-    ],
+    collections: [Media, Posts, Characters, ArrayTestCases, Users, Products],
     db: sqliteAdapter({
       client: {
         url: process.env.DATABASE_URI || `file:${path.resolve(dirname, 'dev.db')}`,
       },
-      // // Automatically push schema changes in non-production for frictionless dev
-      // push: process.env.NODE_ENV !== 'production',
     }),
     editor: lexicalEditor(),
     email: testEmailAdapter,
@@ -52,15 +46,6 @@ const buildConfigWithMemoryDB = async () => {
       payloadAiPlugin({
         debugging: true,
         disableSponsorMessage: false,
-        // generatePromptOnInit: process.env.NODE_ENV !== 'production',
-        // mediaUpload: async (result, { collection, request }) => {
-        //   return request.payload.create({
-        //     collection,
-        //     data: result.data,
-        //     file: result.files?.[0],
-        //   })
-        // },
-        // uploadCollectionSlug: 'media',
       }),
     ],
     secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
