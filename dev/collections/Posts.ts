@@ -216,45 +216,29 @@ export const Posts: CollectionConfig = {
                   name: 'content',
                   type: 'richText',
                   editor: lexicalEditor({
-                    features: ({ rootFeatures }) => {
+                    features: ({ defaultFeatures, rootFeatures }) => {
                       return [
-                        // ...rootFeatures,
-                        // HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                        BlocksFeature({ blocks: [Banner, Code, MediaBlock] }),
-                        FixedToolbarFeature(),
-                        InlineToolbarFeature(),
-                        HorizontalRuleFeature(),
-                        EXPERIMENTAL_TableFeature(),
+                        ...rootFeatures,
+                        // Toolbars
+                        FixedToolbarFeature(), // persistent toolbar on top
+                        InlineToolbarFeature(), // selection (floating) toolbar
+
+                        // All defaults
+                        ...defaultFeatures,
+
+                        // Make sure all heading sizes are available
+                        HeadingFeature({
+                          enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+                        }),
+
+                        // Optional / non-default features
+                        EXPERIMENTAL_TableFeature(), // tables (experimental)
 
                         // AI feature for Lexical editor
                         PayloadAiPluginLexicalEditorFeature(),
                       ]
                     },
                   }),
-                  // editor: lexicalEditor({
-                  //   features: ({ defaultFeatures, rootFeatures }) => {
-                  //     return [
-                  //       ...rootFeatures,
-                  //       // Toolbars
-                  //       FixedToolbarFeature(), // persistent toolbar on top
-                  //       InlineToolbarFeature(), // selection (floating) toolbar
-                  //
-                  //       // All defaults
-                  //       ...defaultFeatures,
-                  //
-                  //       // Make sure all heading sizes are available
-                  //       HeadingFeature({
-                  //         enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-                  //       }),
-                  //
-                  //       // Optional / non-default features
-                  //       EXPERIMENTAL_TableFeature(), // tables (experimental)
-                  //
-                  //       // AI feature for Lexical editor
-                  //       PayloadAiPluginLexicalEditorFeature(),
-                  //     ]
-                  //   },
-                  // }),
                 },
               ],
               label: 'Article Body',
