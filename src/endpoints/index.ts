@@ -561,7 +561,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               let assetData: { alt?: string; id: number | string }
               
               // Create a synthetic result for the single file to pass to mediaUpload
-              const singleFileResult: MediaResult = {
+              const singleFileResult = {
                 files: [file],
               }
 

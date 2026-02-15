@@ -1,3 +1,4 @@
+import type { GenerateObjectResult, ModelMessage } from 'ai'
 import type { JSONSchema } from 'openai/lib/jsonschema'
 import type { ImageGenerateParams } from 'openai/resources/images'
 import type {
@@ -14,9 +15,8 @@ import type {
 } from 'payload'
 import type { CSSProperties, MouseEventHandler } from 'react'
 
-import type { GenerateObjectResult, ModelMessage } from 'ai'
 import type { MediaResult } from './ai/core/index.js'
-import type {PLUGIN_INSTRUCTIONS_TABLE} from "./defaults.js";
+import type { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
 
 export interface PluginConfigAccess {
   /**
@@ -191,6 +191,7 @@ export type UseMenuOptions = {
 
 export type BaseItemProps<T = any> = {
   children?: React.ReactNode
+  className?: string
   disabled?: boolean
   hideIcon?: boolean
   isActive?: boolean
@@ -244,13 +245,11 @@ export interface BeforeGenerateArgs<T = any> {
   system: string
 }
 
-export type BeforeGenerateResult =
-  | {
-      messages?: ModelMessage[]
-      prompt?: string
-      system?: string
-    }
-  | void
+export type BeforeGenerateResult = {
+  messages?: ModelMessage[]
+  prompt?: string
+  system?: string
+} | void
 
 export type BeforeGenerateHook<T = any> = (
   args: BeforeGenerateArgs<T>,
@@ -270,7 +269,7 @@ export type AfterGenerateHook<T = any> = (args: AfterGenerateArgs<T>) => Promise
 
 // Add to PluginConfig or a new interface if accessed via custom.ai
 export interface AIFieldConfig {
+  [key: string]: unknown
   afterGenerate?: AfterGenerateHook[]
   beforeGenerate?: BeforeGenerateHook[]
-  [key: string]: unknown
 }
