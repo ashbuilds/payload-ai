@@ -553,35 +553,70 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             }
           }
 
-          // If model returned a file immediately, proceed with upload
-          if (result && 'file' in result) {
-            let assetData: { alt?: string; id: number | string }
-            if (typeof pluginConfig.mediaUpload === 'function') {
-              assetData = await pluginConfig.mediaUpload(result, {
-                collection: uploadCollectionSlug as string,
-                request: req,
-              })
-            } else {
-              assetData = await req.payload.create({
-                collection: uploadCollectionSlug as string,
-                data: { alt: text },
-                file: result.file,
-                req, // Pass req to ensure access control is applied
-              })
+          // If model returned files immediately, proceed with upload
+          if (result && 'files' in result && Array.isArray(result.files) && result.files.length > 0) {
+            const uploadedDocs: Array<{ alt?: string; id: number | string }> = []
+
+            for (const file of result.files) {
+              let assetData: { alt?: string; id: number | string }
+              
+              // Create a synthetic result for the single file to pass to mediaUpload
+              const singleFileResult: MediaResult = {
+                files: [file],
+              }
+
+              if (typeof pluginConfig.mediaUpload === 'function') {
+                const uploadResult = await pluginConfig.mediaUpload(singleFileResult, {
+                  collection: uploadCollectionSlug as string,
+                  request: req,
+                })
+                assetData = { id: uploadResult.id, alt: (uploadResult as any).alt }
+              } else {
+                const created = await req.payload.create({
+                  collection: uploadCollectionSlug as string,
+                  data: { alt: text },
+                  file, // Pass the file object directly: { data, mimetype, name, size }
+                  req, // Pass req to ensure access control is applied
+                })
+                assetData = { id: created.id, alt: created.alt as string }
+              }
+
+              if (assetData.id) {
+                uploadedDocs.push(assetData)
+              }
             }
 
-            if (!assetData.id) {
+            if (uploadedDocs.length === 0) {
               req.payload.logger.error(
                 'Error uploading generated media, is your media upload function correct?',
               )
               throw new Error('Error uploading generated media!')
             }
 
+            // Check if target field supports multiple values
+            let hasMany = false
+            if (targetField) {
+              if (targetField.type === 'relationship' || targetField.type === 'upload' || targetField.type === 'select') {
+                hasMany = (targetField as any).hasMany === true
+              }
+            }
+
+            if (hasMany) {
+               return new Response(
+                JSON.stringify({
+                  result: uploadedDocs.map((d) => ({
+                    id: d.id,
+                    alt: d.alt,
+                  })),
+                }),
+              )
+            }
+
             return new Response(
               JSON.stringify({
                 result: {
-                  id: assetData.id,
-                  alt: assetData.alt,
+                  id: uploadedDocs[0].id,
+                  alt: uploadedDocs[0].alt,
                 },
               }),
             )

@@ -20,7 +20,6 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
 
   // Get TTS model instance
   const model = await getTTSModel(payload, provider, modelId, args.providerOptions)
-  console.log("model:   ", model)
 
   // Dynamic import to support older SDK versions
   let generateSpeechFn
@@ -43,7 +42,7 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
     text: prompt,
     voice,
   })
-  console.log("result", result)
+
  // Extract audio from result
   const { audio } = result
   const mimeType = audio.mediaType || 'audio/mp3'
@@ -57,11 +56,13 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
     : Buffer.from(audio.base64, 'base64')
 
   return {
-    file: {
-      name: `speech.${extension}`,
-      data: dataBuffer,
-      mimetype: mimeType,
-      size: dataBuffer.length,
-    },
+    files: [
+      {
+        name: `speech.${extension}`,
+        data: dataBuffer,
+        mimetype: mimeType,
+        size: dataBuffer.length,
+      },
+    ],
   }
 }

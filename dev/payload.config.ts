@@ -52,15 +52,15 @@ const buildConfigWithMemoryDB = async () => {
       payloadAiPlugin({
         debugging: true,
         disableSponsorMessage: false,
-        generatePromptOnInit: process.env.NODE_ENV !== 'production',
-        mediaUpload: async (result, { collection, request }) => {
-          return request.payload.create({
-            collection,
-            data: result.data,
-            file: result.file,
-          })
-        },
-        uploadCollectionSlug: 'media',
+        // generatePromptOnInit: process.env.NODE_ENV !== 'production',
+        // mediaUpload: async (result, { collection, request }) => {
+        //   return request.payload.create({
+        //     collection,
+        //     data: result.data,
+        //     file: result.files?.[0],
+        //   })
+        // },
+        // uploadCollectionSlug: 'media',
       }),
     ],
     secret: process.env.PAYLOAD_SECRET || 'test-secret_key',

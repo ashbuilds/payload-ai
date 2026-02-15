@@ -62,7 +62,7 @@ export interface MediaFile {
  */
 export interface MediaResult {
   // Immediate result (image, speech)
-  file?: MediaFile
+  files?: MediaFile[]
 
   // Async job result (video)
   jobId?: string

@@ -21,18 +21,22 @@ export async function generateStandardImage(
     providerOptions,
   })
 
-  const { image } = generateResult
+  const { images } = generateResult
 
-  const buffer = Buffer.from(image.base64, 'base64')
-  const mimeType = image.mediaType || 'image/png'
-  const extension = getExtensionFromMimeType(mimeType)
+  const files = images.map((image) => {
+    const buffer = Buffer.from(image.base64, 'base64')
+    const mimeType = image.mediaType || 'image/png'
+    const extension = getExtensionFromMimeType(mimeType)
 
-  return {
-    file: {
+    return {
       name: `generated.${extension}`,
       data: buffer,
       mimetype: mimeType,
       size: buffer.byteLength,
-    },
+    }
+  })
+
+  return {
+    files,
   }
 }

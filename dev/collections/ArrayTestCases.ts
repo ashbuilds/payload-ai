@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 /**
  * ArrayTestCases collection
- * 
+ *
  * This collection contains various array field configurations to test
  * AI generation scenarios. Each group represents a different complexity level.
  */
@@ -26,6 +26,15 @@ export const ArrayTestCases: CollectionConfig = {
       //   description: 'Name this test case',
       // },
       required: true,
+    },
+    {
+      name: 'images',
+      type: 'upload',
+      hasMany: true,
+      relationTo: "media"
+      // admin: {
+      //   description: 'Name this test case',
+      // },
     },
 
     // ========================================
