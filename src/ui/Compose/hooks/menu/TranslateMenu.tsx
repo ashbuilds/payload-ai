@@ -1,5 +1,5 @@
 import locales from 'locale-codes'
-import React, { memo, useEffect, useState } from 'react'
+import React, { memo, useEffect, useRef, useState } from 'react'
 
 import { useInstructions } from '../../../../providers/InstructionsProvider/useInstructions.js'
 import { Item } from './Item.js'
@@ -14,6 +14,7 @@ declare global {
 
 export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string }) => void }) => {
   const [show, setShow] = useState(false)
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const { enabledLanguages = [] } = useInstructions()
 
@@ -28,7 +29,6 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
   const [languages, setLanguages] = useState(filteredLocales)
   const [inputFocus, setInputFocus] = useState(false)
 
-  // Cleanup global flag when menu unmounts or closes
   useEffect(() => {
     if (!show) {
       if (typeof window !== 'undefined') {
@@ -36,6 +36,9 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
       }
     }
     return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current)
+      }
       if (show && typeof window !== 'undefined') {
         window.__AI_MENU_INTERACTIVE = false
       }
@@ -56,12 +59,18 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
         if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = true
       }}
       onMouseEnter={() => {
+        if (closeTimeoutRef.current) {
+          clearTimeout(closeTimeoutRef.current)
+          closeTimeoutRef.current = null
+        }
         if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = true
       }}
       onMouseLeave={() => {
         if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = false
         if (!inputFocus) {
-          setShow(false)
+          closeTimeoutRef.current = setTimeout(() => {
+            setShow(false)
+          }, 400)
         }
       }}
     >
