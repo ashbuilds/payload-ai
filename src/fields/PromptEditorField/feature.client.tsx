@@ -11,6 +11,7 @@ import {
   BeautifulMentionsTheme,
 } from 'lexical-beautiful-mentions'
 import React, { forwardRef, useCallback } from 'react'
+import { useFormFields } from '@payloadcms/ui'
 
 const PromptMentionsMenu = ({
   children,
@@ -117,24 +118,16 @@ const PromptMentionsPlugin: React.FC = () => {
   const suggestionsRef = React.useRef<Record<string, any[]>>({})
   const [isLoaded, setIsLoaded] = React.useState(false)
 
-  const getDocInfo = useCallback(() => {
-    let collectionSlug = ''
-    let docId = ''
-    if (typeof window !== 'undefined') {
-      const segments = window.location.pathname.split('/')
-      const collectionsIndex = segments.indexOf('collections')
-      if (collectionsIndex > -1 && segments.length > collectionsIndex + 1) {
-        collectionSlug = segments[collectionsIndex + 1]
-        docId = segments[collectionsIndex + 2]
-      }
-    }
-    return { collectionSlug, docId }
-  }, [])
+  // Get schema-path from the form to determine the target collection
+  const schemaPathField = useFormFields(([fields]: any) => fields['schema-path'])
+  const schemaPath = schemaPathField?.value as string
 
-  // Pre-fetch suggestions on mount
+  // Parse collection slug from schema-path (e.g. "products.name" -> "products")
+  const collectionSlug = schemaPath ? schemaPath.split('.')[0] : ''
+
+  // Pre-fetch suggestions when collectionSlug changes
   React.useEffect(() => {
     const fetchSuggestions = async () => {
-      const { collectionSlug, docId } = getDocInfo()
       if (!collectionSlug) {
         return
       }
@@ -145,7 +138,6 @@ const PromptMentionsPlugin: React.FC = () => {
       await Promise.all(
         triggers.map(async (trigger) => {
           const params = new URLSearchParams({
-            id: docId,
             collection: collectionSlug,
             q: '', // Fetch all
             trigger,
@@ -173,8 +165,8 @@ const PromptMentionsPlugin: React.FC = () => {
       setIsLoaded(true)
     }
 
-    fetchSuggestions().catch(console.log)
-  }, [getDocInfo])
+    fetchSuggestions().catch(console.error)
+  }, [collectionSlug])
 
   const queryMentions = useCallback(async (trigger: string, queryString?: null | string) => {
     const items = suggestionsRef.current[trigger] || []
