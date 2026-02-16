@@ -1,5 +1,8 @@
 'use client'
 
+import type {
+  BeautifulMentionsItem} from 'lexical-beautiful-mentions';
+
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { createClientFeature } from '@payloadcms/richtext-lexical/client'
 import {
@@ -7,18 +10,22 @@ import {
   BeautifulMentionsPlugin,
   BeautifulMentionsTheme,
 } from 'lexical-beautiful-mentions'
-import React, { useCallback, forwardRef } from 'react'
+import React, { forwardRef, useCallback } from 'react'
 
-const PromptMentionsMenu = forwardRef<
-  HTMLUListElement,
-  {
-    children?: React.ReactNode
-    className?: string
-    loading?: boolean
-    role?: string
-    style?: React.CSSProperties
-  }
->(({ children, className, loading, style, ...props }, ref) => {
+const PromptMentionsMenu = ({
+  children,
+  className,
+  loading,
+  ref,
+  style,
+  ...props
+}: {
+  children?: React.ReactNode
+  className?: string
+  loading?: boolean
+  role?: string
+  style?: React.CSSProperties
+} & { ref?: React.RefObject<HTMLUListElement | null> }) => {
   return (
     <ul
       className={className}
@@ -45,8 +52,8 @@ const PromptMentionsMenu = forwardRef<
         <li
           style={{
             color: 'var(--theme-elevation-500)',
-            padding: '8px 12px',
             fontSize: '14px',
+            padding: '8px 12px',
           }}
         >
           Loading...
@@ -56,38 +63,45 @@ const PromptMentionsMenu = forwardRef<
       )}
     </ul>
   )
-})
+}
 PromptMentionsMenu.displayName = 'PromptMentionsMenu'
 
-const PromptMentionsMenuItem = forwardRef<
-  HTMLLIElement,
-  {
-    children?: React.ReactNode
-    className?: string
-    isFocused?: boolean
-    itemValue?: string
-    label?: string
-    onClick?: () => void
-    onMouseEnter?: () => void
-    role?: string
-    selected?: boolean
-    style?: React.CSSProperties
-  }
->(({ children, className, isFocused, itemValue, label, selected, style, ...props }, ref) => {
+const PromptMentionsMenuItem = ({
+  children,
+  className,
+  isFocused,
+  itemValue,
+  label,
+  ref,
+  selected,
+  style,
+  ...props
+}: {
+  children?: React.ReactNode
+  className?: string
+  isFocused?: boolean
+  itemValue?: string
+  label?: string
+  onClick?: () => void
+  onMouseEnter?: () => void
+  role?: string
+  selected?: boolean
+  style?: React.CSSProperties
+} & { ref?: React.RefObject<HTMLLIElement | null> }) => {
   return (
     <li
       className={className}
       ref={ref}
       style={{
+        alignItems: 'center',
         backgroundColor: selected || isFocused ? 'var(--theme-elevation-100)' : 'transparent',
         color: 'var(--theme-elevation-800)',
         cursor: 'pointer',
+        display: 'flex',
         fontSize: '14px',
+        lineHeight: '1.5',
         padding: '8px 12px',
         whiteSpace: 'nowrap',
-        display: 'flex',
-        alignItems: 'center',
-        lineHeight: '1.5',
         ...style,
       }}
       {...props}
@@ -95,7 +109,7 @@ const PromptMentionsMenuItem = forwardRef<
       {label || children}
     </li>
   )
-})
+}
 PromptMentionsMenuItem.displayName = 'PromptMentionsMenuItem'
 
 const PromptMentionsPlugin: React.FC = () => {
@@ -121,7 +135,9 @@ const PromptMentionsPlugin: React.FC = () => {
   React.useEffect(() => {
     const fetchSuggestions = async () => {
       const { collectionSlug, docId } = getDocInfo()
-      if (!collectionSlug) return
+      if (!collectionSlug) {
+        return
+      }
 
       const triggers = ['@', '#']
       const newSuggestions: Record<string, any[]> = {}
@@ -144,41 +160,40 @@ const PromptMentionsPlugin: React.FC = () => {
                 value: item.id || item.value,
               }))
             } else {
-               newSuggestions[trigger] = []
+              newSuggestions[trigger] = []
             }
           } catch (e) {
             console.error(`Failed to fetch suggestions for ${trigger}`, e)
             newSuggestions[trigger] = []
           }
-        })
+        }),
       )
-      
+
       suggestionsRef.current = newSuggestions
       setIsLoaded(true)
     }
 
-    fetchSuggestions()
+    fetchSuggestions().catch(console.log)
   }, [getDocInfo])
 
-  const queryMentions = useCallback(async (trigger: string, queryString?: string) => {
+  const queryMentions = useCallback(async (trigger: string, queryString?: null | string) => {
     const items = suggestionsRef.current[trigger] || []
-    
+
     if (!queryString) {
-      return items
+      return items as BeautifulMentionsItem[]
     }
 
     const lowerQuery = queryString.toLowerCase()
     return items.filter((item) => {
       const display = item.display || item.value || ''
       return display.toLowerCase().includes(lowerQuery)
-    })
+    }) as BeautifulMentionsItem[]
   }, [])
 
   return (
     <BeautifulMentionsPlugin
       menuComponent={PromptMentionsMenu}
       menuItemComponent={PromptMentionsMenuItem}
-      // @ts-ignore
       onSearch={queryMentions}
       triggers={['@', '#']}
     />

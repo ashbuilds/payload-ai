@@ -20,7 +20,7 @@ export const PromptMentionsFeature = createServerFeature({
     nodes: [
       {
         converters: {},
-        node: BeautifulMentionNode as any,
+        node: BeautifulMentionNode,
       },
     ],
   },

@@ -143,7 +143,8 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
       ...pluginConfig.overrideInstructions?.access,
     },
     admin: {
-      description: "Customize how AI interacts with specific fields within your enabled collections.",
+      description:
+        'Customize how AI interacts with specific fields within your enabled collections.',
       ...defaultAdminConfig,
       ...pluginConfig.overrideInstructions?.admin,
       components: {
@@ -251,10 +252,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
                   description: "Click 'Compose' to run this custom prompt and generate content",
                 },
                 editor: lexicalEditor({
-                  features: ({ defaultFeatures }) => [
-                    ...defaultFeatures,
-                    PromptMentionsFeature(),
-                  ],
+                  features: ({ rootFeatures }) => [PromptMentionsFeature()],
                 }),
                 label: '',
               },
@@ -341,9 +339,9 @@ informative and accurate but also captivating and beautifully structured.`,
           },
         ],
       },
-      
+
       // Inline Settings Groups by Capability
-      
+
       // Text Settings
       {
         name: 'text-settings',
@@ -351,15 +349,10 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'text',
         },
-        fields: [
-          providerSelect,
-          modelSelect,
-          ...commonTextParams,
-          providerOptionsJson,
-        ],
+        fields: [providerSelect, modelSelect, ...commonTextParams, providerOptionsJson],
         label: 'Text Settings',
       },
-      
+
       // Rich Text Settings
       {
         name: 'richtext-settings',
@@ -367,15 +360,10 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'richtext',
         },
-        fields: [
-          providerSelect,
-          modelSelect,
-          ...commonTextParams,
-          providerOptionsJson,
-        ],
+        fields: [providerSelect, modelSelect, ...commonTextParams, providerOptionsJson],
         label: 'Rich Text Settings',
       },
-      
+
       // Image Settings
       {
         name: 'image-settings',
@@ -383,14 +371,10 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'image',
         },
-        fields: [
-          providerSelect,
-          modelSelect,
-          providerOptionsJson,
-        ],
+        fields: [providerSelect, modelSelect, providerOptionsJson],
         label: 'Image Settings',
       },
-      
+
       // TTS Settings
       {
         name: 'tts-settings',
@@ -415,7 +399,7 @@ informative and accurate but also captivating and beautifully structured.`,
         ],
         label: 'TTS Settings',
       },
-      
+
       // Array Settings
       {
         name: 'array-settings',
