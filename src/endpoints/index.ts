@@ -349,8 +349,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           }
 
           const contextData = {
-            ...data.doc,
             ...docData,
+            ...data.doc,
           }
 
           let instructions: Record<string, unknown> = { images: [], 'model-id': '', prompt: '' }
