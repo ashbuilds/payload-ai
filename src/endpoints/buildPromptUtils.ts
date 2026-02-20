@@ -10,6 +10,7 @@ import { defaultPrompts } from '../ai/prompts.js'
 import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { lexicalToPromptTemplate } from '../utilities/lexicalToPromptTemplate.js'
 
 const buildRichTextSystem = (baseSystem: string, layout: string) => {
   return `${baseSystem}
@@ -130,7 +131,12 @@ export const extendContextWithPromptFields = (
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
       }
       // {{prop}} escapes content by default. Here we make sure it won't be escaped.
-      const value = typeof target === 'object' ? (target as any)[prop] : undefined
+      let value = typeof target === 'object' ? (target as any)[prop] : undefined
+      
+      if (value && typeof value === 'object' && value.root && Array.isArray(value.root.children)) {
+        value = lexicalToPromptTemplate(value)
+      }
+
       return typeof value === 'string' ? new asyncHandlebars.SafeString(value) : value
     },
     // It's used by the handlebars library to determine if the property is enumerable
