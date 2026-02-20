@@ -396,6 +396,20 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             { type: String(instructions['field-type']), collection: collectionSlug },
             pluginConfig,
           )
+
+          if (pluginConfig.debugging) {
+            req.payload.logger.info(
+              {
+                contextDataKeys: Object.keys(contextData),
+                contextDataSample: Object.fromEntries(
+                  Object.entries(contextData).map(([k, v]) => [k, typeof v === 'object' ? `[object]` : v])
+                ),
+                promptTemplate: promptTemplate,
+              },
+              `— AI Plugin: DEBUG upload context before replacePlaceholders`,
+            )
+          }
+
           const text = await replacePlaceholders(promptTemplate as string, extendedContext)
           const uploadCollectionSlug = instructions['relation-to']
 
