@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+import { PayloadAiPluginLexicalEditorFeature, PromptField } from '@ai-stack/payloadcms'
 import {
   EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
@@ -46,25 +46,13 @@ export const Products: CollectionConfig = {
     {
       type: 'group',
       fields: [
-        {
+        PromptField({
           name: 'description',
-          type: 'textarea',
           admin: {
-            placeholder: 'A bold retro tiger with “Stay Wild” typography.',
-            rows: 2
-          },
-          custom: {
-            ai: {
-              prompt: [
-                'Write ONE punchy, t-shirt-store-friendly tagline for a design called "{{ name }}".',
-                'It must describe the visual idea clearly in 1 sentence.',
-                'No quotes. No hashtags. No emojis.',
-                'If the user already typed a concept, refine it without changing the core idea.',
-              ].join('\n'),
-            },
+            description: 'A bold retro tiger with “Stay Wild” typography.',
           },
           label: 'Description',
-        },
+        }),
         {
           name: 'artwork',
           type: 'upload',

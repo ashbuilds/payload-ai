@@ -5,13 +5,12 @@ import type {
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { createClientFeature } from '@payloadcms/richtext-lexical/client'
+import { useDocumentInfo, useFormFields } from '@payloadcms/ui'
 import {
   BeautifulMentionNode,
   BeautifulMentionsPlugin,
-  BeautifulMentionsTheme,
 } from 'lexical-beautiful-mentions'
-import React, { forwardRef, useCallback } from 'react'
-import { useFormFields } from '@payloadcms/ui'
+import React, { useCallback } from 'react'
 
 const PromptMentionsMenu = ({
   children,
@@ -71,7 +70,6 @@ const PromptMentionsMenuItem = ({
   children,
   className,
   isFocused,
-  itemValue,
   label,
   ref,
   selected,
@@ -114,16 +112,21 @@ const PromptMentionsMenuItem = ({
 PromptMentionsMenuItem.displayName = 'PromptMentionsMenuItem'
 
 const PromptMentionsPlugin: React.FC = () => {
-  const [editor] = useLexicalComposerContext()
+  useLexicalComposerContext()
   const suggestionsRef = React.useRef<Record<string, any[]>>({})
-  const [isLoaded, setIsLoaded] = React.useState(false)
 
-  // Get schema-path from the form to determine the target collection
+  // Get schema-path from the form to determine the target collection (Instructions context)
   const schemaPathField = useFormFields(([fields]: any) => fields['schema-path'])
   const schemaPath = schemaPathField?.value as string
+  
+  // Get current document info (Regular Collection context)
+  const { collectionSlug: currentCollectionSlug } = useDocumentInfo()
 
-  // Parse collection slug from schema-path (e.g. "products.name" -> "products")
-  const collectionSlug = schemaPath ? schemaPath.split('.')[0] : ''
+  // Determine effective collection slug
+  // 1. If schemaPath exists (Instructions), derive slug from it (e.g. "products.name" -> "products")
+  // 2. Fallback to current collection slug (e.g. editing a Product directly)
+  const collectionSlug = schemaPath ? schemaPath.split('.')[0] : currentCollectionSlug
+
 
   // Pre-fetch suggestions when collectionSlug changes
   React.useEffect(() => {
@@ -162,7 +165,6 @@ const PromptMentionsPlugin: React.FC = () => {
       )
 
       suggestionsRef.current = newSuggestions
-      setIsLoaded(true)
     }
 
     fetchSuggestions().catch(console.error)

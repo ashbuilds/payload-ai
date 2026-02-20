@@ -245,7 +245,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
             description:
               'Define dynamic templates using {{ fieldName }}. Type { to see available field suggestions.',
             fields: [
-              {
+              { // TODO: update below to use PromptField
                 name: 'prompt',
                 type: 'richText',
                 admin: {
