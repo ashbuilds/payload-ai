@@ -5,7 +5,7 @@ import type {
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { createClientFeature } from '@payloadcms/richtext-lexical/client'
-import { useDocumentInfo, useFormFields } from '@payloadcms/ui'
+import { useDocumentInfo, useFormFields, useTranslation } from '@payloadcms/ui'
 import {
   BeautifulMentionNode,
   BeautifulMentionsPlugin,
@@ -26,6 +26,7 @@ const PromptMentionsMenu = ({
   role?: string
   style?: React.CSSProperties
 } & { ref?: React.RefObject<HTMLUListElement | null> }) => {
+  const { t } = useTranslation()
   return (
     <ul
       className={className}
@@ -56,7 +57,7 @@ const PromptMentionsMenu = ({
             padding: '8px 12px',
           }}
         >
-          Loading...
+          {t('ai-plugin:general:loading' as any)}
         </li>
       ) : (
         children
@@ -119,7 +120,7 @@ const PromptMentionsPlugin: React.FC = () => {
   // Get schema-path from the form to determine the target collection (Instructions context)
   const schemaPathField = useFormFields(([fields]: any) => fields['schema-path'])
   const schemaPath = schemaPathField?.value as string
-  
+
   // Get current document info (Regular Collection context)
   const { collectionSlug: currentCollectionSlug } = useDocumentInfo()
 
@@ -127,7 +128,6 @@ const PromptMentionsPlugin: React.FC = () => {
   // 1. If schemaPath exists (Instructions), derive slug from it (e.g. "products.name" -> "products")
   // 2. Fallback to current collection slug (e.g. editing a Product directly)
   const collectionSlug = schemaPath ? schemaPath.split('.')[0] : currentCollectionSlug
-
 
   // Pre-fetch suggestions when collectionSlug changes
   React.useEffect(() => {

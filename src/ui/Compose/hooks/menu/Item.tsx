@@ -1,6 +1,8 @@
+import { useTranslation } from '@payloadcms/ui'
 import React, { memo } from 'react'
 
 import type { BaseItemProps } from './types.js'
+import type { PluginAITranslationKeys, PluginAITranslations } from '../../../../translations/index.js'
 
 import { ArrowIcon } from '../../../Icons/Icons.js'
 import styles from './menu.module.scss'
@@ -32,10 +34,17 @@ export const createMenuItem = (
   IconComponent: React.ComponentType<{ size?: number }>,
   initialText: string,
 ) =>
-  memo(({ children, disabled, hideIcon, isMenu, onClick, ...rest }: BaseItemProps) => (
-    <Item disabled={disabled} onClick={onClick} {...rest}>
-      {hideIcon || <IconComponent size={18} />}
-      {children || <span className={styles.text}>{initialText}</span>}
-      {isMenu && <ArrowIcon size={18} />}
-    </Item>
-  ))
+  memo(({ children, disabled, hideIcon, isMenu, onClick, ...rest }: BaseItemProps) => {
+    const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
+    return (
+      <Item disabled={disabled} onClick={onClick} {...rest}>
+        {hideIcon || <IconComponent size={18} />}
+        {children || (
+          <span className={styles.text}>
+            {t(`ai-plugin:actions:${initialText.toLowerCase()}` as any)}
+          </span>
+        )}
+        {isMenu && <ArrowIcon size={18} />}
+      </Item>
+    )
+  })

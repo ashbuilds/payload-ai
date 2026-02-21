@@ -1,0 +1,43 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Laster konfigurasjon...",
+      "configureTitle": "La oss konfigurere AI-pluginen din",
+      "configureSubtitle": "Sett opp leverandøren → Velg innholdet → Finjuster oppførselen.",
+      "providers": "Leverandører",
+      "saveChanges": "Lagre endringer",
+      "saving": "Lagrer...",
+      "selectCollectionsBody": "Velg samlingene der KI-funksjoner skal være tilgjengelige, slå dem av/på og lagre endringene dine.",
+      "settingsSaved": "Innstillinger lagret",
+      "failedToSave": "Kunne ikke lagre innstillingene",
+      "errorSaving": "Feil ved lagring av innstillinger"
+    },
+    "actions": {
+      "proofread": "Korrekturlese",
+      "rephrase": "Omformulere",
+      "translate": "Oversette",
+      "expand": "Utvide",
+      "summarize": "Oppsummere",
+      "simplify": "Forenkle",
+      "compose": "Skrive",
+      "settings": "Innstillinger"
+    },
+    "actionLoading": {
+      "proofreading": "Korrekturleser",
+      "rephrasing": "Omformulerer",
+      "translating": "Oversetter",
+      "expanding": "Utvider",
+      "summarizing": "Oppsummerer",
+      "simplifying": "Forenkler",
+      "composing": "Skriver"
+    },
+    "general": {
+      "search": "Søk...",
+      "queued": "I kø",
+      "video": "Video",
+      "loading": "Laster...",
+      "clickToStop": "Klikk for å stoppe"
+    }
+  }
+}

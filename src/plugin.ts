@@ -1,6 +1,6 @@
 import type { CollectionConfig, Config, GlobalConfig } from 'payload'
 
-import { deepMerge } from 'payload/shared'
+import { deepMergeSimple } from 'payload/shared'
 
 import type {
   PayloadGenerateMediaArgs,
@@ -149,9 +149,7 @@ const payloadAiPlugin =
         }),
         i18n: {
           ...(incomingConfig.i18n || {}),
-          translations: {
-            ...deepMerge(translations, incomingConfig.i18n?.translations ?? {}),
-          },
+          translations: deepMergeSimple(translations, incomingConfig.i18n?.translations ?? {}),
         },
       }
     }

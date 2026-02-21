@@ -1,0 +1,43 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "正在加载配置...",
+      "configureTitle": "让我们配置你的 AI 插件",
+      "configureSubtitle": "设置提供商 → 选择内容 → 优化行为。",
+      "providers": "提供商",
+      "saveChanges": "保存更改",
+      "saving": "正在保存...",
+      "selectCollectionsBody": "选择需要启用 AI 功能的集合，开启或关闭它们并保存更改。",
+      "settingsSaved": "设置已成功保存",
+      "failedToSave": "保存设置失败",
+      "errorSaving": "保存设置时出错"
+    },
+    "actions": {
+      "proofread": "校对",
+      "rephrase": "改写",
+      "translate": "翻译",
+      "expand": "扩展",
+      "summarize": "总结",
+      "simplify": "简化",
+      "compose": "撰写",
+      "settings": "设置"
+    },
+    "actionLoading": {
+      "proofreading": "正在校对",
+      "rephrasing": "正在改写",
+      "translating": "正在翻译",
+      "expanding": "正在扩展",
+      "summarizing": "正在总结",
+      "simplifying": "正在简化",
+      "composing": "正在撰写"
+    },
+    "general": {
+      "search": "搜索...",
+      "queued": "排队中",
+      "video": "视频",
+      "loading": "正在加载...",
+      "clickToStop": "点击停止"
+    }
+  }
+}

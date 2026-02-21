@@ -1,4 +1,43 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Ładowanie konfiguracji...",
+      "configureTitle": "Skonfigurujmy Twój plugin AI",
+      "configureSubtitle": "Skonfiguruj dostawcę → Wybierz treść → Dopracuj działanie.",
+      "providers": "Dostawcy",
+      "saveChanges": "Zapisz zmiany",
+      "saving": "Zapisywanie...",
+      "selectCollectionsBody": "Wybierz kolekcje, w których funkcje AI mają być dostępne, włącz je lub wyłącz i zapisz zmiany.",
+      "settingsSaved": "Ustawienia zapisane",
+      "failedToSave": "Nie udało się zapisać ustawień",
+      "errorSaving": "Błąd podczas zapisywania ustawień"
+    },
+    "actions": {
+      "proofread": "Korekta",
+      "rephrase": "Przeformułuj",
+      "translate": "Tłumacz",
+      "expand": "Rozwiń",
+      "summarize": "Podsumuj",
+      "simplify": "Uprość",
+      "compose": "Napisz",
+      "settings": "Ustawienia"
+    },
+    "actionLoading": {
+      "proofreading": "Korygowanie",
+      "rephrasing": "Przeformułowywanie",
+      "translating": "Tłumaczenie",
+      "expanding": "Rozwijanie",
+      "summarizing": "Podsumowywanie",
+      "simplifying": "Upraszczanie",
+      "composing": "Pisanie"
+    },
+    "general": {
+      "search": "Szukaj...",
+      "queued": "W kolejce",
+      "video": "Wideo",
+      "loading": "Ładowanie...",
+      "clickToStop": "Kliknij, aby zatrzymać"
+    }
+  }
 }

@@ -1,4 +1,43 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Chargement de la configuration...",
+      "configureTitle": "Configurons votre plugin IA",
+      "configureSubtitle": "Configurez le fournisseur → Choisissez le contenu → Affinez le comportement.",
+      "providers": "Fournisseurs",
+      "saveChanges": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
+      "selectCollectionsBody": "Sélectionnez les collections où les fonctionnalités d'IA doivent être disponibles, activez-les ou désactivez-les, puis enregistrez vos modifications.",
+      "settingsSaved": "Paramètres enregistrés avec succès",
+      "failedToSave": "Échec de l’enregistrement des paramètres",
+      "errorSaving": "Erreur lors de l’enregistrement des paramètres"
+    },
+    "actions": {
+      "proofread": "Corriger",
+      "rephrase": "Reformuler",
+      "translate": "Traduire",
+      "expand": "Développer",
+      "summarize": "Résumer",
+      "simplify": "Simplifier",
+      "compose": "Rédiger",
+      "settings": "Paramètres"
+    },
+    "actionLoading": {
+      "proofreading": "Correction en cours",
+      "rephrasing": "Reformulation en cours",
+      "translating": "Traduction en cours",
+      "expanding": "Développement en cours",
+      "summarizing": "Résumé en cours",
+      "simplifying": "Simplification en cours",
+      "composing": "Rédaction en cours"
+    },
+    "general": {
+      "search": "Rechercher...",
+      "queued": "En attente",
+      "video": "Vidéo",
+      "loading": "Chargement...",
+      "clickToStop": "Cliquer pour arrêter"
+    }
+  }
 }

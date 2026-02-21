@@ -1,0 +1,43 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "設定を読み込んでいます...",
+      "configureTitle": "AIプラグインを設定しましょう",
+      "configureSubtitle": "プロバイダーを設定 → コンテンツを選択 → 振る舞いを調整。",
+      "providers": "プロバイダー",
+      "saveChanges": "変更を保存",
+      "saving": "保存中...",
+      "selectCollectionsBody": "AI機能を利用できるコレクションを選択し、オン/オフを切り替えて変更を保存してください。",
+      "settingsSaved": "設定を保存しました",
+      "failedToSave": "設定の保存に失敗しました",
+      "errorSaving": "設定の保存中にエラーが発生しました"
+    },
+    "actions": {
+      "proofread": "校正",
+      "rephrase": "言い換え",
+      "translate": "翻訳",
+      "expand": "拡張",
+      "summarize": "要約",
+      "simplify": "簡略化",
+      "compose": "作成",
+      "settings": "設定"
+    },
+    "actionLoading": {
+      "proofreading": "校正中",
+      "rephrasing": "言い換え中",
+      "translating": "翻訳中",
+      "expanding": "拡張中",
+      "summarizing": "要約中",
+      "simplifying": "簡略化中",
+      "composing": "作成中"
+    },
+    "general": {
+      "search": "検索...",
+      "queued": "待機中",
+      "video": "ビデオ",
+      "loading": "読み込み中...",
+      "clickToStop": "クリックして停止"
+    }
+  }
+}

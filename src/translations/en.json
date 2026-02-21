@@ -1,4 +1,43 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Loading configuration...",
+      "configureTitle": "Let's configure your AI Plugin",
+      "configureSubtitle": "Set up the provider → Choose the content → Refine the behavior.",
+      "providers": "Providers",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "selectCollectionsBody": "Select the collections where AI features should be available, toggle them on or off, and save your changes.",
+      "settingsSaved": "Settings saved successfully",
+      "failedToSave": "Failed to save settings",
+      "errorSaving": "Error saving settings"
+    },
+    "actions": {
+      "proofread": "Proofread",
+      "rephrase": "Rephrase",
+      "translate": "Translate",
+      "expand": "Expand",
+      "summarize": "Summarize",
+      "simplify": "Simplify",
+      "compose": "Compose",
+      "settings": "Settings"
+    },
+    "actionLoading": {
+      "proofreading": "Proofreading",
+      "rephrasing": "Rephrasing",
+      "translating": "Translating",
+      "expanding": "Expanding",
+      "summarizing": "Summarizing",
+      "simplifying": "Simplifying",
+      "composing": "Composing"
+    },
+    "general": {
+      "search": "Search...",
+      "queued": "Queued",
+      "video": "Video",
+      "loading": "Loading...",
+      "clickToStop": "Click to stop"
+    }
+  }
 }

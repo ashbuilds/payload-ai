@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, toast, useConfig } from '@payloadcms/ui'
+import { Button, toast, useConfig, useTranslation } from '@payloadcms/ui'
 // @ts-expect-error - Next.js types are not resolving correctly with nodenext but runtime is fine
 import { useRouter } from 'next/navigation'
 import React, { use, useEffect, useState } from 'react'
@@ -23,6 +23,7 @@ export const ConfigDashboard: React.FC = () => {
   const [enabledCollections, setEnabledCollections] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const { t } = useTranslation()
 
   const availableCollections = collections.filter(
     (c) =>
@@ -72,7 +73,7 @@ export const ConfigDashboard: React.FC = () => {
       })
 
       if (response.ok) {
-        toast.success('Settings saved successfully')
+        toast.success(t('ai-plugin:configDashboard:settingsSaved' as any))
         if (setEnabledCollectionsInContext) {
           setEnabledCollectionsInContext(enabledCollections)
         }
@@ -81,43 +82,42 @@ export const ConfigDashboard: React.FC = () => {
         }
         router.refresh()
       } else {
-        toast.error('Failed to save settings')
+        toast.error(t('ai-plugin:configDashboard:failedToSave' as any))
       }
     } catch (error) {
       console.error('Error saving settings:', error)
-      toast.error('Error saving settings')
+      toast.error(t('ai-plugin:configDashboard:errorSaving' as any))
     } finally {
       setIsSaving(false)
     }
   }
 
   if (isLoading) {
-    return <div className={styles.loading}>Loading configuration...</div>
+    return <div className={styles.loading}>{t('ai-plugin:configDashboard:loadingConfiguration' as any)}</div>
   }
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
         <div>
-          <h2 className={styles.title}>Let's configure your AI Plugin</h2>
+          <h2 className={styles.title}>{t('ai-plugin:configDashboard:configureTitle' as any)}</h2>
           <p className={styles.subtitle}>
-            Set up the provider → Choose the content → Refine the behavior.
+            {t('ai-plugin:configDashboard:configureSubtitle' as any)}
           </p>
         </div>
         <div className={styles.headerActions}>
           <Button buttonStyle="secondary" el="link" to={`${adminRoute}/globals/ai-providers`}>
-            Providers
+            {t('ai-plugin:configDashboard:providers' as any)}
           </Button>
           <Button disabled={isSaving} onClick={handleSave}>
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? t('ai-plugin:configDashboard:saving' as any) : t('ai-plugin:configDashboard:saveChanges' as any)}
           </Button>
         </div>
       </div>
 
       <div className={styles.body}>
         <h5 className={styles.bodyTitle}>
-          Select the collections where AI features should be available, toggle them on or off, and
-          save your changes.
+          {t('ai-plugin:configDashboard:selectCollectionsBody' as any)}
         </h5>
         <div className={styles.grid}>
           {availableCollections.map((collection) => {

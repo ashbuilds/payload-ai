@@ -9,8 +9,165 @@
     "ai-plugin": {
       "type": "object",
       "additionalProperties": false,
-      "properties": {}
+      "properties": {
+        "configDashboard": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "loadingConfiguration": {
+              "type": "string"
+            },
+            "configureTitle": {
+              "type": "string"
+            },
+            "configureSubtitle": {
+              "type": "string"
+            },
+            "providers": {
+              "type": "string"
+            },
+            "saveChanges": {
+              "type": "string"
+            },
+            "saving": {
+              "type": "string"
+            },
+            "selectCollectionsBody": {
+              "type": "string"
+            },
+            "settingsSaved": {
+              "type": "string"
+            },
+            "failedToSave": {
+              "type": "string"
+            },
+            "errorSaving": {
+              "type": "string"
+            }
+          }
+        },
+        "actions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "proofread": {
+              "type": "string"
+            },
+            "rephrase": {
+              "type": "string"
+            },
+            "translate": {
+              "type": "string"
+            },
+            "expand": {
+              "type": "string"
+            },
+            "summarize": {
+              "type": "string"
+            },
+            "simplify": {
+              "type": "string"
+            },
+            "compose": {
+              "type": "string"
+            },
+            "settings": {
+              "type": "string"
+            }
+          }
+        },
+        "actionLoading": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "proofreading": {
+              "type": "string"
+            },
+            "rephrasing": {
+              "type": "string"
+            },
+            "translating": {
+              "type": "string"
+            },
+            "expanding": {
+              "type": "string"
+            },
+            "summarizing": {
+              "type": "string"
+            },
+            "simplifying": {
+              "type": "string"
+            },
+            "composing": {
+              "type": "string"
+            }
+          }
+        },
+        "general": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "queued": {
+              "type": "string"
+            },
+            "video": {
+              "type": "string"
+            },
+            "loading": {
+              "type": "string"
+            },
+            "clickToStop": {
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   },
-  "required": ["ai-plugin"]
+  "required": [
+    "ai-plugin"
+  ],
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Loading configuration...",
+      "configureTitle": "Let's configure your AI Plugin",
+      "configureSubtitle": "Set up the provider \u2192 Choose the content \u2192 Refine the behavior.",
+      "providers": "Providers",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "selectCollectionsBody": "Select the collections where AI features should be available, toggle them on or off, and save your changes.",
+      "settingsSaved": "Settings saved successfully",
+      "failedToSave": "Failed to save settings",
+      "errorSaving": "Error saving settings"
+    },
+    "actions": {
+      "proofread": "Proofread",
+      "rephrase": "Rephrase",
+      "translate": "Translate",
+      "expand": "Expand",
+      "summarize": "Summarize",
+      "simplify": "Simplify",
+      "compose": "Compose",
+      "settings": "Settings"
+    },
+    "actionLoading": {
+      "proofreading": "Proofreading",
+      "rephrasing": "Rephrasing",
+      "translating": "Translating",
+      "expanding": "Expanding",
+      "summarizing": "Summarizing",
+      "simplifying": "Simplifying",
+      "composing": "Composing"
+    },
+    "general": {
+      "search": "Search...",
+      "queued": "Queued",
+      "video": "Video",
+      "loading": "Loading...",
+      "clickToStop": "Click to stop"
+    }
+  }
 }

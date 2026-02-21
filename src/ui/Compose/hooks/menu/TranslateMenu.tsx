@@ -1,5 +1,8 @@
+import { useTranslation } from '@payloadcms/ui'
 import locales from 'locale-codes'
 import React, { memo, useEffect, useRef, useState } from 'react'
+
+import type { PluginAITranslationKeys, PluginAITranslations } from '../../../../translations/index.js'
 
 import { useInstructions } from '../../../../providers/InstructionsProvider/useInstructions.js'
 import { Item } from './Item.js'
@@ -13,6 +16,7 @@ declare global {
 }
 
 export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string }) => void }) => {
+  const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
   const [show, setShow] = useState(false)
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -116,7 +120,7 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
                 )
               }}
               onFocus={() => setInputFocus(true)}
-              placeholder="Search..."
+              placeholder={t('ai-plugin:general:search')}
             />
           </Item>
           {languages.map((locale) => {

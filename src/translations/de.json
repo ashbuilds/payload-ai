@@ -1,0 +1,43 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Konfiguration wird geladen...",
+      "configureTitle": "Lass uns dein KI-Plugin konfigurieren",
+      "configureSubtitle": "Anbieter einrichten → Inhalte auswählen → Verhalten verfeinern.",
+      "providers": "Anbieter",
+      "saveChanges": "Änderungen speichern",
+      "saving": "Speichern...",
+      "selectCollectionsBody": "Wähle die Sammlungen aus, in denen KI-Funktionen verfügbar sein sollen, schalte sie ein oder aus und speichere deine Änderungen.",
+      "settingsSaved": "Einstellungen erfolgreich gespeichert",
+      "failedToSave": "Einstellungen konnten nicht gespeichert werden",
+      "errorSaving": "Fehler beim Speichern der Einstellungen"
+    },
+    "actions": {
+      "proofread": "Korrekturlesen",
+      "rephrase": "Umformulieren",
+      "translate": "Übersetzen",
+      "expand": "Erweitern",
+      "summarize": "Zusammenfassen",
+      "simplify": "Vereinfachen",
+      "compose": "Verfassen",
+      "settings": "Einstellungen"
+    },
+    "actionLoading": {
+      "proofreading": "Korrekturlesen...",
+      "rephrasing": "Umformulieren...",
+      "translating": "Übersetzen...",
+      "expanding": "Erweitern...",
+      "summarizing": "Zusammenfassen...",
+      "simplifying": "Vereinfachen...",
+      "composing": "Verfassen..."
+    },
+    "general": {
+      "search": "Suchen...",
+      "queued": "In Warteschlange",
+      "video": "Video",
+      "loading": "Wird geladen...",
+      "clickToStop": "Klicken zum Stoppen"
+    }
+  }
+}

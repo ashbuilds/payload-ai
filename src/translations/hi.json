@@ -1,0 +1,43 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "कॉन्फ़िगरेशन लोड हो रहा है...",
+      "configureTitle": "आइए आपका AI प्लगइन कॉन्फ़िगर करें",
+      "configureSubtitle": "प्रोवाइडर सेट करें → कंटेंट चुनें → व्यवहार को परिष्कृत करें।",
+      "providers": "प्रोवाइडर",
+      "saveChanges": "परिवर्तन सहेजें",
+      "saving": "सहेजा जा रहा है...",
+      "selectCollectionsBody": "उन कलेक्शनों को चुनें जहाँ AI सुविधाएँ उपलब्ध हों, उन्हें चालू या बंद करें और अपने बदलाव सहेजें।",
+      "settingsSaved": "सेटिंग्स सफलतापूर्वक सहेजी गईं",
+      "failedToSave": "सेटिंग्स सहेजने में विफल",
+      "errorSaving": "सेटिंग्स सहेजते समय त्रुटि"
+    },
+    "actions": {
+      "proofread": "प्रूफरीड",
+      "rephrase": "पुनर्लेखन",
+      "translate": "अनुवाद",
+      "expand": "विस्तार",
+      "summarize": "सारांश",
+      "simplify": "सरल करें",
+      "compose": "लिखें",
+      "settings": "सेटिंग्स"
+    },
+    "actionLoading": {
+      "proofreading": "प्रूफरीड हो रहा है",
+      "rephrasing": "पुनर्लेखन हो रहा है",
+      "translating": "अनुवाद हो रहा है",
+      "expanding": "विस्तार हो रहा है",
+      "summarizing": "सारांश हो रहा है",
+      "simplifying": "सरलीकरण हो रहा है",
+      "composing": "लिखा जा रहा है"
+    },
+    "general": {
+      "search": "खोजें...",
+      "queued": "कतार में",
+      "video": "वीडियो",
+      "loading": "लोड हो रहा है...",
+      "clickToStop": "रोकने के लिए क्लिक करें"
+    }
+  }
+}

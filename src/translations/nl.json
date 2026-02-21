@@ -1,0 +1,43 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Configuratie wordt geladen...",
+      "configureTitle": "Laten we je AI-plugin configureren",
+      "configureSubtitle": "Stel de provider in → Kies de inhoud → Verfijn het gedrag.",
+      "providers": "Providers",
+      "saveChanges": "Wijzigingen opslaan",
+      "saving": "Opslaan...",
+      "selectCollectionsBody": "Selecteer de collecties waar AI-functies beschikbaar moeten zijn, schakel ze in of uit en sla je wijzigingen op.",
+      "settingsSaved": "Instellingen succesvol opgeslagen",
+      "failedToSave": "Instellingen opslaan mislukt",
+      "errorSaving": "Fout bij het opslaan van instellingen"
+    },
+    "actions": {
+      "proofread": "Proeflezen",
+      "rephrase": "Herschrijven",
+      "translate": "Vertalen",
+      "expand": "Uitbreiden",
+      "summarize": "Samenvatten",
+      "simplify": "Vereenvoudigen",
+      "compose": "Opstellen",
+      "settings": "Instellingen"
+    },
+    "actionLoading": {
+      "proofreading": "Bezig met proeflezen",
+      "rephrasing": "Bezig met herschrijven",
+      "translating": "Bezig met vertalen",
+      "expanding": "Bezig met uitbreiden",
+      "summarizing": "Bezig met samenvatten",
+      "simplifying": "Bezig met vereenvoudigen",
+      "composing": "Bezig met opstellen"
+    },
+    "general": {
+      "search": "Zoeken...",
+      "queued": "In wachtrij",
+      "video": "Video",
+      "loading": "Laden...",
+      "clickToStop": "Klik om te stoppen"
+    }
+  }
+}

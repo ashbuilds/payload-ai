@@ -1,10 +1,11 @@
 'use client'
 
-import { useForm } from '@payloadcms/ui'
+import { useForm, useTranslation } from '@payloadcms/ui'
 import { getSiblingData } from 'payload/shared'
 import React, { useEffect, useMemo, useState } from 'react'
 
 import type { ActionMenuItems } from '../../../../types.js'
+import type { PluginAITranslationKeys, PluginAITranslations } from '../../../../translations/index.js'
 import type { UseMenuEvents, UseMenuOptions } from './types.js'
 
 import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
@@ -28,6 +29,7 @@ const getActiveComponent = (ac: ActionMenuItems) => {
 export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
   const { field: { type: fieldType } = {}, path } = useFieldProps()
   const { getData } = useForm()
+  const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
   const [activeComponent, setActiveComponent] = useState<ActionMenuItems>('Rephrase')
 
   // Check value once on mount or when path/type changes
@@ -82,13 +84,13 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
               stop()
             }
           }}
-          title={isLoading ? 'Click to stop' : activeItem.name}
+          title={isLoading ? t('ai-plugin:general:clickToStop' as any) : t(`ai-plugin:actions:${activeItem.name.toLowerCase()}` as any)}
         >
-          {isLoading && (loadingLabel ?? activeItem.loadingText)}
+          {isLoading && (loadingLabel ?? t(`ai-plugin:actionLoading:${activeItem.name.toLowerCase()}:ing` as any))}
         </ActiveComponent>
       )
     }
-  }, [activeComponent, menuEvents])
+  }, [activeComponent, menuEvents, t])
 
   const filteredMenuItems = useMemo(
     () =>
@@ -132,4 +134,3 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
     Menu: MemoizedMenu,
   }
 }
-

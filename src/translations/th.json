@@ -1,0 +1,43 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "กำลังโหลดการกำหนดค่า...",
+      "configureTitle": "มาเริ่มตั้งค่าปลั๊กอิน AI ของคุณกัน",
+      "configureSubtitle": "ตั้งค่าผู้ให้บริการ → เลือกเนื้อหา → ปรับแต่งพฤติกรรม",
+      "providers": "ผู้ให้บริการ",
+      "saveChanges": "บันทึกการเปลี่ยนแปลง",
+      "saving": "กำลังบันทึก...",
+      "selectCollectionsBody": "เลือกคอลเลกชันที่ต้องการให้ฟีเจอร์ AI ใช้งานได้ เปิด/ปิด แล้วบันทึกการเปลี่ยนแปลงของคุณ",
+      "settingsSaved": "บันทึกการตั้งค่าเรียบร้อยแล้ว",
+      "failedToSave": "บันทึกการตั้งค่าไม่สำเร็จ",
+      "errorSaving": "เกิดข้อผิดพลาดขณะบันทึกการตั้งค่า"
+    },
+    "actions": {
+      "proofread": "ตรวจแก้",
+      "rephrase": "ถ้อยคำใหม่",
+      "translate": "แปล",
+      "expand": "ขยายความ",
+      "summarize": "สรุป",
+      "simplify": "ทำให้ง่าย",
+      "compose": "เขียน",
+      "settings": "การตั้งค่า"
+    },
+    "actionLoading": {
+      "proofreading": "กำลังตรวจแก้",
+      "rephrasing": "กำลังเขียนใหม่",
+      "translating": "กำลังแปล",
+      "expanding": "กำลังขยายความ",
+      "summarizing": "กำลังสรุป",
+      "simplifying": "กำลังทำให้ง่าย",
+      "composing": "กำลังเขียน"
+    },
+    "general": {
+      "search": "ค้นหา...",
+      "queued": "อยู่ในคิว",
+      "video": "วิดีโอ",
+      "loading": "กำลังโหลด...",
+      "clickToStop": "คลิกเพื่อหยุด"
+    }
+  }
+}

@@ -1,4 +1,43 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "در حال بارگذاری پیکربندی...",
+      "configureTitle": "بیایید افزونهٔ هوش مصنوعی شما را پیکربندی کنیم",
+      "configureSubtitle": "ارائه‌دهنده را تنظیم کنید → محتوا را انتخاب کنید → رفتار را بهبود دهید.",
+      "providers": "ارائه‌دهندگان",
+      "saveChanges": "ذخیره تغییرات",
+      "saving": "در حال ذخیره...",
+      "selectCollectionsBody": "مجموعه‌هایی را که ویژگی‌های هوش مصنوعی باید در آن‌ها در دسترس باشد انتخاب کنید، آن‌ها را روشن یا خاموش کنید و تغییرات خود را ذخیره کنید.",
+      "settingsSaved": "تنظیمات با موفقیت ذخیره شد",
+      "failedToSave": "ذخیره تنظیمات ناموفق بود",
+      "errorSaving": "خطا هنگام ذخیره تنظیمات"
+    },
+    "actions": {
+      "proofread": "ویرایش",
+      "rephrase": "بازنویسی",
+      "translate": "ترجمه",
+      "expand": "گسترش",
+      "summarize": "خلاصه‌سازی",
+      "simplify": "ساده‌سازی",
+      "compose": "نگارش",
+      "settings": "تنظیمات"
+    },
+    "actionLoading": {
+      "proofreading": "در حال ویرایش",
+      "rephrasing": "در حال بازنویسی",
+      "translating": "در حال ترجمه",
+      "expanding": "در حال گسترش",
+      "summarizing": "در حال خلاصه‌سازی",
+      "simplifying": "در حال ساده‌سازی",
+      "composing": "در حال نگارش"
+    },
+    "general": {
+      "search": "جستجو...",
+      "queued": "در صف",
+      "video": "ویدیو",
+      "loading": "در حال بارگذاری...",
+      "clickToStop": "برای توقف کلیک کنید"
+    }
+  }
 }

@@ -4,12 +4,12 @@ import type { ClientField } from 'payload'
 import type { FC } from 'react'
 
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { Popup, useField } from '@payloadcms/ui'
+import { Popup, useField, useTranslation } from '@payloadcms/ui'
 import React, { useCallback, useMemo, useState } from 'react'
 
 import type { ActionMenuItems } from '../../types.js'
+import type { PluginAITranslationKeys, PluginAITranslations } from '../../translations/index.js'
 
-import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { setSafeLexicalState } from '../../utilities/lexical/setSafeLexicalState.js'
 import { PluginIcon } from '../Icons/Icons.js'
@@ -44,6 +44,8 @@ export const Compose: FC<ComposeProps> = ({
 
   // Initialize global active-field tracking
   useActiveFieldTracking()
+
+  const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
   const { generate, isJobActive, isLoading, jobProgress, jobStatus, stop } = useGenerate({
@@ -169,8 +171,8 @@ export const Compose: FC<ComposeProps> = ({
         loadingLabel={
           isJobActive
             ? jobStatus === 'running'
-              ? `Video ${Math.max(0, Math.min(100, Math.round(jobProgress ?? 0)))}%`
-              : jobStatus || 'Queued'
+              ? `${t('ai-plugin:general:video' as any)} ${Math.max(0, Math.min(100, Math.round(jobProgress ?? 0)))}%`
+              : jobStatus || t('ai-plugin:general:queued' as any)
             : undefined
         }
         stop={stop}

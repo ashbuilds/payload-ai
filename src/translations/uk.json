@@ -1,4 +1,43 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Завантаження конфігурації...",
+      "configureTitle": "Налаштуймо ваш AI-плагін",
+      "configureSubtitle": "Налаштуйте провайдера → Виберіть контент → Уточніть поведінку.",
+      "providers": "Провайдери",
+      "saveChanges": "Зберегти зміни",
+      "saving": "Збереження...",
+      "selectCollectionsBody": "Виберіть колекції, де мають бути доступні функції AI, увімкніть або вимкніть їх і збережіть зміни.",
+      "settingsSaved": "Налаштування успішно збережено",
+      "failedToSave": "Не вдалося зберегти налаштування",
+      "errorSaving": "Помилка під час збереження налаштувань"
+    },
+    "actions": {
+      "proofread": "Вичитка",
+      "rephrase": "Перефразувати",
+      "translate": "Перекласти",
+      "expand": "Розширити",
+      "summarize": "Підсумувати",
+      "simplify": "Спрощувати",
+      "compose": "Скласти",
+      "settings": "Налаштування"
+    },
+    "actionLoading": {
+      "proofreading": "Вичитка",
+      "rephrasing": "Перефразування",
+      "translating": "Переклад",
+      "expanding": "Розширення",
+      "summarizing": "Підсумування",
+      "simplifying": "Спрощення",
+      "composing": "Складання"
+    },
+    "general": {
+      "search": "Пошук...",
+      "queued": "У черзі",
+      "video": "Відео",
+      "loading": "Завантаження...",
+      "clickToStop": "Натисніть, щоб зупинити"
+    }
+  }
 }

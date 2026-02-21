@@ -1,4 +1,43 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Cargando configuración...",
+      "configureTitle": "Configuremos tu plugin de IA",
+      "configureSubtitle": "Configura el proveedor → Elige el contenido → Ajusta el comportamiento.",
+      "providers": "Proveedores",
+      "saveChanges": "Guardar cambios",
+      "saving": "Guardando...",
+      "selectCollectionsBody": "Selecciona las colecciones donde las funciones de IA deben estar disponibles, actívalas o desactívalas y guarda tus cambios.",
+      "settingsSaved": "Configuración guardada correctamente",
+      "failedToSave": "No se pudieron guardar los ajustes",
+      "errorSaving": "Error al guardar los ajustes"
+    },
+    "actions": {
+      "proofread": "Corregir",
+      "rephrase": "Reformular",
+      "translate": "Traducir",
+      "expand": "Expandir",
+      "summarize": "Resumir",
+      "simplify": "Simplificar",
+      "compose": "Redactar",
+      "settings": "Configuración"
+    },
+    "actionLoading": {
+      "proofreading": "Corrigiendo",
+      "rephrasing": "Reformulando",
+      "translating": "Traduciendo",
+      "expanding": "Expandiendo",
+      "summarizing": "Resumiendo",
+      "simplifying": "Simplificando",
+      "composing": "Redactando"
+    },
+    "general": {
+      "search": "Buscar...",
+      "queued": "En cola",
+      "video": "Vídeo",
+      "loading": "Cargando...",
+      "clickToStop": "Haz clic para detener"
+    }
+  }
 }

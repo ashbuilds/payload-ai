@@ -1,4 +1,43 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "configDashboard": {
+      "loadingConfiguration": "Загрузка конфигурации...",
+      "configureTitle": "Давайте настроим ваш AI-плагин",
+      "configureSubtitle": "Настройте провайдера → Выберите контент → Уточните поведение.",
+      "providers": "Провайдеры",
+      "saveChanges": "Сохранить изменения",
+      "saving": "Сохранение...",
+      "selectCollectionsBody": "Выберите коллекции, где должны быть доступны функции AI, включите или выключите их и сохраните изменения.",
+      "settingsSaved": "Настройки успешно сохранены",
+      "failedToSave": "Не удалось сохранить настройки",
+      "errorSaving": "Ошибка при сохранении настроек"
+    },
+    "actions": {
+      "proofread": "Корректура",
+      "rephrase": "Перефразировать",
+      "translate": "Перевести",
+      "expand": "Расширить",
+      "summarize": "Суммировать",
+      "simplify": "Упростить",
+      "compose": "Составить",
+      "settings": "Настройки"
+    },
+    "actionLoading": {
+      "proofreading": "Корректура",
+      "rephrasing": "Перефразирование",
+      "translating": "Перевод",
+      "expanding": "Расширение",
+      "summarizing": "Суммирование",
+      "simplifying": "Упрощение",
+      "composing": "Составление"
+    },
+    "general": {
+      "search": "Поиск...",
+      "queued": "В очереди",
+      "video": "Видео",
+      "loading": "Загрузка...",
+      "clickToStop": "Нажмите, чтобы остановить"
+    }
+  }
 }
