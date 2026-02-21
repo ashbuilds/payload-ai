@@ -1,10 +1,6 @@
 import type { CollectionSlug } from 'payload'
 
-import type {
-  ActionMenuItems,
-  PluginConfig,
-  PromptFieldGetterContext,
-} from '../types.js'
+import type { ActionMenuItems, PluginConfig, PromptFieldGetterContext } from '../types.js'
 
 import { defaultPrompts } from '../ai/utilities/prompts.js'
 import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
@@ -105,7 +101,7 @@ export const assignPrompt = async (
     : ''
 
   return {
-    layout: updatedLayout,
+    layout: type === 'richText' ? updatedLayout : undefined,
     // TODO: revisit this toLexicalHTML
     prompt: await replacePlaceholders(`{{${toLexicalHTML} ${field}}}`, extendedContext),
     system: type === 'richText' ? buildRichTextSystem(system, updatedLayout) : system,
@@ -131,15 +127,17 @@ export const extendContextWithPromptFields = (
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
       }
       // {{prop}} escapes content by default. Here we make sure it won't be escaped.
-      let value = typeof target === 'object' ? (target as any)[prop] : undefined
-      
+      const value = typeof target === 'object' ? (target as any)[prop] : undefined
+
       // If the value is a Lexical JSON object (e.g. a PromptField / richText field),
       // convert it to a template string AND resolve any internal mention variables
       // (like {{name}}) against the raw document data to avoid unresolved placeholders.
       if (value && typeof value === 'object' && value.root && Array.isArray(value.root.children)) {
         const template = lexicalToPromptTemplate(value)
         // Resolve inner variables using the raw target (not the Proxy) to avoid recursion
-        return replacePlaceholders(template, target).then((resolved) => new asyncHandlebars.SafeString(resolved))
+        return replacePlaceholders(template, target).then(
+          (resolved) => new asyncHandlebars.SafeString(resolved),
+        )
       }
 
       return typeof value === 'string' ? new asyncHandlebars.SafeString(value) : value
