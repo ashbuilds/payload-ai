@@ -32,7 +32,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   const { set: setHistory } = useHistory()
   const { getData } = useForm()
   const { id: documentId } = useDocumentInfo()
-  const localFromContext = useLocale()
+  const locale = useLocale()
 
   const {
     isLoading: loadingObject,
@@ -95,11 +95,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
           ...doc,
           id: documentId,
         },
-        locale: localFromContext?.code,
+        locale: locale?.code,
         options,
       })
     },
-    [localFromContext?.code, instructionIdRef, documentId, getData, submit, editor],
+    [locale?.code, instructionIdRef, documentId, getData, submit, editor],
   )
 
   const generate = useCallback(

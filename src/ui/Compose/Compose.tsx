@@ -7,6 +7,8 @@ import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { Popup, useField } from '@payloadcms/ui'
 import React, { useCallback, useMemo, useState } from 'react'
 
+import type { ActionMenuItems } from '../../types.js'
+
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { setSafeLexicalState } from '../../utilities/setSafeLexicalState.js'
@@ -48,101 +50,30 @@ export const Compose: FC<ComposeProps> = ({
     instructionId,
   })
 
-  // Memoize menu event handlers to prevent recreation on every render
-  const onCompose = useCallback(() => {
-    console.log('Composing...')
-    setIsProcessing(true)
-    generate({
-      action: 'Compose',
-    })
-      .catch((reason) => {
-        console.error('Compose : ', reason)
-      })
-      .finally(() => {
-        setIsProcessing(false)
-      })
-  }, [generate])
-
-  const onExpand = useCallback(() => {
-    console.log('Expanding...')
-    generate({
-      action: 'Expand',
-    })
-      .catch((reason) => {
-        console.error('Compose : ', reason)
-      })
-      .finally(() => {
-        setIsProcessing(false)
-      })
-  }, [generate])
-
-  const onProofread = useCallback(() => {
-    console.log('Proofreading...')
-    generate({
-      action: 'Proofread',
-    })
-      .catch((reason) => {
-        console.error('Compose : ', reason)
-      })
-      .finally(() => {
-        setIsProcessing(false)
-      })
-  }, [generate])
-
-  const onRephrase = useCallback(() => {
-    console.log('Rephrasing...')
-    generate({
-      action: 'Rephrase',
-    })
-      .catch((reason) => {
-        console.error('Compose : ', reason)
-      })
-      .finally(() => {
-        setIsProcessing(false)
-      })
-  }, [generate])
-
-  const onSimplify = useCallback(() => {
-    console.log('Simplifying...')
-    generate({
-      action: 'Simplify',
-    })
-      .catch((reason) => {
-        console.error('Compose : ', reason)
-      })
-      .finally(() => {
-        setIsProcessing(false)
-      })
-  }, [generate])
-
-  const onSummarize = useCallback(() => {
-    console.log('Summarizing...')
-    generate({
-      action: 'Summarize',
-    })
-      .catch((reason) => {
-        console.error('Compose : ', reason)
-      })
-      .finally(() => {
-        setIsProcessing(false)
-      })
-  }, [generate])
-
-  const onTranslate = useCallback(
-    (data: unknown) => {
-      console.log('Translating...')
-      generate({
-        action: 'Translate',
-        params: data,
-      })
+  // Single factory for all action callbacks, eliminating duplication
+  const createAction = useCallback(
+    (action: ActionMenuItems, params?: unknown) => {
+      setIsProcessing(true)
+      generate({ action, params })
         .catch((reason) => {
-          console.error('Compose : ', reason)
+          console.error(`AI Plugin — ${action}:`, reason)
         })
         .finally(() => {
           setIsProcessing(false)
         })
     },
     [generate],
+  )
+
+  const onCompose = useCallback(() => createAction('Compose'), [createAction])
+  const onExpand = useCallback(() => createAction('Expand'), [createAction])
+  const onProofread = useCallback(() => createAction('Proofread'), [createAction])
+  const onRephrase = useCallback(() => createAction('Rephrase'), [createAction])
+  const onSimplify = useCallback(() => createAction('Simplify'), [createAction])
+  const onSummarize = useCallback(() => createAction('Summarize'), [createAction])
+  const onTranslate = useCallback(
+    (data: unknown) => createAction('Translate', data),
+    [createAction],
   )
 
   const handleOpenSettings = useCallback(() => {

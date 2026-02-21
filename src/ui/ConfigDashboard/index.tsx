@@ -46,9 +46,7 @@ export const ConfigDashboard: React.FC = () => {
       }
     }
 
-    fetchSettings().catch((e) => {
-      console.log(e)
-    })
+    fetchSettings().catch(console.error)
   }, [apiRoute])
 
   const handleToggle = (slug: string) => {

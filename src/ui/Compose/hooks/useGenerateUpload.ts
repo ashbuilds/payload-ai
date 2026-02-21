@@ -1,5 +1,5 @@
 import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
-import { type RefObject, useCallback, useState } from 'react'
+import { type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
 import type { GenerateTextarea } from '../../../types.js'
 
@@ -18,19 +18,27 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
     serverURL,
   } = config
   const { id: documentId, collectionSlug } = useDocumentInfo()
-  const localFromContext = useLocale()
+  const locale = useLocale()
   const { getData } = useForm()
   const { set: setHistory } = useHistory()
 
-  const { field, path: pathFromContext } = useFieldProps()
+  const { field, path: fieldPath } = useFieldProps()
   const { setValue } = useField<any>({
-    path: pathFromContext ?? '',
+    path: fieldPath ?? '',
   })
 
   // Async job UI state
   const [jobStatus, setJobStatus] = useState<string | undefined>(undefined)
   const [jobProgress, setJobProgress] = useState<number>(0)
   const [isJobActive, setIsJobActive] = useState<boolean>(false)
+
+  // Track whether the component is still mounted to prevent orphaned polling
+  const cancelledRef = useRef(false)
+  useEffect(() => {
+    return () => {
+      cancelledRef.current = true
+    }
+  }, [])
 
   const generateUpload = useCallback(async () => {
     const doc = getData()
@@ -41,7 +49,7 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
         collectionSlug: collectionSlug ?? '',
         doc,
         documentId,
-        locale: localFromContext?.code,
+        locale: locale?.code,
         options: {
           instructionId: currentInstructionId,
         },
@@ -137,7 +145,7 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
               }
 
               attempts += 1
-              if (attempts < maxAttempts) {
+              if (attempts < maxAttempts && !cancelledRef.current) {
                 setTimeout(poll, 1000)
               }
             }
@@ -161,7 +169,7 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
       })
   }, [
     getData,
-    localFromContext?.code,
+    locale?.code,
     instructionIdRef,
     setValue,
     field,

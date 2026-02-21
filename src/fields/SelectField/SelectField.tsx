@@ -44,7 +44,6 @@ export const SelectField = (
       label={field.label}
       name={path}
       onChange={(value) => {
-        console.log("value --- ", value)
         if (Array.isArray(value)) {
           setValue(value[0]?.value ?? '')
         } else if (value && typeof value === 'object' && 'value' in value) {
