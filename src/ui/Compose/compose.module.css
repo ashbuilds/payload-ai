@@ -103,11 +103,9 @@
   pointer-events: auto;
   max-height: 100px;
   transform: scaleY(1) skewX(0) translateY(0) translateZ(0);
-  
-/* User requested overrides */
-  margin: 0;
-  padding: 0;
-  /* flex-direction: row-reverse; - Reverted */
+
+  margin: 5px 0;
+  padding: 5px 0;
 }
 
 .actions.actionsVisible > * {

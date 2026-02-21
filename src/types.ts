@@ -272,5 +272,21 @@ export type AfterGenerateHook<T = any> = (args: AfterGenerateArgs<T>) => Promise
 export interface AIFieldConfig {
   [key: string]: unknown
   afterGenerate?: AfterGenerateHook[]
+  /**
+   * When true, the Compose button is always visible on this field,
+   * bypassing the focus-based show/hide system.
+   * Admin `disabled` in Instructions still takes priority.
+   */
+  alwaysShow?: boolean
   beforeGenerate?: BeforeGenerateHook[]
+  /**
+   * Set to false to opt-out of compose button injection for this field.
+   * When false, no compose button is injected at build time.
+   * @default true (compose is auto-injected on supported field types)
+   */
+  enabled?: boolean
+  /** Custom prompt template for this field */
+  prompt?: string
+  /** Custom system prompt for this field */
+  system?: string
 }

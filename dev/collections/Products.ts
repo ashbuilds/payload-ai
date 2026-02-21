@@ -58,6 +58,7 @@ export const Products: CollectionConfig = {
           type: 'upload',
           custom: {
             ai: {
+              alwaysShow: true,
               prompt: [
                 'Create a print-ready t-shirt graphic based on the following:',
                 'Design name: {{ name }}',

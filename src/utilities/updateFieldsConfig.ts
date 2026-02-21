@@ -26,10 +26,14 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
       return field
     }
 
+    // Developer opt-out: custom.ai.enabled === false skips compose injection entirely
+    const aiConfig = field.custom?.ai
+    const isAiDisabledByDev = aiConfig?.enabled === false
+
     // Map field path for global fieldInstructionsMap to load related instructions
     // This is done due to save extra API call to get instructions when Field components are loaded in admin
     // Doing is will only call instructions data when user clicks on settings
-    if (['array', 'richText', 'text', 'textarea', 'upload'].includes(field.type)) {
+    if (['array', 'richText', 'text', 'textarea', 'upload'].includes(field.type) && !isAiDisabledByDev) {
       schemaPathMap = {
         ...schemaPathMap,
         [currentSchemaPath]: {
@@ -43,7 +47,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
 
     // Inject AI actions, richText is not included here as it has to be explicitly defined by user
     // Array fields also get AI injection for bulk generation
-    if (['array', 'text', 'textarea', 'upload'].includes(field.type)) {
+    if (['array', 'text', 'textarea', 'upload'].includes(field.type) && !isAiDisabledByDev) {
       let customField = {}
 
       // Custom fields don't fully adhere to the Payload schema, making it difficult to
@@ -68,6 +72,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
             ...(field.admin?.components || {}),
             Description: {
               clientProps: {
+                alwaysShow: !!aiConfig?.alwaysShow,
                 schemaPath: currentSchemaPath,
               },
               path: componentPath,

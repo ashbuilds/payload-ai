@@ -7,10 +7,12 @@ import React from 'react'
 
 import { FieldProvider } from '../../providers/FieldProvider/FieldProvider.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
+import { Compose } from '../../ui/Compose/Compose.js'
 import { ComposePlaceholder } from '../../ui/Compose/ComposePlaceholder.js'
 
 type ComposeFieldProps = {
   [key: string]: any
+  alwaysShow?: boolean
   field: ClientField
   path?: string
   schemaPath?: string
@@ -35,6 +37,15 @@ export const ComposeField = (props: ComposeFieldProps) => {
   const adminDescription = props?.field?.admin || {}
   const description = "description" in adminDescription ? adminDescription.description : ""
 
+  const descriptionProps = {
+    ...props,
+    field: props?.field,
+    path: props?.path ?? '',
+    schemaPath: finalSchemaPath,
+  }
+
+  const shouldRender = hasInstructions && instructionId && !disabled
+
   return (
     <FieldProvider
       context={{
@@ -43,17 +54,21 @@ export const ComposeField = (props: ComposeFieldProps) => {
         schemaPath: finalSchemaPath,
       }}
     >
-      {hasInstructions && instructionId && !disabled ? (
-        <ComposePlaceholder
-          descriptionProps={{
-            ...props,
-            field: props?.field,
-            path: props?.path ?? '',
-            schemaPath: finalSchemaPath,
-          }}
-          instructionId={instructionId}
-          isConfigAllowed={isConfigAllowed}
-        />
+      {shouldRender ? (
+        props.alwaysShow ? (
+          <Compose
+            descriptionProps={descriptionProps}
+            forceVisible={true}
+            instructionId={instructionId}
+            isConfigAllowed={isConfigAllowed}
+          />
+        ) : (
+          <ComposePlaceholder
+            descriptionProps={descriptionProps}
+            instructionId={instructionId}
+            isConfigAllowed={isConfigAllowed}
+          />
+        )
       ) : null}
 
       <div>

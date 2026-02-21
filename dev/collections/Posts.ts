@@ -112,6 +112,11 @@ export const Posts: CollectionConfig = {
                 description:
                   'Demonstrates AI title generation. Use the AI plugin’s Compose action on this field to generate or iterate on a compelling, SEO-friendly headline.',
               },
+              custom: {
+                ai: {
+                  alwaysShow: true,
+                },
+              },
               label: 'Title',
               required: true,
             },
@@ -120,6 +125,11 @@ export const Posts: CollectionConfig = {
               type: 'text',
               // Description of the field is passed to ai model
               admin: { description: `SEO quality keywords` },
+              custom: {
+                ai: {
+                  enabled: false,
+                },
+              },
               hasMany: true,
               label: 'keywords',
               maxRows: 5,

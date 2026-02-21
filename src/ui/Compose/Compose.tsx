@@ -28,10 +28,15 @@ export type ComposeProps = {
   isConfigAllowed: boolean
 }
 
-export const Compose: FC<ComposeProps> = ({ descriptionProps, forceVisible, instructionId, isConfigAllowed }) => {
+export const Compose: FC<ComposeProps> = ({
+  descriptionProps,
+  forceVisible,
+  instructionId,
+  isConfigAllowed,
+}) => {
   const pathFromContext = descriptionProps?.path
   const { editor: lexicalEditor } = useEditorConfigContext()
-  
+
   // Get global openDrawer from context
   const { openDrawer } = useInstructions()
 
@@ -39,7 +44,9 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, forceVisible, inst
   useActiveFieldTracking()
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
-  const { generate, isJobActive, isLoading, jobProgress, jobStatus, stop } = useGenerate({ instructionId })
+  const { generate, isJobActive, isLoading, jobProgress, jobStatus, stop } = useGenerate({
+    instructionId,
+  })
 
   // Memoize menu event handlers to prevent recreation on every render
   const onCompose = useCallback(() => {
@@ -121,19 +128,22 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, forceVisible, inst
       })
   }, [generate])
 
-  const onTranslate = useCallback((data: unknown) => {
-    console.log('Translating...')
-    generate({
-      action: 'Translate',
-      params: data,
-    })
-      .catch((reason) => {
-        console.error('Compose : ', reason)
+  const onTranslate = useCallback(
+    (data: unknown) => {
+      console.log('Translating...')
+      generate({
+        action: 'Translate',
+        params: data,
       })
-      .finally(() => {
-        setIsProcessing(false)
-      })
-  }, [generate])
+        .catch((reason) => {
+          console.error('Compose : ', reason)
+        })
+        .finally(() => {
+          setIsProcessing(false)
+        })
+    },
+    [generate],
+  )
 
   const handleOpenSettings = useCallback(() => {
     if (isConfigAllowed) {
@@ -225,15 +235,23 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, forceVisible, inst
       {memoizedPopup}
       <ActiveComponent
         isLoading={isProcessing || isLoading || isJobActive}
-        loadingLabel={isJobActive ? (jobStatus === 'running' ? `Video ${Math.max(0, Math.min(100, Math.round(jobProgress ?? 0)))}%` : (jobStatus || 'Queued')) : undefined}
+        loadingLabel={
+          isJobActive
+            ? jobStatus === 'running'
+              ? `Video ${Math.max(0, Math.min(100, Math.round(jobProgress ?? 0)))}%`
+              : jobStatus || 'Queued'
+            : undefined
+        }
         stop={stop}
       />
-      <UndoRedoActions
-        onChange={(val) => {
-          setValue(val)
-          setIfValueIsLexicalState(val)
-        }}
-      />
+      <div style={{ alignItems: 'center', display: 'flex', gap: '10px', marginLeft: 'auto' }}>
+        <UndoRedoActions
+          onChange={(val) => {
+            setValue(val)
+            setIfValueIsLexicalState(val)
+          }}
+        />
+      </div>
     </label>
   )
 }
