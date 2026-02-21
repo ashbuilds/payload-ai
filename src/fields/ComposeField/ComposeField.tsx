@@ -27,6 +27,7 @@ export const ComposeField = (props: ComposeFieldProps) => {
 
   const {
     id: instructionId,
+    alwaysShow: instructionAlwaysShow,
     disabled,
     hasInstructions,
     isConfigAllowed,
@@ -44,6 +45,8 @@ export const ComposeField = (props: ComposeFieldProps) => {
     schemaPath: finalSchemaPath,
   }
 
+  // alwaysShow from either developer config (client prop) or admin instructions
+  const isAlwaysShow = props.alwaysShow || instructionAlwaysShow
   const shouldRender = hasInstructions && instructionId && !disabled
 
   return (
@@ -55,7 +58,7 @@ export const ComposeField = (props: ComposeFieldProps) => {
       }}
     >
       {shouldRender ? (
-        props.alwaysShow ? (
+        isAlwaysShow ? (
           <Compose
             descriptionProps={descriptionProps}
             forceVisible={true}

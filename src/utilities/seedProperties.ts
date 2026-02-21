@@ -31,7 +31,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
 
     for (const [schemaPath, fieldInfo] of Object.entries(schemaPathMap)) {
       const { type, custom, relationTo } = fieldInfo as {
-        custom?: { ai?: { prompt?: string; system?: string } }
+        custom?: { ai?: { alwaysShow?: boolean; prompt?: string; system?: string } }
         relationTo?: string
         type: string
       }
@@ -52,7 +52,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
       if (existingInstruction.totalDocs > 0) {
         // If developer has provided custom prompts in the schema, update the existing record
         // but only if the values have actually changed.
-        if (custom?.ai?.prompt || custom?.ai?.system) {
+        if (custom?.ai?.prompt || custom?.ai?.system || custom?.ai?.alwaysShow !== undefined) {
           const doc = existingInstruction.docs[0] as any
           const currentPrompt = doc.prompt
           const currentSystem = doc.system
@@ -66,6 +66,10 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
           }
           if (custom?.ai?.system && custom.ai.system !== currentSystem) {
             updateData.system = custom.ai.system
+            needsUpdate = true
+          }
+          if (custom?.ai?.alwaysShow !== undefined && custom.ai.alwaysShow !== doc.alwaysShow) {
+            updateData.alwaysShow = !!custom.ai.alwaysShow
             needsUpdate = true
           }
 
@@ -106,6 +110,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
         await payload.create({
           collection: PLUGIN_INSTRUCTIONS_TABLE,
           data: {
+            alwaysShow: !!custom?.ai?.alwaysShow,
             disabled: false,
             'field-type': type,
             'model-id': modelId,

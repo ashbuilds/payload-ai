@@ -238,6 +238,16 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
         label: 'Hide Compose button for this field',
       },
       {
+        name: 'alwaysShow',
+        type: 'checkbox',
+        admin: {
+          condition: (_, current) => !current.disabled,
+          description: 'Compose button will always be visible without requiring field focus',
+        },
+        defaultValue: false,
+        label: 'Always show Compose button',
+      },
+      {
         id: 'ai-prompts-tabs',
         type: 'tabs',
         tabs: [

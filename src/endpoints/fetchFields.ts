@@ -33,10 +33,11 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (config) => {
         }
       }
 
-      const fieldMap: Record<string, { disabled?: boolean; fieldType: string; id: number | string }> = {}
+      const fieldMap: Record<string, { alwaysShow?: boolean; disabled?: boolean; fieldType: string; id: number | string }> = {}
       docs.forEach((doc) => {
         fieldMap[doc['schema-path']] = {
           id: doc.id,
+          alwaysShow: !!(doc as Record<string, unknown>)['alwaysShow'],
           disabled: !!doc['disabled'],
           fieldType: doc['field-type'],
         }

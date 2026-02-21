@@ -56,6 +56,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
           ...prev,
           [doc['schema-path']]: {
             id: doc.id,
+            alwaysShow: !!doc.alwaysShow,
             disabled: !!doc.disabled,
             fieldType: doc['field-type'],
           },
