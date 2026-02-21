@@ -1,6 +1,6 @@
 import type { ClientField } from 'payload'
 
-import React, { createContext, useEffect } from 'react'
+import React, { createContext, useMemo } from 'react'
 
 type FieldContextType = {
   field?: ClientField
@@ -27,27 +27,17 @@ export const FieldProvider = ({
     schemaPath: unknown
   }
 }) => {
-  const [field, setField] = React.useState<ClientField | undefined>()
-  const [path, setPath] = React.useState<string>()
-  const [schemaPath, setSchemaPath] = React.useState<string>()
-
-  useEffect(() => {
-    const nextSchemaPath = String(context.schemaPath ?? '')
-    if (schemaPath !== nextSchemaPath) {
-      setField(context.field)
-      setPath(context.path)
-      setSchemaPath(nextSchemaPath)
-    }
-  }, [schemaPath, context])
+  const value = useMemo(
+    () => ({
+      field: context.field,
+      path: context.path,
+      schemaPath: String(context.schemaPath ?? ''),
+    }),
+    [context.field, context.path, context.schemaPath],
+  )
 
   return (
-    <FieldContext.Provider
-      value={{
-        field,
-        path,
-        schemaPath,
-      }}
-    >
+    <FieldContext.Provider value={value}>
       {children}
     </FieldContext.Provider>
   )

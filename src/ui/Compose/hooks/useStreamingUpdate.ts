@@ -13,7 +13,7 @@ type UseStreamingUpdateParams = {
 }
 
 export const useStreamingUpdate = ({ editor, isLoading, object }: UseStreamingUpdateParams) => {
-  const { field, path: pathFromContext } = useFieldProps()
+  const { field, path: fieldPath } = useFieldProps()
   const { dispatchFields } = useForm()
 
   // Ref for latest object to avoid effect re-runs during high-frequency streaming
@@ -38,7 +38,7 @@ export const useStreamingUpdate = ({ editor, isLoading, object }: UseStreamingUp
           // Use dispatchFields for high-frequency streaming updates to avoid re-renders
           dispatchFields({
             type: 'UPDATE',
-            path: pathFromContext ?? '',
+            path: fieldPath ?? '',
             value: currentObject[field.name],
           } as any)
         }
@@ -54,5 +54,5 @@ export const useStreamingUpdate = ({ editor, isLoading, object }: UseStreamingUp
     return () => {
       cancelAnimationFrame(reqId)
     }
-  }, [isLoading, editor, field, dispatchFields, pathFromContext])
+  }, [isLoading, editor, field, dispatchFields, fieldPath])
 }

@@ -48,7 +48,7 @@ export const ComposePlaceholder: FC<ComposeProps> = (props) => {
             unmountTimerRef.current = setTimeout(() => {
               setShouldMount(false)
               unmountTimerRef.current = null
-            }, 1200) // 500ms delay to prevent rapid remounting
+            }, 1200) // 1200ms delay to prevent rapid remounting
           }
           break
         }

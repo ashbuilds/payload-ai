@@ -4,7 +4,6 @@ import type { MediaResult } from './types.js'
 import { getProviderRegistry } from '../../providers/registry.js'
 import { generateImage } from './image/index.js'
 import { generateSpeech } from './speech/index.js'
-import { generateVideo } from './video/index.js'
 
 /**
  * Detect media type from provider and model configuration
@@ -64,9 +63,6 @@ export async function generateMedia(args: PayloadGenerateMediaArgs): Promise<Med
     case 'speech':
       return generateSpeech(args)
     case 'video':
-      throw Error(`Not implemented: ${mediaType}`)
-      // return generateVideo(args)
-    default:
-      throw new Error(`Unsupported media type: ${mediaType}`)
+      throw new Error('Video generation is not yet implemented')
   }
 }
