@@ -74,7 +74,13 @@ export const Compose: FC<ComposeProps> = ({
   const onSimplify = useCallback(() => createAction('Simplify'), [createAction])
   const onSummarize = useCallback(() => createAction('Summarize'), [createAction])
   const onTranslate = useCallback(
-    (data: unknown) => createAction('Translate', data),
+    (data: unknown) => {
+      // If the action is triggered directly via the button click,
+      // it passes a React SyntheticEvent which cannot (and should not) be stringified.
+      // We only want to pass data if it's the actual payload containing { locale }.
+      const isEvent = data && typeof data === 'object' && 'nativeEvent' in data
+      return createAction('Translate', isEvent ? undefined : data)
+    },
     [createAction],
   )
 

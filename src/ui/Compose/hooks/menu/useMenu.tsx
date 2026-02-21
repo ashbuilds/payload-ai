@@ -1,15 +1,17 @@
 'use client'
 
-import { useForm, useTranslation } from '@payloadcms/ui'
-import { getSiblingData } from 'payload/shared'
+import { useConfig, useField, useLocale, useTranslation } from '@payloadcms/ui'
 import React, { useEffect, useMemo, useState } from 'react'
 
+import type {
+  PluginAITranslationKeys,
+  PluginAITranslations,
+} from '../../../../translations/index.js'
 import type { ActionMenuItems } from '../../../../types.js'
-import type { PluginAITranslationKeys, PluginAITranslations } from '../../../../translations/index.js'
 import type { UseMenuEvents, UseMenuOptions } from './types.js'
 
 import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
-import { Compose, Proofread, Rephrase } from './items.js'
+import { Compose, Proofread, Rephrase, Translate } from './items.js'
 import { menuItemsMap } from './itemsMap.js'
 import styles from './menu.module.scss'
 
@@ -21,6 +23,8 @@ const getActiveComponent = (ac: ActionMenuItems) => {
       return Proofread
     case 'Rephrase':
       return Rephrase
+    case 'Translate':
+      return Translate
     default:
       return Rephrase
   }
@@ -28,31 +32,34 @@ const getActiveComponent = (ac: ActionMenuItems) => {
 
 export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
   const { field: { type: fieldType } = {}, path } = useFieldProps()
-  const { getData } = useForm()
+  const { value } = useField<any>({ path: path || '' })
+  const { config } = useConfig()
+  const locale = useLocale()
   const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
   const [activeComponent, setActiveComponent] = useState<ActionMenuItems>('Rephrase')
 
-  // Check value once on mount or when path/type changes
+  // Check value whenever it changes
   useEffect(() => {
     let hasValue = false
 
     try {
-      const data = getData()
-      if (path) {
-        const val = getSiblingData(data, path)
-        hasValue = val !== undefined && val !== null
-        // For richTextFields, we might need a more robust check (e.g. check for root.children.length > 0)
-        // But for now, simple truthiness covers most cases or at least defaults safely
-        if (fieldType === 'richText' && val && typeof val === 'object' && 'root' in val) {
-           // Basic lexical check could go here if needed
-        }
+      hasValue = value !== undefined && value !== null
+      // For richTextFields, we might need a more robust check (e.g. check for root.children.length > 0)
+      // But for now, simple truthiness covers most cases or at least defaults safely
+      if (fieldType === 'richText' && value && typeof value === 'object' && 'root' in value) {
+        // Basic lexical check could go here if needed
       }
     } catch (e) {
       // ignore
     }
 
     if (!hasValue) {
-      setActiveComponent('Compose')
+      const defaultLocale = config?.localization ? config.localization.defaultLocale : undefined
+      if (locale?.code && defaultLocale && locale.code !== defaultLocale) {
+        setActiveComponent('Translate')
+      } else {
+        setActiveComponent('Compose')
+      }
       return
     }
 
@@ -63,10 +70,18 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
 
     // Default to Rephrase if value exists
     setActiveComponent('Rephrase')
-  }, [fieldType, getData, path])
+  }, [fieldType, value, locale?.code, config?.localization])
 
   const MemoizedActiveComponent = useMemo(() => {
-    return ({ isLoading, loadingLabel, stop }: { isLoading: boolean; loadingLabel?: string; stop: () => void }) => {
+    return ({
+      isLoading,
+      loadingLabel,
+      stop,
+    }: {
+      isLoading: boolean
+      loadingLabel?: string
+      stop: () => void
+    }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
       const activeItem = menuItemsMap.find((i) => i.name === activeComponent)!
       return (
@@ -76,7 +91,14 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
             if (!isLoading) {
               const trigger = menuEvents[`on${activeComponent}`]
               if (typeof trigger === 'function') {
-                trigger(data)
+                const isEvent = data && typeof data === 'object' && 'nativeEvent' in data
+                const actualData = isEvent ? undefined : data
+
+                if (activeComponent === 'Translate' && !actualData) {
+                  trigger({ locale: locale?.code, translateFromDefault: true })
+                } else {
+                  trigger(actualData)
+                }
               } else {
                 console.error('No trigger found for', activeComponent)
               }
@@ -84,13 +106,19 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
               stop()
             }
           }}
-          title={isLoading ? t('ai-plugin:general:clickToStop' as any) : t(`ai-plugin:actions:${activeItem.name.toLowerCase()}` as any)}
+          title={
+            isLoading
+              ? t('ai-plugin:general:clickToStop' as any)
+              : t(`ai-plugin:actions:${activeItem.name.toLowerCase()}` as any)
+          }
         >
-          {isLoading && (loadingLabel ?? t(`ai-plugin:actionLoading:${activeItem.name.toLowerCase()}:ing` as any))}
+          {isLoading &&
+            (loadingLabel ??
+              t(`ai-plugin:actionLoading:${activeItem.name.toLowerCase()}:ing` as any))}
         </ActiveComponent>
       )
     }
-  }, [activeComponent, menuEvents, t])
+  }, [activeComponent, menuEvents, t, locale?.code])
 
   const filteredMenuItems = useMemo(
     () =>

@@ -7,14 +7,14 @@ import { checkAccess } from '../access/checkAccess.js'
 import { filterEditorSchemaByNodes } from '../ai/utilities/filterEditorSchemaByNodes.js'
 import { PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../defaults.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
+import { assignPrompt } from '../utilities/buildPromptUtils.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
-import { extractImageData } from '../utilities/images/extractImageData.js'
-import { type FetchableImage, fetchImages } from '../utilities/images/fetchImages.js'
 import { fieldToJsonSchema } from '../utilities/fields/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/fields/getFieldBySchemaPath.js'
-import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
+import { extractImageData } from '../utilities/images/extractImageData.js'
+import { type FetchableImage, fetchImages } from '../utilities/images/fetchImages.js'
 import { resolveImageReferences } from '../utilities/images/resolveImageReferences.js'
-import { assignPrompt } from '../utilities/buildPromptUtils.js'
+import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
 
 /**
  * Text/rich-text generation endpoint handler.
@@ -29,7 +29,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
 
     const { allowedEditorNodes = [], locale = 'en', options } = data
     const { action, actionParams, instructionId } = options
-    const contextData = data.doc
+    let contextData = data.doc
 
     if (!instructionId) {
       throw new Error(
@@ -53,13 +53,41 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       throw new Error('Collection not found')
     }
 
+    const { defaultLocale, locales = [] } = req.payload.config.localization || {}
+
+    // If translating from default locale, we need to fetch the original content
+    if (action === 'Translate' && actionParams?.translateFromDefault && contextData?.id) {
+      try {
+        const schemaPath = String(instructions['schema-path'])
+        const parts = (schemaPath || '').split('.') || []
+        const collectionName = parts[0]
+
+        if (collectionName && defaultLocale) {
+          const originalDoc = await req.payload.findByID({
+            id: contextData.id,
+            collection: collectionName as any,
+            locale: defaultLocale,
+            req,
+          })
+          if (originalDoc) {
+            contextData = { ...contextData, ...originalDoc }
+          }
+        }
+      } catch (e) {
+        req.payload.logger.error(
+          e,
+          '— AI Plugin: Error fetching default locale document for translation',
+        )
+      }
+    }
+
     const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
     const { schema: editorSchema = {} } = editorConfig
     let { prompt: promptTemplate = '' } = instructions
 
     // Convert Lexical JSON to string template if needed
     if (promptTemplate && typeof promptTemplate === 'object') {
-       promptTemplate = lexicalToPromptTemplate(promptTemplate)
+      promptTemplate = lexicalToPromptTemplate(promptTemplate)
     }
 
     // Smart fallback: if prompt is generic, build a contextual prompt from field metadata
@@ -101,7 +129,6 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
 
     registerEditorHelper(req.payload, schemaPath)
 
-    const { defaultLocale, locales = [] } = req.payload.config.localization || {}
     const localeData = locales.find((l) => {
       return l.code === locale
     })
@@ -131,10 +158,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
     })
 
     if (pluginConfig.debugging) {
-      req.payload.logger.info(
-        { prompts },
-        `— AI Plugin: Executing text prompt on ${schemaPath}`,
-      )
+      req.payload.logger.info({ prompts }, `— AI Plugin: Executing text prompt on ${schemaPath}`)
     }
 
     // Build per-field JSON schema for structured generation when applicable
@@ -142,9 +166,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
     let targetField: Field | null | undefined
 
     try {
-      const targetCollection = req.payload.config.collections.find(
-        (c) => c.slug === collectionName,
-      )
+      const targetCollection = req.payload.config.collections.find((c) => c.slug === collectionName)
       if (targetCollection && fieldName) {
         targetField = getFieldBySchemaPath(targetCollection, schemaPath)
         const supported = [
@@ -162,10 +184,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
         if (targetField && supported.includes(t)) {
           // For array fields, use count from array-settings if available
           if (t === 'array') {
-            const arraySettings = (instructions['array-settings'] || {}) as Record<
-              string,
-              unknown
-            >
+            const arraySettings = (instructions['array-settings'] || {}) as Record<string, unknown>
             const count = (arraySettings.count as number) || 3
             // Override the field's maxRows with the requested count
             const modifiedField = {
@@ -244,8 +263,8 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
         })
 
         if (result) {
-          if (result.prompt) promptToUse = result.prompt
-          if (result.system) systemToUse = result.system
+          if (result.prompt) {promptToUse = result.prompt}
+          if (result.system) {systemToUse = result.system}
         }
       }
     }
@@ -296,8 +315,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
     return new Response(JSON.stringify({ error: message }), {
       headers: { 'Content-Type': 'application/json' },
       status:
-        message.includes('Authentication required') ||
-        message.includes('Insufficient permissions')
+        message.includes('Authentication required') || message.includes('Insufficient permissions')
           ? 401
           : 500,
     })

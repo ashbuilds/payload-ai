@@ -41,6 +41,7 @@ export const Products: CollectionConfig = {
         description: 'The name customers will see for this t-shirt design.',
       },
       label: 'Display name',
+      localized: true,
       required: true,
     },
     {
