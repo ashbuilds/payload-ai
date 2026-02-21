@@ -1,20 +1,16 @@
 'use client'
 
 import { SelectInput, useField, useFormFields } from '@payloadcms/ui'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
+
+import type { Voice } from '../shared.js'
+
+import { handleSelectChange } from '../shared.js'
+import { useAISettings } from '../useAISettings.js'
 
 type Props = {
   name: string
   path: string
-}
-
-interface Voice {
-  category?: string
-  enabled?: boolean
-  id: string
-  labels?: Record<string, unknown>
-  name: string
-  preview_url?: string
 }
 
 interface ProviderBlock {
@@ -22,6 +18,17 @@ interface ProviderBlock {
   enabled?: boolean
   voices?: Voice[]
 }
+
+const StatusMessage: React.FC<{ label: string; message: string; path: string }> = ({ label, message, path }) => (
+  <div className="field-type text">
+    <label className="field-label" htmlFor={path}>
+      {label}
+    </label>
+    <p style={{ color: 'var(--theme-elevation-600)', fontSize: '13px' }}>
+      {message}
+    </p>
+  </div>
+)
 
 export const DynamicVoiceSelect: React.FC<Props> = (props) => {
   const { name, path } = props
@@ -35,28 +42,7 @@ export const DynamicVoiceSelect: React.FC<Props> = (props) => {
   const provider = (providerField?.value as string) || ''
 
   const { setValue, value } = useField<string>({ path })
-  const [aiSettings, setAiSettings] = useState<{ providers?: ProviderBlock[] } | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Fetch AI Settings - re-fetch when provider changes to ensure we have latest voices
-  useEffect(() => {
-    const fetchSettings = async () => {
-      setIsLoading(true)
-      try {
-        const response = await fetch('/api/globals/ai-providers?depth=1')
-        if (response.ok) {
-          const data = await response.json()
-          setAiSettings(data)
-        }
-      } catch (err) {
-        console.error('Error fetching AI settings:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    void fetchSettings()
-  }, [provider]) // Re-fetch when provider changes to ensure we have the latest voices
+  const { data: aiSettings, isLoading } = useAISettings()
 
   const voices = useMemo(() => {
     if (!provider || !aiSettings?.providers) {
@@ -66,7 +52,7 @@ export const DynamicVoiceSelect: React.FC<Props> = (props) => {
     // Find the provider block matching the selected provider
     const providerBlock = aiSettings.providers.find(
       (p: ProviderBlock) => p.blockType === provider && p.enabled !== false,
-    )
+    ) as ProviderBlock | undefined
 
     if (!providerBlock?.voices) {
       return []
@@ -92,39 +78,20 @@ export const DynamicVoiceSelect: React.FC<Props> = (props) => {
   }, [voices, value, setValue])
 
   if (!provider) {
-    return (
-      <div className="field-type text">
-        <label className="field-label" htmlFor={path}>
-          Voice
-        </label>
-        <p style={{ color: 'var(--theme-elevation-600)', fontSize: '13px' }}>
-          Please select a provider first.
-        </p>
-      </div>
-    )
+    return <StatusMessage label="Voice" message="Please select a provider first." path={path} />
   }
 
   if (isLoading) {
-    return (
-      <div className="field-type text">
-        <label className="field-label" htmlFor={path}>
-          Voice
-        </label>
-        <p style={{ color: 'var(--theme-elevation-600)', fontSize: '13px' }}>Loading voices...</p>
-      </div>
-    )
+    return <StatusMessage label="Voice" message="Loading voices..." path={path} />
   }
 
   if (voices.length === 0) {
     return (
-      <div className="field-type text">
-        <label className="field-label" htmlFor={path}>
-          Voice
-        </label>
-        <p style={{ color: 'var(--theme-elevation-600)', fontSize: '13px' }}>
-          No voices available. Please configure voices in AI Settings for {provider}.
-        </p>
-      </div>
+      <StatusMessage
+        label="Voice"
+        message={`No voices available. Please configure voices in AI Settings for ${provider}.`}
+        path={path}
+      />
     )
   }
 
@@ -135,13 +102,7 @@ export const DynamicVoiceSelect: React.FC<Props> = (props) => {
       </label>
       <SelectInput
         name={name}
-        onChange={(option) => {
-          if (option && typeof option === 'object' && 'value' in option) {
-            setValue(option.value as string)
-          } else {
-            setValue(option)
-          }
-        }}
+        onChange={(option) => handleSelectChange(setValue, option)}
         options={voices}
         path={path}
         value={value}

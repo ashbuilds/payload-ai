@@ -1,9 +1,11 @@
 'use client'
 
 import { SelectInput, useField } from '@payloadcms/ui'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 
 import { allProviderBlocks } from '../../ai/providers/blocks/index.js'
+import { handleSelectChange } from '../shared.js'
+import { useAISettings } from '../useAISettings.js'
 
 type Props = {
   name: string
@@ -15,27 +17,8 @@ export const DynamicProviderSelect: React.FC<Props> = (props) => {
 
   const { setValue, value } = useField<string>({ path })
 
-  // State to hold fetched providers data
-  const [providersData, setProvidersData] = useState<any[]>([])
-
-  // Fetch AI Settings global to get configured providers
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/globals/ai-providers?depth=1')
-        if (response.ok) {
-          const data = await response.json()
-          if (data && data.providers) {
-            setProvidersData(data.providers)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching AI settings:', error)
-      }
-    }
-
-    void fetchSettings()
-  }, [])
+  const { data: aiSettings } = useAISettings()
+  const providersData = aiSettings?.providers ?? []
 
   const options = useMemo(() => {
     const optionsList: { label: string; value: string }[] = []
@@ -101,13 +84,7 @@ export const DynamicProviderSelect: React.FC<Props> = (props) => {
       </label>
       <SelectInput
         name={name}
-        onChange={(option) => {
-          if (option && typeof option === 'object' && 'value' in option) {
-            setValue(option.value)
-          } else {
-            setValue(option)
-          }
-        }}
+        onChange={(option) => handleSelectChange(setValue, option)}
         options={options as any}
         path={path}
         value={value}

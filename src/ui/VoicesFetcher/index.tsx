@@ -2,19 +2,13 @@
 
 import type { FieldClientComponent } from 'payload'
 
-import { Button, toast, useField, useFormFields } from '@payloadcms/ui'
+import { Button, toast, useField } from '@payloadcms/ui'
 import React, { useCallback, useState } from 'react'
+
+import type { Voice } from '../shared.js'
 
 import { PLUGIN_API_ENDPOINT_FETCH_VOICES } from '../../defaults.js'
 
-interface Voice {
-  category?: string
-  enabled?: boolean
-  id: string
-  labels?: Record<string, unknown>
-  name: string
-  preview_url?: string
-}
 
 /**
  * VoicesFetcher Component
