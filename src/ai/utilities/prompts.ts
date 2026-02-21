@@ -1,4 +1,4 @@
-import type { ActionPrompt } from '../types.js'
+import type { ActionPrompt } from '../../types.js'
 
 //TODO: This is a temporary solution make use of structured output
 export const defaultSystemPrompt = `IMPORTANT INSTRUCTION:
@@ -100,7 +100,7 @@ INSTRUCTIONS:
   },
   {
     name: 'Translate',
-    system: ({ locale, prompt = '', systemPrompt = '' }) =>
+    system: ({ locale, prompt = '', systemPrompt = '' }: { locale?: string; prompt?: string; systemPrompt?: string }) =>
       `You are a skilled translator. Translate the following text into ${locale}, ensuring the original meaning, tone, and context are preserved.
     
     -------------

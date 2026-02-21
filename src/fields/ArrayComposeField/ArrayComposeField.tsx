@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom'
 import { FieldProvider } from '../../providers/FieldProvider/FieldProvider.js'
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { Compose } from '../../ui/Compose/Compose.js'
-import styles from '../../ui/Compose/compose.module.css'
+import styles from '../../ui/Compose/compose.module.scss'
 
 type ArrayComposeFieldProps = {
   [key: string]: any

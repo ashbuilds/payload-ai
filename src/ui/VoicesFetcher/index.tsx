@@ -5,7 +5,7 @@ import type { FieldClientComponent } from 'payload'
 import { Button, toast, useField } from '@payloadcms/ui'
 import React, { useCallback, useState } from 'react'
 
-import type { Voice } from '../shared.js'
+import type { Voice } from '../shared/types.js'
 
 import { PLUGIN_API_ENDPOINT_FETCH_VOICES } from '../../defaults.js'
 

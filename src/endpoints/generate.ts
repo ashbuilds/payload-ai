@@ -4,23 +4,23 @@ import type { Field, PayloadRequest } from 'payload'
 import type { PluginConfig } from '../types.js'
 
 import { checkAccess } from '../access/checkAccess.js'
-import { filterEditorSchemaByNodes } from '../ai/utils/filterEditorSchemaByNodes.js'
+import { filterEditorSchemaByNodes } from '../ai/utilities/filterEditorSchemaByNodes.js'
 import { PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../defaults.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
-import { extractImageData } from '../utilities/extractImageData.js'
-import { type FetchableImage, fetchImages } from '../utilities/fetchImages.js'
-import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
-import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
-import { lexicalToPromptTemplate } from '../utilities/lexicalToPromptTemplate.js'
-import { resolveImageReferences } from '../utilities/resolveImageReferences.js'
-import { assignPrompt } from './buildPromptUtils.js'
+import { extractImageData } from '../utilities/images/extractImageData.js'
+import { type FetchableImage, fetchImages } from '../utilities/images/fetchImages.js'
+import { fieldToJsonSchema } from '../utilities/fields/fieldToJsonSchema.js'
+import { getFieldBySchemaPath } from '../utilities/fields/getFieldBySchemaPath.js'
+import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
+import { resolveImageReferences } from '../utilities/images/resolveImageReferences.js'
+import { assignPrompt } from '../utilities/buildPromptUtils.js'
 
 /**
  * Text/rich-text generation endpoint handler.
  * Uses payload.ai.streamObject for structured text generation.
  */
-export const textareaHandler = (pluginConfig: PluginConfig) => async (req: PayloadRequest) => {
+export const generateHandler = (pluginConfig: PluginConfig) => async (req: PayloadRequest) => {
   try {
     // Check authentication and authorization first
     await checkAccess(req, pluginConfig)

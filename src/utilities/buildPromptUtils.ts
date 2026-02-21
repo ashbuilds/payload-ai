@@ -6,11 +6,11 @@ import type {
   PromptFieldGetterContext,
 } from '../types.js'
 
-import { defaultPrompts } from '../ai/prompts.js'
+import { defaultPrompts } from '../ai/utilities/prompts.js'
 import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
-import { lexicalToPromptTemplate } from '../utilities/lexicalToPromptTemplate.js'
+import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
 
 const buildRichTextSystem = (baseSystem: string, layout: string) => {
   return `${baseSystem}

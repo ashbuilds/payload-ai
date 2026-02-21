@@ -1,6 +1,7 @@
+import type { PluginConfig } from '../../types.js'
 import type { Block, ClientField, Field } from 'payload'
 
-import { allProviderBlocks } from '../ai/providers/blocks/index.js'
+import { allProviderBlocks } from '../../ai/providers/blocks/index.js'
 
 type UseCase = 'image' | 'text' | 'tts' | 'video'
 
@@ -45,7 +46,7 @@ export function getProviderOptionsFields(
   providerSlug: string,
   useCase: UseCase
 ): Field[] {
-  const block = allProviderBlocks.find((b) => b.slug === providerSlug)
+  const block = allProviderBlocks.find((b: any) => b.slug === providerSlug)
   if (!block) {
     return []
   }

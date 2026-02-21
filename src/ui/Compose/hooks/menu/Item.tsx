@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 
-import type { BaseItemProps } from '../../../../types.js'
+import type { BaseItemProps } from './types.js'
 
 import { ArrowIcon } from '../../../Icons/Icons.js'
 import styles from './menu.module.scss'

@@ -1,9 +1,8 @@
 import type { PayloadRequest } from 'payload'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
-import { stringToLexicalJSON } from './stringToLexicalJSON.js'
-import { updateFieldsConfig } from './updateFieldsConfig.js'
-
+import { updateFieldsConfig } from './fields/updateFieldsConfig.js'
+import { stringToLexicalJSON } from './lexical/stringToLexicalJSON.js'
 interface SeedPropertiesArgs {
   enabledCollections: string[]
   req: PayloadRequest

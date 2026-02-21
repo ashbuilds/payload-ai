@@ -2,7 +2,7 @@ import { jsonSchema, generateObject as sdkGenerateObject } from 'ai'
 
 import type { PayloadGenerateObjectArgs } from './types.js'
 
-import { extractPromptAttachments } from '../../utilities/extractPromptAttachments.js'
+import { extractPromptAttachments } from '../../utilities/images/extractPromptAttachments.js'
 import { getLanguageModel } from '../providers/registry.js'
 
 function isZodSchema(schema: unknown): boolean {

@@ -2,7 +2,7 @@ import { generateText as sdkGenerateText } from 'ai'
 
 import type { PayloadGenerateTextArgs } from './types.js'
 
-import { extractPromptAttachments } from '../../utilities/extractPromptAttachments.js'
+import { extractPromptAttachments } from '../../utilities/images/extractPromptAttachments.js'
 import { getLanguageModel } from '../providers/registry.js'
 
 /**

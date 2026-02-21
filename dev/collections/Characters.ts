@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+import { fieldToJsonSchema, PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 import {
   EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
@@ -9,7 +9,6 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
-import { fieldToJsonSchema } from '../../src/utilities/fieldToJsonSchema.js'
 import { anyone } from '../access/anyone.js'
 
 /**

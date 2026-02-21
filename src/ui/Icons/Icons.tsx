@@ -1,6 +1,6 @@
 import React from 'react'
 
-import styles from './icons.module.css'
+import styles from './icons.module.scss'
 import LottieAnimation from './LottieAnimation.js'
 
 export const PluginIcon = ({

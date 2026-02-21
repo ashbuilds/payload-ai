@@ -127,7 +127,7 @@ export const elevenlabsBlock: Block = {
               admin: {
                 description:
                   'Use the "Fetch Voices" button above to populate this list from your ElevenLabs account.',
-                initCollapsed: false,
+                initCollapsed: true,
               },
               fields: [
                 {

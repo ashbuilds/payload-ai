@@ -18,7 +18,7 @@ import { fetchFields } from './endpoints/fetchFields.js'
 import { fetchVoices } from './endpoints/fetchVoices.js'
 import { endpoints } from './endpoints/index.js'
 import { translations } from './translations/index.js'
-import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
+import { updateFieldsConfig } from './utilities/fields/updateFieldsConfig.js'
 
 const defaultPluginConfig: PluginConfig = {
   access: {

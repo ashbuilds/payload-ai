@@ -3,10 +3,10 @@
 import { SelectInput, useField, useFormFields } from '@payloadcms/ui'
 import React, { useEffect, useMemo } from 'react'
 
-import type { Voice } from '../shared.js'
+import type { Voice } from '../shared/types.js'
 
-import { handleSelectChange } from '../shared.js'
-import { useAISettings } from '../useAISettings.js'
+import { handleSelectChange } from '../shared/handleSelectChange.js'
+import { useAISettings } from '../hooks/useAISettings.js'
 
 type Props = {
   name: string

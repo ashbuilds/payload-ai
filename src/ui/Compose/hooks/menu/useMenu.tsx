@@ -4,7 +4,8 @@ import { useForm } from '@payloadcms/ui'
 import { getSiblingData } from 'payload/shared'
 import React, { useEffect, useMemo, useState } from 'react'
 
-import type { ActionMenuItems, UseMenuEvents, UseMenuOptions } from '../../../../types.js'
+import type { ActionMenuItems } from '../../../../types.js'
+import type { UseMenuEvents, UseMenuOptions } from './types.js'
 
 import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
 import { Compose, Proofread, Rephrase } from './items.js'

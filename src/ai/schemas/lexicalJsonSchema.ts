@@ -1,6 +1,6 @@
 import type { JSONSchema } from 'openai/lib/jsonschema'
 
-import { isObjectSchema } from '../utils/isObjectSchema.js'
+import { isObjectSchema } from '../utilities/isObjectSchema.js'
 
 export interface LexicalNodeSchema extends JSONSchema {
   $schema?: string

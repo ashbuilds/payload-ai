@@ -4,8 +4,8 @@ import { SelectInput, useField } from '@payloadcms/ui'
 import React, { useMemo } from 'react'
 
 import { allProviderBlocks } from '../../ai/providers/blocks/index.js'
-import { handleSelectChange } from '../shared.js'
-import { useAISettings } from '../useAISettings.js'
+import { handleSelectChange } from '../shared/handleSelectChange.js'
+import { useAISettings } from '../hooks/useAISettings.js'
 
 type Props = {
   name: string

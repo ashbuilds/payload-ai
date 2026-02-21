@@ -6,7 +6,7 @@ import {
   PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK,
 } from '../defaults.js'
 import { promptMentionsEndpoint } from './promptMentions.js'
-import { textareaHandler } from './textarea.js'
+import { generateHandler } from './generate.js'
 import { uploadHandler } from './upload.js'
 import { videogenWebhookHandler } from './videogenWebhook.js'
 
@@ -14,7 +14,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
   ({
     promptMentions: promptMentionsEndpoint,
     textarea: {
-      handler: textareaHandler(pluginConfig),
+      handler: generateHandler(pluginConfig),
       method: 'post',
       path: PLUGIN_API_ENDPOINT_GENERATE,
     },

@@ -13,7 +13,6 @@ import type {
   PayloadRequest,
   TypedCollection,
 } from 'payload'
-import type { CSSProperties, MouseEventHandler } from 'react'
 
 import type { MediaResult } from './ai/core/index.js'
 import type { PLUGIN_INSTRUCTIONS_TABLE } from './defaults.js'
@@ -171,38 +170,6 @@ export type SeedPromptFunction = (
   options: SeedPromptOptions,
 ) => Promise<SeedPromptResult> | SeedPromptResult
 
-export type ActionMenuEvents =
-  | 'onCompose'
-  | 'onExpand'
-  | 'onProofread'
-  | 'onRephrase'
-  | 'onSettings'
-  | 'onSimplify'
-  | 'onSummarize'
-  | 'onTone'
-  | 'onTranslate'
-
-export type UseMenuEvents = {
-  [key in ActionMenuEvents]?: (data?: unknown) => void
-}
-
-export type UseMenuOptions = {
-  isConfigAllowed: boolean
-}
-
-export type BaseItemProps<T = any> = {
-  children?: React.ReactNode
-  className?: string
-  disabled?: boolean
-  hideIcon?: boolean
-  isActive?: boolean
-  isMenu?: boolean
-  onClick: (data?: unknown) => void
-  onMouseEnter?: MouseEventHandler<T> | undefined
-  onMouseLeave?: MouseEventHandler<T> | undefined
-  style?: CSSProperties | undefined
-  title?: string
-}
 
 export type ImageReference = {
   data: Blob

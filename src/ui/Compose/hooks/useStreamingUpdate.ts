@@ -4,7 +4,7 @@ import { useForm } from '@payloadcms/ui'
 import { useEffect, useRef } from 'react'
 
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
-import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
+import { setSafeLexicalState } from '../../../utilities/lexical/setSafeLexicalState.js'
 
 type UseStreamingUpdateParams = {
   editor: LexicalEditor

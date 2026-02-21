@@ -1,6 +1,7 @@
 import type React from 'react'
 
-import type { ActionMenuItems, BaseItemProps } from '../../../../types.js'
+import type { ActionMenuItems } from '../../../../types.js'
+import type { BaseItemProps } from './types.js'
 
 import { Compose, Expand, Proofread, Rephrase, Settings, Simplify, Summarize } from './items.js'
 import { MemoizedTranslateMenu, TranslateMenu } from './TranslateMenu.js'

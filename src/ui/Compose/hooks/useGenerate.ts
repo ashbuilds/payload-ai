@@ -8,7 +8,7 @@ import type { ActionMenuItems } from '../../../types.js'
 
 import { PLUGIN_API_ENDPOINT_GENERATE } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
-import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
+import { setSafeLexicalState } from '../../../utilities/lexical/setSafeLexicalState.js'
 import { useGenerateUpload } from './useGenerateUpload.js'
 import { useHistory } from './useHistory.js'
 import { useStreamingUpdate } from './useStreamingUpdate.js'

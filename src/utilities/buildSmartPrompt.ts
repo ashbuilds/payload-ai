@@ -2,7 +2,8 @@
 
 import type { Field, Payload } from 'payload'
 
-import { getFieldBySchemaPath } from './getFieldBySchemaPath.js'
+import { getFieldBySchemaPath } from './fields/getFieldBySchemaPath.js'
+import { stringToLexicalJSON } from './lexical/stringToLexicalJSON.js'
 
 export interface SmartPromptContext {
   /** The document data for template interpolation */

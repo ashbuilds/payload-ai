@@ -14,12 +14,12 @@ import {
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
-import { extractImageData } from '../utilities/extractImageData.js'
-import { type FetchableImage, fetchImages } from '../utilities/fetchImages.js'
-import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
-import { lexicalToPromptTemplate } from '../utilities/lexicalToPromptTemplate.js'
-import { resolveImageReferences } from '../utilities/resolveImageReferences.js'
-import { extendContextWithPromptFields } from './buildPromptUtils.js'
+import { extractImageData } from '../utilities/images/extractImageData.js'
+import { type FetchableImage, fetchImages } from '../utilities/images/fetchImages.js'
+import { getFieldBySchemaPath } from '../utilities/fields/getFieldBySchemaPath.js'
+import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
+import { resolveImageReferences } from '../utilities/images/resolveImageReferences.js'
+import { extendContextWithPromptFields } from '../utilities/buildPromptUtils.js'
 
 /**
  * Image/video/audio upload generation endpoint handler.
