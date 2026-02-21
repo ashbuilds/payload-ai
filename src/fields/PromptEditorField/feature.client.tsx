@@ -70,6 +70,7 @@ const PromptMentionsMenuItem = ({
   children,
   className,
   isFocused,
+  itemValue: _itemValue,
   label,
   ref,
   selected,

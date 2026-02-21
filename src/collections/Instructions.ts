@@ -5,6 +5,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 import { PromptMentionsFeature } from '../fields/PromptEditorField/feature.server.js'
+import { pluginCollectionAccess, pluginCollectionAdmin } from './shared.js'
 
 // Defined capabilities replacing src/ai/models/
 const CAPABILITIES = [
@@ -35,37 +36,6 @@ const CAPABILITIES = [
   },
 ]
 
-const defaultAccessConfig = {
-  create: ({ req }: { req: { user?: any } }) => {
-    if (!req.user) {
-      return false
-    }
-    return true
-  },
-  delete: ({ req }: { req: { user?: any } }) => {
-    if (!req.user) {
-      return false
-    }
-    return true
-  },
-  read: ({ req }: { req: { user?: any } }) => {
-    if (!req.user) {
-      return false
-    }
-    return true
-  },
-  update: ({ req }: { req: { user?: any } }) => {
-    if (!req.user) {
-      return false
-    }
-    return true
-  },
-}
-
-const defaultAdminConfig = {
-  group: 'Plugins',
-  hidden: true,
-}
 
 const providerSelect = {
   name: 'provider',
@@ -139,13 +109,13 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
     ...pluginConfig.overrideInstructions,
     slug: PLUGIN_INSTRUCTIONS_TABLE,
     access: {
-      ...defaultAccessConfig,
+      ...pluginCollectionAccess,
       ...pluginConfig.overrideInstructions?.access,
     },
     admin: {
       description:
         'Customize how AI interacts with specific fields within your enabled collections.',
-      ...defaultAdminConfig,
+      ...pluginCollectionAdmin,
       ...pluginConfig.overrideInstructions?.admin,
       components: {
         beforeList: ['@ai-stack/payloadcms/client#ConfigDashboard'],
@@ -262,7 +232,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
                   description: "Click 'Compose' to run this custom prompt and generate content",
                 },
                 editor: lexicalEditor({
-                  features: ({ rootFeatures }) => [PromptMentionsFeature()],
+                  features: ({ rootFeatures: _rootFeatures }) => [PromptMentionsFeature()],
                 }),
                 label: '',
               },

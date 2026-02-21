@@ -1,7 +1,7 @@
 // Global type definitions for @ai-stack/payloadcms
 // This file augments the Payload types using inline type definitions
 
-import type { GenerateObjectResult, ImagePart, JSONValue, ModelMessage } from 'ai'
+import type { GenerateObjectResult, GenerateTextResult, ImagePart, JSONValue, ModelMessage, StreamTextResult, ToolSet } from 'ai'
 import type { z } from 'zod'
 
 /**
@@ -37,9 +37,7 @@ interface PayloadGenerateObjectArgs extends PayloadGenerationBaseArgs {
 /**
  * Arguments for generateText - simple text generation
  */
-interface PayloadGenerateTextArgs extends PayloadGenerationBaseArgs {
-  // No additional fields needed for basic text generation
-}
+type PayloadGenerateTextArgs = PayloadGenerationBaseArgs
 
 /**
  * Arguments for generateMedia - image/video generation
@@ -86,11 +84,6 @@ interface MediaResult {
 declare module 'payload' {
   interface BasePayload {
     ai: {
-      /**
-       * @deprecated Use generateObject or generateText instead
-       * Legacy generate method for backward compatibility
-       */
-      generate: (args: unknown) => Promise<unknown>
 
       /**
        * Generate media (images or videos)
@@ -111,7 +104,7 @@ declare module 'payload' {
        * @param args - Generation arguments including provider, model, and prompt
        * @returns Promise resolving to the generated text
        */
-      generateText: (args: PayloadGenerateTextArgs) => Promise<string>
+      generateText: (args: PayloadGenerateTextArgs) => Promise<GenerateTextResult<ToolSet, unknown>>
 
       /**
        * Get a specific model instance
@@ -137,14 +130,14 @@ declare module 'payload' {
        * @param args - Generation arguments including provider, model, prompt, and schema
        * @returns Response stream
        */
-      streamObject: <T = unknown>(args: PayloadGenerateObjectArgs) => Promise<Response>
+      streamObject: (args: PayloadGenerateObjectArgs) => Promise<Response>
 
       /**
        * Stream text output
        * @param args - Generation arguments including provider, model, and prompt
        * @returns Response stream
        */
-      streamText: (args: PayloadGenerateTextArgs) => Promise<Response>
+      streamText: (args: PayloadGenerateTextArgs) => Promise<StreamTextResult<ToolSet, unknown>>
     }
   }
 }

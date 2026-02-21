@@ -29,7 +29,7 @@ interface FieldInfo {
 /**
  * Extract field information from a schema path
  */
-const getFieldInfo = (schemaPath: string, payload: Payload): FieldInfo => {
+const extractFieldInfo = (schemaPath: string, payload: Payload): FieldInfo => {
   const parts = schemaPath.split('.')
   const collectionSlug = parts[0]
   const fieldPath = parts.slice(1)
@@ -144,7 +144,7 @@ const getParentContextPhrase = (parentContext: null | string): string => {
 export const buildSmartPrompt = (context: SmartPromptContext): string => {
   const { documentData, payload, schemaPath } = context
 
-  const fieldInfo = getFieldInfo(schemaPath, payload)
+  const fieldInfo = extractFieldInfo(schemaPath, payload)
   const { name, type, field, label, parentContext } = fieldInfo
 
   // Start with the field's own description if available

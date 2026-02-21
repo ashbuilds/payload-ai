@@ -1,23 +1,13 @@
 import type { CollectionConfig } from 'payload'
 
 import { PLUGIN_AI_JOBS_TABLE, PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
+import { pluginCollectionAccess, pluginCollectionAdmin } from './shared.js'
 
-const defaultAccessConfig = {
-  create: ({ req }: { req: { user?: any } }) => !!req.user,
-  delete: ({ req }: { req: { user?: any } }) => !!req.user,
-  read: ({ req }: { req: { user?: any } }) => !!req.user,
-  update: ({ req }: { req: { user?: any } }) => !!req.user,
-}
-
-const defaultAdminConfig = {
-  group: 'Plugins',
-  hidden: true,
-}
 
 export const aiJobsCollection = (): CollectionConfig => ({
   slug: PLUGIN_AI_JOBS_TABLE,
-  access: defaultAccessConfig,
-  admin: defaultAdminConfig,
+  access: pluginCollectionAccess,
+  admin: pluginCollectionAdmin,
   fields: [
     {
       name: 'instructionId',

@@ -2,6 +2,11 @@ import type { CollectionConfig, Config, GlobalConfig } from 'payload'
 
 import { deepMerge } from 'payload/shared'
 
+import type {
+  PayloadGenerateMediaArgs,
+  PayloadGenerateObjectArgs,
+  PayloadGenerateTextArgs,
+} from './ai/core/types.js'
 import type { PluginConfig } from './types.js'
 
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
@@ -13,7 +18,6 @@ import { fetchFields } from './endpoints/fetchFields.js'
 import { fetchVoices } from './endpoints/fetchVoices.js'
 import { endpoints } from './endpoints/index.js'
 import { translations } from './translations/index.js'
-import { isPluginActivated } from './utilities/isPluginActivated.js'
 import { updateFieldsConfig } from './utilities/updateFieldsConfig.js'
 
 const defaultPluginConfig: PluginConfig = {
@@ -71,7 +75,7 @@ const payloadAiPlugin =
       },
     }
 
-    const isActivated = isPluginActivated(pluginConfig)
+    const isActivated = !!pluginConfig
     let updatedConfig: Config = { ...incomingConfig }
 
     if (isActivated) {
@@ -80,8 +84,8 @@ const payloadAiPlugin =
       // Inject editor schema to config, so that it can be accessed when /textarea endpoint will hit
       const lexicalSchema = lexicalJsonSchema(pluginConfig.editorConfig?.nodes)
 
-      Instructions.admin = {
-        ...Instructions.admin,
+      if (!Instructions.admin) {
+        Instructions.admin = {}
       }
 
       if (pluginConfig.debugging) {
@@ -172,31 +176,31 @@ const payloadAiPlugin =
       }
 
       // Inject AI capabilities with the abstraction layer
-      ;(payload as any).ai = {
+      const ai = {
         // Core generation methods
-        generateObject: async (args: any) => {
+        generateObject: async (args: Omit<PayloadGenerateObjectArgs, 'payload'>) => {
           const { generateObject } = await import('./ai/core/index.js')
           return generateObject({ ...args, payload })
         },
 
-        generateText: async (args: any) => {
+        generateText: async (args: Omit<PayloadGenerateTextArgs, 'payload'>) => {
           const { generateText } = await import('./ai/core/index.js')
           return generateText({ ...args, payload })
         },
 
-        generateMedia: async (args: any) => {
+        generateMedia: async (args: Omit<PayloadGenerateMediaArgs, 'payload'>) => {
           const { generateMedia } = await import('./ai/core/index.js')
           return generateMedia({ ...args, payload })
         },
 
         // Streaming variants
-        streamObject: async (args: any) => {
+        streamObject: async (args: Omit<PayloadGenerateObjectArgs, 'payload'>) => {
           const { streamObject } = await import('./ai/core/index.js')
           const result = await streamObject({ ...args, payload })
           return result.toTextStreamResponse()
         },
 
-        streamText: async (args: any) => {
+        streamText: async (args: Omit<PayloadGenerateTextArgs, 'payload'>) => {
           const { streamText } = await import('./ai/core/index.js')
           return streamText({ ...args, payload })
         },
@@ -219,14 +223,10 @@ const payloadAiPlugin =
           const { getProviderRegistry } = await import('./ai/providers/registry.js')
           return getProviderRegistry(payload)
         },
-
-        // Legacy method for backward compatibility
-        /** @deprecated Use generateObject or generateText instead */
-        generate: async (args: any) => {
-          const { generate } = await import('./ai/index.js')
-          return generate({ ...args, payload })
-        },
       }
+
+      // Use Object.defineProperty to safely add ai to payload
+      Object.defineProperty(payload, 'ai', { value: ai, writable: true })
     }
 
     return updatedConfig
