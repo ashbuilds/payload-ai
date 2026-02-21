@@ -19,7 +19,29 @@ import type {
   XAIBlockData,
 } from './types.js'
 
-// Type-safe provider factory functions
+// ─── Cache layer ────────────────────────────────────────────────
+// Module-level caches with TTL to avoid redundant DB queries.
+// A single text-generation request previously triggered 3 findGlobal
+// calls; with this cache the DB is hit at most once per TTL window.
+
+const CACHE_TTL = 60_000 // 60 seconds
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+let registryCache: CacheEntry<ProviderRegistry> | null = null
+let defaultsCache: CacheEntry<AISettingsData['defaults']> | null = null
+
+// Allow external invalidation (e.g. after saving AISettings)
+export function invalidateProviderCache(): void {
+  registryCache = null
+  defaultsCache = null
+}
+
+// ─── Provider factory functions ─────────────────────────────────
+
 const providerFactories = {
   anthropic: async (block: AnthropicBlockData) => {
     const { createAnthropic } = await import('@ai-sdk/anthropic')
@@ -37,7 +59,6 @@ const providerFactories = {
 
   fal: async (block: FalBlockData) => {
     const { fal } = await import('@ai-sdk/fal')
-    // Fal uses global instance, configure with apiKey
     process.env.FAL_KEY = block.apiKey
     if (block.webhookSecret) {
       process.env.FAL_WEBHOOK_SECRET = block.webhookSecret
@@ -62,7 +83,6 @@ const providerFactories = {
   },
 
   'openai-compatible': async (block: OpenAICompatibleBlockData) => {
-    console.log('OpenAI compatible, ', block)
     const { createOpenAICompatible } = await import('@ai-sdk/openai-compatible')
     return createOpenAICompatible({
       name: block.providerName,
@@ -79,9 +99,8 @@ const providerFactories = {
   },
 }
 
-/**
- * Type guard to check provider block type
- */
+// ─── Helpers ────────────────────────────────────────────────────
+
 function isProviderBlock<T extends ProviderBlockData>(
   block: ProviderBlockData,
   blockType: T['blockType'],
@@ -89,52 +108,78 @@ function isProviderBlock<T extends ProviderBlockData>(
   return block.blockType === blockType
 }
 
+function getFactoryForBlock(providerBlock: ProviderBlockData): (() => Promise<any>) | undefined {
+  if (isProviderBlock<OpenAIBlockData>(providerBlock, 'openai')) {
+    return () => providerFactories.openai(providerBlock)
+  }
+  if (isProviderBlock<AnthropicBlockData>(providerBlock, 'anthropic')) {
+    return () => providerFactories.anthropic(providerBlock)
+  }
+  if (isProviderBlock<GoogleBlockData>(providerBlock, 'google')) {
+    return () => providerFactories.google(providerBlock)
+  }
+  if (isProviderBlock<XAIBlockData>(providerBlock, 'xai')) {
+    return () => providerFactories.xai(providerBlock)
+  }
+  if (isProviderBlock<FalBlockData>(providerBlock, 'fal')) {
+    return () => providerFactories.fal(providerBlock)
+  }
+  if (isProviderBlock<ElevenLabsBlockData>(providerBlock, 'elevenlabs')) {
+    return () => providerFactories.elevenlabs(providerBlock)
+  }
+  if (isProviderBlock<OpenAICompatibleBlockData>(providerBlock, 'openai-compatible')) {
+    return () => providerFactories['openai-compatible'](providerBlock)
+  }
+  return undefined
+}
+
 /**
- * Load provider registry from AI Settings (type-safe)
+ * Resolve the provider SDK instance, caching after first call.
+ */
+async function resolveProviderInstance(provider: ProviderRegistry[string]): Promise<any> {
+  if (provider.instance) {
+    return provider.instance
+  }
+  if (!provider.factory) {
+    throw new Error(`Provider ${provider.id} has no factory or instance`)
+  }
+  const instance = await provider.factory()
+  provider.instance = instance
+  return instance
+}
+
+// ─── Public API ─────────────────────────────────────────────────
+
+/**
+ * Load provider registry from AI Settings (cached with TTL).
  */
 export async function getProviderRegistry(payload: Payload): Promise<ProviderRegistry> {
+  if (registryCache && Date.now() - registryCache.timestamp < CACHE_TTL) {
+    return registryCache.data
+  }
+
   const settings = (await payload.findGlobal({
     slug: 'ai-providers',
     context: { unsafe: true },
   })) as unknown as AISettingsData
 
   const registry: ProviderRegistry = {}
-  // console.log('settings - >', JSON.stringify(settings, null, 2))
+
   for (const providerBlock of settings.providers || []) {
     if (!providerBlock.enabled) {
       continue
     }
 
     const { blockType } = providerBlock
-
-    // Type-safe factory lookup and invocation
-    let factory: (() => Promise<any>) | undefined
-
-    if (isProviderBlock<OpenAIBlockData>(providerBlock, 'openai')) {
-      factory = () => providerFactories.openai(providerBlock)
-    } else if (isProviderBlock<AnthropicBlockData>(providerBlock, 'anthropic')) {
-      factory = () => providerFactories.anthropic(providerBlock)
-    } else if (isProviderBlock<GoogleBlockData>(providerBlock, 'google')) {
-      factory = () => providerFactories.google(providerBlock)
-    } else if (isProviderBlock<XAIBlockData>(providerBlock, 'xai')) {
-      factory = () => providerFactories.xai(providerBlock)
-    } else if (isProviderBlock<FalBlockData>(providerBlock, 'fal')) {
-      factory = () => providerFactories.fal(providerBlock)
-    } else if (isProviderBlock<ElevenLabsBlockData>(providerBlock, 'elevenlabs')) {
-      factory = () => providerFactories.elevenlabs(providerBlock)
-    } else if (isProviderBlock<OpenAICompatibleBlockData>(providerBlock, 'openai-compatible')) {
-      factory = () => providerFactories['openai-compatible'](providerBlock)
-    }
+    const factory = getFactoryForBlock(providerBlock)
 
     if (!factory) {
-      console.warn(`No factory for provider: ${blockType}`)
+      payload.logger.warn(`No factory for provider: ${blockType}`)
       continue
     }
 
-    // Filter enabled models only
     const enabledModels = providerBlock.models.filter((m) => m.enabled)
 
-    // Extract provider options
     const options = {
       image:
         'imageProviderOptions' in providerBlock ? providerBlock.imageProviderOptions : undefined,
@@ -148,27 +193,37 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
       apiKey: 'apiKey' in providerBlock ? providerBlock.apiKey : undefined,
       enabled: true,
       factory,
-      instance: undefined, // Fal is now loaded dynamically via factory
+      instance: undefined,
       models: enabledModels,
       options,
     }
   }
 
+  // Also cache defaults from the same settings fetch to save a second query
+  defaultsCache = { data: settings.defaults, timestamp: Date.now() }
+  registryCache = { data: registry, timestamp: Date.now() }
+
   return registry
 }
 
 /**
- * Get global defaults from AI Settings
+ * Get global defaults from AI Settings (cached with TTL).
  */
 export async function getGlobalDefaults(payload: Payload) {
+  if (defaultsCache && Date.now() - defaultsCache.timestamp < CACHE_TTL) {
+    return defaultsCache.data
+  }
+
   const settings = (await payload.findGlobal({
     slug: 'ai-providers',
   })) as unknown as AISettingsData
+
+  defaultsCache = { data: settings.defaults, timestamp: Date.now() }
   return settings.defaults
 }
 
 /**
- * Get language model (type-safe, async)
+ * Get language model (cached registry + single defaults call).
  */
 export async function getLanguageModel(
   payload: Payload,
@@ -176,22 +231,22 @@ export async function getLanguageModel(
   modelId?: string,
   options?: Record<string, any>,
 ): Promise<LanguageModel> {
-  if (!providerId || !modelId) {
-    const defaults = await getGlobalDefaults(payload)
-    if (!providerId) {
-      providerId = defaults?.text?.provider
-    }
-    if (!modelId) {
-      modelId = defaults?.text?.model
-    }
+  // Single defaults fetch for the entire function
+  const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
+
+  if (!providerId) {
+    providerId = defaults?.text?.provider
+  }
+  if (!modelId) {
+    modelId = defaults?.text?.model
   }
 
-  // Extract global default options if we are using the default provider
-  let globalDefaultOptions = {}
+  // Extract global default options if using the default provider
+  let globalDefaultOptions: Record<string, any> = {}
   if (providerId) {
-    const defaults = await getGlobalDefaults(payload)
-    if (defaults?.text?.provider === providerId) {
-      globalDefaultOptions = defaults?.text?.options || {}
+    const resolvedDefaults = defaults ?? await getGlobalDefaults(payload)
+    if (resolvedDefaults?.text?.provider === providerId) {
+      globalDefaultOptions = resolvedDefaults?.text?.options || {}
     }
   }
 
@@ -205,22 +260,12 @@ export async function getLanguageModel(
   if (!provider) {
     throw new Error(`Provider ${providerId} not found in registry`)
   }
-
   if (!provider.enabled) {
     throw new Error(`Provider ${providerId} is not enabled`)
   }
 
-  // We only support factory now for dynamic loading, instance is legacy/cache
-  let providerInstance: any
-  if (provider.instance) {
-    providerInstance = provider.instance
-  } else if (provider.factory) {
-    providerInstance = await provider.factory()
-  } else {
-    throw new Error(`Provider ${providerId} has no factory or instance`)
-  }
+  const providerInstance = await resolveProviderInstance(provider)
 
-  // Merge default settings with override options
   const finalOptions = {
     ...(provider.options?.text || {}),
     ...globalDefaultOptions,
@@ -230,6 +275,9 @@ export async function getLanguageModel(
   return providerInstance(modelId, finalOptions)
 }
 
+/**
+ * Get image model (cached registry + single defaults call).
+ */
 export async function getImageModel(
   payload: Payload,
   providerId?: string,
@@ -237,22 +285,20 @@ export async function getImageModel(
   options?: Record<string, any>,
   isMultimodalText?: boolean,
 ) {
-  if (!providerId || !modelId) {
-    const defaults = await getGlobalDefaults(payload)
-    if (!providerId) {
-      providerId = defaults?.image?.provider
-    }
-    if (!modelId) {
-      modelId = defaults?.image?.model
-    }
+  const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
+
+  if (!providerId) {
+    providerId = defaults?.image?.provider
+  }
+  if (!modelId) {
+    modelId = defaults?.image?.model
   }
 
-  // Extract global default options if we are using the default provider
-  let globalDefaultOptions = {}
+  let globalDefaultOptions: Record<string, any> = {}
   if (providerId) {
-    const defaults = await getGlobalDefaults(payload)
-    if (defaults?.image?.provider === providerId) {
-      globalDefaultOptions = defaults?.image?.options || {}
+    const resolvedDefaults = defaults ?? await getGlobalDefaults(payload)
+    if (resolvedDefaults?.image?.provider === providerId) {
+      globalDefaultOptions = resolvedDefaults?.image?.options || {}
     }
   }
 
@@ -267,69 +313,61 @@ export async function getImageModel(
     throw new Error(`Provider ${providerId} not found`)
   }
 
-  // Merge default settings with override options
   const finalOptions = {
     ...(provider.options?.image || {}),
     ...globalDefaultOptions,
     ...(options || {}),
   }
 
-  if (provider.instance) {
-    return provider.instance
+  const instance = await resolveProviderInstance(provider)
+
+  // Type-safe check for image support
+  if (
+    !isMultimodalText &&
+    typeof instance === 'function' &&
+    'image' in instance &&
+    typeof instance.image === 'function'
+  ) {
+    return instance.image(modelId, finalOptions)
   }
 
-  if (provider.factory) {
-    const instance = await provider.factory()
-
-    // Type-safe check for image support
-    if (
-      !isMultimodalText &&
-      typeof instance === 'function' &&
-      'image' in instance &&
-      typeof instance.image === 'function'
-    ) {
-      return instance.image(modelId, finalOptions)
-    }
-
-    // Also check if instance is an object with image method
-    if (
-      typeof instance === 'object' &&
-      instance !== null &&
-      'image' in instance &&
-      !isMultimodalText
-    ) {
-      return (instance as AIProvider).image?.(modelId, finalOptions)
-    }
-
-    // Fallback for providers that might return the model directly or use the default factory
-    return typeof instance === 'function' ? instance(modelId, finalOptions) : instance
+  // Also check if instance is an object with image method
+  if (
+    typeof instance === 'object' &&
+    instance !== null &&
+    'image' in instance &&
+    !isMultimodalText
+  ) {
+    return (instance as AIProvider).image?.(modelId, finalOptions)
   }
 
-  throw new Error(`Invalid provider configuration for ${providerId}`)
+  // Fallback for providers that might return the model directly
+  return typeof instance === 'function' ? instance(modelId, finalOptions) : instance
 }
 
+/**
+ * Get TTS model (cached registry + single defaults call).
+ */
 export async function getTTSModel(
   payload: Payload,
   providerId?: string,
   modelId?: string,
   options?: Record<string, any>,
 ) {
-  if (!providerId || !modelId) {
-    const defaults = await getGlobalDefaults(payload)
-    if (!providerId) {
-      providerId = defaults?.tts?.provider
-    }
-    if (!modelId) {
-      modelId = defaults?.tts?.model
-    }
+  const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
+
+  if (!providerId) {
+    providerId = defaults?.tts?.provider
+  }
+  if (!modelId) {
+    modelId = defaults?.tts?.model
   }
 
-  // Extract global default options if we are using the default provider
-  let globalDefaultOptions = {}
+  let globalDefaultOptions: Record<string, any> = {}
   if (providerId) {
-    const defaults = await getGlobalDefaults(payload)
-    if (defaults?.tts?.provider === providerId) {
-      globalDefaultOptions = defaults?.tts?.options || {}
+    const resolvedDefaults = defaults ?? await getGlobalDefaults(payload)
+    if (resolvedDefaults?.tts?.provider === providerId) {
+      globalDefaultOptions = resolvedDefaults?.tts?.options || {}
     }
   }
 
@@ -344,20 +382,16 @@ export async function getTTSModel(
     throw new Error(`Provider ${providerId} not found`)
   }
 
-  // Merge default settings with override options
   const finalOptions = {
     ...(provider.options?.tts || {}),
     ...globalDefaultOptions,
     ...(options || {}),
   }
 
-  if (provider.factory) {
-    const instance = await provider.factory()
-    if (instance?.speech) {
-      return instance.speech(modelId, finalOptions)
-    }
-    return typeof instance === 'function' ? instance(modelId, finalOptions) : instance
-  }
+  const instance = await resolveProviderInstance(provider)
 
-  throw new Error(`Invalid provider configuration for ${providerId}`)
+  if (instance?.speech) {
+    return instance.speech(modelId, finalOptions)
+  }
+  return typeof instance === 'function' ? instance(modelId, finalOptions) : instance
 }

@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { allProviderBlocks } from '../ai/providers/blocks/index.js'
+import { invalidateProviderCache } from '../ai/providers/registry.js'
 
 export const AIProvidersGlobal: GlobalConfig = {
   slug: 'ai-providers',
@@ -237,6 +238,9 @@ export const AIProvidersGlobal: GlobalConfig = {
   hooks: {
     afterChange: [
       async ({ doc, req }) => {
+        // Immediately invalidate cached provider registry so new settings take effect
+        invalidateProviderCache()
+
         if (doc.enabledCollections && doc.enabledCollections.length > 0) {
           const { seedProperties } = await import('../utilities/seedProperties.js')
           await seedProperties({

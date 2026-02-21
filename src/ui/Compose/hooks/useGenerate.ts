@@ -54,8 +54,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
           setHistory(result.object[field.name])
           setValue(result.object[field.name])
         }
-      } else {
-        console.log('onFinish: result, field ', result, field)
       }
     },
     schema: jsonSchema({
@@ -116,7 +114,6 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   )
 
   const stop = useCallback(() => {
-    console.log('Stopping...')
     objectStop()
   }, [objectStop])
 

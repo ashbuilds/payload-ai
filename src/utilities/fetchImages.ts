@@ -12,52 +12,72 @@ export interface FetchableImage {
 }
 
 /**
- * Fetches images from a list of objects containing URLs (and optional thumbnails/mimetypes)
+ * Fetch a single image and convert to an AI SDK ImagePart.
+ */
+async function fetchSingleImage(
+  req: PayloadRequest,
+  img: FetchableImage,
+): Promise<ImagePart> {
+  const serverURL =
+    req.payload.config?.serverURL ||
+    process.env.SERVER_URL ||
+    process.env.NEXT_PUBLIC_SERVER_URL
+
+  let url = img.image.thumbnailURL || img.image.url
+  if (!url.startsWith('http')) {
+    url = `${String(serverURL)}${String(url)}`
+  }
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
+    },
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.statusText}`)
+  }
+
+  const blob = await response.blob()
+  const arrayBuffer = await blob.arrayBuffer()
+
+  return {
+    type: 'image',
+    image: arrayBuffer,
+    mediaType: img.image.mimeType || blob.type || 'image/png',
+  }
+}
+
+/**
+ * Fetches images in parallel from a list of objects containing URLs
  * and converts them to AI SDK compatible ImageParts.
  */
 export async function fetchImages(
   req: PayloadRequest,
   images: FetchableImage[],
 ): Promise<ImagePart[]> {
+  if (images.length === 0) {
+    return []
+  }
+
+  const results = await Promise.allSettled(
+    images.map((img) => fetchSingleImage(req, img)),
+  )
+
   const imageParts: ImagePart[] = []
-
-  for (const img of images) {
-    const serverURL =
-      req.payload.config?.serverURL ||
-      process.env.SERVER_URL ||
-      process.env.NEXT_PUBLIC_SERVER_URL
-
-    let url = img.image.thumbnailURL || img.image.url
-    if (!url.startsWith('http')) {
-      url = `${String(serverURL)}${String(url)}`
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      imageParts.push(result.value)
+    } else {
+      req.payload.logger.error(result.reason, 'Error fetching reference image')
     }
+  }
 
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
-        },
-        method: 'GET',
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
-      const arrayBuffer = await blob.arrayBuffer()
-
-      imageParts.push({
-        type: 'image',
-        image: arrayBuffer,
-        mediaType: img.image.mimeType || blob.type || 'image/png',
-      })
-    } catch (e) {
-      req.payload.logger.error(e, `Error fetching reference image ${url}`)
-      throw new Error(
-        "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
-      )
-    }
+  if (imageParts.length === 0 && images.length > 0) {
+    throw new Error(
+      "We couldn't fetch any of the images. Please ensure the images are accessible and hosted publicly.",
+    )
   }
 
   return imageParts

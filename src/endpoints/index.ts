@@ -237,7 +237,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
           let promptToUse = processedPrompt
           let systemToUse = prompts.system
-          // let messagesToUse: any = undefined
 
           // Execute beforeGenerate hooks
           if (targetField && (targetField as any).custom?.ai?.beforeGenerate) {
@@ -700,7 +699,6 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
     },
     videogenWebhook: {
       handler: async (req: PayloadRequest) => {
-        console.log('videogenWebhook --> ', req)
         try {
           const urlAll = new URL(req.url || '')
           const qpSecret = urlAll.searchParams.get('secret') || ''
@@ -761,7 +759,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             })
           }
 
-          console.log('fal webhook body: ', body)
+
 
           const videoUrl =
             body?.outputs?.[0]?.url ||

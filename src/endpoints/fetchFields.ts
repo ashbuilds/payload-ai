@@ -21,19 +21,19 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (config) => {
           slug: 'ai-providers',
         })
         enabledCollections = (storedEnabledCollections as string[]) || []
-      } catch (e) {
+      } catch (_e) {
         req.payload.logger.error('Failed to fetch AI settings')
       }
 
       if (access?.settings) {
         try {
           isConfigAllowed = await access.settings({ req })
-        } catch (e) {
+        } catch (_e) {
           req.payload.logger.error(req, 'Please check your "access.settings" for request')
         }
       }
 
-      const fieldMap: Record<string, { disabled?: boolean; fieldType: any; id: any }> = {}
+      const fieldMap: Record<string, { disabled?: boolean; fieldType: string; id: number | string }> = {}
       docs.forEach((doc) => {
         fieldMap[doc['schema-path']] = {
           id: doc.id,
@@ -42,16 +42,24 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (config) => {
         }
       })
 
-      return Response.json({
-        ...options,
-        debugging: config.debugging,
-        enabledCollections,
-        fields: fieldMap,
-        isConfigAllowed,
-        promptFields: promptFields.map(({ getter: _getter, ...field }): SerializedPromptField => {
-          return field
+      return new Response(
+        JSON.stringify({
+          ...options,
+          debugging: config.debugging,
+          enabledCollections,
+          fields: fieldMap,
+          isConfigAllowed,
+          promptFields: promptFields.map(({ getter: _getter, ...field }): SerializedPromptField => {
+            return field
+          }),
         }),
-      })
+        {
+          headers: {
+            'Cache-Control': 'private, max-age=60',
+            'Content-Type': 'application/json',
+          },
+        },
+      )
     },
     method: 'get',
     path: PLUGIN_FETCH_FIELDS_ENDPOINT,

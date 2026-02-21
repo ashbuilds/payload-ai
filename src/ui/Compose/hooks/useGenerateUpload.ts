@@ -75,15 +75,10 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
           // Async job: poll AI Jobs collection for status/progress/result_id
           if (job && job.id) {
             setIsJobActive(true)
-            const cancelled = false
             let attempts = 0
             const maxAttempts = 600 // up to ~10 minutes @ 1s
 
-            // Basic in-hook state via closure variables; UI will re-render off fetches below
             const poll = async (): Promise<void> => {
-              if (cancelled) {
-                return
-              }
               try {
                 const res = await fetch(`${serverURL}${api}/${PLUGIN_AI_JOBS_TABLE}/${job.id}`, {
                   credentials: 'include',
@@ -142,7 +137,7 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
               }
 
               attempts += 1
-              if (!cancelled && attempts < maxAttempts) {
+              if (attempts < maxAttempts) {
                 setTimeout(poll, 1000)
               }
             }
@@ -168,7 +163,8 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
     getData,
     localFromContext?.code,
     instructionIdRef,
-    // setValue,
+    setValue,
+    field,
     documentId,
     collectionSlug,
     serverURL,

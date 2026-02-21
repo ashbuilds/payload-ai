@@ -23,7 +23,6 @@ interface ResolveImageReferencesResult {
 
 /**
  * Retrieves a nested value from an object using dot-notation path.
- * For example, getNestedValue(obj, 'a.b.c') returns obj.a.b.c
  */
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   return path.split('.').reduce((current, key) => {
@@ -36,12 +35,12 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 
 /**
  * Parses and resolves image references in prompts.
- * 
+ *
  * Supports two formats:
  * - @fieldName - for single upload fields
  * - @collection.fieldName - schema path format (collection prefix is stripped)
  * - @fieldName:filename.jpg - for specific images in hasMany fields
- * 
+ *
  * @param prompt - The prompt text containing @field references
  * @param contextData - The document data to resolve field values from
  * @param req - Payload request object for fetching media
@@ -54,13 +53,11 @@ export async function resolveImageReferences(
   req: PayloadRequest,
   collectionSlug?: string,
 ): Promise<ResolveImageReferencesResult> {
-  // Pattern matches: @fieldName or @fieldName:filename.ext (filename can have spaces)
-  // The filename part matches everything up to and including an image extension
+  // Pattern matches: @fieldName or @fieldName:filename.ext
   const pattern = /@([\w.]+)(?::(.+?\.(?:png|jpe?g|webp|gif)))?/gi
   const references: ImageReference[] = []
   let match: null | RegExpExecArray
 
-  // Extract all image references
   while ((match = pattern.exec(prompt)) !== null) {
     references.push({
       fieldName: match[1],
@@ -73,50 +70,44 @@ export async function resolveImageReferences(
     return { images: [], processedPrompt: prompt }
   }
 
-  const resolvedImages: ResolvedImage[] = []
-  let processedPrompt = prompt
-
-  // Resolve each reference
-  for (const ref of references) {
-    try {
-      // Strip collection prefix from schema path if it matches the current collection
-      // e.g., "characters.ortho3d.frame" becomes "ortho3d.frame" when collectionSlug is "characters"
+  // Resolve all references in parallel
+  const results = await Promise.allSettled(
+    references.map(async (ref) => {
+      // Strip collection prefix from schema path if it matches
       let fieldPath = ref.fieldName
       if (collectionSlug && fieldPath.startsWith(`${collectionSlug}.`)) {
         fieldPath = fieldPath.slice(collectionSlug.length + 1)
       }
 
       const fieldValue = getNestedValue(contextData, fieldPath)
-
       if (!fieldValue) {
         req.payload.logger.warn(
           `Image reference @${ref.fieldName} not found in document context`,
         )
-        continue
+        return null
       }
 
-      // Handle single upload field (value is an ID or object)
+      let mediaDoc: null | Record<string, unknown> = null
+
       if (!ref.filename) {
-        const mediaDoc = await resolveMediaDocument(fieldValue, req)
-        if (mediaDoc) {
-          resolvedImages.push(formatImageData(mediaDoc))
-        }
-      }
-      // Handle hasMany field with filename
-      else {
-        const mediaDoc = await resolveMediaFromArray(fieldValue, ref.filename, req)
-        if (mediaDoc) {
-          resolvedImages.push(formatImageData(mediaDoc))
-        }
+        mediaDoc = await resolveMediaDocument(fieldValue, req, collectionSlug)
+      } else {
+        mediaDoc = await resolveMediaFromArray(fieldValue, ref.filename, req, collectionSlug)
       }
 
-      // Remove the reference from the prompt
-      processedPrompt = processedPrompt.replace(ref.fullMatch, '')
-    } catch (error) {
-      req.payload.logger.error(
-        error,
-        `Error resolving image reference: ${ref.fullMatch}`,
-      )
+      return mediaDoc ? { image: formatImageData(mediaDoc), ref } : null
+    }),
+  )
+
+  const resolvedImages: ResolvedImage[] = []
+  let processedPrompt = prompt
+
+  for (const result of results) {
+    if (result.status === 'fulfilled' && result.value) {
+      resolvedImages.push(result.value.image)
+      processedPrompt = processedPrompt.replace(result.value.ref.fullMatch, '')
+    } else if (result.status === 'rejected') {
+      req.payload.logger.error(result.reason, 'Error resolving image reference')
     }
   }
 
@@ -130,41 +121,46 @@ export async function resolveImageReferences(
 }
 
 /**
- * Resolves a single media document from an ID or populated object
+ * Resolves a single media document from an ID or populated object.
+ * Uses the upload collection's `relationTo` from the field config when available,
+ * falling back to common collection names.
  */
 async function resolveMediaDocument(
   value: unknown,
   req: PayloadRequest,
+  collectionSlug?: string,
 ): Promise<null | Record<string, unknown>> {
   // If it's already a populated object with required fields
   if (typeof value === 'object' && value !== null && 'url' in value) {
     return value as Record<string, unknown>
   }
 
-  // If it's an ID string, fetch the media document
+  // If it's an ID string or number, fetch the media document
   if (typeof value === 'string' || typeof value === 'number') {
-    try {
-      // Try to find which collection this media belongs to
-      // First, check the common 'media' collection
-      const collections = ['media', 'uploads']
+    // Build collection candidates: prefer the known upload collections from config,
+    // then fall back to common names
+    const uploadCollections = req.payload.config.collections
+      .filter((c) => c.upload)
+      .map((c) => c.slug)
 
-      for (const collectionSlug of collections) {
-        try {
-          const mediaDoc = await req.payload.findByID({
-            id: value,
-            collection: collectionSlug,
-            req,
-          })
-          if (mediaDoc) {
-            return mediaDoc as Record<string, unknown>
-          }
-        } catch (_ignore) {
-          // Continue to next collection
-          continue
+    const candidates = uploadCollections.length > 0
+      ? uploadCollections
+      : ['media', 'uploads']
+
+    for (const slug of candidates) {
+      try {
+        const mediaDoc = await req.payload.findByID({
+          id: value,
+          collection: slug,
+          req,
+        })
+        if (mediaDoc) {
+          return mediaDoc as Record<string, unknown>
         }
+      } catch {
+        // Continue to next collection
+        continue
       }
-    } catch (error) {
-      req.payload.logger.error(error, 'Error fetching media document')
     }
   }
 
@@ -172,23 +168,28 @@ async function resolveMediaDocument(
 }
 
 /**
- * Resolves a specific media document from an array by matching filename
+ * Resolves a specific media document from an array by matching filename.
+ * Resolves items in parallel for better performance.
  */
 async function resolveMediaFromArray(
   arrayValue: unknown,
   filename: string,
   req: PayloadRequest,
+  collectionSlug?: string,
 ): Promise<null | Record<string, unknown>> {
   if (!Array.isArray(arrayValue)) {
     return null
   }
 
-  // Search through array for matching filename
-  for (const item of arrayValue) {
-    const mediaDoc = await resolveMediaDocument(item, req)
+  // Resolve all items in parallel
+  const results = await Promise.allSettled(
+    arrayValue.map((item) => resolveMediaDocument(item, req, collectionSlug)),
+  )
 
-    if (mediaDoc && matchesFilename(mediaDoc, filename)) {
-      return mediaDoc
+  // Find the first match
+  for (const result of results) {
+    if (result.status === 'fulfilled' && result.value && matchesFilename(result.value, filename)) {
+      return result.value
     }
   }
 
@@ -200,12 +201,9 @@ async function resolveMediaFromArray(
  */
 function matchesFilename(mediaDoc: Record<string, unknown>, filename: string): boolean {
   const docFilename = mediaDoc.filename || mediaDoc.name
-
   if (!docFilename) {
     return false
   }
-
-  // Case-insensitive match
   return (docFilename as string).toLowerCase() === filename.toLowerCase()
 }
 
