@@ -39,5 +39,9 @@
       "loading": "Ładowanie...",
       "clickToStop": "Kliknij, aby zatrzymać"
     }
+  },
+  "localization": {
+    "selectedLocales": "Selected locales",
+    "selectLocaleToDuplicate": "Select locale to duplicate"
   }
 }

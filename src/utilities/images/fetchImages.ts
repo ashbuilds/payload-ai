@@ -70,7 +70,7 @@ export async function fetchImages(
     if (result.status === 'fulfilled') {
       imageParts.push(result.value)
     } else {
-      req.payload.logger.error(result.reason, 'Error fetching reference image')
+      req.payload.logger.error(result.reason, '— AI Plugin: Error fetching reference image')
     }
   }
 

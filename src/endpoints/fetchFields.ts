@@ -22,14 +22,14 @@ export const fetchFields: (config: PluginConfig) => Endpoint = (config) => {
         })
         enabledCollections = (storedEnabledCollections as string[]) || []
       } catch (_e) {
-        req.payload.logger.error('Failed to fetch AI settings')
+        req.payload.logger.error('— AI Plugin: Failed to fetch AI settings')
       }
 
       if (access?.settings) {
         try {
           isConfigAllowed = await access.settings({ req })
         } catch (_e) {
-          req.payload.logger.error(req, 'Please check your "access.settings" for request')
+          req.payload.logger.error(req, '— AI Plugin: Please check your "access.settings" for request')
         }
       }
 

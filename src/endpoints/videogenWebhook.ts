@@ -125,14 +125,14 @@ export const videogenWebhookHandler = async (req: PayloadRequest) => {
     }
 
     if (status === 'failed' && error) {
-      req.payload.logger.error(error, 'Video generation failed: ')
+      req.payload.logger.error(error, '— AI Plugin: Video generation failed: ')
     }
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    req.payload.logger.error(error, 'Error in videogen webhook: ')
+    req.payload.logger.error(error, '— AI Plugin: Error in videogen webhook: ')
     const message =
       error && typeof error === 'object' && 'message' in error
         ? (error as any).message

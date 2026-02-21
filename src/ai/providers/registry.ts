@@ -174,7 +174,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
     const factory = getFactoryForBlock(providerBlock)
 
     if (!factory) {
-      payload.logger.warn(`No factory for provider: ${blockType}`)
+      payload.logger.warn(`— AI Plugin: No factory for provider: ${blockType}`)
       continue
     }
 

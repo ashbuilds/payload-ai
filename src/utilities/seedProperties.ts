@@ -81,7 +81,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
                 overrideAccess: true,
               })
             } catch (error) {
-              payload.logger.error(`Failed to update instruction for ${schemaPath}: ${error}`)
+              payload.logger.error(`— AI Plugin: Failed to update instruction for ${schemaPath}: ${error}`)
             }
           }
         }
@@ -121,7 +121,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
           overrideAccess: true,
         })
       } catch (error) {
-        payload.logger.error(`Failed to seed instruction for ${schemaPath}: ${error}`)
+        payload.logger.error(`— AI Plugin: Failed to seed instruction for ${schemaPath}: ${error}`)
       }
     }
   }

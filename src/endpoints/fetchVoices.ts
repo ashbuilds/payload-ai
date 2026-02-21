@@ -94,7 +94,7 @@ export const fetchVoices: Endpoint = {
         throw error
       }
     } catch (error) {
-      req.payload.logger.error(error, 'Error fetching ElevenLabs voices')
+      req.payload.logger.error(error, '— AI Plugin: Error fetching ElevenLabs voices')
       return Response.json(
         { message: error instanceof Error ? error.message : 'Internal server error' },
         { status: 500 },

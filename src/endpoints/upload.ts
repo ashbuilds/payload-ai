@@ -135,7 +135,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     // Process images - convert to ImagePart format using helper
     const editImages: ImagePart[] = await fetchImages(req, images)
 
-    let promptToUse = text
+    let promptToUse = processedPrompt
     let targetField: Field | null | undefined
 
     try {
@@ -257,8 +257,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       ...filteredInstructionSettings,
     }
 
-    // Use payload.ai.generateMedia directly! 🎉
-    const result = await req.payload.ai.generateMedia({
+    const generateParams = {
       callbackUrl,
       images: editImages,
       instructionId,
@@ -266,7 +265,17 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       prompt: promptToUse,
       provider: modelSettings.provider as string,
       ...modelSettings,
-    })
+    }
+
+    if (pluginConfig.debugging) {
+      req.payload.logger.info(
+        generateParams,
+        '— AI Plugin: Final generation parameters for media',
+      )
+    }
+
+    // Use payload.ai.generateMedia directly! 🎉
+    const result = await req.payload.ai.generateMedia(generateParams)
 
     if (targetField && (targetField as any).custom?.ai?.afterGenerate) {
       const afterHooks = (targetField as any).custom.ai.afterGenerate as Array<
@@ -383,7 +392,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     req.payload.logger.error(
       // @ts-expect-error
       error?.type || (error as Error).message,
-      'Error generating upload: ',
+      '— AI Plugin: Error generating media upload:',
     )
     const message =
       error && typeof error === 'object' && 'message' in error

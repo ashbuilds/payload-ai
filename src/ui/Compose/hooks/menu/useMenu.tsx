@@ -55,7 +55,10 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
 
     if (!hasValue) {
       const defaultLocale = config?.localization ? config.localization.defaultLocale : undefined
-      if (locale?.code && defaultLocale && locale.code !== defaultLocale) {
+      const translateItem = menuItemsMap.find((i) => i.name === 'Translate')
+      const isTranslateExcluded = translateItem?.excludedFor?.includes(fieldType ?? '')
+
+      if (!isTranslateExcluded && locale?.code && defaultLocale && locale.code !== defaultLocale) {
         setActiveComponent('Translate')
       } else {
         setActiveComponent('Compose')
@@ -63,7 +66,8 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
       return
     }
 
-    if (menuItemsMap.some((i) => i.excludedFor?.includes(fieldType ?? ''))) {
+    const rephraseItem = menuItemsMap.find((i) => i.name === 'Rephrase')
+    if (rephraseItem?.excludedFor?.includes(fieldType ?? '')) {
       setActiveComponent('Compose')
       return
     }
@@ -114,7 +118,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
         >
           {isLoading &&
             (loadingLabel ??
-              t(`ai-plugin:actionLoading:${activeItem.name.toLowerCase()}:ing` as any))}
+              (activeItem.loadingText ? t(`ai-plugin:actionLoading:${activeItem.loadingText.toLowerCase()}` as any) : null))}
         </ActiveComponent>
       )
     }
@@ -149,7 +153,7 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
                 onClose()
               }}
             >
-              {isLoading && i.loadingText}
+              {isLoading && i.loadingText && t(`ai-plugin:actionLoading:${i.loadingText.toLowerCase()}` as any)}
             </Action>
           )
         })}

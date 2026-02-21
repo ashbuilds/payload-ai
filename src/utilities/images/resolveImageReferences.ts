@@ -82,20 +82,29 @@ export async function resolveImageReferences(
       const fieldValue = getNestedValue(contextData, fieldPath)
       if (!fieldValue) {
         req.payload.logger.warn(
-          `Image reference @${ref.fieldName} not found in document context`,
+          `— AI Plugin: Image reference @${ref.fieldName} not found in document context`,
         )
         return null
       }
 
-      let mediaDoc: null | Record<string, unknown> = null
-
       if (!ref.filename) {
-        mediaDoc = await resolveMediaDocument(fieldValue, req, collectionSlug)
+        if (Array.isArray(fieldValue)) {
+          const docs = await Promise.all(
+            fieldValue.map((v) => resolveMediaDocument(v, req, collectionSlug))
+          )
+          const validDocs = docs.filter(Boolean) as Record<string, unknown>[]
+          if (validDocs.length > 0) {
+            return { images: validDocs.map(formatImageData), ref }
+          }
+          return null
+        } else {
+          const mediaDoc = await resolveMediaDocument(fieldValue, req, collectionSlug)
+          return mediaDoc ? { images: [formatImageData(mediaDoc)], ref } : null
+        }
       } else {
-        mediaDoc = await resolveMediaFromArray(fieldValue, ref.filename, req, collectionSlug)
+        const mediaDoc = await resolveMediaFromArray(fieldValue, ref.filename, req, collectionSlug)
+        return mediaDoc ? { images: [formatImageData(mediaDoc)], ref } : null
       }
-
-      return mediaDoc ? { image: formatImageData(mediaDoc), ref } : null
     }),
   )
 
@@ -104,10 +113,11 @@ export async function resolveImageReferences(
 
   for (const result of results) {
     if (result.status === 'fulfilled' && result.value) {
-      resolvedImages.push(result.value.image)
-      processedPrompt = processedPrompt.replace(result.value.ref.fullMatch, '')
+      resolvedImages.push(...result.value.images)
+      const replacementText = result.value.images.map((img) => img.image.name).join(', ')
+      processedPrompt = processedPrompt.replace(result.value.ref.fullMatch, replacementText)
     } else if (result.status === 'rejected') {
-      req.payload.logger.error(result.reason, 'Error resolving image reference')
+      req.payload.logger.error(result.reason, '— AI Plugin: Error resolving image reference')
     }
   }
 

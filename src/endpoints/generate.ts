@@ -269,12 +269,31 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       }
     }
 
-    const streamResult = await req.payload.ai.streamObject({
-      // extractAttachments: modelSettings.extractAttachments as boolean | undefined,
+    const generateParams = {
       images,
       maxTokens: modelSettings.maxTokens as number | undefined,
-      // messages: messagesToUse,
       model: modelSettings.model as string,
+      prompt: promptToUse,
+      provider: modelSettings.provider as string,
+      providerOptions: {
+        openai: {
+          strictJsonSchema: true,
+        },
+      },
+      schema: jsonSchema,
+      system: systemToUse,
+      temperature: modelSettings.temperature as number | undefined,
+    }
+
+    if (pluginConfig.debugging) {
+      req.payload.logger.info(
+        generateParams,
+        '— AI Plugin: Final generation parameters for text/rich-text',
+      )
+    }
+
+    const streamResult = await req.payload.ai.streamObject({
+      ...generateParams,
       onFinish: async ({ object }) => {
         if (targetField && (targetField as any).custom?.ai?.afterGenerate) {
           const afterHooks = (targetField as any).custom.ai.afterGenerate as Array<
@@ -293,21 +312,11 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
           }
         }
       },
-      prompt: processedPrompt,
-      provider: modelSettings.provider as string,
-      providerOptions: {
-        openai: {
-          strictJsonSchema: true,
-        },
-      },
-      schema: jsonSchema,
-      system: systemToUse,
-      temperature: modelSettings.temperature as number | undefined,
     })
 
     return streamResult
   } catch (error) {
-    req.payload.logger.error(error, 'Error generating content: ')
+    req.payload.logger.error(error, '— AI Plugin: Error generating text content:')
     const message =
       error && typeof error === 'object' && 'message' in error
         ? (error as Error).message

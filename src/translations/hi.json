@@ -39,5 +39,9 @@
       "loading": "लोड हो रहा है...",
       "clickToStop": "रोकने के लिए क्लिक करें"
     }
+  },
+  "localization": {
+    "selectedLocales": "Selected locales",
+    "selectLocaleToDuplicate": "Select locale to duplicate"
   }
 }

@@ -48,7 +48,7 @@ export const Products: CollectionConfig = {
       type: 'group',
       fields: [
         PromptField({
-          name: 'description',
+          name: 'artworkDescription',
           admin: {
             description: 'A bold retro tiger with “Stay Wild” typography.',
           },
@@ -60,31 +60,69 @@ export const Products: CollectionConfig = {
           custom: {
             ai: {
               alwaysShow: true,
-              prompt: [
-                'Create a print-ready t-shirt graphic based on the following:',
-                'Design name: {{ name }}',
-                'Concept: {{ description }}',
-                '',
-                'Output requirements:',
-                '- Centered composition intended for the FRONT of a t-shirt',
-                '- Clean silhouette and strong readability from 2 meters away',
-                '- High contrast, limited palette (2 to 5 colors max)',
-                '- Vector-like crisp edges, minimal noise, no photorealism',
-                '- NO mockups, NO t-shirt model, NO background scene',
-                '- Plain transparent background (or solid white if transparency is not supported)',
-                '- Avoid tiny details and thin lines that will not print well',
-                '',
-                'Style guidance:',
-                '- Prefer bold shapes, screenprint-friendly shading (halftone allowed), and clear hierarchy',
-                '- If text is used, integrate it as part of the design and keep it legible',
-              ].join('\n'),
+              prompt: `{{ #artworkDescription }}
+Instructions:
+Create print-ready t-shirt graphic based on the following:
+Design name: {{ name }}
+
+Output requirements:
+- Centered composition
+- Clean silhouette and strong readability from 2 meters away
+- High contrast, limited palette (2 to 5 colors max)
+- Vector-like crisp edges, minimal noise, no photorealism
+- NO mockups, NO t-shirt model, NO background scene
+- Plain solid background (or  white)
+- Avoid tiny details and thin lines that will not print well
+
+Style guidance:
+- Prefer bold shapes, screenprint-friendly shading (halftone allowed), and clear hierarchy
+- If text is used, integrate it as part of the design and keep it legible`,
             },
           },
+          hasMany: true,
           label: '',
           relationTo: 'media',
         },
       ],
       label: 'Artwork',
+    },
+    {
+      type: 'group',
+      fields: [
+        PromptField({
+          name: 'mockupDescription',
+          admin: {
+            description: 'A lifestyle shot of a model wearing the t-shirt in an urban skatepark.',
+          },
+          label: 'Description',
+        }),
+        {
+          name: 'mockups',
+          type: 'upload',
+          custom: {
+            ai: {
+              alwaysShow: true,
+              prompt: `{{ #mockupDescription }}
+
+Composition:
+High-quality lifestyle photography shot of a model wearing a t-shirt.
+T-Shirt Design(s): @artwork
+
+Output requirements:
+- Photorealistic lifestyle photography (editorial / lookbook style)
+- A person naturally wearing the t-shirt in the described environment
+- Professional lighting, depth of field, and dynamic composition
+- The design must look naturally printed on the t-shirt with realistic fabric folds
+- NO text overlays, borders, or UI elements
+- MUST be a realistic photo of a person in a scene, NOT a flat-lay or a blank template`,
+            },
+          },
+          hasMany: true,
+          label: '',
+          relationTo: 'media',
+        },
+      ],
+      label: 'Lifestyle Mockups',
     },
     {
       name: 'details',
