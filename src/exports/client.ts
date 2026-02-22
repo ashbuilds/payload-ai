@@ -8,5 +8,6 @@ export { DynamicProviderSelect } from '../ui/DynamicProviderSelect/index.js'
 export { DynamicVoiceSelect } from '../ui/DynamicVoiceSelect/index.js'
 export { EncryptedTextField } from '../ui/EncryptedTextField/index.js'
 export { ModelRowLabel } from '../ui/ModelRowLabel/index.js'
+export { ProviderOptionsArray } from '../ui/ProviderOptionsArray/index.js'
 
 export { VoicesFetcher } from '../ui/VoicesFetcher/index.js'

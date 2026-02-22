@@ -7,6 +7,14 @@ const providerOptionsField: Field = {
   name: 'providerOptions',
   type: 'array',
   admin: {
+    components: {
+      Field: '@ai-stack/payloadcms/client#ProviderOptionsArray',
+    },
+    condition: (data, siblingData, { blockData, operation, path, user }) => {
+      console.log('condition', { blockData, data, operation, path, siblingData, user })
+
+      return true;
+    },
     description: 'Add custom options to pass to the provider.',
     initCollapsed: false,
   },
