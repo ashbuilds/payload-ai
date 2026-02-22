@@ -36,7 +36,14 @@ const buildConfigWithMemoryDB = async () => {
         baseDir: path.resolve(dirname),
       },
     },
-    collections: [Media, Posts, Characters, ArrayTestCases, Users, Products],
+    collections: [
+      Media,
+      // Posts,
+      // Characters,
+      // ArrayTestCases,
+      Users,
+      Products,
+    ],
     db: sqliteAdapter({
       client: {
         url: process.env.DATABASE_URI || `file:${path.resolve(dirname, 'dev.db')}`,
@@ -72,10 +79,8 @@ const buildConfigWithMemoryDB = async () => {
         },
         providerOptions: {
           google: {
-            image: {
-              aspectRatio: ['1:1', '3:4', '4:3', '9:16', '16:9'],
-              imageSize: ['1K', '2K', '4K'],
-            },
+            'imageConfig.aspectRatio': ['1:1', '3:4', '4:3', '9:16', '16:9'],
+            'imageConfig.imageSize': ['1K', '2K', '4K'],
             media_resolution: [
               'media_resolution_low',
               'media_resolution_medium',

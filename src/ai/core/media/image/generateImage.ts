@@ -20,6 +20,7 @@ export async function generateImage(args: ImageGenerationArgs): Promise<MediaRes
     throw new Error(`Provider ${provider} not found in registry`)
   }
 
+  console.log('generateImage:providerConfig: ', providerConfig)
   const modelConfig = providerConfig.models?.find((m) => m.id === modelId)
 
   // Determine if this is a multimodal text-to-image model

@@ -2,6 +2,7 @@ import { experimental_generateImage, type ImageModel } from 'ai'
 
 import type { ImageGenerationArgs, MediaResult } from '../../types.js'
 
+import { toAISDKProviderOptions } from '../../../../providers/registry.js'
 import { getExtensionFromMimeType } from '../../utils.js'
 
 /**
@@ -12,12 +13,18 @@ export async function generateStandardImage(
   model: ImageModel,
   args: ImageGenerationArgs,
 ): Promise<MediaResult> {
-  const { n = 1, prompt } = args
+  const { n = 1, prompt, provider, providerOptions } = args
+  const aiSdkProviderOptions = toAISDKProviderOptions({
+    providerId: provider,
+    settingsOverride: providerOptions,
+  })
+  console.log('generateStandardImage:providerOptions: ', aiSdkProviderOptions)
 
   const generateResult = await experimental_generateImage({
     model,
     n,
     prompt,
+    providerOptions: aiSdkProviderOptions,
   })
 
   const { images } = generateResult

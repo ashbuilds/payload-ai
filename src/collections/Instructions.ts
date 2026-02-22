@@ -6,7 +6,6 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 import { PromptMentionsFeature } from '../fields/PromptEditorField/feature.server.js'
 import { applyInstructionDefaultsForDisplay } from '../utilities/ai/resolveEffectiveInstructionSettings.js'
-import { buildProviderOptionsArrayFields } from '../utilities/fields/buildProviderOptionsArrayFields.js'
 import { pluginCollectionAccess, pluginCollectionAdmin } from './shared.js'
 
 // Defined capabilities replacing src/ai/models/
@@ -91,18 +90,15 @@ const commonTextParams = [
   },
 ]
 
-const providerOptionsStorageFields = buildProviderOptionsArrayFields({
-  hidden: true,
-})
-
 const providerOptionsUIField = {
-  name: 'providerOptionsUI',
-  type: 'ui' as const,
+  name: 'providerOptionsValues',
+  type: 'json' as const,
   admin: {
     components: {
       Field: '@ai-stack/payloadcms/client#InstructionProviderOptions',
     },
   },
+  label: 'Provider Options',
 }
 
 export const instructionsCollection = (pluginConfig: PluginConfig) =>
@@ -339,7 +335,6 @@ informative and accurate but also captivating and beautifully structured.`,
           modelSelect,
           ...commonTextParams,
           providerOptionsUIField,
-          ...providerOptionsStorageFields,
         ],
         label: 'Text Settings',
       },
@@ -356,7 +351,6 @@ informative and accurate but also captivating and beautifully structured.`,
           modelSelect,
           ...commonTextParams,
           providerOptionsUIField,
-          ...providerOptionsStorageFields,
         ],
         label: 'Rich Text Settings',
       },
@@ -368,7 +362,7 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'image',
         },
-        fields: [providerSelect, modelSelect, providerOptionsUIField, ...providerOptionsStorageFields],
+        fields: [providerSelect, modelSelect, providerOptionsUIField],
         label: 'Image Settings',
       },
 
@@ -393,7 +387,6 @@ informative and accurate but also captivating and beautifully structured.`,
             label: 'Voice',
           },
           providerOptionsUIField,
-          ...providerOptionsStorageFields,
         ],
         label: 'TTS Settings',
       },
@@ -420,7 +413,6 @@ informative and accurate but also captivating and beautifully structured.`,
             min: 1,
           },
           providerOptionsUIField,
-          ...providerOptionsStorageFields,
         ],
         label: 'Array Settings',
       },

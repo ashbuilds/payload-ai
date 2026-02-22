@@ -1,9 +1,9 @@
 'use client'
 
-import type { ClientField, FieldClientComponent } from 'payload'
+import type { FieldClientComponent, OptionObject } from 'payload'
 
-import { RenderFields, useAllFormFields, useForm, useFormFields } from '@payloadcms/ui'
-import React, { useEffect, useMemo } from 'react'
+import { SelectInput, useField, useFormFields } from '@payloadcms/ui'
+import React, { useMemo } from 'react'
 
 import { providerFieldKey } from '../../utilities/ai/resolveEffectiveInstructionSettings.js'
 import { useAISettings } from '../hooks/useAISettings.js'
@@ -18,11 +18,12 @@ type ProviderOptionRow = {
 }
 
 type OptionDefinition = {
-  fieldName: string
   key: string
-  options?: string[]
+  options: string[]
   type: ProviderOptionRow['type']
 }
+
+type ProviderOptionValueMap = Record<string, boolean | number | string>
 
 function inferUseCase(fieldPath: string): 'image' | 'text' | 'tts' | 'video' {
   const parentName = fieldPath.split('.').slice(-2)[0]
@@ -40,63 +41,136 @@ function inferUseCase(fieldPath: string): 'image' | 'text' | 'tts' | 'video' {
   return 'text'
 }
 
-function sanitizeKey(value: string): string {
-  return String(value).replace(/\W+/g, '_')
+function sanitizeIdSegment(value: string): string {
+  return value.replace(/\W+/g, '_')
 }
 
-function getRowValue(row: ProviderOptionRow | undefined, type: OptionDefinition['type']): unknown {
-  if (!row) {
-    return undefined
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+function toScalarRowValue(row: ProviderOptionRow): boolean | number | string | undefined {
+  if (row.type === 'boolean') {
+    return typeof row.valueBoolean === 'boolean' ? row.valueBoolean : undefined
   }
 
-  if (type === 'boolean') {
-    if (row.type === 'boolean') {
-      return !!row.valueBoolean
-    }
-    return undefined
+  if (row.type === 'number') {
+    return typeof row.valueNumber === 'number' && !Number.isNaN(row.valueNumber)
+      ? row.valueNumber
+      : undefined
   }
 
-  if (type === 'number') {
-    if (row.type === 'number') {
-      return row.valueNumber
-    }
-    if (row.type === 'text' && row.valueText) {
-      const parsed = Number(row.valueText)
-      return Number.isNaN(parsed) ? undefined : parsed
-    }
-    return undefined
-  }
-
-  if (type === 'text') {
-    if (row.type === 'text') {
-      return row.valueText
-    }
-    if (row.type === 'options' && Array.isArray(row.valueOptions)) {
-      return row.valueOptions[0]
+  if (row.type === 'options') {
+    if (Array.isArray(row.valueOptions) && row.valueOptions.length > 0) {
+      return String(row.valueOptions[0])
     }
     return undefined
   }
 
-  if (row.type === 'text') {
+  if (typeof row.valueText === 'string' && row.valueText.trim() !== '') {
     return row.valueText
-  }
-
-  if (row.type === 'options' && Array.isArray(row.valueOptions)) {
-    return row.valueOptions[0]
   }
 
   return undefined
 }
 
-function normalizeRows(rows: ProviderOptionRow[]): ProviderOptionRow[] {
-  return [...rows]
-    .filter((row) => !!row?.key)
-    .sort((a, b) => a.key.localeCompare(b.key))
+function normalizeStoredValue(
+  value: unknown,
+): ProviderOptionValueMap {
+  if (isRecord(value)) {
+    const normalized: ProviderOptionValueMap = {}
+
+    for (const [key, entry] of Object.entries(value)) {
+      if (typeof entry === 'string') {
+        if (entry.trim() !== '') {
+          normalized[key] = entry
+        }
+        continue
+      }
+
+      if (typeof entry === 'number') {
+        if (!Number.isNaN(entry)) {
+          normalized[key] = entry
+        }
+        continue
+      }
+
+      if (typeof entry === 'boolean') {
+        normalized[key] = entry
+      }
+    }
+
+    return normalized
+  }
+
+  if (Array.isArray(value)) {
+    const normalized: ProviderOptionValueMap = {}
+
+    for (const row of value) {
+      if (!row || typeof row !== 'object') {
+        continue
+      }
+
+      const castRow = row as ProviderOptionRow
+      if (!castRow.key) {
+        continue
+      }
+
+      const scalar = toScalarRowValue(castRow)
+      if (scalar !== undefined) {
+        normalized[castRow.key] = scalar
+      }
+    }
+
+    return normalized
+  }
+
+  return {}
+}
+
+function normalizeValueForType({
+  type,
+  raw,
+}: {
+  raw: unknown
+  type: ProviderOptionRow['type']
+}): boolean | number | string | undefined {
+  if (type === 'boolean') {
+    if (raw === true || raw === false) {
+      return raw
+    }
+    return undefined
+  }
+
+  if (type === 'number') {
+    if (typeof raw === 'number' && !Number.isNaN(raw)) {
+      return raw
+    }
+
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim()
+      if (trimmed === '') {
+        return undefined
+      }
+
+      const parsed = Number(trimmed)
+      if (!Number.isNaN(parsed)) {
+        return parsed
+      }
+    }
+
+    return undefined
+  }
+
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    return trimmed === '' ? undefined : trimmed
+  }
+
+  return undefined
 }
 
 export const InstructionProviderOptions: FieldClientComponent = ({ path }) => {
-  const { dispatchFields } = useForm()
-  const [allFields] = useAllFormFields()
   const { data: aiSettings } = useAISettings()
 
   const fieldPath = (path as string) || ''
@@ -107,19 +181,14 @@ export const InstructionProviderOptions: FieldClientComponent = ({ path }) => {
   const providerField = useFormFields(([fields]) => fields[providerPath])
   const provider = providerField?.value as string | undefined
 
-  const storagePath = provider ? `${groupPath}.${providerFieldKey(provider)}` : ''
-  const storageField = useFormFields(([fields]) => (storagePath ? fields[storagePath] : undefined))
-  const selectedRows = useMemo<ProviderOptionRow[]>(() => {
-    const value = storageField?.value
-    if (!Array.isArray(value)) {
-      return []
-    }
+  const { setValue: setProviderOptionsValues, value: providerOptionsValues } = useField<unknown>({
+    path: fieldPath,
+  })
 
-    return value.filter(
-      (row): row is ProviderOptionRow =>
-        !!row && typeof row === 'object' && 'key' in row && 'type' in row,
-    )
-  }, [storageField?.value])
+  const selectedByKey = useMemo(
+    () => normalizeStoredValue(providerOptionsValues),
+    [providerOptionsValues],
+  )
 
   const optionDefinitions = useMemo(() => {
     if (!provider) {
@@ -135,158 +204,64 @@ export const InstructionProviderOptions: FieldClientComponent = ({ path }) => {
       return [] as OptionDefinition[]
     }
 
-    return (rows as ProviderOptionRow[])
-      .filter((row) => row?.key && row?.type)
+    return rows
+      .filter(
+        (row): row is ProviderOptionRow =>
+          !!row && typeof row === 'object' && 'key' in row && 'type' in row,
+      )
+      .filter((row) => row.key && row.type)
       .map((row) => ({
         type: row.type,
-        fieldName: sanitizeKey(row.key),
         key: row.key,
-        options: row.type === 'options' && Array.isArray(row.valueOptions)
-          ? row.valueOptions.map((item) => String(item))
-          : undefined,
+        options:
+          row.type === 'options' && Array.isArray(row.valueOptions)
+            ? row.valueOptions.map((item) => String(item))
+            : [],
       }))
   }, [aiSettings, provider, useCase])
 
-  const selectedByKey = useMemo(() => {
-    const map = new Map<string, ProviderOptionRow>()
-    for (const row of selectedRows) {
-      if (row?.key) {
-        map.set(row.key, row)
-      }
-    }
-    return map
-  }, [selectedRows])
-
-  const dynamicFields = useMemo(() => {
-    const fields: Record<string, unknown>[] = []
-
-    for (const option of optionDefinitions) {
-      const existing = selectedByKey.get(option.key)
-      const defaultValue = getRowValue(existing, option.type)
-
-      if (option.type === 'text') {
-        fields.push({
-          name: option.fieldName,
-          type: 'text',
-          defaultValue: defaultValue as string | undefined,
-          label: option.key,
-        })
-        continue
-      }
-
-      if (option.type === 'number') {
-        fields.push({
-          name: option.fieldName,
-          type: 'number',
-          defaultValue: defaultValue as number | undefined,
-          label: option.key,
-        })
-        continue
-      }
-
-      if (option.type === 'boolean') {
-        fields.push({
-          name: option.fieldName,
-          type: 'checkbox',
-          defaultValue: defaultValue as boolean | undefined,
-          label: option.key,
-        })
-        continue
-      }
-
-      fields.push({
-        name: option.fieldName,
-        type: 'select',
-        admin: {
-          isClearable: true,
-        },
-        defaultValue: (defaultValue as string | undefined) || undefined,
-        label: option.key,
-        options: (option.options || []).map((value) => ({
-          label: value,
-          value,
-        })),
-      })
-    }
-
-    return fields
-  }, [optionDefinitions, selectedByKey])
-
-  const virtualPath = useMemo(() => {
+  const providerLabel = useMemo(() => {
     if (!provider) {
-      return `${groupPath}.providerOptionsForm`
-    }
-    return `${groupPath}.providerOptionsForm.${sanitizeKey(provider)}`
-  }, [groupPath, provider])
-
-  useEffect(() => {
-    if (!storagePath || optionDefinitions.length === 0) {
-      return
+      return undefined
     }
 
-    const nextRows: ProviderOptionRow[] = []
+    const providers = Array.isArray(aiSettings?.providers) ? aiSettings.providers : []
+    const configuredProvider = providers.find(
+      (item) =>
+        item &&
+        typeof item === 'object' &&
+        'blockType' in item &&
+        (item as { blockType?: unknown }).blockType === provider,
+    ) as { providerName?: string } | undefined
 
-    for (const option of optionDefinitions) {
-      const fieldState = allFields[`${virtualPath}.${option.fieldName}`] as
-        | { value?: unknown }
-        | undefined
-      const value = fieldState?.value
-
-      if (option.type === 'text') {
-        if (typeof value === 'string' && value.trim() !== '') {
-          nextRows.push({
-            type: 'text',
-            key: option.key,
-            valueText: value,
-          })
-        }
-        continue
-      }
-
-      if (option.type === 'number') {
-        if (typeof value === 'number' && !Number.isNaN(value)) {
-          nextRows.push({
-            type: 'number',
-            key: option.key,
-            valueNumber: value,
-          })
-        }
-        continue
-      }
-
-      if (option.type === 'boolean') {
-        if (typeof value === 'boolean') {
-          nextRows.push({
-            type: 'boolean',
-            key: option.key,
-            valueBoolean: value,
-          })
-        }
-        continue
-      }
-
-      if (typeof value === 'string' && value.trim() !== '') {
-        nextRows.push({
-          type: 'options',
-          key: option.key,
-          valueOptions: [value],
-        })
-      }
+    if (configuredProvider?.providerName) {
+      return configuredProvider.providerName
     }
 
-    const normalizedNext = normalizeRows(nextRows)
-    const normalizedCurrent = normalizeRows(selectedRows)
+    return provider
+  }, [aiSettings?.providers, provider])
 
-    if (JSON.stringify(normalizedNext) === JSON.stringify(normalizedCurrent)) {
-      return
+  const setOptionValue = ({
+    type,
+    key,
+    raw,
+  }: {
+    key: string
+    raw: unknown
+    type: ProviderOptionRow['type']
+  }) => {
+    const normalized = normalizeValueForType({ type, raw })
+    const current = normalizeStoredValue(providerOptionsValues)
+    const next: ProviderOptionValueMap = { ...current }
+
+    if (normalized === undefined) {
+      delete next[key]
+    } else {
+      next[key] = normalized
     }
 
-    dispatchFields({
-      type: 'UPDATE',
-      path: storagePath,
-      value: normalizedNext,
-    } as never)
-  }, [allFields, dispatchFields, optionDefinitions, selectedRows, storagePath, virtualPath])
+    setProviderOptionsValues(Object.keys(next).length > 0 ? next : null)
+  }
 
   if (!provider) {
     return (
@@ -299,7 +274,7 @@ export const InstructionProviderOptions: FieldClientComponent = ({ path }) => {
     )
   }
 
-  if (dynamicFields.length === 0) {
+  if (optionDefinitions.length === 0) {
     return (
       <div className="field-type" style={{ marginTop: '1rem' }}>
         <div className="field-label">Provider Options</div>
@@ -314,17 +289,140 @@ export const InstructionProviderOptions: FieldClientComponent = ({ path }) => {
     <div className="field-type" style={{ marginTop: '1rem' }}>
       <div className="field-label">Provider Options</div>
       <p style={{ color: 'var(--theme-elevation-500)', marginBottom: '0.75rem', marginTop: 0 }}>
-        Adjust values to override provider options for this field.
+        Override {providerLabel || provider} provider options for this field.
       </p>
 
-      <RenderFields
-        fields={dynamicFields as ClientField[]}
-        margins="small"
-        parentIndexPath=""
-        parentPath={virtualPath}
-        parentSchemaPath={virtualPath}
-        permissions={true as never}
-      />
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        {optionDefinitions.map((option) => {
+          const selectedValue = selectedByKey[option.key]
+          const inputId = `${fieldPath}-${sanitizeIdSegment(option.key)}`
+          const inputPath = `${fieldPath}.${sanitizeIdSegment(option.key)}`
+
+          if (option.type === 'text') {
+            return (
+              <div className="field-type text" key={option.key}>
+                <label className="field-label" htmlFor={inputId}>
+                  {option.key}
+                </label>
+                <input
+                  aria-label={option.key}
+                  id={inputId}
+                  name={inputPath}
+                  onChange={(event) =>
+                    setOptionValue({
+                      type: option.type,
+                      key: option.key,
+                      raw: event.target.value,
+                    })
+                  }
+                  style={{ width: '100%' }}
+                  type="text"
+                  value={typeof selectedValue === 'string' ? selectedValue : ''}
+                />
+              </div>
+            )
+          }
+
+          if (option.type === 'number') {
+            const numberValue =
+              typeof selectedValue === 'number' && !Number.isNaN(selectedValue)
+                ? String(selectedValue)
+                : ''
+
+            return (
+              <div className="field-type number" key={option.key}>
+                <label className="field-label" htmlFor={inputId}>
+                  {option.key}
+                </label>
+                <input
+                  aria-label={option.key}
+                  id={inputId}
+                  name={inputPath}
+                  onChange={(event) =>
+                    setOptionValue({
+                      type: option.type,
+                      key: option.key,
+                      raw: event.target.value,
+                    })
+                  }
+                  style={{ width: '100%' }}
+                  type="number"
+                  value={numberValue}
+                />
+              </div>
+            )
+          }
+
+          if (option.type === 'boolean') {
+            const booleanValue =
+              selectedValue === true ? 'true' : selectedValue === false ? 'false' : undefined
+            const booleanOptions: OptionObject[] = [
+              { label: 'True', value: 'true' },
+              { label: 'False', value: 'false' },
+            ]
+
+            return (
+              <div className="field-type select" key={option.key}>
+                <label className="field-label" htmlFor={inputId}>
+                  {option.key}
+                </label>
+                <SelectInput
+                  isClearable
+                  name={inputPath}
+                  onChange={(selected) => {
+                    if (selected && typeof selected === 'object' && 'value' in selected) {
+                      setOptionValue({
+                        type: option.type,
+                        key: option.key,
+                        raw: (selected as OptionObject).value === 'true',
+                      })
+                      return
+                    }
+
+                    setOptionValue({ type: option.type, key: option.key, raw: undefined })
+                  }}
+                  options={booleanOptions}
+                  path={inputPath}
+                  value={booleanValue}
+                />
+              </div>
+            )
+          }
+
+          const selectedOption = typeof selectedValue === 'string' ? selectedValue : undefined
+          const selectOptions: OptionObject[] = option.options.map((value) => ({
+            label: value,
+            value,
+          }))
+
+          return (
+            <div className="field-type select" key={option.key}>
+              <label className="field-label" htmlFor={inputId}>
+                {option.key}
+              </label>
+              <SelectInput
+                isClearable
+                name={inputPath}
+                onChange={(selected) => {
+                  if (selected && typeof selected === 'object' && 'value' in selected) {
+                    setOptionValue({
+                      type: option.type,
+                      key: option.key,
+                      raw: (selected as OptionObject).value,
+                    })
+                    return
+                  }
+
+                  setOptionValue({ type: option.type, key: option.key, raw: undefined })
+                }}
+                options={selectOptions}
+                path={inputPath}
+                value={selectedOption}
+              />
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Cached AI settings data.
- * Module-level cache prevents redundant fetches when multiple components mount simultaneously.
+ * Cached AI settings per depth.
+ * We still cache to avoid duplicate requests during a single render/mount cycle,
+ * but we always revalidate on mount so changes made in AI Providers appear in Instructions.
  */
-let cachedData: AISettingsData | null = null
-let fetchPromise: null | Promise<AISettingsData | null> = null
+const cachedDataByDepth = new Map<number, AISettingsData | null>()
+const fetchPromiseByDepth = new Map<number, Promise<AISettingsData | null>>()
 
 interface AISettingsData {
   [key: string]: unknown
@@ -32,34 +33,40 @@ interface AISettingsData {
  */
 export function useAISettings(options?: { depth?: number }) {
   const depth = options?.depth ?? 1
-  const [data, setData] = useState<AISettingsData | null>(cachedData)
-  const [isLoading, setIsLoading] = useState(!cachedData)
+  const initialCached = cachedDataByDepth.get(depth) ?? null
+  const [data, setData] = useState<AISettingsData | null>(initialCached)
+  const [isLoading, setIsLoading] = useState(!initialCached)
 
   useEffect(() => {
-    // Already cached — skip fetch
-    if (cachedData) {
-      setData(cachedData)
+    const cached = cachedDataByDepth.get(depth) ?? null
+    if (cached) {
+      setData(cached)
       setIsLoading(false)
-      return
+    } else {
+      setIsLoading(true)
     }
 
-    // Deduplicate in-flight requests
+    // Deduplicate in-flight requests per depth and always revalidate on mount.
+    let fetchPromise = fetchPromiseByDepth.get(depth) ?? null
     if (!fetchPromise) {
       fetchPromise = fetch(`/api/globals/ai-providers?depth=${depth}`, {
+        cache: 'no-store',
         credentials: 'include',
       })
         .then(async (res) => {
           if (res.ok) {
             const json = await res.json()
-            cachedData = json
+            cachedDataByDepth.set(depth, json as AISettingsData)
             return json as AISettingsData
           }
           return null
         })
         .catch(() => null)
         .finally(() => {
-          fetchPromise = null
+          fetchPromiseByDepth.delete(depth)
         })
+
+      fetchPromiseByDepth.set(depth, fetchPromise)
     }
 
     void fetchPromise.then((result) => {
@@ -76,6 +83,6 @@ export function useAISettings(options?: { depth?: number }) {
  * Useful after saving settings.
  */
 export function invalidateAISettings(): void {
-  cachedData = null
-  fetchPromise = null
+  cachedDataByDepth.clear()
+  fetchPromiseByDepth.clear()
 }

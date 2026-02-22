@@ -23,11 +23,11 @@ import { RelationshipFeatureClient as RelationshipFeatureClient_e70f5e05f09f93e0
 import { BlockquoteFeatureClient as BlockquoteFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { UploadFeatureClient as UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { PromptMentionsClient as PromptMentionsClient_c25bd927cd468b8e16d7bdb2cc282659 } from '@ai-stack/payloadcms/fields'
 import { LexicalEditorFeatureClient as LexicalEditorFeatureClient_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { TableFeatureClient as TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { ArrayComposeField as ArrayComposeField_c25bd927cd468b8e16d7bdb2cc282659 } from '@ai-stack/payloadcms/fields'
-import { PromptMentionsClient as PromptMentionsClient_c25bd927cd468b8e16d7bdb2cc282659 } from '@ai-stack/payloadcms/fields'
 import { SelectField as SelectField_c25bd927cd468b8e16d7bdb2cc282659 } from '@ai-stack/payloadcms/fields'
+import { ArrayComposeField as ArrayComposeField_c25bd927cd468b8e16d7bdb2cc282659 } from '@ai-stack/payloadcms/fields'
 import { DynamicProviderSelect as DynamicProviderSelect_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { DynamicModelSelect as DynamicModelSelect_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
 import { InstructionProviderOptions as InstructionProviderOptions_4490b89d4413c1ffaecdacfe72efaf73 } from '@ai-stack/payloadcms/client'
@@ -65,11 +65,11 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BlockquoteFeatureClient": BlockquoteFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#UploadFeatureClient": UploadFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@ai-stack/payloadcms/fields#PromptMentionsClient": PromptMentionsClient_c25bd927cd468b8e16d7bdb2cc282659,
   "@ai-stack/payloadcms/client#LexicalEditorFeatureClient": LexicalEditorFeatureClient_4490b89d4413c1ffaecdacfe72efaf73,
   "@payloadcms/richtext-lexical/client#TableFeatureClient": TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "@ai-stack/payloadcms/fields#ArrayComposeField": ArrayComposeField_c25bd927cd468b8e16d7bdb2cc282659,
-  "@ai-stack/payloadcms/fields#PromptMentionsClient": PromptMentionsClient_c25bd927cd468b8e16d7bdb2cc282659,
   "@ai-stack/payloadcms/fields#SelectField": SelectField_c25bd927cd468b8e16d7bdb2cc282659,
+  "@ai-stack/payloadcms/fields#ArrayComposeField": ArrayComposeField_c25bd927cd468b8e16d7bdb2cc282659,
   "@ai-stack/payloadcms/client#DynamicProviderSelect": DynamicProviderSelect_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#DynamicModelSelect": DynamicModelSelect_4490b89d4413c1ffaecdacfe72efaf73,
   "@ai-stack/payloadcms/client#InstructionProviderOptions": InstructionProviderOptions_4490b89d4413c1ffaecdacfe72efaf73,
