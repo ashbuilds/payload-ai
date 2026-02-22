@@ -3,8 +3,6 @@ import type { Payload } from 'payload'
 
 import * as process from 'node:process'
 
-import { unflattenObject } from '../utilities/unflattenObject.js'
-
 import type {
   AIProvider,
   AISettingsData,
@@ -20,31 +18,56 @@ import type {
   XAIBlockData,
 } from './types.js'
 
+import { unflattenObject } from '../utilities/unflattenObject.js'
+
 // Helper to convert array of options back to a record
 export function parseProviderOptions(options?: ProviderOption[]): Record<string, any> {
   if (!options || !Array.isArray(options)) {
     return {}
   }
-  const flatOptions = options.reduce((acc, opt) => {
-    if (!opt.key || !opt.type) {
+  const flatOptions = options.reduce(
+    (acc, opt) => {
+      if (!opt.key || !opt.type) {
+        return acc
+      }
+      if (opt.type === 'text' && opt.valueText !== undefined) {
+        acc[opt.key] = opt.valueText
+      }
+      if (opt.type === 'number' && opt.valueNumber !== undefined) {
+        acc[opt.key] = opt.valueNumber
+      }
+      if (opt.type === 'boolean' && opt.valueBoolean !== undefined) {
+        acc[opt.key] = opt.valueBoolean
+      }
+      if (opt.type === 'options' && Array.isArray(opt.valueOptions)) {
+        acc[opt.key] = opt.valueOptions
+      }
       return acc
-    }
-    if (opt.type === 'text' && opt.valueText !== undefined) {
-      acc[opt.key] = opt.valueText
-    }
-    if (opt.type === 'number' && opt.valueNumber !== undefined) {
-      acc[opt.key] = opt.valueNumber
-    }
-    if (opt.type === 'boolean' && opt.valueBoolean !== undefined) {
-      acc[opt.key] = opt.valueBoolean
-    }
-    if (opt.type === 'options' && Array.isArray(opt.valueOptions)) {
-      acc[opt.key] = opt.valueOptions
-    }
-    return acc
-  }, {} as Record<string, any>)
+    },
+    {} as Record<string, any>,
+  )
 
   return unflattenObject(flatOptions)
+}
+
+function resolveProviderOptions(
+  defaultsForUseCase: { provider?: string } | undefined,
+): ProviderOption[] | undefined {
+  if (!defaultsForUseCase) {
+    return undefined
+  }
+
+  const provider = defaultsForUseCase.provider
+  if (provider) {
+    const providerKey = String(provider).replace(/\W/g, '_')
+    const byShortKey = `po_${providerKey}` as keyof typeof defaultsForUseCase
+    const byShort = defaultsForUseCase[byShortKey] as ProviderOption[] | undefined
+    if (Array.isArray(byShort) && byShort.length > 0) {
+      return byShort
+    }
+  }
+
+  return undefined
 }
 
 // ─── Cache layer ────────────────────────────────────────────────
@@ -208,7 +231,6 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
 
     const enabledModels = providerBlock.models.filter((m) => m.enabled)
 
-
     registry[blockType] = {
       id: blockType,
       name: 'providerName' in providerBlock ? providerBlock.providerName : blockType,
@@ -217,7 +239,6 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
       factory,
       instance: undefined,
       models: enabledModels,
-
     }
   }
 
@@ -262,7 +283,6 @@ export async function getLanguageModel(
     modelId = defaults?.text?.model
   }
 
-
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
   }
@@ -279,7 +299,7 @@ export async function getLanguageModel(
 
   const globalDefaultOptions =
     defaults?.text?.provider === providerId
-      ? parseProviderOptions(defaults?.text?.providerOptions)
+      ? parseProviderOptions(resolveProviderOptions(defaults?.text))
       : {}
 
   const providerInstance = await resolveProviderInstance(provider)
@@ -304,7 +324,6 @@ export async function getImageModel(
     modelId = defaults?.image?.model
   }
 
-
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
   }
@@ -318,7 +337,7 @@ export async function getImageModel(
 
   const globalDefaultOptions =
     defaults?.image?.provider === providerId
-      ? parseProviderOptions(defaults?.image?.providerOptions)
+      ? parseProviderOptions(resolveProviderOptions(defaults?.image))
       : {}
 
   const instance = await resolveProviderInstance(provider)
@@ -350,11 +369,7 @@ export async function getImageModel(
 /**
  * Get TTS model (cached registry + single defaults call).
  */
-export async function getTTSModel(
-  payload: Payload,
-  providerId?: string,
-  modelId?: string,
-) {
+export async function getTTSModel(payload: Payload, providerId?: string, modelId?: string) {
   const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
 
   if (!providerId) {
@@ -363,7 +378,6 @@ export async function getTTSModel(
   if (!modelId) {
     modelId = defaults?.tts?.model
   }
-
 
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
@@ -378,7 +392,7 @@ export async function getTTSModel(
 
   const globalDefaultOptions =
     defaults?.tts?.provider === providerId
-      ? parseProviderOptions(defaults?.tts?.providerOptions)
+      ? parseProviderOptions(resolveProviderOptions(defaults?.tts))
       : {}
 
   const instance = await resolveProviderInstance(provider)

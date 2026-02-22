@@ -3,99 +3,95 @@ import type { Field, GlobalConfig } from 'payload'
 import { allProviderBlocks } from '../ai/providers/blocks/index.js'
 import { invalidateProviderCache } from '../ai/providers/registry.js'
 
-const providerOptionsField: Field = {
-  name: 'providerOptions',
-  type: 'array',
-  admin: {
-    components: {
-      Field: '@ai-stack/payloadcms/client#ProviderOptionsArray',
-    },
-    condition: (data, siblingData, { blockData, operation, path, user }) => {
-      console.log('condition', { blockData, data, operation, path, siblingData, user })
-
-      return true;
-    },
-    description: 'Add custom options to pass to the provider.',
-    initCollapsed: false,
+const providerOptionsRowFields: Field[] = [
+  {
+    name: 'key',
+    type: 'text',
+    label: 'Option Key',
+    required: true,
   },
-  fields: [
-    {
-      name: 'provider',
-      type: 'text',
-      admin: {
-        hidden: true,
+  {
+    type: 'row',
+    fields: [
+      {
+        name: 'type',
+        type: 'select',
+        admin: {
+          width: '30%',
+        },
+        dbName: 'opt_type',
+        defaultValue: 'text',
+        label: 'Value Type',
+        options: [
+          { label: 'Text', value: 'text' },
+          { label: 'Number', value: 'number' },
+          { label: 'Boolean', value: 'boolean' },
+          { label: 'Options', value: 'options' },
+        ],
+        required: true,
       },
+      {
+        name: 'valueText',
+        type: 'text',
+        admin: {
+          condition: (_, siblingData) => siblingData?.type === 'text',
+          width: '70%',
+        },
+        label: 'Text',
+      },
+      {
+        name: 'valueNumber',
+        type: 'number',
+        admin: {
+          condition: (_, siblingData) => siblingData?.type === 'number',
+          width: '70%',
+        },
+        label: 'Number',
+      },
+      {
+        name: 'valueBoolean',
+        type: 'checkbox',
+        admin: {
+          condition: (_, siblingData) => siblingData?.type === 'boolean',
+          description: 'Select default state or leave empty',
+          style: { marginTop: '26px' },
+          width: '70%',
+        },
+        label: 'Enabled',
+      },
+      {
+        name: 'valueOptions',
+        type: 'text',
+        admin: {
+          condition: (_, siblingData) => siblingData?.type === 'options',
+          description: 'Enter space separated text values',
+          width: '70%',
+        },
+        hasMany: true,
+        label: 'Options',
+      },
+    ],
+  },
+]
+
+const providerOptionsFields: Field[] = allProviderBlocks.map((block) => {
+  const label =
+    typeof block.labels?.singular === 'string' ? block.labels.singular : String(block.slug)
+  // eslint-disable-next-line
+  const providerKey = String(block.slug).replace(/[^a-zA-Z0-9_]/g, '_')
+
+  return {
+    name: `po_${providerKey}`,
+    type: 'array',
+    admin: {
+      condition: (_, siblingData) => siblingData?.provider === block.slug,
+      description: `Add custom options to pass to ${label}.`,
+      initCollapsed: false,
     },
-    {
-      name: 'key',
-      type: 'text',
-      label: 'Option Key',
-      required: true,
-    },
-    {
-      type: 'row',
-      fields: [
-        {
-          name: 'type',
-          type: 'select',
-          admin: {
-            width: '30%',
-          },
-          defaultValue: 'text',
-          label: 'Value Type',
-          options: [
-            { label: 'Text', value: 'text' },
-            { label: 'Number', value: 'number' },
-            { label: 'Boolean', value: 'boolean' },
-            { label: 'Options', value: 'options' },
-          ],
-          required: true,
-        },
-        {
-          name: 'valueText',
-          type: 'text',
-          admin: {
-            condition: (_, siblingData) => siblingData?.type === 'text',
-            width: '70%',
-          },
-          label: 'Text',
-        },
-        {
-          name: 'valueNumber',
-          type: 'number',
-          admin: {
-            condition: (_, siblingData) => siblingData?.type === 'number',
-            width: '70%',
-          },
-          label: 'Number',
-        },
-        {
-          name: 'valueBoolean',
-          type: 'checkbox',
-          admin: {
-            condition: (_, siblingData) => siblingData?.type === 'boolean',
-            description: 'Select default state or leave empty',
-            style: { marginTop: '26px' },
-            width: '70%',
-          },
-          label: 'Enabled',
-        },
-        {
-          name: 'valueOptions',
-          type: 'text',
-          admin: {
-            condition: (_, siblingData) => siblingData?.type === 'options',
-            description: 'Enter space separated text values',
-            width: '70%',
-          },
-          hasMany: true,
-          label: 'Options',
-        },
-      ],
-    },
-  ],
-  label: 'Provider Options',
-}
+    fields: providerOptionsRowFields,
+    label: 'Provider Options',
+  }
+})
 
 export const AIProvidersGlobal: GlobalConfig = {
   slug: 'ai-providers',
@@ -164,7 +160,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Model',
                     },
-                    providerOptionsField,
+                    ...providerOptionsFields,
                   ],
                   label: '',
                 },
@@ -197,7 +193,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Model',
                     },
-                    providerOptionsField,
+                    ...providerOptionsFields,
                   ],
                   label: '',
                 },
@@ -240,7 +236,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Voice',
                     },
-                    providerOptionsField,
+                    ...providerOptionsFields,
                   ],
                   label: '',
                 },

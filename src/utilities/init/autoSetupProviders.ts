@@ -33,7 +33,9 @@ const findModelsDefault = (block: any): any[] => {
     }
     return false
   }
-  if (block?.fields) {search(block.fields)}
+  if (block?.fields) {
+    search(block.fields)
+  }
   return defaultModels
 }
 
@@ -79,16 +81,16 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     // Google Setup
     const googleKey = process.env[providerKeys.google[0]] || process.env[providerKeys.google[1]]
     if (googleKey) {
-       const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'google')
-       if (!isAlreadyConfigured) {
-         providersArray.push({
-           apiKey: googleKey,
-           blockType: 'google',
-           enabled: true,
-           models: findModelsDefault(googleBlock),
-         })
-         initializedAny = true
-       }
+      const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'google')
+      if (!isAlreadyConfigured) {
+        providersArray.push({
+          apiKey: googleKey,
+          blockType: 'google',
+          enabled: true,
+          models: findModelsDefault(googleBlock),
+        })
+        initializedAny = true
+      }
     }
 
     // Anthropic Setup
@@ -155,13 +157,19 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         defaults.text.model = config.generationDefaults.text.model
         initializedAny = true
       }
-      if (!existing.defaults?.text?.providerOptions?.length) {
-        const textOpts: any[] = []
-        for (const [providerName, options] of Object.entries(providerOptions || {})) {
-          if (options?.text) textOpts.push(...flattenObject(options.text, '', providerName))
+      for (const [providerName, options] of Object.entries(providerOptions || {})) {
+        if (!options?.text) {
+          continue
         }
+        const providerKey = String(providerName).replace(/\W/g, '_')
+        const fieldName = `po_${providerKey}`
+        const existingOpts = existing.defaults?.text?.[fieldName]
+        if (Array.isArray(existingOpts) && existingOpts.length > 0) {
+          continue
+        }
+        const textOpts = flattenObject(options.text, '', providerName)
         if (textOpts.length > 0) {
-          defaults.text.providerOptions = textOpts
+          defaults.text[fieldName] = textOpts
           initializedAny = true
         }
       }
@@ -172,13 +180,19 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         initializedAny = true
       }
 
-      if (!existing.defaults?.image?.providerOptions?.length) {
-        const imageOpts: any[] = []
-        for (const [providerName, options] of Object.entries(providerOptions || {})) {
-          if (options?.image) imageOpts.push(...flattenObject(options.image, '', providerName))
+      for (const [providerName, options] of Object.entries(providerOptions || {})) {
+        if (!options?.image) {
+          continue
         }
+        const providerKey = String(providerName).replace(/\W/g, '_')
+        const fieldName = `po_${providerKey}`
+        const existingOpts = existing.defaults?.image?.[fieldName]
+        if (Array.isArray(existingOpts) && existingOpts.length > 0) {
+          continue
+        }
+        const imageOpts = flattenObject(options.image, '', providerName)
         if (imageOpts.length > 0) {
-          defaults.image.providerOptions = imageOpts
+          defaults.image[fieldName] = imageOpts
           initializedAny = true
         }
       }
@@ -189,13 +203,19 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         defaults.tts.voice = config.generationDefaults.tts.voice
         initializedAny = true
       }
-      if (!existing.defaults?.tts?.providerOptions?.length) {
-        const ttsOpts: any[] = []
-        for (const [providerName, options] of Object.entries(providerOptions || {})) {
-          if (options?.tts) ttsOpts.push(...flattenObject(options.tts, '', providerName))
+      for (const [providerName, options] of Object.entries(providerOptions || {})) {
+        if (!options?.tts) {
+          continue
         }
+        const providerKey = String(providerName).replace(/\W/g, '_')
+        const fieldName = `po_${providerKey}`
+        const existingOpts = existing.defaults?.tts?.[fieldName]
+        if (Array.isArray(existingOpts) && existingOpts.length > 0) {
+          continue
+        }
+        const ttsOpts = flattenObject(options.tts, '', providerName)
         if (ttsOpts.length > 0) {
-          defaults.tts.providerOptions = ttsOpts
+          defaults.tts[fieldName] = ttsOpts
           initializedAny = true
         }
       }
@@ -205,13 +225,19 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         defaults.video.model = config.generationDefaults.video.model
         initializedAny = true
       }
-      if (!existing.defaults?.video?.providerOptions?.length) {
-        const videoOpts: any[] = []
-        for (const [providerName, options] of Object.entries(providerOptions || {})) {
-          if (options?.video) videoOpts.push(...flattenObject(options.video, '', providerName))
+      for (const [providerName, options] of Object.entries(providerOptions || {})) {
+        if (!options?.video) {
+          continue
         }
+        const providerKey = String(providerName).replace(/\W/g, '_')
+        const fieldName = `po_${providerKey}`
+        const existingOpts = existing.defaults?.video?.[fieldName]
+        if (Array.isArray(existingOpts) && existingOpts.length > 0) {
+          continue
+        }
+        const videoOpts = flattenObject(options.video, '', providerName)
         if (videoOpts.length > 0) {
-          defaults.video.providerOptions = videoOpts
+          defaults.video[fieldName] = videoOpts
           initializedAny = true
         }
       }
@@ -225,7 +251,9 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
           providers: configuredProviders,
         },
       })
-      payload.logger.info(`— AI Plugin: Auto-setup complete. Handled defaults for seeded providers.`)
+      payload.logger.info(
+        `— AI Plugin: Auto-setup complete. Handled defaults for seeded providers.`,
+      )
     }
   } catch (error) {
     payload.logger.warn(

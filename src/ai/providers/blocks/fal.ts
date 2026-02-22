@@ -140,4 +140,3 @@ export const falBlock: Block = {
     singular: 'Fal AI',
   },
 }
-

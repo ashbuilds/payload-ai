@@ -12,6 +12,10 @@ export interface ProviderOption {
   valueText?: string
 }
 
+export type ProviderOptionsByProvider = {
+  [key: string]: ProviderOption[] | undefined
+}
+
 export type ProviderId =
   | 'anthropic'
   | 'elevenlabs'
@@ -130,10 +134,10 @@ export type ProviderRegistry = Record<string, ProviderConfig>
 
 export interface AISettingsData {
   defaults: {
-    image?: { model: string; provider: string; providerOptions?: ProviderOption[] }
-    text?: { model: string; provider: string; providerOptions?: ProviderOption[] }
-    tts?: { model: string; provider: string; providerOptions?: ProviderOption[]; voice?: string }
-    video?: { model: string; provider: string; providerOptions?: ProviderOption[] }
+    image?: { model: string; provider: string } & ProviderOptionsByProvider
+    text?: { model: string; provider: string } & ProviderOptionsByProvider
+    tts?: { model: string; provider: string; voice?: string } & ProviderOptionsByProvider
+    video?: { model: string; provider: string } & ProviderOptionsByProvider
   }
   providers: ProviderBlockData[]
 }

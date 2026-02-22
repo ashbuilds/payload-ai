@@ -133,4 +133,3 @@ export const anthropicBlock: Block = {
     singular: 'Anthropic',
   },
 }
-

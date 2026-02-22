@@ -137,4 +137,3 @@ export const openaiCompatibleBlock: Block = {
     singular: 'Custom Provider',
   },
 }
-

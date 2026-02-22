@@ -1,6 +1,5 @@
 import type { Block } from 'payload'
 
-
 import { OpenAIIcon } from '../icons.js'
 
 export const openaiBlock: Block = {
@@ -130,7 +129,8 @@ export const openaiBlock: Block = {
               name: 'voices',
               type: 'array',
               admin: {
-                description: 'Available voices for Text-to-Speech models. You can add custom voices here.',
+                description:
+                  'Available voices for Text-to-Speech models. You can add custom voices here.',
                 initCollapsed: false,
               },
               defaultValue: [
@@ -181,8 +181,6 @@ export const openaiBlock: Block = {
           ],
           label: 'Voices',
         },
-
-
 
         // 5. Models (SIMPLIFIED - no per-model settings)
         {
