@@ -115,14 +115,14 @@ export const extendContextWithPromptFields = (
 ) => {
   const { promptFields = [] } = pluginConfig
   const fieldsMap = new Map(
-    promptFields
-      .filter((f) => !f.collections || f.collections.includes(ctx.collection))
-      .map((f) => [f.name, f]),
+    (promptFields || [])
+      .filter((f: any) => !f.collections || f.collections.includes(ctx.collection))
+      .map((f: any) => [f.name, f]),
   )
   return new Proxy(data, {
     get: (target, prop: string) => {
       const field = fieldsMap.get(prop)
-      if (field?.getter) {
+      if (field && 'getter' in field && typeof field.getter === 'function') {
         const value = field.getter(data, ctx)
         return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
       }
@@ -157,7 +157,7 @@ export const extendContextWithPromptFields = (
       return fieldsMap.has(prop as string) || (target && prop in target)
     },
     ownKeys: (target) => {
-      return [...fieldsMap.keys(), ...Object.keys(target || {})]
+      return [...Array.from(fieldsMap.keys()), ...Object.keys(target || {})]
     },
   })
 }

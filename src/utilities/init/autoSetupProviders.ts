@@ -2,13 +2,13 @@ import type { Payload } from 'payload'
 
 import type { PluginConfig } from '../../types.js'
 
-import { flattenObject } from '../../ai/utilities/flattenObject.js'
-import { openaiBlock } from '../../ai/providers/blocks/openai.js'
 import { anthropicBlock } from '../../ai/providers/blocks/anthropic.js'
-import { googleBlock } from '../../ai/providers/blocks/google.js'
 import { elevenlabsBlock } from '../../ai/providers/blocks/elevenlabs.js'
-import { xaiBlock } from '../../ai/providers/blocks/xai.js'
 import { falBlock } from '../../ai/providers/blocks/fal.js'
+import { googleBlock } from '../../ai/providers/blocks/google.js'
+import { openaiBlock } from '../../ai/providers/blocks/openai.js'
+import { xaiBlock } from '../../ai/providers/blocks/xai.js'
+import { flattenObject } from '../../ai/utilities/flattenObject.js'
 
 const findModelsDefault = (block: any): any[] => {
   let defaultModels: any[] = []
@@ -33,7 +33,7 @@ const findModelsDefault = (block: any): any[] => {
     }
     return false
   }
-  if (block?.fields) search(block.fields)
+  if (block?.fields) {search(block.fields)}
   return defaultModels
 }
 
@@ -74,14 +74,14 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         })
         
         if (!defaults.text.provider) {
-          defaults.text.provider = 'openai'
-          defaults.text.model = 'gpt-4o'
+          defaults.text.provider = config.generationDefaults?.text?.provider
+          defaults.text.model = config.generationDefaults?.text?.model
           defaults.text.providerOptions = providerOptions?.openai?.text 
             ? flattenObject(providerOptions.openai.text) : undefined
         }
         if (!defaults.image.provider) {
-          defaults.image.provider = 'openai'
-          defaults.image.model = 'dall-e-3'
+          defaults.image.provider = config.generationDefaults?.image?.provider
+          defaults.image.model = config.generationDefaults?.image?.model
           defaults.image.providerOptions = providerOptions?.openai?.image 
             ? flattenObject(providerOptions.openai.image) : undefined
         }
@@ -93,6 +93,7 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     const googleKey = process.env[providerKeys.google[0]] || process.env[providerKeys.google[1]]
     if (googleKey) {
        const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'google')
+      console.log('isAlreadyConfigured:L ', isAlreadyConfigured)
        if (!isAlreadyConfigured) {
          providersArray.push({
            apiKey: googleKey,
@@ -102,8 +103,8 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
          })
          
          if (!defaults.text.provider) {
-            defaults.text.provider = 'google'
-            defaults.text.model = 'gemini-2.5-flash'
+            defaults.text.provider = config.generationDefaults?.text?.provider
+            defaults.text.model = config.generationDefaults?.text?.model
             defaults.text.providerOptions = providerOptions?.google?.text 
               ? flattenObject(providerOptions.google.text) : undefined
          }
@@ -123,10 +124,10 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         })
         
         if (!defaults.text.provider) {
-          defaults.text.provider = 'anthropic'
-          defaults.text.model = 'claude-3-5-sonnet-latest'
-          defaults.text.providerOptions = providerOptions?.anthropic?.text 
-            ? flattenObject(providerOptions.anthropic.text) : undefined
+          defaults.text.provider = config.generationDefaults?.text?.provider
+          defaults.text.model = config.generationDefaults?.text?.model
+          defaults.text.providerOptions = providerOptions?.anthropic
+            ? flattenObject(providerOptions.anthropic) : undefined
         }
         initializedAny = true
       }
@@ -144,10 +145,11 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         })
         
         if (!defaults.tts.provider) {
-          defaults.tts.provider = 'elevenlabs'
-          defaults.tts.model = 'eleven_turbo_v2_5'
-          defaults.tts.providerOptions = providerOptions?.elevenlabs?.tts 
-            ? flattenObject(providerOptions.elevenlabs.tts) : undefined
+          defaults.tts.provider = config.generationDefaults?.tts?.provider
+          defaults.tts.model = config.generationDefaults?.tts?.model
+          defaults.tts.voice = config.generationDefaults?.tts?.voice
+          defaults.tts.providerOptions = providerOptions?.elevenlabs
+            ? flattenObject(providerOptions.elevenlabs) : undefined
         }
         initializedAny = true
       }
@@ -179,10 +181,10 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         })
 
         if (!defaults.image.provider) {
-          defaults.image.provider = 'fal'
-          defaults.image.model = 'fal-ai/flux-pro/v1.1'
-          defaults.image.providerOptions = providerOptions?.fal?.image 
-            ? flattenObject(providerOptions.fal.image) : undefined
+          defaults.image.provider = config.generationDefaults?.image?.provider
+          defaults.image.model = config.generationDefaults?.image?.model
+          defaults.image.providerOptions = providerOptions?.fal
+            ? flattenObject(providerOptions.fal) : undefined
         }
         initializedAny = true
       }

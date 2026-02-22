@@ -61,6 +61,16 @@ export interface PluginConfig {
   disableSponsorMessage?: boolean
   editorConfig?: { nodes: JSONSchema[] }
   fields?: Field[]
+  /**
+   * Defines default provider and models to be selected
+   * when creating initial database records for Generation Defaults.
+   */
+  generationDefaults?: {
+    image?: { model: string; provider: string }
+    text?: { model: string; provider: string }
+    tts?: { model: string; provider: string; voice?: string }
+    video?: { model: string; provider: string }
+  }
   generationModels?: ((defaultModels: GenerationModel[]) => GenerationModel[]) | GenerationModel[]
   globals?: {
     [key: GlobalConfig['slug']]: boolean
@@ -68,11 +78,8 @@ export interface PluginConfig {
   interfaceName?: string
   mediaUpload?: PluginConfigMediaUploadFunction
   options?: PluginOptions
-  /**
-   * Custom action prompts for AI text generation
-   * If not provided, uses default prompts
-   * You can access default prompts by importing { defaultPrompts } from '@ai-stack/payloadcms'
-   */
+  overrideInstructions?: any
+  promptFields?: any[]
   prompts?: ActionPrompt[]
   /**
    * Pre-configured options that get passed directly to AI SDK providers.
@@ -178,7 +185,6 @@ export type SeedPromptResult =
 export type SeedPromptFunction = (
   options: SeedPromptOptions,
 ) => Promise<SeedPromptResult> | SeedPromptResult
-
 
 export type ImageReference = {
   data: Blob

@@ -74,6 +74,16 @@ const buildConfigWithMemoryDB = async () => {
       payloadAiPlugin({
         debugging: true,
         disableSponsorMessage: false,
+        generationDefaults: {
+          image: {
+            model: 'gemini-3-pro-image-preview',
+            provider: 'google',
+          },
+          text: {
+            model: 'gpt-4o-mini',
+            provider: 'openai',
+          },
+        },
         providerOptions: {
           google: {
             image: {

@@ -2,4 +2,4 @@
 export * from './registry.js'
 
 // Export types
-export type { ProviderId } from './registry.js'
+export type { ProviderId } from './types.js'
