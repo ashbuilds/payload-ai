@@ -7,7 +7,7 @@ import { getExtensionFromMimeType } from '../utils.js'
  * Generate speech from text using AI SDK's generateSpeech
  */
 export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaResult> {
-  const { model: modelId, payload, prompt, provider } = args
+  const { model: modelId, payload, prompt, provider, providerOptions } = args
   let { voice } = args
 
   // Fallback to global default voice if not specified
@@ -19,7 +19,7 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
   }
 
   // Get TTS model instance
-  const model = await getTTSModel(payload, provider, modelId)
+  const model = await getTTSModel(payload, provider, modelId, providerOptions)
 
   // Dynamic import to support older SDK versions
   let generateSpeechFn

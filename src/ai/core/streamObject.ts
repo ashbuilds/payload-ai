@@ -21,6 +21,7 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
     payload,
     prompt,
     provider,
+    providerOptions,
 
     schema,
     system,
@@ -29,7 +30,7 @@ export async function streamObject(args: PayloadGenerateObjectArgs) {
   } = args
   
   // Resolve model from registry
-  const model = await getLanguageModel(payload, provider, modelId)
+  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
   
   // Return streaming result from AI SDK
   const options: Record<string, unknown> = {

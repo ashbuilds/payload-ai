@@ -13,13 +13,14 @@ import {
 } from '../defaults.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { resolveEffectiveInstructionSettings } from '../utilities/ai/resolveEffectiveInstructionSettings.js'
+import { extendContextWithPromptFields } from '../utilities/buildPromptUtils.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
+import { getFieldBySchemaPath } from '../utilities/fields/getFieldBySchemaPath.js'
 import { extractImageData } from '../utilities/images/extractImageData.js'
 import { type FetchableImage, fetchImages } from '../utilities/images/fetchImages.js'
-import { getFieldBySchemaPath } from '../utilities/fields/getFieldBySchemaPath.js'
-import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
 import { resolveImageReferences } from '../utilities/images/resolveImageReferences.js'
-import { extendContextWithPromptFields } from '../utilities/buildPromptUtils.js'
+import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
 import { sanitizeLog } from '../utilities/sanitizeLog.js'
 
 /**
@@ -192,66 +193,18 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       ? `${serverURL.replace(/\/$/, '')}/api${PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK}?instructionId=${instructionId}`
       : undefined
 
-    // Get model settings
-    // Re-evaluate settings name and settings in case instructions changed
     const modelId = instructions['model-id']
-    const settingsName =
-      modelId === 'image'
-        ? 'image-settings'
-        : modelId === 'video'
-          ? 'video-settings'
-          : modelId === 'tts'
-            ? 'tts-settings'
-            : undefined
+    const aiSettings = await req.payload.findGlobal({
+      slug: 'ai-providers',
+      context: { unsafe: true },
+    })
+    const { effectiveSettings: modelSettings, settingsName } = resolveEffectiveInstructionSettings({
+      defaults: aiSettings?.defaults as Record<string, unknown> | undefined,
+      instructions,
+    })
+
     if (!settingsName) {
       throw new Error(`Unsupported model-id: ${modelId}`)
-    }
-
-    // Get model settings from instruction
-    const instructionSettings = (instructions[settingsName] || {}) as Record<string, unknown>
-
-    // Fallback to AISettings global defaults if instruction-level settings are missing
-    let globalDefaults: Record<string, unknown> = {}
-    if (!instructionSettings.provider || !instructionSettings.model) {
-      try {
-        const aiSettings = await req.payload.findGlobal({
-          slug: 'ai-providers',
-          context: { unsafe: true }, // Get decrypted values for internal use
-        })
-
-        // Map modelId to the corresponding default settings key
-        const defaultsKey =
-          modelId === 'image'
-            ? 'image'
-            : modelId === 'video'
-              ? 'video'
-              : modelId === 'tts'
-                ? 'tts'
-                : undefined
-
-        if (defaultsKey && aiSettings?.defaults?.[defaultsKey]) {
-          globalDefaults = aiSettings.defaults[defaultsKey] as Record<string, unknown>
-
-          if (pluginConfig.debugging) {
-            req.payload.logger.info(
-              { globalDefaults },
-              `— AI Plugin: Using AISettings defaults for ${modelId}`,
-            )
-          }
-        }
-      } catch (e) {
-        req.payload.logger.error(e, '— AI Plugin: Error fetching AISettings defaults')
-      }
-    }
-
-    // Merge: instruction settings take priority over global defaults
-    // Filter out null/undefined values so they don't overwrite valid defaults
-    const filteredInstructionSettings = Object.fromEntries(
-      Object.entries(instructionSettings).filter(([_, v]) => v != null),
-    )
-    const modelSettings = {
-      ...globalDefaults,
-      ...filteredInstructionSettings,
     }
 
     const generateParams = {
@@ -261,6 +214,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       model: modelSettings.model as string,
       prompt: promptToUse,
       provider: modelSettings.provider as string,
+      providerOptions: modelSettings,
       ...modelSettings,
     }
 

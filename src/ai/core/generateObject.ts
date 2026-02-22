@@ -22,6 +22,7 @@ export async function generateObject(args: PayloadGenerateObjectArgs) {
     payload,
     prompt,
     provider,
+    providerOptions,
 
     schema,
     system,
@@ -35,7 +36,7 @@ export async function generateObject(args: PayloadGenerateObjectArgs) {
     : prompt
 
   // Resolve model from registry
-  const model = await getLanguageModel(payload, provider, modelId)
+  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
 
   // Pass directly to AI SDK with minimal transformation
   const options: Record<string, unknown> = {

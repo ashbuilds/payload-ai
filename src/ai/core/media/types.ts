@@ -10,6 +10,7 @@ export interface MediaGenerationArgs {
   payload: Payload
   prompt: string
   provider?: string
+  providerOptions?: Record<string, unknown>
 }
 
 /**
@@ -59,6 +60,8 @@ export interface MediaFile {
  * Can be either an immediate file result or an async job
  */
 export interface MediaResult {
+  data?: any
+
   // Immediate result (image, speech)
   files?: MediaFile[]
 
@@ -67,7 +70,6 @@ export interface MediaResult {
   progress?: number
   status?: 'completed' | 'failed' | 'queued' | 'running'
   taskId?: string
-  data?: any
 }
 
 /**

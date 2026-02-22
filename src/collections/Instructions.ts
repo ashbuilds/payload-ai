@@ -5,6 +5,8 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../defaults.js'
 import { PromptMentionsFeature } from '../fields/PromptEditorField/feature.server.js'
+import { applyInstructionDefaultsForDisplay } from '../utilities/ai/resolveEffectiveInstructionSettings.js'
+import { buildProviderOptionsArrayFields } from '../utilities/fields/buildProviderOptionsArrayFields.js'
 import { pluginCollectionAccess, pluginCollectionAdmin } from './shared.js'
 
 // Defined capabilities replacing src/ai/models/
@@ -88,6 +90,20 @@ const commonTextParams = [
     label: 'Extract Attachments',
   },
 ]
+
+const providerOptionsStorageFields = buildProviderOptionsArrayFields({
+  hidden: true,
+})
+
+const providerOptionsUIField = {
+  name: 'providerOptionsUI',
+  type: 'ui' as const,
+  admin: {
+    components: {
+      Field: '@ai-stack/payloadcms/client#InstructionProviderOptions',
+    },
+  },
+}
 
 export const instructionsCollection = (pluginConfig: PluginConfig) =>
   <CollectionConfig>{
@@ -318,7 +334,13 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'text',
         },
-        fields: [providerSelect, modelSelect, ...commonTextParams],
+        fields: [
+          providerSelect,
+          modelSelect,
+          ...commonTextParams,
+          providerOptionsUIField,
+          ...providerOptionsStorageFields,
+        ],
         label: 'Text Settings',
       },
 
@@ -329,7 +351,13 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'richtext',
         },
-        fields: [providerSelect, modelSelect, ...commonTextParams],
+        fields: [
+          providerSelect,
+          modelSelect,
+          ...commonTextParams,
+          providerOptionsUIField,
+          ...providerOptionsStorageFields,
+        ],
         label: 'Rich Text Settings',
       },
 
@@ -340,7 +368,7 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'image',
         },
-        fields: [providerSelect, modelSelect],
+        fields: [providerSelect, modelSelect, providerOptionsUIField, ...providerOptionsStorageFields],
         label: 'Image Settings',
       },
 
@@ -364,7 +392,8 @@ informative and accurate but also captivating and beautifully structured.`,
             },
             label: 'Voice',
           },
-
+          providerOptionsUIField,
+          ...providerOptionsStorageFields,
         ],
         label: 'TTS Settings',
       },
@@ -390,9 +419,42 @@ informative and accurate but also captivating and beautifully structured.`,
             max: 20,
             min: 1,
           },
-
+          providerOptionsUIField,
+          ...providerOptionsStorageFields,
         ],
         label: 'Array Settings',
       },
     ],
+    hooks: {
+      ...pluginConfig.overrideInstructions?.hooks,
+      afterRead: [
+        ...(pluginConfig.overrideInstructions?.hooks?.afterRead || []),
+        async ({ context, doc, req }) => {
+          if (!doc || typeof doc !== 'object') {
+            return doc
+          }
+
+          const cacheKey = '__aiProvidersDefaults'
+          const hookContext = (context || {}) as Record<string, unknown>
+          let defaults = hookContext[cacheKey] as Record<string, unknown> | undefined
+
+          if (!defaults) {
+            try {
+              const aiSettings = await req.payload.findGlobal({
+                slug: 'ai-providers',
+              })
+              defaults = (aiSettings?.defaults || {}) as Record<string, unknown>
+              hookContext[cacheKey] = defaults
+            } catch (_error) {
+              return doc
+            }
+          }
+
+          return applyInstructionDefaultsForDisplay({
+            defaults,
+            instructions: doc as Record<string, unknown>,
+          })
+        },
+      ],
+    },
   }

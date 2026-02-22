@@ -17,6 +17,7 @@ export async function generateText(args: PayloadGenerateTextArgs) {
     payload,
     prompt,
     provider,
+    providerOptions,
 
     system,
     temperature,
@@ -29,7 +30,7 @@ export async function generateText(args: PayloadGenerateTextArgs) {
     : prompt
   
   // Resolve model from registry with provider options
-  const model = await getLanguageModel(payload, provider, modelId)
+  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
   
   // Pass directly to AI SDK
   const options: Record<string, unknown> = {

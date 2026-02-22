@@ -40,7 +40,8 @@ export function parseProviderOptions(options?: ProviderOption[]): Record<string,
         acc[opt.key] = opt.valueBoolean
       }
       if (opt.type === 'options' && Array.isArray(opt.valueOptions)) {
-        acc[opt.key] = opt.valueOptions
+        acc[opt.key] =
+          opt.valueOptions.length === 1 ? opt.valueOptions[0] : opt.valueOptions
       }
       return acc
     },
@@ -51,23 +52,69 @@ export function parseProviderOptions(options?: ProviderOption[]): Record<string,
 }
 
 function resolveProviderOptions(
-  defaultsForUseCase: { provider?: string } | undefined,
+  settingsForUseCase: { provider?: string } | undefined,
 ): ProviderOption[] | undefined {
-  if (!defaultsForUseCase) {
+  if (!settingsForUseCase) {
     return undefined
   }
 
-  const provider = defaultsForUseCase.provider
+  const provider = settingsForUseCase.provider
   if (provider) {
     const providerKey = String(provider).replace(/\W/g, '_')
-    const byShortKey = `po_${providerKey}` as keyof typeof defaultsForUseCase
-    const byShort = defaultsForUseCase[byShortKey] as ProviderOption[] | undefined
+    const byShortKey = `po_${providerKey}` as keyof typeof settingsForUseCase
+    const byShort = settingsForUseCase[byShortKey] as ProviderOption[] | undefined
     if (Array.isArray(byShort) && byShort.length > 0) {
       return byShort
     }
   }
 
   return undefined
+}
+
+function deepMergeOptions(
+  base: Record<string, any>,
+  override: Record<string, any>,
+): Record<string, any> {
+  const merged = { ...base }
+
+  for (const [key, value] of Object.entries(override)) {
+    const current = merged[key]
+    if (
+      current &&
+      value &&
+      typeof current === 'object' &&
+      typeof value === 'object' &&
+      !Array.isArray(current) &&
+      !Array.isArray(value)
+    ) {
+      merged[key] = deepMergeOptions(current, value)
+      continue
+    }
+    merged[key] = value
+  }
+
+  return merged
+}
+
+function resolveEffectiveProviderOptions({
+  defaultsForUseCase,
+  providerId,
+  settingsOverride,
+}: {
+  defaultsForUseCase?: { provider?: string }
+  providerId?: string
+  settingsOverride?: Record<string, unknown>
+}): Record<string, any> {
+  const globalDefaultOptions =
+    defaultsForUseCase?.provider === providerId
+      ? parseProviderOptions(resolveProviderOptions(defaultsForUseCase))
+      : {}
+  const overrideOptions =
+    settingsOverride?.provider === providerId
+      ? parseProviderOptions(resolveProviderOptions(settingsOverride as { provider?: string }))
+      : {}
+
+  return deepMergeOptions(globalDefaultOptions, overrideOptions)
 }
 
 // ─── Cache layer ────────────────────────────────────────────────
@@ -272,6 +319,7 @@ export async function getLanguageModel(
   payload: Payload,
   providerId?: string,
   modelId?: string,
+  settingsOverride?: Record<string, unknown>,
 ): Promise<LanguageModel> {
   // Single defaults fetch for the entire function
   const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
@@ -297,13 +345,14 @@ export async function getLanguageModel(
     throw new Error(`Provider ${providerId} is not enabled`)
   }
 
-  const globalDefaultOptions =
-    defaults?.text?.provider === providerId
-      ? parseProviderOptions(resolveProviderOptions(defaults?.text))
-      : {}
+  const options = resolveEffectiveProviderOptions({
+    defaultsForUseCase: defaults?.text,
+    providerId,
+    settingsOverride,
+  })
 
   const providerInstance = await resolveProviderInstance(provider)
-  return providerInstance(modelId, globalDefaultOptions)
+  return providerInstance(modelId, options)
 }
 
 /**
@@ -314,6 +363,7 @@ export async function getImageModel(
   providerId?: string,
   modelId?: string,
   isMultimodalText?: boolean,
+  settingsOverride?: Record<string, unknown>,
 ) {
   const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
 
@@ -335,10 +385,11 @@ export async function getImageModel(
     throw new Error(`Provider ${providerId} not found`)
   }
 
-  const globalDefaultOptions =
-    defaults?.image?.provider === providerId
-      ? parseProviderOptions(resolveProviderOptions(defaults?.image))
-      : {}
+  const options = resolveEffectiveProviderOptions({
+    defaultsForUseCase: defaults?.image,
+    providerId,
+    settingsOverride,
+  })
 
   const instance = await resolveProviderInstance(provider)
 
@@ -349,7 +400,7 @@ export async function getImageModel(
     'image' in instance &&
     typeof instance.image === 'function'
   ) {
-    return instance.image(modelId, globalDefaultOptions)
+    return instance.image(modelId, options)
   }
 
   // Also check if instance is an object with image method
@@ -359,17 +410,22 @@ export async function getImageModel(
     'image' in instance &&
     !isMultimodalText
   ) {
-    return (instance as AIProvider).image?.(modelId, globalDefaultOptions)
+    return (instance as AIProvider).image?.(modelId, options)
   }
 
   // Fallback for providers that might return the model directly
-  return typeof instance === 'function' ? instance(modelId, globalDefaultOptions) : instance
+  return typeof instance === 'function' ? instance(modelId, options) : instance
 }
 
 /**
  * Get TTS model (cached registry + single defaults call).
  */
-export async function getTTSModel(payload: Payload, providerId?: string, modelId?: string) {
+export async function getTTSModel(
+  payload: Payload,
+  providerId?: string,
+  modelId?: string,
+  settingsOverride?: Record<string, unknown>,
+) {
   const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
 
   if (!providerId) {
@@ -390,15 +446,16 @@ export async function getTTSModel(payload: Payload, providerId?: string, modelId
     throw new Error(`Provider ${providerId} not found`)
   }
 
-  const globalDefaultOptions =
-    defaults?.tts?.provider === providerId
-      ? parseProviderOptions(resolveProviderOptions(defaults?.tts))
-      : {}
+  const options = resolveEffectiveProviderOptions({
+    defaultsForUseCase: defaults?.tts,
+    providerId,
+    settingsOverride,
+  })
 
   const instance = await resolveProviderInstance(provider)
 
   if (instance?.speech) {
-    return instance.speech(modelId, globalDefaultOptions)
+    return instance.speech(modelId, options)
   }
-  return typeof instance === 'function' ? instance(modelId, globalDefaultOptions) : instance
+  return typeof instance === 'function' ? instance(modelId, options) : instance
 }

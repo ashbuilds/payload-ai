@@ -7,6 +7,7 @@ import { checkAccess } from '../access/checkAccess.js'
 import { filterEditorSchemaByNodes } from '../ai/utilities/filterEditorSchemaByNodes.js'
 import { PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../defaults.js'
 import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
+import { resolveEffectiveInstructionSettings } from '../utilities/ai/resolveEffectiveInstructionSettings.js'
 import { assignPrompt } from '../utilities/buildPromptUtils.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
 import { fieldToJsonSchema } from '../utilities/fields/fieldToJsonSchema.js'
@@ -162,6 +163,18 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       req.payload.logger.info(sanitizeLog({ prompts }), `— AI Plugin: Executing text prompt on ${schemaPath}`)
     }
 
+    const aiSettings = await req.payload.findGlobal({
+      slug: 'ai-providers',
+    })
+    const { effectiveSettings: modelSettings, settingsName } = resolveEffectiveInstructionSettings({
+      defaults: aiSettings?.defaults as Record<string, unknown> | undefined,
+      instructions: instructions as Record<string, unknown>,
+    })
+
+    if (!settingsName) {
+      throw new Error(`Unsupported model-id: ${instructions['model-id']}`)
+    }
+
     // Build per-field JSON schema for structured generation when applicable
     let jsonSchema = allowedEditorSchema
     let targetField: Field | null | undefined
@@ -185,8 +198,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
         if (targetField && supported.includes(t)) {
           // For array fields, use count from array-settings if available
           if (t === 'array') {
-            const arraySettings = (instructions['array-settings'] || {}) as Record<string, unknown>
-            const count = (arraySettings.count as number) || 3
+            const count = (modelSettings.count as number) || 3
             // Override the field's maxRows with the requested count
             const modifiedField = {
               ...targetField,
@@ -202,22 +214,6 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
     } catch (e) {
       req.payload.logger.error(e, '— AI Plugin: Error building field JSON schema')
     }
-
-    // Get model settings from instruction
-    const settingsName =
-      instructions['model-id'] === 'richtext'
-        ? 'richtext-settings'
-        : instructions['model-id'] === 'text'
-          ? 'text-settings'
-          : instructions['model-id'] === 'array'
-            ? 'array-settings'
-            : undefined
-
-    if (!settingsName) {
-      throw new Error(`Unsupported model-id: ${instructions['model-id']}`)
-    }
-
-    const modelSettings = instructions[settingsName] || {}
 
     // Resolve @field:filename references from the prompt
     const { images: resolvedImages, processedPrompt } = await resolveImageReferences(
@@ -276,6 +272,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       model: modelSettings.model as string,
       prompt: promptToUse,
       provider: modelSettings.provider as string,
+      providerOptions: modelSettings,
 
       schema: jsonSchema,
       system: systemToUse,

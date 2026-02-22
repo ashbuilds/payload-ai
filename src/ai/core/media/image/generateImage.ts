@@ -11,7 +11,7 @@ import { generateStandardImage } from './handlers/standard.js'
  * Routes to appropriate handler based on model capabilities
  */
 export async function generateImage(args: ImageGenerationArgs): Promise<MediaResult> {
-  const { model: modelId, payload, provider } = args
+  const { model: modelId, payload, provider, providerOptions } = args
   // Get provider registry and model configuration
   const registry = await getProviderRegistry(payload)
   const providerConfig = registry[provider || '']
@@ -34,6 +34,7 @@ export async function generateImage(args: ImageGenerationArgs): Promise<MediaRes
     provider,
     modelId,
     isMultimodalText,
+    providerOptions,
   )
   if (isMultimodalText) {
     return generateMultimodalImage(model as LanguageModel, args)
