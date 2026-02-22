@@ -1,15 +1,8 @@
 import { payloadAiPlugin } from '@ai-stack/payloadcms'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { de } from '@payloadcms/translations/languages/de'
 import { en } from '@payloadcms/translations/languages/en'
 import { es } from '@payloadcms/translations/languages/es'
-import { fr } from '@payloadcms/translations/languages/fr'
-import { ja } from '@payloadcms/translations/languages/ja'
-import { nl } from '@payloadcms/translations/languages/nl'
-import { pt } from '@payloadcms/translations/languages/pt'
-import { th } from '@payloadcms/translations/languages/th'
-import { zh } from '@payloadcms/translations/languages/zh'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -54,21 +47,14 @@ const buildConfigWithMemoryDB = async () => {
     i18n: {
       fallbackLanguage: 'en',
       supportedLanguages: {
-        de,
         en,
         es,
-        fr,
-        ja,
-        nl,
-        pt,
-        th,
-        zh,
       } as any,
     },
     localization: {
       defaultLocale: 'en',
       fallback: true,
-      locales: ['en', 'fr', 'th', 'nl', 'de'],
+      locales: ['en', 'es'],
     },
     plugins: [
       payloadAiPlugin({

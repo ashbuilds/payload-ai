@@ -12,6 +12,73 @@ import {
 } from 'lexical-beautiful-mentions'
 import React, { useCallback } from 'react'
 
+type MentionSuggestion = BeautifulMentionsItem & {
+  display?: string
+  id?: string
+  value?: string
+}
+
+const MENTION_SUGGESTIONS_TTL_MS = 60_000
+const mentionSuggestionsCache = new Map<string, { expiresAt: number; items: MentionSuggestion[] }>()
+const mentionSuggestionsInFlight = new Map<string, Promise<MentionSuggestion[]>>()
+
+const getMentionCacheKey = (collectionSlug: string, trigger: string): string =>
+  `${collectionSlug}:${trigger}`
+
+const fetchMentionSuggestions = async (
+  collectionSlug: string,
+  trigger: string,
+): Promise<MentionSuggestion[]> => {
+  const cacheKey = getMentionCacheKey(collectionSlug, trigger)
+  const now = Date.now()
+  const cached = mentionSuggestionsCache.get(cacheKey)
+
+  if (cached && cached.expiresAt > now) {
+    return cached.items
+  }
+
+  const existingRequest = mentionSuggestionsInFlight.get(cacheKey)
+  if (existingRequest) {
+    return existingRequest
+  }
+
+  const request = (async () => {
+    const params = new URLSearchParams({
+      collection: collectionSlug,
+      q: '',
+      trigger,
+    })
+
+    try {
+      const response = await fetch(`/api/prompt-mentions?${params.toString()}`)
+      if (!response.ok) {
+        return []
+      }
+
+      const data = await response.json()
+      const items = (data.items || []).map((item: any) => ({
+        ...item,
+        value: item.id || item.value,
+      })) as MentionSuggestion[]
+
+      mentionSuggestionsCache.set(cacheKey, {
+        expiresAt: now + MENTION_SUGGESTIONS_TTL_MS,
+        items,
+      })
+
+      return items
+    } catch (e) {
+      console.error(`Failed to fetch suggestions for ${trigger}`, e)
+      return []
+    } finally {
+      mentionSuggestionsInFlight.delete(cacheKey)
+    }
+  })()
+
+  mentionSuggestionsInFlight.set(cacheKey, request)
+  return request
+}
+
 const PromptMentionsMenu = ({
   children,
   className,
@@ -115,7 +182,7 @@ PromptMentionsMenuItem.displayName = 'PromptMentionsMenuItem'
 
 const PromptMentionsPlugin: React.FC = () => {
   useLexicalComposerContext()
-  const suggestionsRef = React.useRef<Record<string, any[]>>({})
+  const suggestionsRef = React.useRef<Record<string, MentionSuggestion[]>>({})
 
   // Get schema-path from the form to determine the target collection (Instructions context)
   const schemaPathField = useFormFields(([fields]: any) => fields['schema-path'])
@@ -141,27 +208,7 @@ const PromptMentionsPlugin: React.FC = () => {
 
       await Promise.all(
         triggers.map(async (trigger) => {
-          const params = new URLSearchParams({
-            collection: collectionSlug,
-            q: '', // Fetch all
-            trigger,
-          })
-
-          try {
-            const response = await fetch(`/api/prompt-mentions?${params.toString()}`)
-            if (response.ok) {
-              const data = await response.json()
-              newSuggestions[trigger] = data.items.map((item: any) => ({
-                ...item,
-                value: item.id || item.value,
-              }))
-            } else {
-              newSuggestions[trigger] = []
-            }
-          } catch (e) {
-            console.error(`Failed to fetch suggestions for ${trigger}`, e)
-            newSuggestions[trigger] = []
-          }
+          newSuggestions[trigger] = await fetchMentionSuggestions(collectionSlug, trigger)
         }),
       )
 
