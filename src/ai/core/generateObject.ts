@@ -22,7 +22,7 @@ export async function generateObject(args: PayloadGenerateObjectArgs) {
     payload,
     prompt,
     provider,
-    providerOptions,
+
     schema,
     system,
     temperature,
@@ -35,7 +35,7 @@ export async function generateObject(args: PayloadGenerateObjectArgs) {
     : prompt
 
   // Resolve model from registry
-  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
+  const model = await getLanguageModel(payload, provider, modelId)
 
   // Pass directly to AI SDK with minimal transformation
   const options: Record<string, unknown> = {
@@ -48,9 +48,7 @@ export async function generateObject(args: PayloadGenerateObjectArgs) {
     ...(maxTokens ? { maxOutputTokens: maxTokens } : {}),
   }
 
-  if (providerOptions) {
-    options.providerOptions = providerOptions
-  }
+
 
   return sdkGenerateObject(options as Parameters<typeof sdkGenerateObject>[0])
 }

@@ -4,22 +4,7 @@ import { ElevenLabsIcon } from '../icons.js'
 
 export const elevenlabsBlock: Block = {
   slug: 'elevenlabs',
-  custom: {
-    providerOptionsSchemas: {
-      tts: {
-        fields: [
-          'stability',
-          'similarity_boost',
-          'style',
-          'use_speaker_boost',
-          'seed',
-          'language_code',
-          'apply_text_normalization',
-          'apply_language_text_normalization',
-        ],
-      },
-    },
-  },
+
   fields: [
     {
       type: 'tabs',
@@ -207,86 +192,7 @@ export const elevenlabsBlock: Block = {
           label: 'Voices',
         },
 
-        // 4. Provider Options (NEW)
-        {
-          fields: [
-            {
-              name: 'ttsProviderOptions',
-              type: 'group',
-              admin: {
-                description: 'Default provider options for ElevenLabs TTS.',
-              },
-              fields: [
-                {
-                  name: 'voice_settings',
-                  type: 'group',
-                  fields: [
-                    {
-                      name: 'stability',
-                      type: 'number',
-                      defaultValue: 0.5,
-                      label: 'Default Stability',
-                      max: 1,
-                      min: 0,
-                    },
-                    {
-                      name: 'similarity_boost',
-                      type: 'number',
-                      defaultValue: 0.75,
-                      label: 'Default Similarity Boost',
-                      max: 1,
-                      min: 0,
-                    },
-                    {
-                      name: 'style',
-                      type: 'number',
-                      defaultValue: 0,
-                      label: 'Default Style',
-                      max: 1,
-                      min: 0,
-                    },
-                    {
-                      name: 'use_speaker_boost',
-                      type: 'checkbox',
-                      defaultValue: false,
-                      label: 'Use Speaker Boost',
-                    },
-                  ],
-                  label: 'Voice Settings',
-                },
-                {
-                  name: 'seed',
-                  type: 'number',
-                  label: 'Default Seed',
-                  max: 4294967295,
-                  min: 0,
-                },
-                {
-                  name: 'apply_text_normalization',
-                  type: 'select',
-                  dbName: 'eleven-tts-normalization',
-                  defaultValue: 'auto',
-                  label: 'Text Normalization',
-                  options: [
-                    { label: 'Auto', value: 'auto' },
-                    { label: 'On', value: 'on' },
-                    { label: 'Off', value: 'off' },
-                  ],
-                },
-                {
-                  name: 'language_code',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'en',
-                  },
-                  label: 'Language Code',
-                },
-              ],
-              label: 'TTS Provider Options',
-            },
-          ],
-          label: 'Provider Options',
-        },
+
 
         // 5. Models (SIMPLIFIED - no per-model settings)
         {

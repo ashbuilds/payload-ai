@@ -19,7 +19,7 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
   }
 
   // Get TTS model instance
-  const model = await getTTSModel(payload, provider, modelId, args.providerOptions)
+  const model = await getTTSModel(payload, provider, modelId)
 
   // Dynamic import to support older SDK versions
   let generateSpeechFn
@@ -37,7 +37,6 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
   // TODO: fix with proper error handling
   const result = await generateSpeechFn({
     model,
-    providerOptions: args.providerOptions,
     speed: args.speed,
     text: prompt,
     voice,

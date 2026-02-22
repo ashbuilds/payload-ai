@@ -1,7 +1,6 @@
 import type { ImagePart } from 'ai'
 import type { Payload } from 'payload'
 
-import type { ProviderOptions } from '../types.js'
 
 /**
  * Base interface for all media generation arguments
@@ -11,7 +10,6 @@ export interface MediaGenerationArgs {
   payload: Payload
   prompt: string
   provider?: string
-  providerOptions?: ProviderOptions
 }
 
 /**

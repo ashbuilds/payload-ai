@@ -28,26 +28,16 @@ export async function generateImage(args: ImageGenerationArgs): Promise<MediaRes
     modelConfig?.responseModalities?.includes('IMAGE') &&
     modelConfig?.responseModalities?.includes('TEXT')
 
-  // Merge provider's default image options with instruction-level overrides
-  const mergedProviderOptions = {
-    ...(providerConfig.options?.image || {}),
-    ...(args.providerOptions || {}),
-  }
-
   // Get appropriate model instance
   const model = await getImageModel(
     payload,
     provider,
     modelId,
-    mergedProviderOptions,
     isMultimodalText,
   )
-  // Pass merged options to handlers
-  const argsWithMergedOptions = { ...args, providerOptions: mergedProviderOptions }
-
   if (isMultimodalText) {
-    return generateMultimodalImage(model as LanguageModel, argsWithMergedOptions)
+    return generateMultimodalImage(model as LanguageModel, args)
   }
 
-  return generateStandardImage(model as ImageModel, argsWithMergedOptions)
+  return generateStandardImage(model as ImageModel, args)
 }

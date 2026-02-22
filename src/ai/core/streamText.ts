@@ -17,7 +17,7 @@ export async function streamText(args: PayloadGenerateTextArgs) {
     payload,
     prompt,
     provider,
-    providerOptions,
+
     system,
     temperature,
     ...rest
@@ -29,7 +29,7 @@ export async function streamText(args: PayloadGenerateTextArgs) {
     : prompt
   
   // Resolve model from registry
-  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
+  const model = await getLanguageModel(payload, provider, modelId)
   
   // Return streaming result from AI SDK
   const options: Record<string, unknown> = {
@@ -40,9 +40,7 @@ export async function streamText(args: PayloadGenerateTextArgs) {
     ...(maxTokens ? { maxOutputTokens: maxTokens } : {}),
   }
 
-  if (providerOptions) {
-    options.providerOptions = providerOptions
-  }
+
 
   return sdkStreamText(options as Parameters<typeof sdkStreamText>[0])
 }

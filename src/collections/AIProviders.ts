@@ -1,7 +1,86 @@
-import type { GlobalConfig } from 'payload'
+import type { Field, GlobalConfig } from 'payload'
 
 import { allProviderBlocks } from '../ai/providers/blocks/index.js'
 import { invalidateProviderCache } from '../ai/providers/registry.js'
+
+const providerOptionsField: Field = {
+  name: 'providerOptions',
+  type: 'array',
+  admin: {
+    description: 'Add custom options to pass to the provider.',
+    initCollapsed: false,
+  },
+  fields: [
+    {
+      name: 'key',
+      type: 'text',
+      label: 'Option Key',
+      required: true,
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'type',
+          type: 'select',
+          admin: {
+            width: '30%',
+          },
+          defaultValue: 'text',
+          label: 'Value Type',
+          options: [
+            { label: 'Text', value: 'text' },
+            { label: 'Number', value: 'number' },
+            { label: 'Boolean', value: 'boolean' },
+            { label: 'Options', value: 'options' },
+          ],
+          required: true,
+        },
+        {
+          name: 'valueText',
+          type: 'text',
+          admin: {
+            condition: (_, siblingData) => siblingData?.type === 'text',
+            width: '70%',
+          },
+          label: 'Text',
+        },
+        {
+          name: 'valueNumber',
+          type: 'number',
+          admin: {
+            condition: (_, siblingData) => siblingData?.type === 'number',
+            width: '70%',
+          },
+          label: 'Number',
+        },
+        {
+          name: 'valueBoolean',
+          type: 'checkbox',
+          admin: {
+            condition: (_, siblingData) => siblingData?.type === 'boolean',
+            description: "Select default state or leave empty",
+            style: { marginTop: "26px" },
+            width: '70%',
+          },
+          label: 'Enabled',
+        },
+        {
+          name: 'valueOptions',
+          type: 'text',
+          admin: {
+            condition: (_, siblingData) => siblingData?.type === 'options',
+            description: "Enter space separated text values",
+            width: '70%',
+          },
+          hasMany: true,
+          label: 'Options',
+        },
+      ],
+    },
+  ],
+  label: 'Provider Options',
+}
 
 export const AIProvidersGlobal: GlobalConfig = {
   slug: 'ai-providers',
@@ -70,17 +149,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Model',
                     },
-                    {
-                      name: 'options',
-                      type: 'json',
-                      admin: {
-                        components: {
-                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
-                        },
-                        description: 'Default options for this model (global)',
-                      },
-                      label: 'Global Model Options',
-                    },
+                    providerOptionsField,
                   ],
                   label: '',
                 },
@@ -113,17 +182,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Model',
                     },
-                    {
-                      name: 'options',
-                      type: 'json',
-                      admin: {
-                        components: {
-                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
-                        },
-                        description: 'Default options for this model (global)',
-                      },
-                      label: 'Global Model Options',
-                    },
+                    providerOptionsField,
                   ],
                   label: '',
                 },
@@ -166,17 +225,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Voice',
                     },
-                    {
-                      name: 'options',
-                      type: 'json',
-                      admin: {
-                        components: {
-                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
-                        },
-                        description: 'Default options for this model (global)',
-                      },
-                      label: 'Global Model Options',
-                    },
+                    providerOptionsField,
                   ],
                   label: '',
                 },
@@ -211,17 +260,6 @@ export const AIProvidersGlobal: GlobalConfig = {
                         },
                       },
                       label: 'Default Model',
-                    },
-                    {
-                      name: 'options',
-                      type: 'json',
-                      admin: {
-                        components: {
-                          Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
-                        },
-                        description: 'Default options for this model (global)',
-                      },
-                      label: 'Global Model Options',
                     },
                   ],
                   label: '',

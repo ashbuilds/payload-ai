@@ -15,9 +15,35 @@ import type {
   OpenAIBlockData,
   OpenAICompatibleBlockData,
   ProviderBlockData,
+  ProviderOption,
   ProviderRegistry,
   XAIBlockData,
 } from './types.js'
+
+// Helper to convert array of options back to a record
+export function parseProviderOptions(options?: ProviderOption[]): Record<string, any> {
+  if (!options || !Array.isArray(options)) {
+    return {}
+  }
+  return options.reduce((acc, opt) => {
+    if (!opt.key || !opt.type) {
+      return acc
+    }
+    if (opt.type === 'text' && opt.valueText !== undefined) {
+      acc[opt.key] = opt.valueText
+    }
+    if (opt.type === 'number' && opt.valueNumber !== undefined) {
+      acc[opt.key] = opt.valueNumber
+    }
+    if (opt.type === 'boolean' && opt.valueBoolean !== undefined) {
+      acc[opt.key] = opt.valueBoolean
+    }
+    if (opt.type === 'options' && Array.isArray(opt.valueOptions)) {
+      acc[opt.key] = opt.valueOptions.map((o) => o.value)
+    }
+    return acc
+  }, {} as Record<string, any>)
+}
 
 // ─── Cache layer ────────────────────────────────────────────────
 // Module-level caches with TTL to avoid redundant DB queries.
@@ -180,12 +206,6 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
 
     const enabledModels = providerBlock.models.filter((m) => m.enabled)
 
-    const options = {
-      image:
-        'imageProviderOptions' in providerBlock ? providerBlock.imageProviderOptions : undefined,
-      text: 'textProviderOptions' in providerBlock ? providerBlock.textProviderOptions : undefined,
-      tts: 'ttsProviderOptions' in providerBlock ? providerBlock.ttsProviderOptions : undefined,
-    }
 
     registry[blockType] = {
       id: blockType,
@@ -195,7 +215,7 @@ export async function getProviderRegistry(payload: Payload): Promise<ProviderReg
       factory,
       instance: undefined,
       models: enabledModels,
-      options,
+
     }
   }
 
@@ -229,7 +249,6 @@ export async function getLanguageModel(
   payload: Payload,
   providerId?: string,
   modelId?: string,
-  options?: Record<string, any>,
 ): Promise<LanguageModel> {
   // Single defaults fetch for the entire function
   const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
@@ -241,14 +260,6 @@ export async function getLanguageModel(
     modelId = defaults?.text?.model
   }
 
-  // Extract global default options if using the default provider
-  let globalDefaultOptions: Record<string, any> = {}
-  if (providerId) {
-    const resolvedDefaults = defaults ?? await getGlobalDefaults(payload)
-    if (resolvedDefaults?.text?.provider === providerId) {
-      globalDefaultOptions = resolvedDefaults?.text?.options || {}
-    }
-  }
 
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
@@ -264,15 +275,13 @@ export async function getLanguageModel(
     throw new Error(`Provider ${providerId} is not enabled`)
   }
 
+  const globalDefaultOptions =
+    defaults?.text?.provider === providerId
+      ? parseProviderOptions(defaults?.text?.providerOptions)
+      : {}
+
   const providerInstance = await resolveProviderInstance(provider)
-
-  const finalOptions = {
-    ...(provider.options?.text || {}),
-    ...globalDefaultOptions,
-    ...(options || {}),
-  }
-
-  return providerInstance(modelId, finalOptions)
+  return providerInstance(modelId, globalDefaultOptions)
 }
 
 /**
@@ -282,7 +291,6 @@ export async function getImageModel(
   payload: Payload,
   providerId?: string,
   modelId?: string,
-  options?: Record<string, any>,
   isMultimodalText?: boolean,
 ) {
   const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
@@ -294,13 +302,6 @@ export async function getImageModel(
     modelId = defaults?.image?.model
   }
 
-  let globalDefaultOptions: Record<string, any> = {}
-  if (providerId) {
-    const resolvedDefaults = defaults ?? await getGlobalDefaults(payload)
-    if (resolvedDefaults?.image?.provider === providerId) {
-      globalDefaultOptions = resolvedDefaults?.image?.options || {}
-    }
-  }
 
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
@@ -313,11 +314,10 @@ export async function getImageModel(
     throw new Error(`Provider ${providerId} not found`)
   }
 
-  const finalOptions = {
-    ...(provider.options?.image || {}),
-    ...globalDefaultOptions,
-    ...(options || {}),
-  }
+  const globalDefaultOptions =
+    defaults?.image?.provider === providerId
+      ? parseProviderOptions(defaults?.image?.providerOptions)
+      : {}
 
   const instance = await resolveProviderInstance(provider)
 
@@ -328,7 +328,7 @@ export async function getImageModel(
     'image' in instance &&
     typeof instance.image === 'function'
   ) {
-    return instance.image(modelId, finalOptions)
+    return instance.image(modelId, globalDefaultOptions)
   }
 
   // Also check if instance is an object with image method
@@ -338,11 +338,11 @@ export async function getImageModel(
     'image' in instance &&
     !isMultimodalText
   ) {
-    return (instance as AIProvider).image?.(modelId, finalOptions)
+    return (instance as AIProvider).image?.(modelId, globalDefaultOptions)
   }
 
   // Fallback for providers that might return the model directly
-  return typeof instance === 'function' ? instance(modelId, finalOptions) : instance
+  return typeof instance === 'function' ? instance(modelId, globalDefaultOptions) : instance
 }
 
 /**
@@ -352,7 +352,6 @@ export async function getTTSModel(
   payload: Payload,
   providerId?: string,
   modelId?: string,
-  options?: Record<string, any>,
 ) {
   const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
 
@@ -363,13 +362,6 @@ export async function getTTSModel(
     modelId = defaults?.tts?.model
   }
 
-  let globalDefaultOptions: Record<string, any> = {}
-  if (providerId) {
-    const resolvedDefaults = defaults ?? await getGlobalDefaults(payload)
-    if (resolvedDefaults?.tts?.provider === providerId) {
-      globalDefaultOptions = resolvedDefaults?.tts?.options || {}
-    }
-  }
 
   if (!providerId || !modelId) {
     throw new Error('Provider and model must be specified or configured in defaults')
@@ -382,16 +374,15 @@ export async function getTTSModel(
     throw new Error(`Provider ${providerId} not found`)
   }
 
-  const finalOptions = {
-    ...(provider.options?.tts || {}),
-    ...globalDefaultOptions,
-    ...(options || {}),
-  }
+  const globalDefaultOptions =
+    defaults?.tts?.provider === providerId
+      ? parseProviderOptions(defaults?.tts?.providerOptions)
+      : {}
 
   const instance = await resolveProviderInstance(provider)
 
   if (instance?.speech) {
-    return instance.speech(modelId, finalOptions)
+    return instance.speech(modelId, globalDefaultOptions)
   }
-  return typeof instance === 'function' ? instance(modelId, finalOptions) : instance
+  return typeof instance === 'function' ? instance(modelId, globalDefaultOptions) : instance
 }

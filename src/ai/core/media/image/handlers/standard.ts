@@ -12,13 +12,12 @@ export async function generateStandardImage(
   model: ImageModel,
   args: ImageGenerationArgs,
 ): Promise<MediaResult> {
-  const { n = 1, prompt, providerOptions } = args
+  const { n = 1, prompt } = args
 
   const generateResult = await experimental_generateImage({
     model,
     n,
     prompt,
-    providerOptions,
   })
 
   const { images } = generateResult

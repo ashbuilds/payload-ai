@@ -59,17 +59,6 @@ const modelSelect = {
   label: 'Model',
 }
 
-const providerOptionsJson = {
-  name: 'providerOptions',
-  type: 'json' as const,
-  admin: {
-    components: {
-      Field: '@ai-stack/payloadcms/client#ProviderOptionsEditor',
-    },
-    description: 'Provider-specific options. Defaults are inherited from AI Settings.',
-  },
-  label: 'Provider Options',
-}
 
 const commonTextParams = [
   {
@@ -329,7 +318,7 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'text',
         },
-        fields: [providerSelect, modelSelect, ...commonTextParams, providerOptionsJson],
+        fields: [providerSelect, modelSelect, ...commonTextParams],
         label: 'Text Settings',
       },
 
@@ -340,7 +329,7 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'richtext',
         },
-        fields: [providerSelect, modelSelect, ...commonTextParams, providerOptionsJson],
+        fields: [providerSelect, modelSelect, ...commonTextParams],
         label: 'Rich Text Settings',
       },
 
@@ -351,7 +340,7 @@ informative and accurate but also captivating and beautifully structured.`,
         admin: {
           condition: (data) => data['model-id'] === 'image',
         },
-        fields: [providerSelect, modelSelect, providerOptionsJson],
+        fields: [providerSelect, modelSelect],
         label: 'Image Settings',
       },
 
@@ -375,7 +364,7 @@ informative and accurate but also captivating and beautifully structured.`,
             },
             label: 'Voice',
           },
-          providerOptionsJson,
+
         ],
         label: 'TTS Settings',
       },
@@ -401,7 +390,7 @@ informative and accurate but also captivating and beautifully structured.`,
             max: 20,
             min: 1,
           },
-          providerOptionsJson,
+
         ],
         label: 'Array Settings',
       },

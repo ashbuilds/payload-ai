@@ -19,7 +19,6 @@ export interface PayloadGenerationBaseArgs {
   payload: Payload
   prompt: string
   provider?: string
-  providerOptions?: ProviderOptions
   system?: string
   temperature?: number
 }
@@ -58,7 +57,6 @@ export interface PayloadGenerateMediaArgs {
   payload: Payload
   prompt: string
   provider?: string
-  providerOptions?: ProviderOptions
   seed?: number
   size?: { height: number; width: number }
   speed?: number

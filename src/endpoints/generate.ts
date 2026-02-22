@@ -276,11 +276,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       model: modelSettings.model as string,
       prompt: promptToUse,
       provider: modelSettings.provider as string,
-      providerOptions: {
-        openai: {
-          strictJsonSchema: true,
-        },
-      },
+
       schema: jsonSchema,
       system: systemToUse,
       temperature: modelSettings.temperature as number | undefined,

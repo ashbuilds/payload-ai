@@ -17,7 +17,7 @@ export async function generateText(args: PayloadGenerateTextArgs) {
     payload,
     prompt,
     provider,
-    providerOptions,
+
     system,
     temperature,
     ...rest
@@ -29,7 +29,7 @@ export async function generateText(args: PayloadGenerateTextArgs) {
     : prompt
   
   // Resolve model from registry with provider options
-  const model = await getLanguageModel(payload, provider, modelId, providerOptions)
+  const model = await getLanguageModel(payload, provider, modelId)
   
   // Pass directly to AI SDK
   const options: Record<string, unknown> = {
@@ -40,10 +40,7 @@ export async function generateText(args: PayloadGenerateTextArgs) {
     ...(maxTokens ? { maxOutputTokens: maxTokens } : {}),
   }
 
-  // Also pass providerOptions to generateText for per-call overrides if supported by SDK/Model
-  if (providerOptions) {
-    options.providerOptions = providerOptions
-  }
+
 
   return sdkGenerateText(options as Parameters<typeof sdkGenerateText>[0])
 }

@@ -5,11 +5,6 @@ import type { GenerateObjectResult, GenerateTextResult, ImagePart, JSONValue, Mo
 import type { z } from 'zod'
 
 /**
- * Provider options compatible with AI SDK
- */
-type ProviderOptions = Record<string, Record<string, JSONValue>>
-
-/**
  * Base arguments for all generation methods
  */
 interface PayloadGenerationBaseArgs {
@@ -19,7 +14,6 @@ interface PayloadGenerationBaseArgs {
   model?: string
   prompt: string
   provider?: string
-  providerOptions?: ProviderOptions
   system?: string
   temperature?: number
 }
@@ -55,7 +49,6 @@ interface PayloadGenerateMediaArgs {
   n?: number
   prompt: string
   provider?: string
-  providerOptions?: ProviderOptions
   seed?: number
   size?: { height: number; width: number }
   speed?: number

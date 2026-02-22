@@ -2,6 +2,15 @@ import type { LanguageModel } from 'ai'
 
 export type UseCase = 'image' | 'text' | 'tts' | 'video'
 
+export interface ProviderOption {
+  key: string
+  type: 'boolean' | 'number' | 'options' | 'text'
+  valueBoolean?: boolean
+  valueNumber?: number
+  valueOptions?: { label?: string; value: string }[]
+  valueText?: string
+}
+
 export type ProviderId =
   | 'anthropic'
   | 'elevenlabs'
@@ -113,22 +122,17 @@ export interface ProviderConfig {
   instance?: any // For providers like fal that use singleton
   models: ProviderModel[]
   name: string
-  options?: {
-    image?: Record<string, any>
-    text?: Record<string, any>
-    tts?: Record<string, any>
-  }
+
 }
 
 export type ProviderRegistry = Record<string, ProviderConfig>
 
-// AI Settings global data structure
 export interface AISettingsData {
   defaults: {
-    image?: { model: string; options?: Record<string, any>; provider: string }
-    text?: { model: string; options?: Record<string, any>; provider: string }
-    tts?: { model: string; options?: Record<string, any>; provider: string; voice?: string }
-    video?: { model: string; options?: Record<string, any>; provider: string }
+    image?: { model: string; provider: string; providerOptions?: ProviderOption[] }
+    text?: { model: string; provider: string; providerOptions?: ProviderOption[] }
+    tts?: { model: string; provider: string; providerOptions?: ProviderOption[]; voice?: string }
+    video?: { model: string; provider: string; providerOptions?: ProviderOption[] }
   }
   providers: ProviderBlockData[]
 }

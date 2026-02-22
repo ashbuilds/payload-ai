@@ -12,21 +12,7 @@ export async function generateMultimodalImage(
   model: LanguageModel,
   args: ImageGenerationArgs,
 ): Promise<MediaResult> {
-  const { images = [], prompt, providerOptions = {} } = args
-
-  // Build Google-specific options with required defaults
-  const googleOptions = {
-    imageConfig: {
-      aspectRatio: args.aspectRatio || providerOptions?.aspectRatio || '16:9',
-      ...(providerOptions?.personGeneration && {
-        personGeneration: providerOptions.personGeneration,
-      }),
-      ...(providerOptions?.addWatermark !== undefined && {
-        addWatermark: providerOptions.addWatermark,
-      }),
-    },
-    responseModalities: ['IMAGE', 'TEXT'],
-  }
+  const { images = [], prompt } = args
 
   const result = await generateText({
     model,
@@ -40,9 +26,6 @@ export async function generateMultimodalImage(
         role: 'user',
       },
     ],
-    providerOptions: {
-      google: googleOptions,
-    },
   })
 
   // Extract images from result.files
