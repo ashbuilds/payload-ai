@@ -39,7 +39,7 @@ export function parseProviderOptions(options?: ProviderOption[]): Record<string,
       acc[opt.key] = opt.valueBoolean
     }
     if (opt.type === 'options' && Array.isArray(opt.valueOptions)) {
-      acc[opt.key] = opt.valueOptions.map((o) => o.value)
+      acc[opt.key] = opt.valueOptions
     }
     return acc
   }, {} as Record<string, any>)

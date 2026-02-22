@@ -72,19 +72,6 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
           enabled: true,
           models: findModelsDefault(openaiBlock),
         })
-        
-        if (!defaults.text.provider) {
-          defaults.text.provider = config.generationDefaults?.text?.provider
-          defaults.text.model = config.generationDefaults?.text?.model
-          defaults.text.providerOptions = providerOptions?.openai?.text 
-            ? flattenObject(providerOptions.openai.text) : undefined
-        }
-        if (!defaults.image.provider) {
-          defaults.image.provider = config.generationDefaults?.image?.provider
-          defaults.image.model = config.generationDefaults?.image?.model
-          defaults.image.providerOptions = providerOptions?.openai?.image 
-            ? flattenObject(providerOptions.openai.image) : undefined
-        }
         initializedAny = true
       }
     }
@@ -93,7 +80,6 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     const googleKey = process.env[providerKeys.google[0]] || process.env[providerKeys.google[1]]
     if (googleKey) {
        const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'google')
-      console.log('isAlreadyConfigured:L ', isAlreadyConfigured)
        if (!isAlreadyConfigured) {
          providersArray.push({
            apiKey: googleKey,
@@ -101,13 +87,6 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
            enabled: true,
            models: findModelsDefault(googleBlock),
          })
-         
-         if (!defaults.text.provider) {
-            defaults.text.provider = config.generationDefaults?.text?.provider
-            defaults.text.model = config.generationDefaults?.text?.model
-            defaults.text.providerOptions = providerOptions?.google?.text 
-              ? flattenObject(providerOptions.google.text) : undefined
-         }
          initializedAny = true
        }
     }
@@ -122,13 +101,6 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
           enabled: true,
           models: findModelsDefault(anthropicBlock),
         })
-        
-        if (!defaults.text.provider) {
-          defaults.text.provider = config.generationDefaults?.text?.provider
-          defaults.text.model = config.generationDefaults?.text?.model
-          defaults.text.providerOptions = providerOptions?.anthropic
-            ? flattenObject(providerOptions.anthropic) : undefined
-        }
         initializedAny = true
       }
     }
@@ -143,14 +115,6 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
           enabled: true,
           models: findModelsDefault(elevenlabsBlock),
         })
-        
-        if (!defaults.tts.provider) {
-          defaults.tts.provider = config.generationDefaults?.tts?.provider
-          defaults.tts.model = config.generationDefaults?.tts?.model
-          defaults.tts.voice = config.generationDefaults?.tts?.voice
-          defaults.tts.providerOptions = providerOptions?.elevenlabs
-            ? flattenObject(providerOptions.elevenlabs) : undefined
-        }
         initializedAny = true
       }
     }
@@ -179,14 +143,77 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
           enabled: true,
           models: findModelsDefault(falBlock),
         })
-
-        if (!defaults.image.provider) {
-          defaults.image.provider = config.generationDefaults?.image?.provider
-          defaults.image.model = config.generationDefaults?.image?.model
-          defaults.image.providerOptions = providerOptions?.fal
-            ? flattenObject(providerOptions.fal) : undefined
-        }
         initializedAny = true
+      }
+    }
+
+    // Setup defaults globally regardless of whether providers were newly added or not
+    const configuredProviders = [...(existing.providers || []), ...providersArray]
+    if (configuredProviders.length > 0) {
+      if (!defaults.text.provider && config.generationDefaults?.text) {
+        defaults.text.provider = config.generationDefaults.text.provider
+        defaults.text.model = config.generationDefaults.text.model
+        initializedAny = true
+      }
+      if (!existing.defaults?.text?.providerOptions?.length) {
+        const textOpts: any[] = []
+        for (const [providerName, options] of Object.entries(providerOptions || {})) {
+          if (options?.text) textOpts.push(...flattenObject(options.text, '', providerName))
+        }
+        if (textOpts.length > 0) {
+          defaults.text.providerOptions = textOpts
+          initializedAny = true
+        }
+      }
+
+      if (!defaults.image.provider && config.generationDefaults?.image) {
+        defaults.image.provider = config.generationDefaults.image.provider
+        defaults.image.model = config.generationDefaults.image.model
+        initializedAny = true
+      }
+
+      if (!existing.defaults?.image?.providerOptions?.length) {
+        const imageOpts: any[] = []
+        for (const [providerName, options] of Object.entries(providerOptions || {})) {
+          if (options?.image) imageOpts.push(...flattenObject(options.image, '', providerName))
+        }
+        if (imageOpts.length > 0) {
+          defaults.image.providerOptions = imageOpts
+          initializedAny = true
+        }
+      }
+
+      if (!defaults.tts.provider && config.generationDefaults?.tts) {
+        defaults.tts.provider = config.generationDefaults.tts.provider
+        defaults.tts.model = config.generationDefaults.tts.model
+        defaults.tts.voice = config.generationDefaults.tts.voice
+        initializedAny = true
+      }
+      if (!existing.defaults?.tts?.providerOptions?.length) {
+        const ttsOpts: any[] = []
+        for (const [providerName, options] of Object.entries(providerOptions || {})) {
+          if (options?.tts) ttsOpts.push(...flattenObject(options.tts, '', providerName))
+        }
+        if (ttsOpts.length > 0) {
+          defaults.tts.providerOptions = ttsOpts
+          initializedAny = true
+        }
+      }
+
+      if (!defaults.video.provider && config.generationDefaults?.video) {
+        defaults.video.provider = config.generationDefaults.video.provider
+        defaults.video.model = config.generationDefaults.video.model
+        initializedAny = true
+      }
+      if (!existing.defaults?.video?.providerOptions?.length) {
+        const videoOpts: any[] = []
+        for (const [providerName, options] of Object.entries(providerOptions || {})) {
+          if (options?.video) videoOpts.push(...flattenObject(options.video, '', providerName))
+        }
+        if (videoOpts.length > 0) {
+          defaults.video.providerOptions = videoOpts
+          initializedAny = true
+        }
       }
     }
 
@@ -195,7 +222,7 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         slug: 'ai-providers',
         data: {
           defaults,
-          providers: [...(existing.providers || []), ...providersArray],
+          providers: configuredProviders,
         },
       })
       payload.logger.info(`— AI Plugin: Auto-setup complete. Handled defaults for seeded providers.`)

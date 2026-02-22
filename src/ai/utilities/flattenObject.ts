@@ -17,6 +17,7 @@ import type { ProviderOption } from '../providers/types.js'
 export function flattenObject(
   obj: Record<string, any>,
   prefix = '',
+  provider?: string,
 ): ProviderOption[] {
   let result: ProviderOption[] = []
 
@@ -32,21 +33,24 @@ export function flattenObject(
       result.push({
         type: 'options',
         key: newKey,
-        valueOptions: value.map((v) => ({ value: String(v) })),
+        provider,
+        valueOptions: value.map((v) => String(v)),
       })
     } else if (typeof value === 'object' && value !== null) {
       // Recurse into nested objects
-      result = result.concat(flattenObject(value, newKey))
+      result = result.concat(flattenObject(value, newKey, provider))
     } else if (typeof value === 'boolean') {
       result.push({
         type: 'boolean',
         key: newKey,
+        provider,
         valueBoolean: value,
       })
     } else if (typeof value === 'number') {
       result.push({
         type: 'number',
         key: newKey,
+        provider,
         valueNumber: value,
       })
     } else {
@@ -54,6 +58,7 @@ export function flattenObject(
       result.push({
         type: 'text',
         key: newKey,
+        provider,
         valueText: String(value),
       })
     }

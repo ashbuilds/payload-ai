@@ -4,10 +4,11 @@ export type UseCase = 'image' | 'text' | 'tts' | 'video'
 
 export interface ProviderOption {
   key: string
+  provider?: string
   type: 'boolean' | 'number' | 'options' | 'text'
   valueBoolean?: boolean
   valueNumber?: number
-  valueOptions?: { label?: string; value: string }[]
+  valueOptions?: string[]
   valueText?: string
 }
 

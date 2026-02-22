@@ -12,6 +12,13 @@ const providerOptionsField: Field = {
   },
   fields: [
     {
+      name: 'provider',
+      type: 'text',
+      admin: {
+        hidden: true,
+      },
+    },
+    {
       name: 'key',
       type: 'text',
       label: 'Option Key',
@@ -59,8 +66,8 @@ const providerOptionsField: Field = {
           type: 'checkbox',
           admin: {
             condition: (_, siblingData) => siblingData?.type === 'boolean',
-            description: "Select default state or leave empty",
-            style: { marginTop: "26px" },
+            description: 'Select default state or leave empty',
+            style: { marginTop: '26px' },
             width: '70%',
           },
           label: 'Enabled',
@@ -70,7 +77,7 @@ const providerOptionsField: Field = {
           type: 'text',
           admin: {
             condition: (_, siblingData) => siblingData?.type === 'options',
-            description: "Enter space separated text values",
+            description: 'Enter space separated text values',
             width: '70%',
           },
           hasMany: true,
