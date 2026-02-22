@@ -20,6 +20,10 @@ import type {
 
 import { unflattenObject } from '../utilities/unflattenObject.js'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
 // Helper to convert array of options back to a record
 export function parseProviderOptions(options?: ProviderOption[]): Record<string, any> {
   if (!options || !Array.isArray(options)) {
@@ -105,16 +109,60 @@ function resolveEffectiveProviderOptions({
   providerId?: string
   settingsOverride?: Record<string, unknown>
 }): Record<string, any> {
+  const preNormalizedOptions =
+    providerId && isRecord(settingsOverride) && isRecord(settingsOverride[providerId])
+      ? (settingsOverride[providerId] as Record<string, any>)
+      : {}
+
   const globalDefaultOptions =
     defaultsForUseCase?.provider === providerId
       ? parseProviderOptions(resolveProviderOptions(defaultsForUseCase))
       : {}
   const overrideOptions =
-    settingsOverride?.provider === providerId
-      ? parseProviderOptions(resolveProviderOptions(settingsOverride as { provider?: string }))
-      : {}
+    Object.keys(preNormalizedOptions).length > 0
+      ? preNormalizedOptions
+      : settingsOverride?.provider === providerId
+        ? parseProviderOptions(resolveProviderOptions(settingsOverride as { provider?: string }))
+        : {}
 
   return deepMergeOptions(globalDefaultOptions, overrideOptions)
+}
+
+export function toAISDKProviderOptions({
+  defaultsForUseCase,
+  providerId,
+  settingsOverride,
+}: {
+  defaultsForUseCase?: { provider?: string }
+  providerId?: string
+  settingsOverride?: Record<string, unknown>
+}): Record<string, Record<string, any>> | undefined {
+  if (!providerId) {
+    return undefined
+  }
+  
+  console.log('--- DEBUG toAISDKProviderOptions STARTED ---')
+  console.log('providerId:', providerId)
+  console.log('settingsOverride.po_google is array?', Array.isArray(settingsOverride?.po_google))
+
+  const resolved = resolveEffectiveProviderOptions({
+    defaultsForUseCase,
+    providerId,
+    settingsOverride,
+  })
+
+  console.log('resolved options in toAISDKProviderOptions:', JSON.stringify(resolved))
+
+  if (Object.keys(resolved).length === 0) {
+    return undefined
+  }
+
+  const finalRes = {
+    [providerId]: resolved,
+  }
+  
+  console.log('Returning from toAISDKProviderOptions:', JSON.stringify(finalRes))
+  return finalRes
 }
 
 // ─── Cache layer ────────────────────────────────────────────────

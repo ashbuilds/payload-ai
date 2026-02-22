@@ -2,6 +2,7 @@ import { generateText, type LanguageModel, ModelMessage } from 'ai'
 
 import type { ImageGenerationArgs, MediaResult, MultimodalImageFile } from '../../types.js'
 
+import { toAISDKProviderOptions } from '../../../../providers/registry.js'
 import { convertToBuffer, getExtensionFromMimeType } from '../../utils.js'
 
 /**
@@ -12,10 +13,16 @@ export async function generateMultimodalImage(
   model: LanguageModel,
   args: ImageGenerationArgs,
 ): Promise<MediaResult> {
-  const { images = [], prompt } = args
+  const { images = [], prompt, provider, providerOptions } = args
 
+  const aiSdkProviderOptions = toAISDKProviderOptions({
+    providerId: provider,
+    settingsOverride: providerOptions,
+  })
+  
   const result = await generateText({
     model,
+    providerOptions: aiSdkProviderOptions,
     // onStepFinish: (step) => {
     //   console.log('step finish: ', step.files)
     //   console.log('step finish: ', step.response)
