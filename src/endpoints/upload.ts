@@ -20,6 +20,7 @@ import { getFieldBySchemaPath } from '../utilities/fields/getFieldBySchemaPath.j
 import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
 import { resolveImageReferences } from '../utilities/images/resolveImageReferences.js'
 import { extendContextWithPromptFields } from '../utilities/buildPromptUtils.js'
+import { sanitizeLog } from '../utilities/sanitizeLog.js'
 
 /**
  * Image/video/audio upload generation endpoint handler.
@@ -69,10 +70,10 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     }
 
     let { prompt: promptTemplate = '' } = instructions
-    
+
     // Convert Lexical JSON to string template if needed
     if (promptTemplate && typeof promptTemplate === 'object') {
-       promptTemplate = lexicalToPromptTemplate(promptTemplate)
+      promptTemplate = lexicalToPromptTemplate(promptTemplate)
     }
 
     const { images: sampleImages = [] } = instructions
@@ -103,13 +104,16 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
 
     if (pluginConfig.debugging) {
       req.payload.logger.info(
-        {
+        sanitizeLog({
           contextDataKeys: Object.keys(contextData),
           contextDataSample: Object.fromEntries(
-            Object.entries(contextData).map(([k, v]) => [k, typeof v === 'object' ? `[object]` : v])
+            Object.entries(contextData).map(([k, v]) => [
+              k,
+              typeof v === 'object' ? `[object]` : v,
+            ]),
           ),
           promptTemplate: promptTemplate,
-        },
+        }),
         `— AI Plugin: DEBUG upload context before replacePlaceholders`,
       )
     }
@@ -139,9 +143,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     let targetField: Field | null | undefined
 
     try {
-      const targetCollection = req.payload.config.collections.find(
-        (c) => c.slug === collectionSlug,
-      )
+      const targetCollection = req.payload.config.collections.find((c) => c.slug === collectionSlug)
       if (targetCollection && schemaPath) {
         targetField = getFieldBySchemaPath(targetCollection, schemaPath)
       }
@@ -179,17 +181,12 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     }
 
     if (pluginConfig.debugging) {
-      req.payload.logger.info(
-        { text: promptToUse },
-        `— AI Plugin: Executing media generation`,
-      )
+      req.payload.logger.info(sanitizeLog({ text: promptToUse }), `— AI Plugin: Executing media generation`)
     }
 
     // Prepare callback URL for async jobs
     const serverURL =
-      req.payload.config?.serverURL ||
-      process.env.SERVER_URL ||
-      process.env.NEXT_PUBLIC_SERVER_URL
+      req.payload.config?.serverURL || process.env.SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL
 
     const callbackUrl = serverURL
       ? `${serverURL.replace(/\/$/, '')}/api${PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK}?instructionId=${instructionId}`
@@ -269,7 +266,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
 
     if (pluginConfig.debugging) {
       req.payload.logger.info(
-        generateParams,
+        sanitizeLog(generateParams),
         '— AI Plugin: Final generation parameters for media',
       )
     }
@@ -300,7 +297,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
 
       for (const file of result.files) {
         let assetData: { alt?: string; id: number | string }
-        
+
         // Create a synthetic result for the single file to pass to mediaUpload
         const singleFileResult = {
           files: [file],
@@ -337,13 +334,17 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       // Check if target field supports multiple values
       let hasMany = false
       if (targetField) {
-        if (targetField.type === 'relationship' || targetField.type === 'upload' || targetField.type === 'select') {
+        if (
+          targetField.type === 'relationship' ||
+          targetField.type === 'upload' ||
+          targetField.type === 'select'
+        ) {
           hasMany = (targetField as any).hasMany === true
         }
       }
 
       if (hasMany) {
-         return new Response(
+        return new Response(
           JSON.stringify({
             result: uploadedDocs.map((d) => ({
               id: d.id,
@@ -401,8 +402,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     return new Response(JSON.stringify({ error: message }), {
       headers: { 'Content-Type': 'application/json' },
       status:
-        message.includes('Authentication required') ||
-        message.includes('Insufficient permissions')
+        message.includes('Authentication required') || message.includes('Insufficient permissions')
           ? 401
           : 500,
     })

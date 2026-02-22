@@ -15,6 +15,7 @@ import { extractImageData } from '../utilities/images/extractImageData.js'
 import { type FetchableImage, fetchImages } from '../utilities/images/fetchImages.js'
 import { resolveImageReferences } from '../utilities/images/resolveImageReferences.js'
 import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
+import { sanitizeLog } from '../utilities/sanitizeLog.js'
 
 /**
  * Text/rich-text generation endpoint handler.
@@ -101,7 +102,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
 
       if (pluginConfig.debugging) {
         req.payload.logger.info(
-          { smartPrompt: promptTemplate },
+          sanitizeLog({ smartPrompt: promptTemplate }),
           `— AI Plugin: Using smart fallback prompt for ${schemaPath}`,
         )
       }
@@ -113,10 +114,10 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       // Debug: Log what nodes were received and what definitions remain
       if (pluginConfig.debugging) {
         req.payload.logger.info(
-          {
+          sanitizeLog({
             receivedNodes: allowedEditorNodes,
             remainingDefinitions: Object.keys(allowedEditorSchema.definitions || {}),
-          },
+          }),
           '— AI Plugin: Schema filtering debug',
         )
       }
@@ -158,7 +159,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
     })
 
     if (pluginConfig.debugging) {
-      req.payload.logger.info({ prompts }, `— AI Plugin: Executing text prompt on ${schemaPath}`)
+      req.payload.logger.info(sanitizeLog({ prompts }), `— AI Plugin: Executing text prompt on ${schemaPath}`)
     }
 
     // Build per-field JSON schema for structured generation when applicable
@@ -287,7 +288,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
 
     if (pluginConfig.debugging) {
       req.payload.logger.info(
-        generateParams,
+        sanitizeLog(generateParams),
         '— AI Plugin: Final generation parameters for text/rich-text',
       )
     }
