@@ -33,60 +33,6 @@ export const xaiBlock: Block = {
           label: 'Setup',
         },
 
-        // 2. Provider Options tab
-        {
-          fields: [
-            {
-              name: 'textProviderOptions',
-              type: 'group',
-              admin: {
-                description: 'Default provider options for text generation models.',
-              },
-              fields: [
-                {
-                  name: 'temperature',
-                  type: 'number',
-                  defaultValue: 1.0,
-                  label: 'Default Temperature',
-                  max: 2.0,
-                  min: 0.0,
-                },
-                {
-                  name: 'max_tokens',
-                  type: 'number',
-                  label: 'Max Tokens',
-                },
-                {
-                  name: 'top_p',
-                  type: 'number',
-                  defaultValue: 1.0,
-                  label: 'Top P',
-                  max: 1.0,
-                  min: 0.0,
-                },
-                {
-                  name: 'frequency_penalty',
-                  type: 'number',
-                  defaultValue: 0,
-                  label: 'Frequency Penalty',
-                  max: 2,
-                  min: -2,
-                },
-                {
-                  name: 'presence_penalty',
-                  type: 'number',
-                  defaultValue: 0,
-                  label: 'Presence Penalty',
-                  max: 2,
-                  min: -2,
-                },
-              ],
-              label: 'Text Provider Options',
-            },
-          ],
-          label: 'Provider Options',
-        },
-
         // 3. Models tab
         {
           fields: [

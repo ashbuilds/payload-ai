@@ -19,6 +19,7 @@ import { fetchVoices } from './endpoints/fetchVoices.js'
 import { endpoints } from './endpoints/index.js'
 import { translations } from './translations/index.js'
 import { updateFieldsConfig } from './utilities/fields/updateFieldsConfig.js'
+import { autoSetupProviders } from './utilities/init/autoSetupProviders.js'
 
 const defaultPluginConfig: PluginConfig = {
   access: {
@@ -225,6 +226,9 @@ const payloadAiPlugin =
 
       // Use Object.defineProperty to safely add ai to payload
       Object.defineProperty(payload, 'ai', { value: ai, writable: true })
+
+      // Handle Provider Options & seeding auto-setup
+      await autoSetupProviders(payload, pluginConfig)
     }
 
     return updatedConfig

@@ -1,9 +1,9 @@
 import type { LanguageModel } from 'ai'
 import type { Payload } from 'payload'
 
-export type { ProviderId } from './types.js'
-
 import * as process from 'node:process'
+
+import { unflattenObject } from '../utilities/unflattenObject.js'
 
 import type {
   AIProvider,
@@ -25,7 +25,7 @@ export function parseProviderOptions(options?: ProviderOption[]): Record<string,
   if (!options || !Array.isArray(options)) {
     return {}
   }
-  return options.reduce((acc, opt) => {
+  const flatOptions = options.reduce((acc, opt) => {
     if (!opt.key || !opt.type) {
       return acc
     }
@@ -43,6 +43,8 @@ export function parseProviderOptions(options?: ProviderOption[]): Record<string,
     }
     return acc
   }, {} as Record<string, any>)
+
+  return unflattenObject(flatOptions)
 }
 
 // ─── Cache layer ────────────────────────────────────────────────

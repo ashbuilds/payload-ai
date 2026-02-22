@@ -33,49 +33,6 @@ export const anthropicBlock: Block = {
           label: 'Setup',
         },
 
-        // 2. Provider Options tab
-        {
-          fields: [
-            {
-              name: 'textProviderOptions',
-              type: 'group',
-              admin: {
-                description: 'Default provider options for text generation models.',
-              },
-              fields: [
-                {
-                  name: 'temperature',
-                  type: 'number',
-                  defaultValue: 1.0,
-                  label: 'Default Temperature',
-                  max: 1.0,
-                  min: 0.0,
-                },
-                {
-                  name: 'max_tokens',
-                  type: 'number',
-                  defaultValue: 4096,
-                  label: 'Max Tokens',
-                },
-                {
-                  name: 'top_p',
-                  type: 'number',
-                  label: 'Top P',
-                  max: 1.0,
-                  min: 0.0,
-                },
-                {
-                  name: 'top_k',
-                  type: 'number',
-                  label: 'Top K',
-                },
-              ],
-              label: 'Text Provider Options',
-            },
-          ],
-          label: 'Provider Options',
-        },
-
         // 3. Models tab
         {
           fields: [

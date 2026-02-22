@@ -68,15 +68,24 @@ export interface PluginConfig {
   interfaceName?: string
   mediaUpload?: PluginConfigMediaUploadFunction
   options?: PluginOptions
-  // Override the instructions collection config
-  overrideInstructions?: Partial<CollectionConfig>
-  promptFields?: PromptField[]
   /**
    * Custom action prompts for AI text generation
    * If not provided, uses default prompts
    * You can access default prompts by importing { defaultPrompts } from '@ai-stack/payloadcms'
    */
   prompts?: ActionPrompt[]
+  /**
+   * Pre-configured options that get passed directly to AI SDK providers.
+   * This allows devs to define AI options safely via payload.config.ts.
+   */
+  providerOptions?: {
+    [key: string]: Record<string, any> | undefined // generic fallback
+    anthropic?: Record<string, any>
+    elevenlabs?: Record<string, any>
+    fal?: Record<string, any>
+    google?: Record<string, any>
+    openai?: Record<string, any>
+  }
   /**
    * Custom seed prompt function for generating field-specific prompts
    * If not provided, fields will have empty prompts by default
