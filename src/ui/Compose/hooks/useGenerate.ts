@@ -8,7 +8,9 @@ import type { ActionMenuItems } from '../../../types.js'
 
 import { PLUGIN_API_ENDPOINT_GENERATE } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
+import { useInstructions } from '../../../providers/InstructionsProvider/useInstructions.js'
 import { setSafeLexicalState } from '../../../utilities/lexical/setSafeLexicalState.js'
+import { mergeGeneratedValue } from './mergeGeneratedValue.js'
 import { useGenerateUpload } from './useGenerateUpload.js'
 import { useHistory } from './useHistory.js'
 import { useStreamingUpdate } from './useStreamingUpdate.js'
@@ -24,15 +26,26 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     instructionIdRef.current = instructionId
   }, [instructionId])
 
-  const { field, path: pathFromContext } = useFieldProps()
+  const { field, path: pathFromContext, schemaPath } = useFieldProps()
+  const { appendGenerated } = useInstructions({ schemaPath })
   const editorConfigContext = useEditorConfigContext()
-  const { setValue } = useField<any>({
+  const { setValue, value: currentFieldValue } = useField<any>({
     path: pathFromContext ?? '',
   })
+  const appendGeneratedRef = useRef(!!appendGenerated)
+  const currentFieldValueRef = useRef(currentFieldValue)
   const { set: setHistory } = useHistory()
   const { getData } = useForm()
   const { id: documentId } = useDocumentInfo()
   const locale = useLocale()
+
+  useEffect(() => {
+    appendGeneratedRef.current = !!appendGenerated
+  }, [appendGenerated])
+
+  useEffect(() => {
+    currentFieldValueRef.current = currentFieldValue
+  }, [currentFieldValue])
 
   const {
     isLoading: loadingObject,
@@ -50,9 +63,22 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         if (field.type === 'richText') {
           setHistory(result.object)
           setSafeLexicalState(result.object, editor)
-        } else if ('name' in field && result.object[field.name]) {
-          setHistory(result.object[field.name])
-          setValue(result.object[field.name])
+        } else if ('name' in field && result.object[field.name] !== undefined) {
+          const merged = mergeGeneratedValue({
+            appendGenerated: appendGeneratedRef.current,
+            currentValue: currentFieldValueRef.current,
+            generatedValue: result.object[field.name],
+            hasMany: (field as any).hasMany === true,
+            max: typeof (field as any).max === 'number' ? (field as any).max : undefined,
+            maxRows: typeof (field as any).maxRows === 'number' ? (field as any).maxRows : undefined,
+          })
+
+          if (merged.truncated) {
+            toast.info('Appended values were truncated to this field maximum.')
+          }
+
+          setHistory(merged.value)
+          setValue(merged.value)
         }
       }
     },

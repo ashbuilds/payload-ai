@@ -8,6 +8,13 @@ interface SeedPropertiesArgs {
   req: PayloadRequest
 }
 
+interface SchemaPathFieldInfo {
+  custom?: { ai?: { alwaysShow?: boolean; prompt?: string; system?: string } }
+  hasMany?: boolean
+  relationTo?: string
+  type: string
+}
+
 export const seedProperties = async ({ enabledCollections, req }: SeedPropertiesArgs): Promise<void> => {
   const { payload } = req
 
@@ -29,11 +36,11 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
     const { schemaPathMap } = updateFieldsConfig(collectionConfig)
 
     for (const [schemaPath, fieldInfo] of Object.entries(schemaPathMap)) {
-      const { type, custom, relationTo } = fieldInfo as {
-        custom?: { ai?: { alwaysShow?: boolean; prompt?: string; system?: string } }
-        relationTo?: string
-        type: string
-      }
+      const typedFieldInfo = fieldInfo as SchemaPathFieldInfo
+      const custom = typedFieldInfo.custom
+      const hasMany = typedFieldInfo.hasMany
+      const relationTo = typedFieldInfo.relationTo
+      const type = typedFieldInfo.type
 
       // Check if instruction already exists
       const existingInstruction = await payload.find({
@@ -49,16 +56,21 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
       })
 
       if (existingInstruction.totalDocs > 0) {
+        const doc = existingInstruction.docs[0] as any
+        const currentPrompt = doc.prompt
+        const currentSystem = doc.system
+
+        let needsUpdate = false
+        const updateData: any = {}
+
+        if (!!doc.hasMany !== !!hasMany) {
+          updateData.hasMany = !!hasMany
+          needsUpdate = true
+        }
+
         // If developer has provided custom prompts in the schema, update the existing record
         // but only if the values have actually changed.
         if (custom?.ai?.prompt || custom?.ai?.system || custom?.ai?.alwaysShow !== undefined) {
-          const doc = existingInstruction.docs[0] as any
-          const currentPrompt = doc.prompt
-          const currentSystem = doc.system
-
-          let needsUpdate = false
-          const updateData: any = {}
-
           if (custom?.ai?.prompt && custom.ai.prompt !== currentPrompt) {
             updateData.prompt = stringToLexicalJSON(custom.ai.prompt)
             needsUpdate = true
@@ -71,18 +83,18 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
             updateData.alwaysShow = !!custom.ai.alwaysShow
             needsUpdate = true
           }
+        }
 
-          if (needsUpdate) {
-            try {
-              await payload.update({
-                id: doc.id,
-                collection: PLUGIN_INSTRUCTIONS_TABLE,
-                data: updateData,
-                overrideAccess: true,
-              })
-            } catch (error) {
-              payload.logger.error(`— AI Plugin: Failed to update instruction for ${schemaPath}: ${error}`)
-            }
+        if (needsUpdate) {
+          try {
+            await payload.update({
+              id: doc.id,
+              collection: PLUGIN_INSTRUCTIONS_TABLE,
+              data: updateData,
+              overrideAccess: true,
+            })
+          } catch (error) {
+            payload.logger.error(`— AI Plugin: Failed to update instruction for ${schemaPath}: ${error}`)
           }
         }
         continue
@@ -112,6 +124,7 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
             alwaysShow: !!custom?.ai?.alwaysShow,
             disabled: false,
             'field-type': type,
+            hasMany: !!hasMany,
             'model-id': modelId,
             prompt,
             'relation-to': relationTo,

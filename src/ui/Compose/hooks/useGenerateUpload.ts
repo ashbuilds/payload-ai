@@ -5,6 +5,8 @@ import type { GenerateTextarea } from '../../../types.js'
 
 import { PLUGIN_AI_JOBS_TABLE, PLUGIN_API_ENDPOINT_GENERATE_UPLOAD } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
+import { useInstructions } from '../../../providers/InstructionsProvider/useInstructions.js'
+import { mergeGeneratedValue } from './mergeGeneratedValue.js'
 import { useHistory } from './useHistory.js'
 
 type UseGenerateUploadParams = {
@@ -22,10 +24,13 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
   const { getData } = useForm()
   const { set: setHistory } = useHistory()
 
-  const { field, path: fieldPath } = useFieldProps()
-  const { setValue } = useField<any>({
+  const { field, path: fieldPath, schemaPath } = useFieldProps()
+  const { appendGenerated } = useInstructions({ schemaPath })
+  const { setValue, value: currentFieldValue } = useField<any>({
     path: fieldPath ?? '',
   })
+  const appendGeneratedRef = useRef(!!appendGenerated)
+  const currentFieldValueRef = useRef(currentFieldValue)
 
   // Async job UI state
   const [jobStatus, setJobStatus] = useState<string | undefined>(undefined)
@@ -39,6 +44,14 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
       cancelledRef.current = true
     }
   }, [])
+
+  useEffect(() => {
+    appendGeneratedRef.current = !!appendGenerated
+  }, [appendGenerated])
+
+  useEffect(() => {
+    currentFieldValueRef.current = currentFieldValue
+  }, [currentFieldValue])
 
   const generateUpload = useCallback(async () => {
     const doc = getData()
@@ -65,14 +78,23 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
           const json = await uploadResponse.json()
           const { job, result } = json || {}
           if (result) {
-            if (Array.isArray(result)) {
-              const ids = result.map((r: any) => r.id)
-              setValue(ids)
-              setHistory(ids)
-            } else {
-              setValue(result?.id)
-              setHistory(result?.id)
+            const hasMany = (field as any)?.hasMany === true
+            const generatedValue = Array.isArray(result) ? result.map((r: any) => r.id) : result?.id
+            const merged = mergeGeneratedValue({
+              appendGenerated: appendGeneratedRef.current,
+              currentValue: currentFieldValueRef.current,
+              generatedValue,
+              hasMany,
+              max: typeof (field as any)?.max === 'number' ? (field as any).max : undefined,
+              maxRows: typeof (field as any)?.maxRows === 'number' ? (field as any).maxRows : undefined,
+            })
+
+            if (merged.truncated) {
+              toast.info('Appended values were truncated to this field maximum.')
             }
+
+            setValue(merged.value)
+            setHistory(merged.value)
 
             // Show toast to prompt user to save
             toast.success('Image generated successfully! Click Save to see the preview.')
@@ -98,10 +120,16 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
                   setJobProgress(progress ?? 0)
                   // When result present, set field and finish
                   if (status === 'completed' && result_id) {
+                    const hasMany = (field as any)?.hasMany === true
                     let valueToSet = result_id
 
                     // Attempt to fetch full document for immediate preview
-                    if (field && 'relationTo' in field && typeof field.relationTo === 'string') {
+                    if (
+                      !hasMany &&
+                      field &&
+                      'relationTo' in field &&
+                      typeof field.relationTo === 'string'
+                    ) {
                       let attempts = 0
                       const maxAttempts = 3
                       while (attempts < maxAttempts) {
@@ -130,8 +158,22 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
                       }
                     }
 
-                    setValue(valueToSet)
-                    setHistory(result_id)
+                    const generatedValue = hasMany ? [result_id] : valueToSet
+                    const merged = mergeGeneratedValue({
+                      appendGenerated: appendGeneratedRef.current,
+                      currentValue: currentFieldValueRef.current,
+                      generatedValue,
+                      hasMany,
+                      max: typeof (field as any)?.max === 'number' ? (field as any).max : undefined,
+                      maxRows: typeof (field as any)?.maxRows === 'number' ? (field as any).maxRows : undefined,
+                    })
+
+                    if (merged.truncated) {
+                      toast.info('Appended values were truncated to this field maximum.')
+                    }
+
+                    setValue(merged.value)
+                    setHistory(merged.value)
                     setIsJobActive(false)
                     return
                   }

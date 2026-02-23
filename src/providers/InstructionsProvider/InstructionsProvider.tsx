@@ -57,8 +57,10 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
           [doc['schema-path']]: {
             id: doc.id,
             alwaysShow: !!doc.alwaysShow,
+            appendGenerated: !!doc.appendGenerated,
             disabled: !!doc.disabled,
             fieldType: doc['field-type'],
+            hasMany: !!doc.hasMany,
           },
         }
       })

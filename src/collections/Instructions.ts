@@ -176,6 +176,14 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
         label: 'Relation to',
       },
       {
+        name: 'hasMany',
+        type: 'checkbox',
+        admin: {
+          hidden: true,
+        },
+        defaultValue: false,
+      },
+      {
         name: 'model-id',
         type: 'select',
         admin: {
@@ -217,6 +225,16 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
         },
         defaultValue: false,
         label: 'Always show Compose button',
+      },
+      {
+        name: 'appendGenerated',
+        type: 'checkbox',
+        admin: {
+          condition: (_, current) => current?.hasMany === true && current?.disabled !== true,
+          description: 'If enabled, generated values are appended to current values instead of replacing them.',
+        },
+        defaultValue: false,
+        label: 'Append generated values',
       },
       {
         id: 'ai-prompts-tabs',

@@ -39,6 +39,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
         [currentSchemaPath]: {
           type: field.type,
           custom: field.custom,
+          hasMany: field.hasMany === true,
           label: field.label || field.name,
           relationTo: field.relationTo,
         },
