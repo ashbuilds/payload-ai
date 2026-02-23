@@ -8,7 +8,7 @@ import { falBlock } from '../../ai/providers/blocks/fal.js'
 import { googleBlock } from '../../ai/providers/blocks/google.js'
 import { openaiBlock } from '../../ai/providers/blocks/openai.js'
 import { xaiBlock } from '../../ai/providers/blocks/xai.js'
-import { flattenObject } from '../../ai/utilities/flattenObject.js'
+
 
 const findModelsDefault = (block: any): any[] => {
   let defaultModels: any[] = []
@@ -157,20 +157,11 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         defaults.text.model = config.generationDefaults.text.model
         initializedAny = true
       }
+      
+      const providerSchemaByProvider: Record<string, unknown> = {}
       for (const [providerName, options] of Object.entries(providerOptions || {})) {
-        if (!options?.text) {
-          continue
-        }
-        const providerKey = String(providerName).replace(/\W/g, '_')
-        const fieldName = `po_${providerKey}`
-        const existingOpts = existing.defaults?.text?.[fieldName]
-        if (Array.isArray(existingOpts) && existingOpts.length > 0) {
-          continue
-        }
-        const textOpts = flattenObject(options.text, '', providerName)
-        if (textOpts.length > 0) {
-          defaults.text[fieldName] = textOpts
-          initializedAny = true
+        if (options && typeof options === 'object' && !Array.isArray(options)) {
+          providerSchemaByProvider[providerName] = options
         }
       }
 
@@ -180,44 +171,11 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         initializedAny = true
       }
 
-      for (const [providerName, options] of Object.entries(providerOptions || {})) {
-        if (!options?.image) {
-          continue
-        }
-        const providerKey = String(providerName).replace(/\W/g, '_')
-        const fieldName = `po_${providerKey}`
-        const existingOpts = existing.defaults?.image?.[fieldName]
-        if (Array.isArray(existingOpts) && existingOpts.length > 0) {
-          continue
-        }
-        const imageOpts = flattenObject(options.image, '', providerName)
-        if (imageOpts.length > 0) {
-          defaults.image[fieldName] = imageOpts
-          initializedAny = true
-        }
-      }
-
       if (!defaults.tts.provider && config.generationDefaults?.tts) {
         defaults.tts.provider = config.generationDefaults.tts.provider
         defaults.tts.model = config.generationDefaults.tts.model
         defaults.tts.voice = config.generationDefaults.tts.voice
         initializedAny = true
-      }
-      for (const [providerName, options] of Object.entries(providerOptions || {})) {
-        if (!options?.tts) {
-          continue
-        }
-        const providerKey = String(providerName).replace(/\W/g, '_')
-        const fieldName = `po_${providerKey}`
-        const existingOpts = existing.defaults?.tts?.[fieldName]
-        if (Array.isArray(existingOpts) && existingOpts.length > 0) {
-          continue
-        }
-        const ttsOpts = flattenObject(options.tts, '', providerName)
-        if (ttsOpts.length > 0) {
-          defaults.tts[fieldName] = ttsOpts
-          initializedAny = true
-        }
       }
 
       if (!defaults.video.provider && config.generationDefaults?.video) {
@@ -225,20 +183,16 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
         defaults.video.model = config.generationDefaults.video.model
         initializedAny = true
       }
-      for (const [providerName, options] of Object.entries(providerOptions || {})) {
-        if (!options?.video) {
-          continue
-        }
-        const providerKey = String(providerName).replace(/\W/g, '_')
-        const fieldName = `po_${providerKey}`
-        const existingOpts = existing.defaults?.video?.[fieldName]
-        if (Array.isArray(existingOpts) && existingOpts.length > 0) {
-          continue
-        }
-        const videoOpts = flattenObject(options.video, '', providerName)
-        if (videoOpts.length > 0) {
-          defaults.video[fieldName] = videoOpts
-          initializedAny = true
+
+      if (Object.keys(providerSchemaByProvider).length > 0) {
+        const schemaForUseCases = JSON.stringify(providerSchemaByProvider)
+        const useCases: Array<'image' | 'text' | 'tts' | 'video'> = ['text', 'image', 'tts', 'video']
+
+        for (const useCase of useCases) {
+          if (JSON.stringify(defaults[useCase].schema) !== schemaForUseCases) {
+            defaults[useCase].schema = JSON.parse(schemaForUseCases)
+            initializedAny = true
+          }
         }
       }
     }

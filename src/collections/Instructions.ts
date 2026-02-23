@@ -91,7 +91,7 @@ const commonTextParams = [
 ]
 
 const providerOptionsUIField = {
-  name: 'providerOptionsValues',
+  name: 'providerOptions',
   type: 'json' as const,
   admin: {
     components: {

@@ -18,7 +18,6 @@ export async function generateStandardImage(
     providerId: provider,
     settingsOverride: providerOptions,
   })
-  console.log('generateStandardImage:providerOptions: ', aiSdkProviderOptions)
 
   const generateResult = await experimental_generateImage({
     model,

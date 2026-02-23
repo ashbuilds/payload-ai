@@ -1,8 +1,5 @@
 export type InstructionUseCase = 'image' | 'text' | 'tts' | 'video'
 
-export const providerFieldKey = (providerSlug: string): string =>
-  `po_${String(providerSlug).replace(/\W/g, '_')}`
-
 const hasMeaningfulValue = (value: unknown): boolean => {
   if (value === null || value === undefined) {
     return false
@@ -13,6 +10,28 @@ const hasMeaningfulValue = (value: unknown): boolean => {
   }
 
   return true
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+function deepMergeRecords(
+  base: Record<string, unknown>,
+  override: Record<string, unknown>,
+): Record<string, unknown> {
+  const merged: Record<string, unknown> = { ...base }
+
+  for (const [key, value] of Object.entries(override)) {
+    const current = merged[key]
+    if (isRecord(current) && isRecord(value)) {
+      merged[key] = deepMergeRecords(current, value)
+      continue
+    }
+    merged[key] = value
+  }
+
+  return merged
 }
 
 export function getInstructionSettingsName(modelId: unknown): string | undefined {
@@ -54,197 +73,6 @@ export function getInstructionUseCase(modelId: unknown): InstructionUseCase | un
 
   return undefined
 }
-
-function cloneOptionRows(value: unknown): unknown {
-  if (!Array.isArray(value)) {
-    return value
-  }
-
-  return value.map((row) => {
-    if (row && typeof row === 'object') {
-      return { ...row }
-    }
-    return row
-  })
-}
-
-type ProviderOptionRow = {
-  key: string
-  type: 'boolean' | 'number' | 'options' | 'text'
-  valueBoolean?: boolean
-  valueNumber?: number
-  valueOptions?: string[]
-  valueText?: string
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === 'object' && !Array.isArray(value)
-}
-
-function getScalarRowValue(row: ProviderOptionRow): boolean | number | string | undefined {
-  if (row.type === 'boolean') {
-    return typeof row.valueBoolean === 'boolean' ? row.valueBoolean : undefined
-  }
-
-  if (row.type === 'number') {
-    return typeof row.valueNumber === 'number' && !Number.isNaN(row.valueNumber)
-      ? row.valueNumber
-      : undefined
-  }
-
-  if (row.type === 'options') {
-    if (Array.isArray(row.valueOptions) && row.valueOptions.length > 0) {
-      return String(row.valueOptions[0])
-    }
-    return undefined
-  }
-
-  if (typeof row.valueText === 'string' && row.valueText.trim() !== '') {
-    return row.valueText
-  }
-
-  return undefined
-}
-
-function normalizeProviderOptionsValues(
-  value: unknown,
-): Record<string, unknown> | undefined {
-  if (isRecord(value)) {
-    return value
-  }
-
-  if (!Array.isArray(value)) {
-    return undefined
-  }
-
-  const normalized: Record<string, unknown> = {}
-
-  for (const row of value) {
-    if (!row || typeof row !== 'object' || !('key' in row) || !('type' in row)) {
-      continue
-    }
-
-    const castRow = row as ProviderOptionRow
-    if (!castRow.key) {
-      continue
-    }
-
-    const scalarValue = getScalarRowValue(castRow)
-    if (scalarValue !== undefined) {
-      normalized[castRow.key] = scalarValue
-    }
-  }
-
-  return normalized
-}
-
-function toProviderOptionRows({
-  defaultsForUseCase,
-  provider,
-  values,
-}: {
-  defaultsForUseCase: Record<string, unknown>
-  provider: string
-  values: Record<string, unknown>
-}): ProviderOptionRow[] {
-  const rows: ProviderOptionRow[] = []
-  const optionTypeByKey = new Map<string, ProviderOptionRow['type']>()
-  const poField = providerFieldKey(provider)
-  const defaultRows = defaultsForUseCase[poField]
-
-  if (Array.isArray(defaultRows)) {
-    for (const row of defaultRows) {
-      if (
-        row &&
-        typeof row === 'object' &&
-        'key' in row &&
-        'type' in row &&
-        typeof row.key === 'string' &&
-        typeof row.type === 'string'
-      ) {
-        const type = row.type as ProviderOptionRow['type']
-        optionTypeByKey.set(row.key, type)
-      }
-    }
-  }
-
-  for (const [key, value] of Object.entries(values)) {
-    if (value === undefined || value === null) {
-      continue
-    }
-
-    const configuredType = optionTypeByKey.get(key)
-    if (!configuredType && optionTypeByKey.size > 0) {
-      continue
-    }
-
-    const inferredType: ProviderOptionRow['type'] =
-      configuredType ||
-      (typeof value === 'boolean'
-        ? 'boolean'
-        : typeof value === 'number'
-          ? 'number'
-          : Array.isArray(value)
-            ? 'options'
-            : 'text')
-
-    if (inferredType === 'boolean') {
-      rows.push({
-        type: 'boolean',
-        key,
-        valueBoolean: !!value,
-      })
-      continue
-    }
-
-    if (inferredType === 'number') {
-      const numeric = typeof value === 'number' ? value : Number(value)
-      if (!Number.isNaN(numeric)) {
-        rows.push({
-          type: 'number',
-          key,
-          valueNumber: numeric,
-        })
-      }
-      continue
-    }
-
-    if (inferredType === 'options') {
-      const options = Array.isArray(value)
-        ? value
-            .filter(
-              (item) =>
-                typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean',
-            )
-            .map((item) => String(item))
-        : typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
-          ? [String(value)]
-          : []
-
-      if (options.length === 0) {
-        continue
-      }
-
-      rows.push({
-        type: 'options',
-        key,
-        valueOptions: options,
-      })
-      continue
-    }
-
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      rows.push({
-        type: 'text',
-        key,
-        valueText: String(value),
-      })
-    }
-  }
-
-  return rows
-}
-
 export function resolveEffectiveInstructionSettings({
   defaults,
   instructions,
@@ -271,13 +99,29 @@ export function resolveEffectiveInstructionSettings({
   }
 
   for (const [key, value] of Object.entries(instructionSettings)) {
-    if (key === 'providerOptionsValues') {
-      continue
-    }
+    if (key === 'providerOptions') {
+      const selectedProvider =
+        typeof instructionSettings.provider === 'string'
+          ? instructionSettings.provider
+          : typeof defaultsForUseCase.provider === 'string'
+            ? defaultsForUseCase.provider
+            : undefined
 
-    if (key.startsWith('po_')) {
-      if (value !== undefined && value !== null) {
-        effectiveSettings[key] = cloneOptionRows(value)
+      if (selectedProvider && isRecord(value) && isRecord(value[selectedProvider])) {
+        const existingOpts = isRecord(effectiveSettings.providerOptions)
+          ? effectiveSettings.providerOptions
+          : {}
+        const existingProviderOpts = isRecord(existingOpts[selectedProvider])
+          ? existingOpts[selectedProvider]
+          : {}
+        const incomingProviderOpts = value[selectedProvider] as Record<string, unknown>
+
+        effectiveSettings.providerOptions = {
+          ...existingOpts,
+          [selectedProvider]: {
+            ...deepMergeRecords(existingProviderOpts, incomingProviderOpts),
+          },
+        }
       }
       continue
     }
@@ -285,20 +129,6 @@ export function resolveEffectiveInstructionSettings({
     if (hasMeaningfulValue(value)) {
       effectiveSettings[key] = value
     }
-  }
-
-  const selectedProvider = effectiveSettings.provider
-  const providerOptionValues = normalizeProviderOptionsValues(
-    instructionSettings.providerOptionsValues,
-  )
-
-  if (typeof selectedProvider === 'string' && providerOptionValues) {
-    const poField = providerFieldKey(selectedProvider)
-    effectiveSettings[poField] = toProviderOptionRows({
-      defaultsForUseCase,
-      provider: selectedProvider,
-      values: providerOptionValues,
-    })
   }
 
   return {

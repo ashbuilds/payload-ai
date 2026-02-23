@@ -7,6 +7,7 @@ export { DynamicModelSelect } from '../ui/DynamicModelSelect/index.js'
 export { DynamicProviderSelect } from '../ui/DynamicProviderSelect/index.js'
 export { DynamicVoiceSelect } from '../ui/DynamicVoiceSelect/index.js'
 export { EncryptedTextField } from '../ui/EncryptedTextField/index.js'
+export { GlobalProviderOptions } from '../ui/GlobalProviderOptions/index.js'
 export { InstructionProviderOptions } from '../ui/InstructionProviderOptions/index.js'
 export { ModelRowLabel } from '../ui/ModelRowLabel/index.js'
 

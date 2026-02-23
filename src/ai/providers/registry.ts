@@ -13,66 +13,33 @@ import type {
   OpenAIBlockData,
   OpenAICompatibleBlockData,
   ProviderBlockData,
-  ProviderOption,
   ProviderRegistry,
   XAIBlockData,
 } from './types.js'
-
-import { unflattenObject } from '../utilities/unflattenObject.js'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
-// Helper to convert array of options back to a record
-export function parseProviderOptions(options?: ProviderOption[]): Record<string, any> {
-  if (!options || !Array.isArray(options)) {
-    return {}
-  }
-  const flatOptions = options.reduce(
-    (acc, opt) => {
-      if (!opt.key || !opt.type) {
-        return acc
-      }
-      if (opt.type === 'text' && opt.valueText !== undefined) {
-        acc[opt.key] = opt.valueText
-      }
-      if (opt.type === 'number' && opt.valueNumber !== undefined) {
-        acc[opt.key] = opt.valueNumber
-      }
-      if (opt.type === 'boolean' && opt.valueBoolean !== undefined) {
-        acc[opt.key] = opt.valueBoolean
-      }
-      if (opt.type === 'options' && Array.isArray(opt.valueOptions)) {
-        acc[opt.key] =
-          opt.valueOptions.length === 1 ? opt.valueOptions[0] : opt.valueOptions
-      }
-      return acc
-    },
-    {} as Record<string, any>,
-  )
-
-  return unflattenObject(flatOptions)
-}
-
 function resolveProviderOptions(
-  settingsForUseCase: { provider?: string } | undefined,
-): ProviderOption[] | undefined {
+  settingsForUseCase:
+    | {
+        provider?: string
+        providerOptions?: Record<string, unknown>
+      }
+    | undefined,
+): Record<string, unknown> {
   if (!settingsForUseCase) {
-    return undefined
+    return {}
   }
 
   const provider = settingsForUseCase.provider
   if (provider) {
-    const providerKey = String(provider).replace(/\W/g, '_')
-    const byShortKey = `po_${providerKey}` as keyof typeof settingsForUseCase
-    const byShort = settingsForUseCase[byShortKey] as ProviderOption[] | undefined
-    if (Array.isArray(byShort) && byShort.length > 0) {
-      return byShort
-    }
+    const allOptions = settingsForUseCase.providerOptions as Record<string, any> | undefined
+    return allOptions?.[provider] || {}
   }
 
-  return undefined
+  return {}
 }
 
 function deepMergeOptions(
@@ -116,13 +83,13 @@ function resolveEffectiveProviderOptions({
 
   const globalDefaultOptions =
     defaultsForUseCase?.provider === providerId
-      ? parseProviderOptions(resolveProviderOptions(defaultsForUseCase))
+      ? resolveProviderOptions(defaultsForUseCase)
       : {}
   const overrideOptions =
     Object.keys(preNormalizedOptions).length > 0
       ? preNormalizedOptions
       : settingsOverride?.provider === providerId
-        ? parseProviderOptions(resolveProviderOptions(settingsOverride as { provider?: string }))
+        ? resolveProviderOptions(settingsOverride as { provider?: string })
         : {}
 
   return deepMergeOptions(globalDefaultOptions, overrideOptions)
@@ -140,10 +107,6 @@ export function toAISDKProviderOptions({
   if (!providerId) {
     return undefined
   }
-  
-  console.log('--- DEBUG toAISDKProviderOptions STARTED ---')
-  console.log('providerId:', providerId)
-  console.log('settingsOverride.po_google is array?', Array.isArray(settingsOverride?.po_google))
 
   const resolved = resolveEffectiveProviderOptions({
     defaultsForUseCase,
@@ -151,18 +114,13 @@ export function toAISDKProviderOptions({
     settingsOverride,
   })
 
-  console.log('resolved options in toAISDKProviderOptions:', JSON.stringify(resolved))
-
   if (Object.keys(resolved).length === 0) {
     return undefined
   }
 
-  const finalRes = {
+  return {
     [providerId]: resolved,
   }
-  
-  console.log('Returning from toAISDKProviderOptions:', JSON.stringify(finalRes))
-  return finalRes
 }
 
 // ─── Cache layer ────────────────────────────────────────────────

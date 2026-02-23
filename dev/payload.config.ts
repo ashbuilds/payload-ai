@@ -79,8 +79,10 @@ const buildConfigWithMemoryDB = async () => {
         },
         providerOptions: {
           google: {
-            'imageConfig.aspectRatio': ['1:1', '3:4', '4:3', '9:16', '16:9'],
-            'imageConfig.imageSize': ['1K', '2K', '4K'],
+            imageConfig: {
+              aspectRatio: ['1:1', '3:4', '4:3', '9:16', '16:9'],
+              imageSize: ['1K', '2K', '4K'],
+            },
             media_resolution: [
               'media_resolution_low',
               'media_resolution_medium',

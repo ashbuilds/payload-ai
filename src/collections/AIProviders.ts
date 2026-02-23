@@ -1,9 +1,7 @@
-import type { Field, GlobalConfig } from 'payload'
+import type { GlobalConfig } from 'payload'
 
 import { allProviderBlocks } from '../ai/providers/blocks/index.js'
 import { invalidateProviderCache } from '../ai/providers/registry.js'
-import { buildProviderOptionsArrayFields } from '../utilities/fields/buildProviderOptionsArrayFields.js'
-const providerOptionsFields: Field[] = buildProviderOptionsArrayFields()
 
 export const AIProvidersGlobal: GlobalConfig = {
   slug: 'ai-providers',
@@ -72,7 +70,23 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Model',
                     },
-                    ...providerOptionsFields,
+                    {
+                      name: 'providerOptions',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#GlobalProviderOptions',
+                        },
+                      },
+                      label: 'Provider Options',
+                    },
+                    {
+                      name: 'schema',
+                      type: 'json',
+                      admin: {
+                        hidden: true,
+                      },
+                    },
                   ],
                   label: '',
                 },
@@ -105,7 +119,23 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Model',
                     },
-                    ...providerOptionsFields,
+                    {
+                      name: 'providerOptions',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#GlobalProviderOptions',
+                        },
+                      },
+                      label: 'Provider Options',
+                    },
+                    {
+                      name: 'schema',
+                      type: 'json',
+                      admin: {
+                        hidden: true,
+                      },
+                    },
                   ],
                   label: '',
                 },
@@ -148,7 +178,23 @@ export const AIProvidersGlobal: GlobalConfig = {
                       },
                       label: 'Default Voice',
                     },
-                    ...providerOptionsFields,
+                    {
+                      name: 'providerOptions',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#GlobalProviderOptions',
+                        },
+                      },
+                      label: 'Provider Options',
+                    },
+                    {
+                      name: 'schema',
+                      type: 'json',
+                      admin: {
+                        hidden: true,
+                      },
+                    },
                   ],
                   label: '',
                 },
@@ -183,6 +229,23 @@ export const AIProvidersGlobal: GlobalConfig = {
                         },
                       },
                       label: 'Default Model',
+                    },
+                    {
+                      name: 'providerOptions',
+                      type: 'json',
+                      admin: {
+                        components: {
+                          Field: '@ai-stack/payloadcms/client#GlobalProviderOptions',
+                        },
+                      },
+                      label: 'Provider Options',
+                    },
+                    {
+                      name: 'schema',
+                      type: 'json',
+                      admin: {
+                        hidden: true,
+                      },
                     },
                   ],
                   label: '',
