@@ -327,8 +327,8 @@ export async function getLanguageModel(
   modelId?: string,
   settingsOverride?: Record<string, unknown>,
 ): Promise<LanguageModel> {
-  // Single defaults fetch for the entire function
-  const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
+  const registry = await getProviderRegistry(payload)
+  const defaults = await getGlobalDefaults(payload)
 
   if (!providerId) {
     providerId = defaults?.text?.provider
@@ -341,7 +341,6 @@ export async function getLanguageModel(
     throw new Error('Provider and model must be specified or configured in defaults')
   }
 
-  const registry = await getProviderRegistry(payload)
   const provider = registry[providerId]
 
   if (!provider) {
@@ -371,7 +370,8 @@ export async function getImageModel(
   isMultimodalText?: boolean,
   settingsOverride?: Record<string, unknown>,
 ) {
-  const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
+  const registry = await getProviderRegistry(payload)
+  const defaults = await getGlobalDefaults(payload)
 
   if (!providerId) {
     providerId = defaults?.image?.provider
@@ -384,7 +384,6 @@ export async function getImageModel(
     throw new Error('Provider and model must be specified or configured in defaults')
   }
 
-  const registry = await getProviderRegistry(payload)
   const provider = registry[providerId]
 
   if (!provider) {
@@ -432,7 +431,8 @@ export async function getTTSModel(
   modelId?: string,
   settingsOverride?: Record<string, unknown>,
 ) {
-  const defaults = !providerId || !modelId ? await getGlobalDefaults(payload) : null
+  const registry = await getProviderRegistry(payload)
+  const defaults = await getGlobalDefaults(payload)
 
   if (!providerId) {
     providerId = defaults?.tts?.provider
@@ -445,7 +445,6 @@ export async function getTTSModel(
     throw new Error('Provider and model must be specified or configured in defaults')
   }
 
-  const registry = await getProviderRegistry(payload)
   const provider = registry[providerId]
 
   if (!provider) {

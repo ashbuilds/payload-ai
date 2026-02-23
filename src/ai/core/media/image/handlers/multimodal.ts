@@ -1,4 +1,4 @@
-import { generateText, type LanguageModel, ModelMessage } from 'ai'
+import { generateText, type LanguageModel } from 'ai'
 
 import type { ImageGenerationArgs, MediaResult, MultimodalImageFile } from '../../types.js'
 
@@ -19,14 +19,10 @@ export async function generateMultimodalImage(
     providerId: provider,
     settingsOverride: providerOptions,
   })
-  
+
   const result = await generateText({
     model,
     providerOptions: aiSdkProviderOptions,
-    // onStepFinish: (step) => {
-    //   console.log('step finish: ', step.files)
-    //   console.log('step finish: ', step.response)
-    // },
     prompt: [
       {
         content: [{ type: 'text', text: prompt }, ...images],

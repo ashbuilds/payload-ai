@@ -2,19 +2,7 @@ import type { LanguageModel } from 'ai'
 
 export type UseCase = 'image' | 'text' | 'tts' | 'video'
 
-export interface ProviderOption {
-  key: string
-  provider?: string
-  type: 'boolean' | 'number' | 'options' | 'text'
-  valueBoolean?: boolean
-  valueNumber?: number
-  valueOptions?: string[]
-  valueText?: string
-}
-
-export type ProviderOptionsByProvider = {
-  [key: string]: ProviderOption[] | undefined
-}
+export type ProviderOptionsByProvider = Record<string, Record<string, unknown>>
 
 export type ProviderId =
   | 'anthropic'
@@ -45,11 +33,8 @@ export interface OpenAIBlockData extends BaseProviderBlock {
   apiKey: string
   baseURL?: string
   blockType: 'openai'
-  imageProviderOptions?: Record<string, any>
   organization?: string
   supportedUseCases: UseCase[]
-  textProviderOptions?: Record<string, any>
-  ttsProviderOptions?: Record<string, any>
   voices?: any[]
 }
 
@@ -62,10 +47,7 @@ export interface AnthropicBlockData extends BaseProviderBlock {
 export interface GoogleBlockData extends BaseProviderBlock {
   apiKey: string
   blockType: 'google'
-  imageProviderOptions?: Record<string, any>
   supportedUseCases: ('image' | 'text' | 'tts')[]
-  textProviderOptions?: Record<string, any>
-  ttsProviderOptions?: Record<string, any>
 }
 
 export interface XAIBlockData extends BaseProviderBlock {
@@ -85,7 +67,6 @@ export interface ElevenLabsBlockData extends BaseProviderBlock {
   apiKey: string
   blockType: 'elevenlabs'
   supportedUseCases: ['tts']
-  ttsProviderOptions?: Record<string, any>
   voices?: any[]
 }
 
@@ -127,17 +108,24 @@ export interface ProviderConfig {
   instance?: any // For providers like fal that use singleton
   models: ProviderModel[]
   name: string
-
 }
 
 export type ProviderRegistry = Record<string, ProviderConfig>
 
+export interface UseCaseDefaults {
+  model?: string
+  provider?: string
+  providerOptions?: ProviderOptionsByProvider
+  schema?: ProviderOptionsByProvider
+  voice?: string
+}
+
 export interface AISettingsData {
   defaults: {
-    image?: { model: string; provider: string } & ProviderOptionsByProvider
-    text?: { model: string; provider: string } & ProviderOptionsByProvider
-    tts?: { model: string; provider: string; voice?: string } & ProviderOptionsByProvider
-    video?: { model: string; provider: string } & ProviderOptionsByProvider
+    image?: UseCaseDefaults
+    text?: UseCaseDefaults
+    tts?: UseCaseDefaults
+    video?: UseCaseDefaults
   }
   providers: ProviderBlockData[]
 }

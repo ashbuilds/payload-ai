@@ -1,5 +1,7 @@
 'use client'
 
+import type { AISettingsData } from '../../ai/providers/types.js'
+
 import { useEffect, useState } from 'react'
 
 /**
@@ -9,13 +11,6 @@ import { useEffect, useState } from 'react'
  */
 const cachedDataByDepth = new Map<number, AISettingsData | null>()
 const fetchPromiseByDepth = new Map<number, Promise<AISettingsData | null>>()
-
-interface AISettingsData {
-  [key: string]: unknown
-  enabledCollections?: string[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  providers?: any[]
-}
 
 /**
  * Shared hook for fetching AI settings from `/api/globals/ai-providers`.

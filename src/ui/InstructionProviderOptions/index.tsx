@@ -7,6 +7,7 @@ import * as React from 'react'
 import { useCallback, useMemo } from 'react'
 
 import { useAISettings } from '../hooks/useAISettings.js'
+import { updateProviderOptionsValue } from '../providerOptions/updateProviderOptionsValue.js'
 import { ProviderOptionsTree } from './ProviderOptionsTree.js'
 
 function inferUseCase(fieldPath: string): 'image' | 'text' | 'tts' | 'video' {
@@ -77,41 +78,13 @@ export const InstructionProviderOptions: FieldClientComponent = ({ path }) => {
 
   const handleOptionChange = useCallback(
     (keyPath: string[], targetValue: unknown) => {
-      // Need provider wrapping, e.g., { google: { imageConfig: { aspectRatio: '1:1' } } }
-      const currentVal = (providerOptionsValues as Record<string, unknown>) || {}
-
-      // Clone securely
-      const nextProviderOptions = JSON.parse(JSON.stringify(currentVal)) as Record<
-        string,
-        Record<string, unknown>
-      >
-      if (!provider) {
-        return
-      }
-      if (!nextProviderOptions[provider]) {
-        nextProviderOptions[provider] = {}
-      }
-
-      // Deep set logic explicitly for the selected provider
-      let target = nextProviderOptions[provider]
-      for (let i = 0; i < keyPath.length - 1; i++) {
-        const seg = keyPath[i]
-        if (!target[seg]) {
-          target[seg] = {}
-        }
-        target = target[seg] as Record<string, unknown>
-      }
-
-      const finalKey = keyPath[keyPath.length - 1]
-      if (targetValue === undefined) {
-        delete target[finalKey]
-      } else {
-        target[finalKey] = targetValue
-      }
-
-      setProviderOptionsValues(
-        Object.keys(nextProviderOptions).length > 0 ? nextProviderOptions : null,
-      )
+      const nextValue = updateProviderOptionsValue({
+        currentValue: providerOptionsValues,
+        keyPath,
+        provider,
+        targetValue,
+      })
+      setProviderOptionsValues(nextValue)
     },
     [providerOptionsValues, provider, setProviderOptionsValues],
   )

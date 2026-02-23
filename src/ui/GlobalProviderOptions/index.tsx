@@ -7,17 +7,10 @@ import * as React from 'react'
 import { useCallback } from 'react'
 
 import { ProviderOptionsTree } from '../InstructionProviderOptions/ProviderOptionsTree.js'
+import { updateProviderOptionsValue } from '../providerOptions/updateProviderOptionsValue.js'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
-}
-
-function cloneRecord(value: unknown): Record<string, unknown> {
-  if (!isRecord(value)) {
-    return {}
-  }
-
-  return JSON.parse(JSON.stringify(value)) as Record<string, unknown>
 }
 
 export const GlobalProviderOptions: FieldClientComponent = ({ path }) => {
@@ -39,59 +32,13 @@ export const GlobalProviderOptions: FieldClientComponent = ({ path }) => {
 
   const handleOptionChange = useCallback(
     (keyPath: string[], targetValue: unknown) => {
-      if (!provider || keyPath.length === 0) {
-        return
-      }
-
-      const nextProviderOptions = cloneRecord(providerOptionsValue)
-      const currentProviderOptions = isRecord(nextProviderOptions[provider])
-        ? cloneRecord(nextProviderOptions[provider])
-        : {}
-
-      const finalKey = keyPath[keyPath.length - 1]
-
-      if (targetValue === undefined) {
-        const parentRefs: Array<{ key: string; node: Record<string, unknown> }> = []
-        let targetNode: Record<string, unknown> | undefined = currentProviderOptions
-
-        for (let i = 0; i < keyPath.length - 1; i++) {
-          const segment = keyPath[i]
-          if (!targetNode || !isRecord(targetNode[segment])) {
-            targetNode = undefined
-            break
-          }
-          parentRefs.push({ key: segment, node: targetNode })
-          targetNode = targetNode[segment] as Record<string, unknown>
-        }
-
-        if (targetNode) {
-          delete targetNode[finalKey]
-          for (let i = parentRefs.length - 1; i >= 0; i--) {
-            const { key, node } = parentRefs[i]
-            if (isRecord(node[key]) && Object.keys(node[key]).length === 0) {
-              delete node[key]
-            }
-          }
-        }
-      } else {
-        let targetNode = currentProviderOptions
-        for (let i = 0; i < keyPath.length - 1; i++) {
-          const segment = keyPath[i]
-          if (!isRecord(targetNode[segment])) {
-            targetNode[segment] = {}
-          }
-          targetNode = targetNode[segment] as Record<string, unknown>
-        }
-        targetNode[finalKey] = targetValue
-      }
-
-      if (Object.keys(currentProviderOptions).length === 0) {
-        delete nextProviderOptions[provider]
-      } else {
-        nextProviderOptions[provider] = currentProviderOptions
-      }
-
-      setProviderOptionsValue(Object.keys(nextProviderOptions).length > 0 ? nextProviderOptions : null)
+      const nextValue = updateProviderOptionsValue({
+        currentValue: providerOptionsValue,
+        keyPath,
+        provider,
+        targetValue,
+      })
+      setProviderOptionsValue(nextValue)
     },
     [provider, providerOptionsValue, setProviderOptionsValue],
   )
