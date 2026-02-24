@@ -50,6 +50,9 @@ importers:
       '@lexical/react':
         specifier: ^0.35.0
         version: 0.35.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yjs@13.6.18)
+      '@payloadcms/live-preview-react':
+        specifier: 3.76.0
+        version: 3.76.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@payloadcms/translations':
         specifier: ^3.55.1
         version: 3.55.1
@@ -1814,6 +1817,15 @@ packages:
     peerDependencies:
       graphql: ^16.8.1
       payload: 3.76.0
+
+  '@payloadcms/live-preview-react@3.76.0':
+    resolution: {integrity: sha512-t4KROi1bj2AL0fJHn3B0SH2jAy+2On2sWt7nxmoCA4xgMmLRm7bZlRAR3dNNqQ7z1Y50EYcmyl2Pi9ieaTNzNw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.1 || ^19.1.2 || ^19.2.1
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.1 || ^19.1.2 || ^19.2.1
+
+  '@payloadcms/live-preview@3.76.0':
+    resolution: {integrity: sha512-sVcxosYP3QuEbL6LGcZQAtfZIztuwgzwi9fjZLvSnvONgPI9eVVnqpjctBIWGsECltzO0rg1FPE4gtO45jq9lQ==}
 
   '@payloadcms/next@3.76.0':
     resolution: {integrity: sha512-qL/BXTIlgS5IMSZQQ8/GgZelQPQ/0YPbfy7mTyruILR1svSwWBhFoU/8oB0s+gG8AgFel46qk+sv46VMbDoCAA==}
@@ -7818,6 +7830,14 @@ snapshots:
       tsx: 4.21.0
     transitivePeerDependencies:
       - typescript
+
+  '@payloadcms/live-preview-react@3.76.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@payloadcms/live-preview': 3.76.0
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+
+  '@payloadcms/live-preview@3.76.0': {}
 
   '@payloadcms/next@3.76.0(@types/react@19.1.8)(graphql@16.9.0)(monaco-editor@0.38.0)(next@15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.77.4))(payload@3.76.0(graphql@16.9.0)(typescript@5.7.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)':
     dependencies:

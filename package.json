@@ -1,6 +1,6 @@
 {
   "name": "@ai-stack/payloadcms",
-  "version": "3.76.0-beta.1",
+  "version": "3.76.0-beta.2",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
@@ -194,6 +194,7 @@
     "@anthropic-ai/sdk": "^0.62.0",
     "@fal-ai/client": "^1.7.0",
     "@google/genai": "^1.30.0",
+    "@payloadcms/live-preview-react": "3.76.0",
     "ai": "^5.0.104",
     "ajv": "^8.17.1",
     "elevenlabs": "^0.8.2",
