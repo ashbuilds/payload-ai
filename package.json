@@ -43,6 +43,21 @@
       "import": "./dist/exports/fields.js",
       "types": "./dist/exports/fields.d.ts",
       "default": "./dist/exports/fields.js"
+    },
+    "./ui/*": {
+      "import": "./dist/ui/*",
+      "types": "./dist/ui/*",
+      "default": "./dist/ui/*"
+    },
+    "./fields/*": {
+      "import": "./dist/fields/*",
+      "types": "./dist/fields/*",
+      "default": "./dist/fields/*"
+    },
+    "./providers/*": {
+      "import": "./dist/providers/*",
+      "types": "./dist/providers/*",
+      "default": "./dist/providers/*"
     }
   },
   "main": "./dist/index.js",
@@ -74,7 +89,7 @@
     "build:types": "tsc --outDir dist --rootDir ./src",
     "clean": "rimraf {dist,*.tsbuildinfo}",
     "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json,d.ts}\" dist/",
-    "dev": "next dev dev --turbo",
+    "dev": "concurrently \"pnpm build:swc -w\" \"next dev dev --turbo\"",
     "dev:generate-importmap": "pnpm dev:payload generate:importmap",
     "dev:generate-types": "pnpm dev:payload generate:types",
     "dev:payload": "cross-env PAYLOAD_CONFIG_PATH=./dev/payload.config.ts payload",
@@ -106,6 +121,7 @@
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
     "cloudflared": "^0.7.1",
+    "concurrently": "^9.2.1",
     "copyfiles": "2.4.1",
     "cross-env": "^7.0.3",
     "dotenv-cli": "^11.0.0",
@@ -167,6 +183,21 @@
         "import": "./dist/exports/client.js",
         "types": "./dist/exports/client.d.ts",
         "default": "./dist/exports/client.js"
+      },
+      "./ui/*": {
+        "import": "./dist/ui/*",
+        "types": "./dist/ui/*",
+        "default": "./dist/ui/*"
+      },
+      "./fields/*": {
+        "import": "./dist/fields/*",
+        "types": "./dist/fields/*",
+        "default": "./dist/fields/*"
+      },
+      "./providers/*": {
+        "import": "./dist/providers/*",
+        "types": "./dist/providers/*",
+        "default": "./dist/providers/*"
       }
     }
   },
@@ -201,13 +232,13 @@
     "get-input-selection": "^1.1.4",
     "handlebars": "4.7.8",
     "handlebars-async-helpers": "^1.0.6",
+    "lexical-beautiful-mentions": "^0.1.48",
     "locale-codes": "^1.3.1",
     "lodash.isequal": "^4.5.0",
     "openai": "^5.20.1",
     "react-mentions": "^4.4.10",
     "scroll-into-view-if-needed": "^3.1.0",
     "textarea-caret": "^3.0.2",
-    "zod": "^4.1.7",
-    "lexical-beautiful-mentions": "^0.1.48"
+    "zod": "^4.1.7"
   }
 }

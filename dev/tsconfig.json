@@ -8,8 +8,6 @@
     "**/*.cjs",
     "**/*.ts",
     "**/*.tsx",
-    "../src/**/*.ts",
-    "../src/**/*.tsx",
     "next.config.mjs",
     ".next/types/**/*.ts"
   ],
@@ -18,18 +16,6 @@
     "paths": {
       "@payload-config": [
         "./payload.config.ts"
-      ],
-      "@ai-stack/payloadcms": [
-        "../src/index.ts"
-      ],
-      "@ai-stack/payloadcms/client": [
-        "../src/exports/client.ts"
-      ],
-      "@ai-stack/payloadcms/fields": [
-        "../src/exports/fields.ts"
-      ],
-      "@ai-stack/payloadcms/rsc": [
-        "../src/exports/rsc.ts"
       ]
     },
     "noEmit": true,

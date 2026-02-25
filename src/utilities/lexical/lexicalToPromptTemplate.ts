@@ -1,12 +1,12 @@
 import type { SerializedEditorState, SerializedLexicalNode } from 'lexical'
 
 interface BeautifulMentionNode extends SerializedLexicalNode {
+  data?: Record<string, unknown>
   trigger: string
   value: string
-  data?: Record<string, unknown>
 }
 
-export const lexicalToPromptTemplate = (editorState: SerializedEditorState | any): string => {
+export const lexicalToPromptTemplate = (editorState: any | SerializedEditorState): string => {
   if (!editorState || !editorState.root) {
     return ''
   }
@@ -59,5 +59,5 @@ export const lexicalToPromptTemplate = (editorState: SerializedEditorState | any
   // If the user typed `{{toHTML `, then inserted `#content`, then typed `}}`, the raw string is `{{toHTML {{content}}}}`.
   // We can just replace `{{` and `}}` if they are surrounded by an outer bracket context.
   // For safety, let's just fix the specific pattern of nested brackets for mentions.
-  return rawTemplate.replace(/({{[^{}]*?){{([^}]+)}}(.*?}})/g, '$1$2$3')
+  return rawTemplate.replace(/(\{\{[^{}]*)\{\{([^}]+)\}\}(.*?\}\})/g, '$1$2$3')
 }

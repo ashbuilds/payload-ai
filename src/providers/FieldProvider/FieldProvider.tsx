@@ -37,8 +37,8 @@ export const FieldProvider = ({
   )
 
   return (
-    <FieldContext.Provider value={value}>
+    <FieldContext value={value}>
       {children}
-    </FieldContext.Provider>
+    </FieldContext>
   )
 }

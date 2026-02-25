@@ -22,13 +22,13 @@ export async function generateMultimodalImage(
 
   const result = await generateText({
     model,
-    providerOptions: aiSdkProviderOptions,
     prompt: [
       {
         content: [{ type: 'text', text: prompt }, ...images],
         role: 'user',
       },
     ],
+    providerOptions: aiSdkProviderOptions,
   })
 
   // Extract images from result.files

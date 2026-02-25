@@ -33,7 +33,7 @@ export function updateProviderOptionsValue({
   keyPath: string[]
   provider?: string
   targetValue: unknown
-}): Record<string, unknown> | null {
+}): null | Record<string, unknown> {
   if (!provider || keyPath.length === 0) {
     return isRecord(currentValue) ? cloneRecord(currentValue) : null
   }

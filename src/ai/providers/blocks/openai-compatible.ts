@@ -31,7 +31,7 @@ export const openaiCompatibleBlock: Block = {
               type: 'text',
               admin: {
                 components: {
-                  Field: '@ai-stack/payloadcms/client#EncryptedTextField',
+                  Field: '@ai-stack/payloadcms/ui/EncryptedTextField/index.js#EncryptedTextField',
                 },
                 description: 'API key for this provider (if required)',
               },
@@ -59,7 +59,7 @@ export const openaiCompatibleBlock: Block = {
               type: 'array',
               admin: {
                 components: {
-                  RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
+                  RowLabel: '@ai-stack/payloadcms/ui/ModelRowLabel/index.js#ModelRowLabel',
                 },
                 initCollapsed: true,
               },

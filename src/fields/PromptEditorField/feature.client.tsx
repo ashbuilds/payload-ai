@@ -12,11 +12,11 @@ import {
 } from 'lexical-beautiful-mentions'
 import React, { useCallback } from 'react'
 
-type MentionSuggestion = BeautifulMentionsItem & {
+type MentionSuggestion = {
   display?: string
   id?: string
   value?: string
-}
+} & BeautifulMentionsItem
 
 const MENTION_SUGGESTIONS_TTL_MS = 60_000
 const mentionSuggestionsCache = new Map<string, { expiresAt: number; items: MentionSuggestion[] }>()

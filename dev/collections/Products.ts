@@ -107,10 +107,8 @@ Style guidance:
           custom: {
             ai: {
               alwaysShow: true,
-              prompt: `{{ #mockupDescription }}
-
-Composition:
-High-quality lifestyle photography shot of a model wearing a t-shirt.
+              prompt: `Composition:
+High-quality lifestyle photography shot.
 T-Shirt Design(s): @artwork
 
 Output requirements:
@@ -119,7 +117,8 @@ Output requirements:
 - Professional lighting, depth of field, and dynamic composition
 - The design must look naturally printed on the t-shirt with realistic fabric folds
 - NO text overlays, borders, or UI elements
-- MUST be a realistic photo of a person in a scene, NOT a flat-lay or a blank template`,
+---
+{{ #mockupDescription }}`,
             },
           },
           hasMany: true,
@@ -191,21 +190,27 @@ Output requirements:
       custom: {
         ai: {
           prompt: [
-            'Create a detailed t-shirt design brief for "{{ name }}" using the concept: "{{ description }}".',
+            '{{ #mockupDescription }}',
             '',
-            'Structure it with headings and bullet points:',
-            '1) Creative direction: theme, vibe, and what makes it unique',
-            '2) Visual elements: main subject(s), supporting elements, composition notes',
-            '3) Typography: recommended phrases (3 options) and font style guidance (no specific paid font names)',
-            '4) Color palette: 3 palette options, each as named colors plus approximate HEX codes',
-            '5) Printability: line weight guidance, negative space, max colors, halftone suggestions',
-            '6) Variations: 5 variant ideas (eg. minimal, bold, vintage, dark-shirt version, no-text version)',
-            '7) Store listing copy: title, 2-sentence description, and 10 SEO tags (comma-separated)',
+            'Write a concise, fun, conversion-focused product description for this t-shirt.',
             '',
-            'Rules:',
-            '- Keep everything aligned to screen printing and DTG realities',
-            '- No copyrighted brands, characters, or logos',
-            '- Keep it practical and production-ready',
+            'Use this product context:',
+            '- Product name: {{ name }}',
+            '- Artwork reference(s): @artwork',
+            '- Lifestyle mockup reference(s): @mockups',
+            '- Available colors: {{ colors }}',
+            '- Available sizes: {{ sizes }}',
+            '',
+            'Voice and style:',
+            '- Write like a creative marketer: playful, vivid, and confident',
+            '- Keep it clean, readable, and natural (not robotic)',
+            '',
+            'Output requirements:',
+            '- 2 short paragraphs, 60-90 words total',
+            '- Make the design feel exciting and wearable in real life',
+            '- Mention available colors and sizes naturally when provided',
+            '- No headings, no bullet points, no emojis, no hashtags',
+            '- Do not invent specs, materials, or guarantees',
           ].join('\n'),
           system: [
             'You are an expert apparel graphic designer and print production lead.',

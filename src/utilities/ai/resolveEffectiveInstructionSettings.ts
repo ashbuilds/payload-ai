@@ -114,7 +114,7 @@ export function resolveEffectiveInstructionSettings({
         const existingProviderOpts = isRecord(existingOpts[selectedProvider])
           ? existingOpts[selectedProvider]
           : {}
-        const incomingProviderOpts = value[selectedProvider] as Record<string, unknown>
+        const incomingProviderOpts = value[selectedProvider]
 
         effectiveSettings.providerOptions = {
           ...existingOpts,

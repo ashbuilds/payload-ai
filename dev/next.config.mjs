@@ -6,7 +6,6 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@ai-stack/payloadcms'],
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
@@ -19,4 +18,6 @@ const nextConfig = {
   serverExternalPackages: ['mongodb-memory-server'],
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+export default withPayload(nextConfig, { 
+  devBundleServerPackages: false,
+})

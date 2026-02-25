@@ -1,8 +1,8 @@
 import { useTranslation } from '@payloadcms/ui'
 import React, { memo } from 'react'
 
-import type { BaseItemProps } from './types.js'
 import type { PluginAITranslationKeys, PluginAITranslations } from '../../../../translations/index.js'
+import type { BaseItemProps } from './types.js'
 
 import { ArrowIcon } from '../../../Icons/Icons.js'
 import styles from './menu.module.scss'

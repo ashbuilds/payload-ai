@@ -22,7 +22,7 @@ export const falBlock: Block = {
               type: 'text',
               admin: {
                 components: {
-                  Field: '@ai-stack/payloadcms/client#EncryptedTextField',
+                  Field: '@ai-stack/payloadcms/ui/EncryptedTextField/index.js#EncryptedTextField',
                 },
                 description: 'Your Fal API key. Will be encrypted in the database.',
               },
@@ -49,7 +49,7 @@ export const falBlock: Block = {
               type: 'array',
               admin: {
                 components: {
-                  RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
+                  RowLabel: '@ai-stack/payloadcms/ui/ModelRowLabel/index.js#ModelRowLabel',
                 },
                 initCollapsed: true,
               },

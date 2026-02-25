@@ -23,7 +23,7 @@ export const openaiBlock: Block = {
               type: 'text',
               admin: {
                 components: {
-                  Field: '@ai-stack/payloadcms/client#EncryptedTextField',
+                  Field: '@ai-stack/payloadcms/ui/EncryptedTextField/index.js#EncryptedTextField',
                 },
                 description:
                   'Optional. If empty, @ai-sdk/openai will use the OPENAI_API_KEY environment variable.',
@@ -190,7 +190,7 @@ export const openaiBlock: Block = {
               type: 'array',
               admin: {
                 components: {
-                  RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
+                  RowLabel: '@ai-stack/payloadcms/ui/ModelRowLabel/index.js#ModelRowLabel',
                 },
                 description: 'Keep this list short. Enable only the models you actually use.',
                 initCollapsed: true,

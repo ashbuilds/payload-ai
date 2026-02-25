@@ -1,8 +1,8 @@
 'use client'
 
-import type { AISettingsData } from '../../ai/providers/types.js'
-
 import { useEffect, useState } from 'react'
+
+import type { AISettingsData } from '../../ai/providers/types.js'
 
 /**
  * Cached AI settings per depth.

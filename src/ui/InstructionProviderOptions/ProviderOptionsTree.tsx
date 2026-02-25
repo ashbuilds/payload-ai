@@ -1,7 +1,8 @@
 'use client'
 
-import { SelectInput } from '@payloadcms/ui'
 import type { OptionObject } from 'payload'
+
+import { SelectInput } from '@payloadcms/ui'
 import React from 'react'
 
 type Primitive = boolean | null | number | string | undefined
@@ -42,7 +43,7 @@ export const ProviderOptionsTree: React.FC<ProviderOptionTreeNodeProps> = ({
             key={key}
             onChange={onChange}
             path={[...path, key]}
-            schemaValue={childSchema as any}
+            schemaValue={childSchema}
             selectedValue={selectedValue?.[key]}
           />
         ))}

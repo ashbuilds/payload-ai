@@ -97,7 +97,7 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [fetchFieldsData])
 
   return (
-    <InstructionsContext.Provider
+    <InstructionsContext
       value={{
         activeCollection,
         debugging,
@@ -115,6 +115,6 @@ export const InstructionsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     >
       {children}
       <DocumentDrawer onSave={handleSave} />
-    </InstructionsContext.Provider>
+    </InstructionsContext>
   )
 }

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { SerializedEditorState, SerializedParagraphNode, SerializedTextNode } from 'lexical'
 
 export const stringToLexicalJSON = (text: string): SerializedEditorState => {

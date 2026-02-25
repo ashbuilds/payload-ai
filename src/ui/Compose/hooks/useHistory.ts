@@ -1,8 +1,8 @@
 'use client'
 
 import { useDocumentInfo, useForm } from '@payloadcms/ui'
-import { useCallback, useEffect, useRef } from 'react'
 import { getSiblingData } from 'payload/shared'
+import { useCallback, useEffect, useRef } from 'react'
 
 import { PLUGIN_NAME } from '../../../defaults.js'
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'

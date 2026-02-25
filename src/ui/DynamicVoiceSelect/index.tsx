@@ -5,8 +5,8 @@ import React, { useEffect, useMemo } from 'react'
 
 import type { Voice } from '../shared/types.js'
 
-import { handleSelectChange } from '../shared/handleSelectChange.js'
 import { useAISettings } from '../hooks/useAISettings.js'
+import { handleSelectChange } from '../shared/handleSelectChange.js'
 
 type Props = {
   name: string

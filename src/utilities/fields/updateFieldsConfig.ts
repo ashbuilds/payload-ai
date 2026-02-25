@@ -62,8 +62,8 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
       // Array fields use ArrayComposeField (always visible) since they don't have focus events
       // Other fields use ComposeField with focus-dependent visibility
       const componentPath = field.type === 'array'
-        ? '@ai-stack/payloadcms/fields#ArrayComposeField'
-        : '@ai-stack/payloadcms/fields#ComposeField'
+        ? '@ai-stack/payloadcms/fields/ArrayComposeField/ArrayComposeField.js#ArrayComposeField'
+        : '@ai-stack/payloadcms/fields/ComposeField/ComposeField.js#ComposeField'
 
       return {
         ...field,

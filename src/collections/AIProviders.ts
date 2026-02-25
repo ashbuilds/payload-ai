@@ -55,7 +55,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicProviderSelect/index.js#DynamicProviderSelect',
                         },
                       },
                       label: 'Default Provider',
@@ -65,7 +65,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicModelSelect/index.js#DynamicModelSelect',
                         },
                       },
                       label: 'Default Model',
@@ -75,7 +75,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'json',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#GlobalProviderOptions',
+                          Field: '@ai-stack/payloadcms/ui/GlobalProviderOptions/index.js#GlobalProviderOptions',
                         },
                       },
                       label: 'Provider Options',
@@ -104,7 +104,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicProviderSelect/index.js#DynamicProviderSelect',
                         },
                       },
                       label: 'Default Provider',
@@ -114,7 +114,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicModelSelect/index.js#DynamicModelSelect',
                         },
                       },
                       label: 'Default Model',
@@ -124,7 +124,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'json',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#GlobalProviderOptions',
+                          Field: '@ai-stack/payloadcms/ui/GlobalProviderOptions/index.js#GlobalProviderOptions',
                         },
                       },
                       label: 'Provider Options',
@@ -153,7 +153,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicProviderSelect/index.js#DynamicProviderSelect',
                         },
                       },
                       label: 'Default Provider',
@@ -163,7 +163,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicModelSelect/index.js#DynamicModelSelect',
                         },
                       },
                       label: 'Default Model',
@@ -173,7 +173,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicVoiceSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicVoiceSelect/index.js#DynamicVoiceSelect',
                         },
                       },
                       label: 'Default Voice',
@@ -183,7 +183,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'json',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#GlobalProviderOptions',
+                          Field: '@ai-stack/payloadcms/ui/GlobalProviderOptions/index.js#GlobalProviderOptions',
                         },
                       },
                       label: 'Provider Options',
@@ -215,7 +215,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicProviderSelect/index.js#DynamicProviderSelect',
                         },
                       },
                       label: 'Default Provider',
@@ -225,7 +225,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'text',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+                          Field: '@ai-stack/payloadcms/ui/DynamicModelSelect/index.js#DynamicModelSelect',
                         },
                       },
                       label: 'Default Model',
@@ -235,7 +235,7 @@ export const AIProvidersGlobal: GlobalConfig = {
                       type: 'json',
                       admin: {
                         components: {
-                          Field: '@ai-stack/payloadcms/client#GlobalProviderOptions',
+                          Field: '@ai-stack/payloadcms/ui/GlobalProviderOptions/index.js#GlobalProviderOptions',
                         },
                       },
                       label: 'Provider Options',

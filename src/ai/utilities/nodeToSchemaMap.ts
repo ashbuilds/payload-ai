@@ -7,27 +7,27 @@
  */
 export const nodeTypeToSchemaMap: Record<string, string> = {
   // Core nodes (typically always included)
-  text: 'TextNode',
   linebreak: 'LineBreakNode',
-  tab: 'TabNode',
   root: 'RootNode',
+  tab: 'TabNode',
+  text: 'TextNode',
 
   // Block nodes
-  paragraph: 'ParagraphNode',
   heading: 'HeadingNode',
-  quote: 'QuoteNode',
   list: 'ListNode',
   listitem: 'ListItemNode',
+  paragraph: 'ParagraphNode',
+  quote: 'QuoteNode',
 
   // Rich content nodes
-  link: 'LinkNode',
   code: 'CodeNode',
   horizontalrule: 'HorizontalRuleNode',
+  link: 'LinkNode',
 
   // Table nodes
   table: 'TableNode',
-  tablerow: 'TableRowNode',
   tablecell: 'TableCellNode',
+  tablerow: 'TableRowNode',
 
   // Media nodes
   image: 'ImageNode',

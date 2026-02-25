@@ -7,8 +7,8 @@ import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
 import { Popup, useField, useTranslation } from '@payloadcms/ui'
 import React, { useCallback, useMemo, useState } from 'react'
 
-import type { ActionMenuItems } from '../../types.js'
 import type { PluginAITranslationKeys, PluginAITranslations } from '../../translations/index.js'
+import type { ActionMenuItems } from '../../types.js'
 
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { setSafeLexicalState } from '../../utilities/lexical/setSafeLexicalState.js'

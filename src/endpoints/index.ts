@@ -5,8 +5,8 @@ import {
   PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,
   PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK,
 } from '../defaults.js'
-import { promptMentionsEndpoint } from './promptMentions.js'
 import { generateHandler } from './generate.js'
+import { promptMentionsEndpoint } from './promptMentions.js'
 import { uploadHandler } from './upload.js'
 import { videogenWebhookHandler } from './videogenWebhook.js'
 

@@ -16,7 +16,7 @@ const BeautifulMentionNode = {
 
 export const PromptMentionsFeature = createServerFeature({
   feature: {
-    ClientFeature: '@ai-stack/payloadcms/fields#PromptMentionsClient',
+    ClientFeature: '@ai-stack/payloadcms/fields/PromptEditorField/feature.client.js#PromptMentionsClient',
     nodes: [
       {
         converters: {},

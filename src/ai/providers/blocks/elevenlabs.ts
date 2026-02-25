@@ -23,7 +23,7 @@ export const elevenlabsBlock: Block = {
               type: 'text',
               admin: {
                 components: {
-                  Field: '@ai-stack/payloadcms/client#EncryptedTextField',
+                  Field: '@ai-stack/payloadcms/ui/EncryptedTextField/index.js#EncryptedTextField',
                 },
                 description:
                   'Your ElevenLabs API key. Will be encrypted in the database. Get yours at elevenlabs.io',
@@ -102,7 +102,7 @@ export const elevenlabsBlock: Block = {
               type: 'ui',
               admin: {
                 components: {
-                  Field: '@ai-stack/payloadcms/client#VoicesFetcher',
+                  Field: '@ai-stack/payloadcms/ui/VoicesFetcher/index.js#VoicesFetcher',
                 },
               },
             },
@@ -202,7 +202,7 @@ export const elevenlabsBlock: Block = {
               type: 'array',
               admin: {
                 components: {
-                  RowLabel: '@ai-stack/payloadcms/client#ModelRowLabel',
+                  RowLabel: '@ai-stack/payloadcms/ui/ModelRowLabel/index.js#ModelRowLabel',
                 },
                 description:
                   'Configure TTS models. Use the Voices and Provider Options tabs for detailed settings.',

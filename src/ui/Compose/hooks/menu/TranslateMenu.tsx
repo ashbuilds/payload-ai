@@ -56,21 +56,21 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
       onBlur={(e) => {
         // Only clear if focus moves outside the menu container
         if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-          if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = false
+          if (typeof window !== 'undefined') {window.__AI_MENU_INTERACTIVE = false}
         }
       }}
       onFocus={() => {
-        if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = true
+        if (typeof window !== 'undefined') {window.__AI_MENU_INTERACTIVE = true}
       }}
       onMouseEnter={() => {
         if (closeTimeoutRef.current) {
           clearTimeout(closeTimeoutRef.current)
           closeTimeoutRef.current = null
         }
-        if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = true
+        if (typeof window !== 'undefined') {window.__AI_MENU_INTERACTIVE = true}
       }}
       onMouseLeave={() => {
-        if (typeof window !== 'undefined') window.__AI_MENU_INTERACTIVE = false
+        if (typeof window !== 'undefined') {window.__AI_MENU_INTERACTIVE = false}
         if (!inputFocus) {
           closeTimeoutRef.current = setTimeout(() => {
             setShow(false)

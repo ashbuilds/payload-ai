@@ -43,7 +43,7 @@ const providerSelect = {
   type: 'text' as const,
   admin: {
     components: {
-      Field: '@ai-stack/payloadcms/client#DynamicProviderSelect',
+      Field: '@ai-stack/payloadcms/ui/DynamicProviderSelect/index.js#DynamicProviderSelect',
     },
   },
   label: 'Provider',
@@ -54,7 +54,7 @@ const modelSelect = {
   type: 'text' as const,
   admin: {
     components: {
-      Field: '@ai-stack/payloadcms/client#DynamicModelSelect',
+      Field: '@ai-stack/payloadcms/ui/DynamicModelSelect/index.js#DynamicModelSelect',
     },
   },
   label: 'Model',
@@ -95,7 +95,7 @@ const providerOptionsUIField = {
   type: 'json' as const,
   admin: {
     components: {
-      Field: '@ai-stack/payloadcms/client#InstructionProviderOptions',
+      Field: '@ai-stack/payloadcms/ui/InstructionProviderOptions/index.js#InstructionProviderOptions',
     },
   },
   label: 'Provider Options',
@@ -119,7 +119,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
       ...pluginCollectionAdmin,
       ...pluginConfig.overrideInstructions?.admin,
       components: {
-        beforeList: ['@ai-stack/payloadcms/client#ConfigDashboard'],
+        beforeList: ['@ai-stack/payloadcms/ui/ConfigDashboard/index.js#ConfigDashboard'],
       },
     },
     fields: [
@@ -197,7 +197,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
                   value: c.id,
                 })),
               },
-              path: '@ai-stack/payloadcms/fields#SelectField',
+              path: '@ai-stack/payloadcms/fields/SelectField/SelectField.js#SelectField',
             },
           },
         },
@@ -399,7 +399,7 @@ informative and accurate but also captivating and beautifully structured.`,
             type: 'text',
             admin: {
               components: {
-                Field: '@ai-stack/payloadcms/client#DynamicVoiceSelect',
+                Field: '@ai-stack/payloadcms/ui/DynamicVoiceSelect/index.js#DynamicVoiceSelect',
               },
             },
             label: 'Voice',

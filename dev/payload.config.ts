@@ -29,7 +29,7 @@ const buildConfigWithMemoryDB = async () => {
       dependencies: {
         InstructionsProvider: {
           type: 'component',
-          path: '@ai-stack/payloadcms/client#InstructionsProvider',
+          path: '@ai-stack/payloadcms/providers/InstructionsProvider/InstructionsProvider.js#InstructionsProvider',
         },
       },
       importMap: {
@@ -46,7 +46,7 @@ const buildConfigWithMemoryDB = async () => {
     ],
     db: sqliteAdapter({
       client: {
-        url: process.env.DATABASE_URI || `file:${path.resolve(dirname, 'dev.db')}`,
+        url: process.env.DATABASE_URI || `file:${path.resolve(dirname, 'db/dev.db')}`,
       },
     }),
     editor: lexicalEditor(),
