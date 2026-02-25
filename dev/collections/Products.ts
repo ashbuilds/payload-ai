@@ -20,6 +20,11 @@ export const Products: CollectionConfig = {
     update: anyone,
   },
   admin: {
+    livePreview: {
+      url: ({ data }) => {
+        return `http://localhost:3000/products/${data.slug}`
+      },
+    },
     useAsTitle: 'name',
   },
   fields: [
@@ -123,6 +128,58 @@ Output requirements:
         },
       ],
       label: 'Lifestyle Mockups',
+    },
+    {
+      name: 'price',
+      type: 'number',
+      admin: {
+        position: 'sidebar',
+      },
+      defaultValue: 29.99,
+      required: true,
+    },
+    {
+      name: 'sizes',
+      type: 'select',
+      admin: {
+        position: 'sidebar',
+      },
+      defaultValue: ['s', 'm', 'l'],
+      hasMany: true,
+      options: [
+        { label: 'XS', value: 'xs' },
+        { label: 'S', value: 's' },
+        { label: 'M', value: 'm' },
+        { label: 'L', value: 'l' },
+        { label: 'XL', value: 'xl' },
+        { label: 'XXL', value: 'xxl' },
+      ],
+    },
+    {
+      name: 'colors',
+      type: 'select',
+      admin: {
+        position: 'sidebar',
+      },
+      defaultValue: ['black', 'white'],
+      hasMany: true,
+      options: [
+        { label: 'Black', value: 'black' },
+        { label: 'White', value: 'white' },
+        { label: 'Navy', value: 'navy' },
+        { label: 'Heather Grey', value: 'heather-grey' },
+        { label: 'Olive', value: 'olive' },
+        { label: 'Burgundy', value: 'burgundy' },
+      ],
+    },
+    {
+      name: 'fit',
+      type: 'text',
+      admin: {
+        description: 'E.g., Oversized Fit, Regular Fit',
+        position: 'sidebar',
+      },
+      defaultValue: 'Regular Fit',
     },
     {
       name: 'details',
