@@ -9,7 +9,15 @@ interface SeedPropertiesArgs {
 }
 
 interface SchemaPathFieldInfo {
-  custom?: { ai?: { alwaysShow?: boolean; prompt?: string; system?: string } }
+  custom?: {
+    ai?: {
+      alwaysShow?: boolean
+      appendGenerated?: boolean
+      disabled?: boolean
+      prompt?: string
+      system?: string
+    }
+  }
   hasMany?: boolean
   relationTo?: string
   type: string
@@ -67,10 +75,21 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
           updateData.hasMany = !!hasMany
           needsUpdate = true
         }
+        if (!hasMany && !!doc.appendGenerated) {
+          // Keep legacy records consistent when field is no longer hasMany.
+          updateData.appendGenerated = false
+          needsUpdate = true
+        }
 
         // If developer has provided custom prompts in the schema, update the existing record
         // but only if the values have actually changed.
-        if (custom?.ai?.prompt || custom?.ai?.system || custom?.ai?.alwaysShow !== undefined) {
+        if (
+          custom?.ai?.prompt ||
+          custom?.ai?.system ||
+          custom?.ai?.alwaysShow !== undefined ||
+          custom?.ai?.appendGenerated !== undefined ||
+          custom?.ai?.disabled !== undefined
+        ) {
           if (custom?.ai?.prompt && custom.ai.prompt !== currentPrompt) {
             updateData.prompt = stringToLexicalJSON(custom.ai.prompt)
             needsUpdate = true
@@ -82,6 +101,17 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
           if (custom?.ai?.alwaysShow !== undefined && custom.ai.alwaysShow !== doc.alwaysShow) {
             updateData.alwaysShow = !!custom.ai.alwaysShow
             needsUpdate = true
+          }
+          if (custom?.ai?.disabled !== undefined && custom.ai.disabled !== doc.disabled) {
+            updateData.disabled = !!custom.ai.disabled
+            needsUpdate = true
+          }
+          if (custom?.ai?.appendGenerated !== undefined) {
+            const nextAppendGenerated = !!hasMany && !!custom.ai.appendGenerated
+            if (nextAppendGenerated !== !!doc.appendGenerated) {
+              updateData.appendGenerated = nextAppendGenerated
+              needsUpdate = true
+            }
           }
         }
 
@@ -122,7 +152,8 @@ export const seedProperties = async ({ enabledCollections, req }: SeedProperties
           collection: PLUGIN_INSTRUCTIONS_TABLE,
           data: {
             alwaysShow: !!custom?.ai?.alwaysShow,
-            disabled: false,
+            appendGenerated: !!hasMany && !!custom?.ai?.appendGenerated,
+            disabled: !!custom?.ai?.disabled,
             'field-type': type,
             hasMany: !!hasMany,
             'model-id': modelId,

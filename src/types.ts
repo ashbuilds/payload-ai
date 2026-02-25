@@ -260,7 +260,17 @@ export interface AIFieldConfig {
    * Admin `disabled` in Instructions still takes priority.
    */
   alwaysShow?: boolean
+  /**
+   * When true and the field hasMany, generated values are appended
+   * instead of replacing current field value(s).
+   */
+  appendGenerated?: boolean
   beforeGenerate?: BeforeGenerateHook[]
+  /**
+   * Default hidden state for Compose in instructions.
+   * When true, Compose is hidden for this field.
+   */
+  disabled?: boolean
   /**
    * Set to false to opt-out of compose button injection for this field.
    * When false, no compose button is injected at build time.

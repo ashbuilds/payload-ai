@@ -216,7 +216,7 @@ export const googleBlock: Block = {
                   id: 'gemini-2.5-flash-image',
                   name: 'Gemini 2.5 Flash Image',
                   enabled: true,
-                  responseModalities: ['IMAGE'],
+                  responseModalities: ['IMAGE', 'TEXT'],
                   useCase: 'image',
                 },
                 {

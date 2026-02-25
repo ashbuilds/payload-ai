@@ -29,4 +29,4 @@ tsconfig.tsbuildinfo
 
 public/media
 .env
-/dev/dev.db
+/dev/db/dev.db
