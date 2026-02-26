@@ -104,8 +104,8 @@ const providerOptionsUIField = {
 export const instructionsCollection = (pluginConfig: PluginConfig) =>
   <CollectionConfig>{
     labels: {
-      plural: 'Compose Settings',
-      singular: 'Compose Setting',
+      plural: 'Instructions',
+      singular: 'Instruction',
     },
     ...pluginConfig.overrideInstructions,
     slug: PLUGIN_INSTRUCTIONS_TABLE,
@@ -117,6 +117,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
       description:
         'Customize how AI interacts with specific fields within your enabled collections.',
       ...pluginCollectionAdmin,
+      group: 'AI Plugin',
       ...pluginConfig.overrideInstructions?.admin,
       components: {
         beforeList: ['@ai-stack/payloadcms/ui/ConfigDashboard/index.js#ConfigDashboard'],
