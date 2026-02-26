@@ -50,11 +50,29 @@ const getHeaderOrigin = (req: PayloadRequest): string | undefined => {
   return `https://${host}`
 }
 
+const getRequestOrigin = (req: PayloadRequest): string | undefined => {
+  const requestURL = req.url?.trim()
+  if (!requestURL) {
+    return undefined
+  }
+
+  try {
+    const parsed = new URL(requestURL)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return undefined
+    }
+
+    return parsed.origin
+  } catch {
+    return undefined
+  }
+}
+
 export function resolveServerURL(req: PayloadRequest): string | undefined {
   const candidates: Array<string | undefined> = [
     req.payload.config?.serverURL || undefined,
     ...PLUGIN_SERVER_URL_ENV_KEYS.map((key) => getProcessEnvValue(key)),
-    req.url,
+    getRequestOrigin(req),
     getHeaderOrigin(req),
   ]
 

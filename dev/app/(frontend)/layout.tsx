@@ -1,9 +1,10 @@
 import React from 'react'
+
 import './frontend.css'
 
 export const metadata = {
-  title: 'Minimal Clothing Store',
   description: 'A minimal fashion store',
+  title: 'Minimal Clothing Store',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
