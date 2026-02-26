@@ -17,16 +17,16 @@ pnpm add @ai-stack/payloadcms
 
 ## 2. Update your Payload Config
 
-Open up your `payload.config.ts` file and inject the plugin. Be sure to import `payloadAiPlugin`.
+Open up your `payload.config.ts` file and inject the plugin. Be sure to import `aiPlugin`.
 
 ```typescript
 import { buildConfig } from 'payload'
-import { payloadAiPlugin } from '@ai-stack/payloadcms'
+import { aiPlugin } from '@ai-stack/payloadcms'
 
 export default buildConfig({
   // ... your other config
   plugins: [
-    payloadAiPlugin({
+    aiPlugin({
       // 🐛 Pro-tip: Turn on debugging during local dev to see exactly what prompts 
       // are being sent to the AI providers.
       debugging: process.env.NODE_ENV !== 'production',

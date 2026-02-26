@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { PayloadAiPluginLexicalEditorFeature, PromptField } from '@ai-stack/payloadcms'
+import { aiPluginLexicalEditorFeature, PromptField } from '@ai-stack/payloadcms'
 import {
   EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
@@ -230,7 +230,7 @@ Output requirements:
               enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
             }),
             EXPERIMENTAL_TableFeature(),
-            PayloadAiPluginLexicalEditorFeature(),
+            aiPluginLexicalEditorFeature(),
           ]
         },
       }),

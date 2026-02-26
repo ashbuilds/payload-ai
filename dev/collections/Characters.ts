@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { fieldToJsonSchema, PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+import { fieldToJsonSchema, aiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 import {
   EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
@@ -520,7 +520,7 @@ export const Characters: CollectionConfig = {
               enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
             }),
             EXPERIMENTAL_TableFeature(),
-            PayloadAiPluginLexicalEditorFeature(),
+            aiPluginLexicalEditorFeature(),
           ]
         },
       }),

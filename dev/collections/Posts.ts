@@ -1,6 +1,6 @@
 import type { Block, CollectionConfig } from 'payload'
 
-import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+import { aiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 import {
   BlocksFeature,
   EXPERIMENTAL_TableFeature,
@@ -245,7 +245,7 @@ export const Posts: CollectionConfig = {
                         EXPERIMENTAL_TableFeature(), // tables (experimental)
 
                         // AI feature for Lexical editor
-                        PayloadAiPluginLexicalEditorFeature(),
+                        aiPluginLexicalEditorFeature(),
                       ]
                     },
                   }),

@@ -91,11 +91,11 @@ pnpm add @ai-stack/payloadcms
 
 ```typescript
 // payload.config.ts
-import { payloadAiPlugin } from '@ai-stack/payloadcms'
+import { aiPlugin } from '@ai-stack/payloadcms'
 
 export default buildConfig({
   plugins: [
-    payloadAiPlugin({
+    aiPlugin({
       collections: {
         [Posts.slug]: true,
       },
@@ -108,14 +108,14 @@ export default buildConfig({
 
 ```typescript
 // collections/Posts.ts
-import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+import { aiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 
 fields: [
   {
     name: 'content',
     type: 'richText',
     editor: lexicalEditor({
-      features: ({ rootFeatures }) => [...rootFeatures, PayloadAiPluginLexicalEditorFeature()],
+      features: ({ rootFeatures }) => [...rootFeatures, aiPluginLexicalEditorFeature()],
     }),
   },
 ]
@@ -240,7 +240,7 @@ Images are automatically fetched and sent to vision-capable models like GPT-4o, 
 <summary>🔧 Access Control, Multi-Tenant, Custom Prompts</summary>
 
 ```typescript
-payloadAiPlugin({
+aiPlugin({
   collections: {
     [Posts.slug]: true,
   },

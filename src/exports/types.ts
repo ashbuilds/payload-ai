@@ -1,4 +1,4 @@
-export type { payloadAiPlugin } from '../index.ts'
+export type { aiPlugin } from '../index.ts'
 export type { 
   ActionMenuItems,
   ActionPrompt,

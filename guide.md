@@ -181,7 +181,7 @@ const openrouterTextModel: GenerationModel = {
 ```javascript
 export default buildConfig({
   plugins: [
-    payloadAiPlugin({
+    aiPlugin({
       collections: {
         [Posts.slug]: true,
       },

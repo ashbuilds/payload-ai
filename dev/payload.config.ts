@@ -1,4 +1,4 @@
-import { payloadAiPlugin } from '@ai-stack/payloadcms'
+import { aiPlugin } from '@ai-stack/payloadcms'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { en } from '@payloadcms/translations/languages/en'
@@ -58,7 +58,7 @@ const buildConfigWithMemoryDB = async () => {
       locales: ['en', 'es'],
     },
     plugins: [
-      payloadAiPlugin({
+      aiPlugin({
         debugging: true,
         disableSponsorMessage: false,
         generationDefaults: {

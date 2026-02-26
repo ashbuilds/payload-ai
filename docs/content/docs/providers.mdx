@@ -40,10 +40,10 @@ You can then define which models you want available from that custom endpoint!
 
 ## Hardcoding Provider Options
 
-If you need to pass specific initialization parameters to a provider that the Global UI doesn't expose (like custom headers, or specific Google Image parameters), use the `providerOptions` object inside `payloadAiPlugin()` in your `payload.config.ts`:
+If you need to pass specific initialization parameters to a provider that the Global UI doesn't expose (like custom headers, or specific Google Image parameters), use the `providerOptions` object inside `aiPlugin()` in your `payload.config.ts`:
 
 ```typescript
-payloadAiPlugin({
+aiPlugin({
   providerOptions: {
     openai: {
       organization: 'org-abc1234',

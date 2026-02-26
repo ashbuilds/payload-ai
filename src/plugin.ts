@@ -64,7 +64,7 @@ const securityMessage = `
 ╚═══════════════════════════════════════════════════════════════╝
 `
 
-const payloadAiPlugin =
+const aiPlugin =
   (pluginConfig: PluginConfig) =>
   (incomingConfig: Config): Config => {
     pluginConfig = {
@@ -234,4 +234,4 @@ const payloadAiPlugin =
     return updatedConfig
   }
 
-export { payloadAiPlugin }
+export { aiPlugin }
