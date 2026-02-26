@@ -51,7 +51,7 @@ importers:
         specifier: ^0.35.0
         version: 0.35.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(yjs@13.6.18)
       '@payloadcms/live-preview-react':
-        specifier: 3.76.0
+        specifier: ^3.76.0
         version: 3.76.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@payloadcms/translations':
         specifier: ^3.55.1
