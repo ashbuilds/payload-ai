@@ -127,12 +127,38 @@ fields: [
 # .env
 OPENAI_API_KEY=your-openai-api-key
 ANTHROPIC_API_KEY=your-anthropic-api-key     # Optional
-GOOGLE_AI_API_KEY=your-google-api-key         # Optional
+GOOGLE_GENERATIVE_AI_API_KEY=your-google-api-key  # Optional
+GEMINI_API_KEY=your-google-api-key                # Optional alias
 XAI_API_KEY=your-xai-api-key                  # Optional
 ELEVENLABS_API_KEY=your-elevenlabs-api-key   # Optional
 ```
 
 > **✨ Pro tip:** You can also configure API keys directly in the AI Settings panel within Payload Admin—encrypted and secure.
+
+### 4. Cloudflare / Edge Runtime (Optional)
+
+If your runtime does not expose provider keys via `process.env`, pass them to the plugin explicitly.
+
+```typescript
+import { aiPlugin } from '@ai-stack/payloadcms'
+
+export default buildConfig({
+  plugins: [
+    aiPlugin({
+      // Resolution order: getEnv -> env -> process.env
+      env: {
+        OPENAI_API_KEY: cloudflare.env.OPENAI_API_KEY,
+        GOOGLE_GENERATIVE_AI_API_KEY: cloudflare.env.GOOGLE_GENERATIVE_AI_API_KEY,
+      },
+      // or provide a resolver:
+      getEnv: (key) => {
+        const value = (cloudflare.env as Record<string, unknown>)[key]
+        return typeof value === 'string' ? value : undefined
+      },
+    }),
+  ],
+})
+```
 
 ---
 

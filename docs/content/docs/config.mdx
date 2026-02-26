@@ -40,6 +40,17 @@ aiPlugin({
     }
   },
 
+  // Optional runtime env injection for Cloudflare / Edge runtimes
+  // Resolution order: getEnv -> env -> process.env
+  env: {
+    OPENAI_API_KEY: cloudflare.env.OPENAI_API_KEY,
+    GOOGLE_GENERATIVE_AI_API_KEY: cloudflare.env.GOOGLE_GENERATIVE_AI_API_KEY,
+  },
+  getEnv: (key) => {
+    const value = (cloudflare.env as Record<string, unknown>)[key]
+    return typeof value === 'string' ? value : undefined
+  },
+
   // Control Translate Menu Languages
   options: {
     enabledLanguages: ["en-US", "es-ES", "zh-CN"]
@@ -60,6 +71,15 @@ When a user goes to generate something natively (e.g., clicking Compose on a bra
 
 ### `providerOptions`
 Sometimes you want to pass provider-specific SDK options directly to the AI model that the Global Admin UI doesn't natively expose. A great example is `google.imageConfig.aspectRatio` for Google's Imagen. Options defined here are merged directly into the Vercel AI SDK request underneath.
+
+### `env` and `getEnv`
+By default, provider auto-setup checks `process.env` for keys like `OPENAI_API_KEY` and `GOOGLE_GENERATIVE_AI_API_KEY`.
+
+In runtimes like Cloudflare Workers or Edge deployments, those values may live outside classic Node env resolution. Use `env` and/or `getEnv` to explicitly provide runtime secrets to the plugin.
+
+- Resolution order is: `getEnv` -> `env` -> `process.env`
+- Use this for server-side runtime values only
+- This powers provider auto-seeding in the `ai-providers` global without requiring manual key entry
 
 ### `options.enabledLanguages`
 By default, the translation floating menu supports about 40 languages. If you only support English, Spanish, and French on your site, use this array (e.g., `["en", "es", "fr"]`) to aggressively filter that drop-down menu so your editors don't mistakingly translate a blog post to Klingon.

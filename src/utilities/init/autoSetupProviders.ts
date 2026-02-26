@@ -50,6 +50,25 @@ const providerKeys = {
 
 export const autoSetupProviders = async (payload: Payload, config: PluginConfig) => {
   try {
+    const getEnvValue = (key: string): string | undefined => {
+      const fromResolver = config.getEnv?.(key)
+      if (typeof fromResolver === 'string' && fromResolver.length > 0) {
+        return fromResolver
+      }
+
+      const fromMap = config.env?.[key]
+      if (typeof fromMap === 'string' && fromMap.length > 0) {
+        return fromMap
+      }
+
+      const fromProcessEnv = process.env[key]
+      if (typeof fromProcessEnv === 'string' && fromProcessEnv.length > 0) {
+        return fromProcessEnv
+      }
+
+      return undefined
+    }
+
     const existing = await payload.findGlobal({ slug: 'ai-providers' })
 
     // Build the default array structure
@@ -65,11 +84,12 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     const { providerOptions } = config
 
     // OpenAI Setup
-    if (process.env[providerKeys.openai]) {
+    const openaiKey = getEnvValue(providerKeys.openai)
+    if (openaiKey) {
       const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'openai')
       if (!isAlreadyConfigured) {
         providersArray.push({
-          apiKey: process.env[providerKeys.openai],
+          apiKey: openaiKey,
           blockType: 'openai',
           enabled: true,
           models: findModelsDefault(openaiBlock),
@@ -79,7 +99,7 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     }
 
     // Google Setup
-    const googleKey = process.env[providerKeys.google[0]] || process.env[providerKeys.google[1]]
+    const googleKey = getEnvValue(providerKeys.google[0]) || getEnvValue(providerKeys.google[1])
     if (googleKey) {
       const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'google')
       if (!isAlreadyConfigured) {
@@ -94,11 +114,12 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     }
 
     // Anthropic Setup
-    if (process.env[providerKeys.anthropic]) {
+    const anthropicKey = getEnvValue(providerKeys.anthropic)
+    if (anthropicKey) {
       const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'anthropic')
       if (!isAlreadyConfigured) {
         providersArray.push({
-          apiKey: process.env[providerKeys.anthropic],
+          apiKey: anthropicKey,
           blockType: 'anthropic',
           enabled: true,
           models: findModelsDefault(anthropicBlock),
@@ -108,11 +129,12 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     }
 
     // ElevenLabs Setup
-    if (process.env[providerKeys.elevenlabs]) {
+    const elevenlabsKey = getEnvValue(providerKeys.elevenlabs)
+    if (elevenlabsKey) {
       const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'elevenlabs')
       if (!isAlreadyConfigured) {
         providersArray.push({
-          apiKey: process.env[providerKeys.elevenlabs],
+          apiKey: elevenlabsKey,
           blockType: 'elevenlabs',
           enabled: true,
           models: findModelsDefault(elevenlabsBlock),
@@ -122,11 +144,12 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     }
 
     // XAI Setup
-    if (process.env[providerKeys.xai]) {
+    const xaiKey = getEnvValue(providerKeys.xai)
+    if (xaiKey) {
       const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'xai')
       if (!isAlreadyConfigured) {
         providersArray.push({
-          apiKey: process.env[providerKeys.xai],
+          apiKey: xaiKey,
           blockType: 'xai',
           enabled: true,
           models: findModelsDefault(xaiBlock),
@@ -136,11 +159,12 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     }
 
     // Fal Setup
-    if (process.env[providerKeys.fal]) {
+    const falKey = getEnvValue(providerKeys.fal)
+    if (falKey) {
       const isAlreadyConfigured = existing.providers?.find((p: any) => p.blockType === 'fal')
       if (!isAlreadyConfigured) {
         providersArray.push({
-          apiKey: process.env[providerKeys.fal],
+          apiKey: falKey,
           blockType: 'fal',
           enabled: true,
           models: findModelsDefault(falBlock),

@@ -41,11 +41,24 @@ export default buildConfig({
           provider: 'google',
           model: 'gemini-3-pro-image-preview',
         },
-      }
+      },
+
+      // Optional: runtime env injection for Cloudflare / Edge
+      // Resolution order: getEnv -> env -> process.env
+      env: {
+        OPENAI_API_KEY: cloudflare.env.OPENAI_API_KEY,
+        GOOGLE_GENERATIVE_AI_API_KEY: cloudflare.env.GOOGLE_GENERATIVE_AI_API_KEY,
+      },
+      getEnv: (key) => {
+        const value = (cloudflare.env as Record<string, unknown>)[key]
+        return typeof value === 'string' ? value : undefined
+      },
     }),
   ],
 })
 ```
+
+> If you're on classic Node hosting, you can skip `env/getEnv` and continue using `.env` + `process.env` as usual.
 
 ### Adding the UI Provider
 

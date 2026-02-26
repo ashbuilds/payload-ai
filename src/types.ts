@@ -60,6 +60,11 @@ export interface PluginConfig {
   debugging?: boolean
   disableSponsorMessage?: boolean
   editorConfig?: { nodes: JSONSchema[] }
+  /**
+   * Optional runtime environment map for non-Node runtimes (Cloudflare Workers, Edge runtimes).
+   * Values in this map are checked before `process.env` during provider auto-setup.
+   */
+  env?: Partial<Record<string, string>>
   fields?: Field[]
   /**
    * Defines default provider and models to be selected
@@ -72,6 +77,11 @@ export interface PluginConfig {
     video?: { model: string; provider: string }
   }
   generationModels?: ((defaultModels: GenerationModel[]) => GenerationModel[]) | GenerationModel[]
+  /**
+   * Optional runtime resolver for environment values.
+   * Resolution order is: `getEnv` -> `env` -> `process.env`.
+   */
+  getEnv?: (key: string) => string | undefined
   globals?: {
     [key: GlobalConfig['slug']]: boolean
   }
