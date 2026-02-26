@@ -1,0 +1,91 @@
+---
+title: Installation & Setup
+description: How to wire up Payload AI into your existing Next.js / Payload project.
+---
+
+# Installation & Setup
+
+Getting the Payload AI plugin installed is a breeze. It's designed to seamlessly plug into `payload.config.ts` without blowing up your existing collections.
+
+## 1. Install the package
+
+First, grab the package from npm using your favorite package manager. Since you're dealing with cutting-edge AI, we highly recommend `pnpm`.
+
+```bash
+pnpm add @ai-stack/payloadcms
+```
+
+## 2. Update your Payload Config
+
+Open up your `payload.config.ts` file and inject the plugin. Be sure to import `payloadAiPlugin`.
+
+```typescript
+import { buildConfig } from 'payload'
+import { payloadAiPlugin } from '@ai-stack/payloadcms'
+
+export default buildConfig({
+  // ... your other config
+  plugins: [
+    payloadAiPlugin({
+      // 🐛 Pro-tip: Turn on debugging during local dev to see exactly what prompts 
+      // are being sent to the AI providers.
+      debugging: process.env.NODE_ENV !== 'production',
+      
+      // We can define the default model configurations here:
+      generationDefaults: {
+        text: {
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+        image: {
+          provider: 'google',
+          model: 'gemini-3-pro-image-preview',
+        },
+      }
+    }),
+  ],
+})
+```
+
+### Adding the UI Provider
+
+To make sure the AI interface elements correctly mount on top of Payload's internal Lexical editor, you need to add the `InstructionsProvider` to your admin components.
+
+```typescript
+export default buildConfig({
+  admin: {
+    components: {
+      providers: [
+        '@ai-stack/payloadcms/providers/InstructionsProvider/InstructionsProvider.js#InstructionsProvider',
+      ]
+    }
+  },
+  // ...
+})
+```
+
+## 3. Run the database migration (or push)
+
+The plugin automatically registers several new Collections and Globals in your Payload database. These store things like:
+- **AI Providers:** Where you'll put your secure API keys.
+- **Instructions:** Where you configure custom prompts for specific fields.
+- **AI Jobs:** A history table of background generation tasks.
+
+If you are using PostgreSQL or SQLite with an ORM, don't forget to push your schema!
+
+```bash
+pnpm payload generate:db-schema
+pnpm payload migrate:create
+```
+
+## 4. Fire it up!
+
+Start your development server. 
+
+```bash
+pnpm dev
+```
+
+Navigate to your Payload Admin Panel. You will immediately notice a new settings group on your sidebar for **AI Config**. 
+
+Next, let's learn how to actually connect your preferred AI models in the [Providers](/docs/providers) guide!

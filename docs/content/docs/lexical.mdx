@@ -1,0 +1,43 @@
+---
+title: Lexical Marvels
+description: Generating, translating, and editing directly within Payload Rich Text.
+---
+
+# Lexical Marvels
+
+The true power of this plugin is in the **Lexical Editor integration**. We didn't just bolt an AI chat box onto the side of Payload; we baked generative AI deeply into the rich text experience.
+
+## The Compose Button 🪄
+Hover over any empty Rich Text or Text block and look for the magical **Compose** button on the right-hand side. 
+
+Clicking this button fires a prompt to your default AI model to generate highly context-aware text specifically designed to fit into that exact field's schema. 
+
+Want the Compose button to always show instead of only on hover? Or hide it entirely for a specific field? Check out the [Field Customization](/docs/fields) guide.
+
+## Context-Aware Setup with Mentions `#`
+
+Wait, how does the AI know *what* to write? 
+
+This is the killer feature. You can define specific prompts for your fields globally, or in the Payload Admin UI via the **Instructions** collection. 
+
+When writing a prompt, type `#` (hash) to trigger the **Lexical Mention** auto-complete menu. You can dynamically select any other field on the current document to be injected directly into the AI prompt!
+
+**Example Prompt:**
+> "Write finding details for a product named `{{ #title }}`. The product is described as `{{ #description }}`. Tone should be professional."
+
+When the user clicks **Compose**, the plugin evaluates the real-time values of `title` and `description` sitting right in the user's browser, safely bundles them, and sends the fully-populated prompt to OpenAI!
+
+## The Floating Action Menu ✨
+
+Select any slice of text inside the Lexical editor. A sleek floating toolkit will magically appear above your selection, giving you instant superpowers:
+
+- 🪄 **Rephrase**: Make it sound better.
+- ✂️ **Simplify**: Dumb it down for a general audience.
+- 📚 **Summarize**: Turn paragraphs into sentences.
+- 👔 **Tone**: Shift seamlessly between "Professional", "Casual", "Pirate", etc.
+- 🧐 **Proofread**: Instant grammar checks.
+- 🌐 **Translate**: Select text, choose from 40+ languages, and translate it natively! 
+
+> **Killer Detail:** The Translate feature doesn't just return flat text. It understands Lexical's complex AST, so if you translate a paragraph containing **bold text**, *italics*, and [links](https://payloadcms.com), the formatting is perfectly preserved in the translated output!
+
+Next, let's learn how to customize instructions and fields at scale in [Field Level AI](/docs/fields).

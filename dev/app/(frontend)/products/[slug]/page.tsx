@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import React from 'react'
 
-import configPromise from '../../../../payload.config'
-import { ProductClient } from './ProductClient'
+import configPromise from '../../../../payload.config.js'
+import { ProductClient } from './ProductClient.js'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -18,7 +18,9 @@ export async function generateStaticParams() {
   return products.docs.map(({ slug }) => ({ slug }))
 }
 
-export default async function ProductPage({ params: { slug } }: { params: { slug: string } }) {
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+  // eslint-disable-next-line @typescript-eslint/await-thenable
+  const { slug } = await params
   const payload = await getPayload({ config: configPromise })
 
   const result = await payload.find({

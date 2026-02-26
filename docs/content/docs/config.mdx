@@ -1,0 +1,68 @@
+---
+title: Configuration
+description: A deep dive into all available configuration options in `payloadAiPlugin()`.
+---
+
+# Plugin Configuration
+
+Now that you've got the plugin installed, let's explore all the dials and knobs you can turn inside `payload.config.ts`. 
+
+The `payloadAiPlugin()` accepts an object matching the `PluginConfig` type. Here is every option available to you.
+
+## The Options Object
+
+```typescript
+payloadAiPlugin({
+  // Global debugging flag
+  debugging: false,
+  
+  // Enable / disable the cute sponsor message on startup
+  disableSponsorMessage: false,
+
+  // Granular Access Control
+  access: {
+    generate: ({ req }) => !!req.user,
+    settings: ({ req }) => !!req.user,
+  },
+
+  // Set default models for new "Instructions" records
+  generationDefaults: {
+    text: { provider: 'openai', model: 'gpt-4o-mini' },
+    image: { provider: 'google', model: 'gemini-3-pro-image-preview' },
+  },
+
+  // Developer-defined fallbacks or strict configurations for providers
+  providerOptions: {
+    google: {
+      imageConfig: {
+        aspectRatio: ['1:1', '16:9', '9:16'],
+      }
+    }
+  },
+
+  // Control Translate Menu Languages
+  options: {
+    enabledLanguages: ["en-US", "es-ES", "zh-CN"]
+  }
+})
+```
+
+## Detailed Breakdown
+
+### `debugging: boolean`
+When set to `true`, the plugin will write its internal AI SDK requests, prompts, and completion timings to your console. This is incredibly useful for tweaking system prompts and verifying that your `#mention` data is actually being injected into the prompt. It also unhides the `Instructions` collection from the admin sidebar.
+
+### `access`
+By default, **only authenticated users** can generate text/images or view the AI Settings global configuration. Why? Because LLM requests cost money, and you don't want unauthorized traffic pinging your Anthropic bill. You can override these checks with a standard Payload access control function.
+
+### `generationDefaults`
+When a user goes to generate something natively (e.g., clicking Compose on a brand new field without a pre-existing `Instruction` record), the plugin falls back to global default models. Setting these ensures the UI is ready to go out of the box.
+
+### `providerOptions`
+Sometimes you want to pass provider-specific SDK options directly to the AI model that the Global Admin UI doesn't natively expose. A great example is `google.imageConfig.aspectRatio` for Google's Imagen. Options defined here are merged directly into the Vercel AI SDK request underneath.
+
+### `options.enabledLanguages`
+By default, the translation floating menu supports about 40 languages. If you only support English, Spanish, and French on your site, use this array (e.g., `["en", "es", "fr"]`) to aggressively filter that drop-down menu so your editors don't mistakingly translate a blog post to Klingon.
+
+## What's Next?
+Config is great, but models are better. Read about how to [Configure AI Providers](/docs/providers).

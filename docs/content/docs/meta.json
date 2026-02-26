@@ -1,0 +1,10 @@
+{
+  "pages": [
+    "index",
+    "setup",
+    "providers",
+    "lexical",
+    "fields",
+    "api"
+  ]
+}

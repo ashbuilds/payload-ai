@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+@theme {
+  --color-primary-50: #f4f6fb;
+  --color-primary-100: #e7ecf6;
+  --color-primary-200: #c9d7ec;
+  --color-primary-300: #9cb9df;
+  --color-primary-400: #6892ce;
+  --color-primary-500: #4472ba;
+  --color-primary-600: #33599a;
+  --color-primary-700: #2a477d;
+  --color-primary-800: #253d68;
+  --color-primary-900: #233457;
+  --color-primary-950: #17213a;
+
+  /* Custom dark background for a sleeker look */
+  --color-background: #fff;
+  --color-foreground: #000;
+}
+
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  ::selection {
+    background-color: var(--color-primary-200);
+    color: var(--color-primary-900);
+  }
+}

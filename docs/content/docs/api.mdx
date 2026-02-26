@@ -1,0 +1,83 @@
+---
+title: The Payload AI API
+description: Using the `payload.ai` object in your custom endpoints and hooks.
+---
+
+# The Internal AI API
+
+The AI Plugin doesn't just give you a fancy Lexical interface; it injects a fully initialized, provider-agnostic SDK directly onto the core `payload` object. 
+
+This means you can call `payload.ai.generateText()` safely from inside **any** Payload Endpoint, Collection Hook, or background job, and it will automatically use whatever API keys and models you've configured in the Admin UI!
+
+## `payload.ai`
+
+Here are the primary methods exposed on `payload.ai`:
+
+### Text Generation
+
+```typescript
+// Inside a hook or endpoint:
+const response = await payload.ai.generateText({
+  prompt: 'Write a haiku about a CMS',
+  system: 'You are a poet.',
+  // Optionally force a specific provider:
+  // provider: 'anthropic', 
+  // model: 'claude-3-5-sonnet-20240620'
+})
+
+console.log(response.text) 
+// "Content flows like wine / Data structured and refined / Payload is divine"
+```
+
+### Structured Object Generation (JSON)
+
+Need strictly typed JSON data back? 
+
+```typescript
+import { z } from 'zod'
+
+const response = await payload.ai.generateObject({
+  prompt: 'Extract the users data from this raw text...',
+  schema: z.object({
+    users: z.array(z.object({
+      name: z.string(),
+      age: z.number(),
+    }))
+  })
+})
+
+console.log(response.object.users[0].name)
+```
+
+### Media Generation (Images & Video)
+
+```typescript
+const mediaResult = await payload.ai.generateMedia({
+  prompt: 'A futuristic CMS dashboard glowing in neon cyberpunk colors',
+  type: 'image', // Uses your configured Fal, Google, or OpenAI API
+})
+
+console.log(mediaResult.base64) 
+```
+
+### What about Streaming?
+
+If you are building custom endpoints and want to stream responses back to your own frontend React components, just use:
+
+```typescript
+const stream = await payload.ai.streamText({
+  prompt: 'Write a 5000 word essay...',
+})
+
+// Return a streaming Web Response
+return stream.toTextStreamResponse()
+```
+
+## Abstract Everything
+
+By using `payload.ai` instead of installing the `openai` node module directly, you ensure that:
+1. Keys are never hardcoded. 
+2. Rate limits are globally respected.
+3. You can swap from OpenAI to Anthropic in the Admin UI in 2 seconds, and all your custom backend endpoints will instantly switch over without a single code change.
+
+Happy Generating! 🚀

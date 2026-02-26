@@ -152,7 +152,8 @@
     "@payloadcms/ui": "^3.55.1",
     "lexical": "^0.35.0",
     "next": ">=15.0.0",
-    "payload": "^3.55.1"
+    "payload": "^3.55.1",
+    "@payloadcms/live-preview-react": "^3.76.0"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0"
@@ -225,7 +226,6 @@
     "@anthropic-ai/sdk": "^0.62.0",
     "@fal-ai/client": "^1.7.0",
     "@google/genai": "^1.30.0",
-    "@payloadcms/live-preview-react": "3.76.0",
     "ai": "^5.0.104",
     "ajv": "^8.17.1",
     "elevenlabs": "^0.8.2",

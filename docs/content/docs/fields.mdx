@@ -1,0 +1,69 @@
+---
+title: Field Level Customization
+description: Hardcode AI rules directly onto your Payload Fields.
+---
+
+# Field Customization (custom.ai)
+
+While your content editors can set up prompts and instructions globally via the Payload Admin UI, sometimes you, the developer, want to strictly dictate how a field behaves.
+
+Enter `custom.ai`.
+
+You can attach a special `custom.ai` object to any Payload Collection's fields to hardcode prompts, system rules, disable generation entirely, and even hook into the generation lifecycle!
+
+## The `custom.ai` Object
+
+```typescript
+import { Field } from 'payload'
+
+export const MyBlocks: Field = {
+  name: 'myRichText',
+  type: 'richText',
+  custom: {
+    ai: {
+      // Opt out! Removes the Compose button entirely
+      enabled: false,
+
+      // Wait, no! Force it to always show, ignoring focus rules
+      alwaysShow: true,
+
+      // Hardcode a strict prompt (editors cannot override this in the UI)
+      prompt: "Summarize the findings in 3 bullet points based on the given context.",
+      
+      // Tell the AI how to act 
+      system: "You are a senior technical writer. Output valid HTML lists.",
+      
+      // Before Generate Hook: Modify the prompt or messages before sending to OpenAI
+      beforeGenerate: [
+        async ({ prompt, doc }) => {
+          // You receive the entire document `doc`
+          return {
+            prompt: prompt + ` Make sure you include the title: ${doc.title}`,
+          }
+        }
+      ],
+      
+      // After Generate Hook: Do something with the final output!
+      afterGenerate: [
+        async ({ result, doc }) => {
+          console.log(`AI Finished generating for ${doc.id}:`, result)
+        }
+      ]
+    }
+  }
+}
+```
+
+## Before & After Hooks
+
+The real magic of the plugin lies in `beforeGenerate` and `afterGenerate`. Because we execute these hooks on the server immediately before/after pinging the Vercel AI SDK, you have total control over the payload.
+
+### `beforeGenerate`
+You have access to the full `PayloadRequest`, the current `doc` (if editing an existing document), and the incoming `prompt`.
+- **Use Case:** Fetching context from an external API, checking permissions, or programmatically injecting related database items into the system prompt.
+
+### `afterGenerate`
+You receive the raw `result` string (or object/media depending on context) right before it's streamed back to the Lexical editor.
+- **Use Case:** Firing off a webhook to a Slack channel that reads: *"User X just generated an awesome AI summary for article Y!"*
+
+Is that not enough control? You can completely bypass the UI and use the AI SDK directly in your own endpoints! Check out [The API](/docs/api).

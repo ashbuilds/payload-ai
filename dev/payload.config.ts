@@ -26,12 +26,6 @@ if (!process.env.ROOT_DIR) {
 const buildConfigWithMemoryDB = async () => {
   return buildConfig({
     admin: {
-      dependencies: {
-        InstructionsProvider: {
-          type: 'component',
-          path: '@ai-stack/payloadcms/providers/InstructionsProvider/InstructionsProvider.js#InstructionsProvider',
-        },
-      },
       importMap: {
         baseDir: path.resolve(dirname),
       },

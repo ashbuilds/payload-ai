@@ -1,0 +1,61 @@
+---
+title: AI Providers
+description: Connect OpenAI, Gemini, Anthropic, Fal, ElevenLabs, and more.
+---
+
+# AI Providers
+
+The Payload AI Plugin is built on top of the absolutely massive Vercel AI SDK ecosystem. Because of this, we support plugging in almost any major AI provider on earth—straight from your Payload Admin UI. No code changes required to swap models.
+
+## The Global Config UI
+
+When you install the plugin, navigate to your Payload Admin panel. In the sidebar, you'll see a new **AI Settings** global document. 
+
+This is your command center.
+
+1. Toggle the exact Providers you want to activate on your platform.
+2. Paste in your secure API Keys (they are stored safely in the database, not your codebase!).
+3. Select which specific models (e.g., `gpt-4o`, `claude-3-5-sonnet`) are visually enabled for your editors.
+
+### Supported Providers Out-of-the-Box:
+- **OpenAI** (Text, Image, TTS)
+- **Anthropic** (Text)
+- **Google Gemini** (Text, Image)
+- **xAI / Grok** (Text)
+- **Fal.ai** (Image Generation, Videogen coming soon)
+- **ElevenLabs** (Text-to-Speech)
+- **OpenAI Compatible Models** (Ollama, DeepSeek, Groq)
+
+## OpenAI Compatible (DeepSeek, Groq, Ollama)
+
+Want to run DeepSeek locally or use lightning-fast Groq APIs? 
+Enable the **OpenAI Compatible** provider in the AI Settings. 
+
+You'll be prompted to provide:
+1. Provider Name (e.g., `DeepSeek`)
+2. Base URL (e.g., `https://api.deepseek.com/v1`)
+3. API Key
+
+You can then define which models you want available from that custom endpoint!
+
+## Hardcoding Provider Options
+
+If you need to pass specific initialization parameters to a provider that the Global UI doesn't expose (like custom headers, or specific Google Image parameters), use the `providerOptions` object inside `payloadAiPlugin()` in your `payload.config.ts`:
+
+```typescript
+payloadAiPlugin({
+  providerOptions: {
+    openai: {
+      organization: 'org-abc1234',
+    },
+    google: {
+      imageConfig: {
+        aspectRatio: ['1:1', '16:9'],
+        imageSize: ['1K', '4K'],
+      },
+    }
+  }
+})
+```
+
+Once your providers are hooked up, you're ready to start generating content in the [Lexical Editor](/docs/lexical)!
