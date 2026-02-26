@@ -40,5 +40,5 @@ export default async function ProductPage({ params }: { params: { slug: string }
     return notFound()
   }
 
-  return <ProductClient initialProduct={product as any} />
+  return <ProductClient initialProduct={product} />
 }

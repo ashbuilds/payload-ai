@@ -68,17 +68,11 @@ export interface Config {
   blocks: {};
   collections: {
     media: Media;
-    organizations: Organization;
-    'story-universes': StoryUniverse;
-    stories: Story;
-    'story-chapters': StoryChapter;
-    characters: Character;
-    'story-nodes': StoryNode;
-    'story-events': StoryEvent;
+    users: User;
+    products: Product;
     'plugin-ai-instructions': PluginAiInstruction;
     'plugin-ai-ai-jobs': PluginAiAiJob;
-    users: User;
-    'payload-jobs': PayloadJob;
+    'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -86,17 +80,11 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     media: MediaSelect<false> | MediaSelect<true>;
-    organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
-    'story-universes': StoryUniversesSelect<false> | StoryUniversesSelect<true>;
-    stories: StoriesSelect<false> | StoriesSelect<true>;
-    'story-chapters': StoryChaptersSelect<false> | StoryChaptersSelect<true>;
-    characters: CharactersSelect<false> | CharactersSelect<true>;
-    'story-nodes': StoryNodesSelect<false> | StoryNodesSelect<true>;
-    'story-events': StoryEventsSelect<false> | StoryEventsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     'plugin-ai-instructions': PluginAiInstructionsSelect<false> | PluginAiInstructionsSelect<true>;
     'plugin-ai-ai-jobs': PluginAiAiJobsSelect<false> | PluginAiAiJobsSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
-    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -104,24 +92,17 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'es') | ('en' | 'es')[];
   globals: {
-    'ai-providers': AiSetting;
+    'ai-providers': AiProvider;
   };
   globalsSelect: {
-    'ai-providers': AiSettingsSelect<false> | AiSettingsSelect<true>;
+    'ai-providers': AiProvidersSelect<false> | AiProvidersSelect<true>;
   };
-  locale: null;
-  user: User & {
-    collection: 'users';
-  };
+  locale: 'en' | 'es';
+  user: User;
   jobs: {
-    tasks: {
-      schedulePublish: TaskSchedulePublish;
-      inline: {
-        input: unknown;
-        output: unknown;
-      };
-    };
+    tasks: unknown;
     workflows: unknown;
   };
 }
@@ -154,7 +135,7 @@ export interface Media {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -236,264 +217,53 @@ export interface Media {
   };
 }
 /**
- * Organizations are used to scope Storytelling content. Users associated with an organization can only access their own org data.
- *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations".
+ * via the `definition` "users".
  */
-export interface Organization {
+export interface User {
   id: number;
-  name: string;
-  /**
-   * Unique identifier for the organization (used in URLs and references).
-   */
-  slug: string;
+  name?: string | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "story-universes".
- */
-export interface StoryUniverse {
-  id: number;
-  /**
-   * Owning organization. Access is scoped by this value.
-   */
-  organization: number | Organization;
-  /**
-   * Unique key used in URLs and engine references.
-   */
-  slug: string;
-  /**
-   * Short universe title. Use AI Compose to ideate and refine.
-   */
-  title: string;
-  /**
-   * Longer background / context for this universe. Rich text with AI Compose enabled.
-   */
-  summary?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Optional universe-wide flags or engine parameters.
-   */
-  meta?:
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
     | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
     | null;
-  updatedAt: string;
-  createdAt: string;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "stories".
+ * via the `definition` "products".
  */
-export interface Story {
+export interface Product {
   id: number;
-  /**
-   * Owning organization. Access is scoped by this value.
-   */
-  organization: number | Organization;
-  /**
-   * Optional universe this story belongs to (Episode 1, 2, etc).
-   */
-  universe?: (number | null) | StoryUniverse;
-  /**
-   * Unique key for URLs and game engine references.
-   */
-  slug: string;
-  /**
-   * Short story title. Use AI Compose to ideate options.
-   */
-  title: string;
-  /**
-   * Short abstract explaining the story in a nutshell. AI Compose is enabled to draft this quickly.
-   */
-  summary?: string | null;
-  /**
-   * High-level quest description for players. AI Compose can propose clear, actionable goals.
-   */
-  objective?: string | null;
-  status: 'draft' | 'active' | 'archived';
-  /**
-   * Ordered list of chapters in this story. Create chapters and link them here or from the chapter itself.
-   */
-  chapters?: (number | StoryChapter)[] | null;
-  /**
-   * Optional internal classification labels.
-   */
-  tags?: string[] | null;
-  /**
-   * Optional engine-specific metadata.
-   */
-  meta?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "story-chapters".
- */
-export interface StoryChapter {
-  id: number;
-  /**
-   * Owning organization. Access is scoped by this value.
-   */
-  organization: number | Organization;
-  /**
-   * Parent story for this chapter.
-   */
-  story: number | Story;
-  /**
-   * Integer index indicating chapter order within the story.
-   */
-  order: number;
-  /**
-   * Short chapter title. Use AI Compose to ideate concise titles.
-   */
-  title: string;
-  /**
-   * Short recap of the chapter. Use AI Compose to quickly draft an overview.
-   */
-  summary?: string | null;
-  /**
-   * Narrative content. Rich text supports headings, lists, and inline images. AI Compose is enabled.
-   */
-  content?: {
-    root: {
-      type: string;
-      children: {
-        type: string;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * For planning and scheduling game sessions.
-   */
-  estimatedDurationMinutes?: number | null;
-  /**
-   * Optional engine-specific data for this chapter.
-   */
-  meta?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "characters".
- */
-export interface Character {
-  id: number;
-  /**
-   * The organization that owns this NPC.
-   */
-  organization?: (number | null) | Organization;
   /**
    * URL safe identifier used by APIs and the game engine.
    */
   slug: string;
   /**
-   * The name players will see for this NPC.
+   * The name customers will see for this t-shirt design.
    */
   name: string;
   /**
-   * High level function of this NPC in the story.
+   * A bold retro tiger with “Stay Wild” typography.
    */
-  role: 'guide' | 'rival' | 'historian' | 'narrator' | 'merchant' | 'scholar' | 'other';
-  /**
-   * Very short description used in UI and in prompts.
-   */
-  description?: string | null;
-  /**
-   * Gender presentation of the character.
-   */
-  gender?: string | null;
-  /**
-   * Approximate perceived age.
-   */
-  ageRange?: string | null;
-  ethnicity?: string | null;
-  skinTone?: string | null;
-  faceShape?: string | null;
-  eyeShape?: string | null;
-  eyeColor?: string | null;
-  eyebrows?: string | null;
-  nose?: string | null;
-  lips?: string | null;
-  distinguishingFeatures?: string | null;
-  hairLength?: string | null;
-  hairTexture?: string | null;
-  hairStyle?: string | null;
-  hairColor?: string | null;
-  era?: string | null;
-  culture?: string | null;
-  clothingStyle?: string | null;
-  palette?: string | null;
-  expression?: string | null;
-  vibe?: string | null;
-  posture?: string | null;
-  /**
-   * 2D portrait image used for UI/dialogue.
-   */
-  portrait?: (number | null) | Media;
-  /**
-   * Optional 3D model reference. Can be replaced with a dedicated assets collection later.
-   */
-  model3D?: (number | null) | Media;
-  /**
-   * Generate character speech sample
-   */
-  Speech?: (number | null) | Media;
-  /**
-   * A longer biography/personality profile. Use AI Compose to generate consistent backstory and voice.
-   */
-  bio?: {
+  artworkDescription?: {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -504,71 +274,15 @@ export interface Character {
     };
     [k: string]: unknown;
   } | null;
+  artwork?: (number | Media)[] | null;
   /**
-   * Stories this NPC appears in (many-to-many).
+   * A lifestyle shot of a model wearing the t-shirt in an urban skatepark.
    */
-  linkedStories?: (number | Story)[] | null;
-  /**
-   * Mark as a library NPC that can be reused across experiences for the same organization.
-   */
-  reusableAcrossHunts?: boolean | null;
-  /**
-   * Optional engine metadata (dialogue IDs, voice actor ID, behavior flags, etc).
-   */
-  meta?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "story-nodes".
- */
-export interface StoryNode {
-  id: number;
-  /**
-   * Owning organization. Access is scoped by this value.
-   */
-  organization: number | Organization;
-  /**
-   * Story this node belongs to.
-   */
-  story: number | Story;
-  /**
-   * Optional chapter association; lets engines map nodes to linear content when needed.
-   */
-  chapter?: (number | null) | StoryChapter;
-  /**
-   * Self-reference to parent; enables tree-like structures.
-   */
-  parentNode?: (number | null) | StoryNode;
-  /**
-   * Ordering among sibling nodes for deterministic traversal.
-   */
-  order?: number | null;
-  /**
-   * Controls how the engine treats this node (narration, choice, condition, or ending).
-   */
-  nodeType: 'narration' | 'choice' | 'condition' | 'ending';
-  /**
-   * Short node title; useful for editors and visual graphs. AI Compose enabled.
-   */
-  title?: string | null;
-  /**
-   * Narrative shown to the player. Rich text with AI Compose to draft/iterate fast.
-   */
-  text?: {
+  mockupDescription?: {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -579,76 +293,38 @@ export interface StoryNode {
     };
     [k: string]: unknown;
   } | null;
+  mockups?: (number | Media)[] | null;
+  price: number;
+  sizes?: ('xs' | 's' | 'm' | 'l' | 'xl' | 'xxl')[] | null;
+  colors?: ('black' | 'white' | 'navy' | 'heather-grey' | 'olive' | 'burgundy')[] | null;
   /**
-   * Optional short label shown in UI when nodeType is "choice". AI can suggest succinct options.
+   * E.g., Oversized Fit, Regular Fit
    */
-  choiceLabel?: string | null;
+  fit?: string | null;
   /**
-   * Optional JSON used by the game engine to decide transitions (e.g., flags/variables checks).
+   * A complete design brief and production notes. Use AI Compose to generate variants, print guidance, and listing copy.
    */
-  conditionExpression?:
-    | {
+  details?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
         [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Outgoing edges for this node (branching).
-   */
-  nextNodes?: (number | StoryNode)[] | null;
-  /**
-   * Optional engine-specific data for this node.
-   */
-  meta?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
- * Analytics and telemetry events for stories. Designed for internal tools and dashboards.
+ * Customize how AI interacts with specific fields within your enabled collections.
  *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "story-events".
- */
-export interface StoryEvent {
-  id: number;
-  /**
-   * Owning organization. Access is scoped by this value.
-   */
-  organization: number | Organization;
-  story: number | Story;
-  chapter?: (number | null) | StoryChapter;
-  npc?: (number | null) | Character;
-  /**
-   * Example values: story_intro_viewed, story_intro_skipped, npc_interaction, chapter_completed, drop_off
-   */
-  eventType: string;
-  /**
-   * Arbitrary event data (shape defined by your game engine/services).
-   */
-  payload?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "plugin-ai-instructions".
  */
@@ -661,17 +337,40 @@ export interface PluginAiInstruction {
   /**
    * Please don't change this unless you're sure of what you're doing
    */
-  'field-type'?: ('text' | 'textarea' | 'upload' | 'richText') | null;
+  'field-type'?: ('text' | 'textarea' | 'upload' | 'richText' | 'array') | null;
   'relation-to'?: string | null;
-  'model-id'?: ('text' | 'richtext' | 'image' | 'tts' | 'video') | null;
+  hasMany?: boolean | null;
+  'model-id'?: ('text' | 'richtext' | 'image' | 'tts' | 'array') | null;
   /**
    * Please reload your collection after applying the changes
    */
   disabled?: boolean | null;
   /**
+   * Compose button will always be visible without requiring field focus
+   */
+  alwaysShow?: boolean | null;
+  /**
+   * If enabled, generated values are appended to current values instead of replacing them.
+   */
+  appendGenerated?: boolean | null;
+  /**
    * Click 'Compose' to run this custom prompt and generate content
    */
-  prompt?: string | null;
+  prompt?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   images?:
     | {
         /**
@@ -689,6 +388,15 @@ export interface PluginAiInstruction {
     maxTokens?: number | null;
     temperature?: number | null;
     extractAttachments?: boolean | null;
+    providerOptions?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   'richtext-settings'?: {
     provider?: string | null;
@@ -696,33 +404,59 @@ export interface PluginAiInstruction {
     maxTokens?: number | null;
     temperature?: number | null;
     extractAttachments?: boolean | null;
+    providerOptions?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   'image-settings'?: {
     provider?: string | null;
     model?: string | null;
+    providerOptions?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   'tts-settings'?: {
     provider?: string | null;
     model?: string | null;
-    voice?: ('alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer') | null;
-    response_format?: ('mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm') | null;
-    speed?: number | null;
-    stability?: number | null;
-    similarity_boost?: number | null;
-    style?: number | null;
-    use_speaker_boost?: boolean | null;
-    seed?: number | null;
-    previous_text?: string | null;
-    next_text?: string | null;
+    voice?: string | null;
+    providerOptions?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
-  'video-settings'?: {
-    mode?: ('t2v' | 'i2v') | null;
-    falModelId?: ('fal-ai/minimax-video' | 'fal-ai/hunyuan-video' | 'fal-ai/luma-dream-machine') | null;
-    width?: number | null;
-    height?: number | null;
-    durationSeconds?: number | null;
-    fps?: number | null;
-    seed?: number | null;
+  'array-settings'?: {
+    provider?: string | null;
+    model?: string | null;
+    /**
+     * Number of items to generate
+     */
+    count?: number | null;
+    providerOptions?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -753,38 +487,12 @@ export interface PluginAiAiJob {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "payload-kv".
  */
-export interface User {
+export interface PayloadKv {
   id: number;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-jobs".
- */
-export interface PayloadJob {
-  id: number;
-  /**
-   * Input data provided to the job
-   */
-  input?:
+  key: string;
+  data:
     | {
         [k: string]: unknown;
       }
@@ -793,79 +501,6 @@ export interface PayloadJob {
     | number
     | boolean
     | null;
-  taskStatus?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  completedAt?: string | null;
-  totalTried?: number | null;
-  /**
-   * If hasError is true this job will not be retried
-   */
-  hasError?: boolean | null;
-  /**
-   * If hasError is true, this is the error that caused it
-   */
-  error?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Task execution log
-   */
-  log?:
-    | {
-        executedAt: string;
-        completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
-        taskID: string;
-        input?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        output?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        state: 'failed' | 'succeeded';
-        error?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
-  queue?: string | null;
-  waitUntil?: string | null;
-  processing?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -879,32 +514,12 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'organizations';
-        value: number | Organization;
+        relationTo: 'users';
+        value: number | User;
       } | null)
     | ({
-        relationTo: 'story-universes';
-        value: number | StoryUniverse;
-      } | null)
-    | ({
-        relationTo: 'stories';
-        value: number | Story;
-      } | null)
-    | ({
-        relationTo: 'story-chapters';
-        value: number | StoryChapter;
-      } | null)
-    | ({
-        relationTo: 'characters';
-        value: number | Character;
-      } | null)
-    | ({
-        relationTo: 'story-nodes';
-        value: number | StoryNode;
-      } | null)
-    | ({
-        relationTo: 'story-events';
-        value: number | StoryEvent;
+        relationTo: 'products';
+        value: number | Product;
       } | null)
     | ({
         relationTo: 'plugin-ai-instructions';
@@ -913,14 +528,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'plugin-ai-ai-jobs';
         value: number | PluginAiAiJob;
-      } | null)
-    | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
-        relationTo: 'payload-jobs';
-        value: number | PayloadJob;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1059,135 +666,43 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organizations_select".
+ * via the `definition` "users_select".
  */
-export interface OrganizationsSelect<T extends boolean = true> {
+export interface UsersSelect<T extends boolean = true> {
   name?: T;
-  slug?: T;
   updatedAt?: T;
   createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "story-universes_select".
+ * via the `definition` "products_select".
  */
-export interface StoryUniversesSelect<T extends boolean = true> {
-  organization?: T;
-  slug?: T;
-  title?: T;
-  summary?: T;
-  meta?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "stories_select".
- */
-export interface StoriesSelect<T extends boolean = true> {
-  organization?: T;
-  universe?: T;
-  slug?: T;
-  title?: T;
-  summary?: T;
-  objective?: T;
-  status?: T;
-  chapters?: T;
-  tags?: T;
-  meta?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "story-chapters_select".
- */
-export interface StoryChaptersSelect<T extends boolean = true> {
-  organization?: T;
-  story?: T;
-  order?: T;
-  title?: T;
-  summary?: T;
-  content?: T;
-  estimatedDurationMinutes?: T;
-  meta?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "characters_select".
- */
-export interface CharactersSelect<T extends boolean = true> {
-  organization?: T;
+export interface ProductsSelect<T extends boolean = true> {
   slug?: T;
   name?: T;
-  role?: T;
-  description?: T;
-  gender?: T;
-  ageRange?: T;
-  ethnicity?: T;
-  skinTone?: T;
-  faceShape?: T;
-  eyeShape?: T;
-  eyeColor?: T;
-  eyebrows?: T;
-  nose?: T;
-  lips?: T;
-  distinguishingFeatures?: T;
-  hairLength?: T;
-  hairTexture?: T;
-  hairStyle?: T;
-  hairColor?: T;
-  era?: T;
-  culture?: T;
-  clothingStyle?: T;
-  palette?: T;
-  expression?: T;
-  vibe?: T;
-  posture?: T;
-  portrait?: T;
-  model3D?: T;
-  Speech?: T;
-  bio?: T;
-  linkedStories?: T;
-  reusableAcrossHunts?: T;
-  meta?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "story-nodes_select".
- */
-export interface StoryNodesSelect<T extends boolean = true> {
-  organization?: T;
-  story?: T;
-  chapter?: T;
-  parentNode?: T;
-  order?: T;
-  nodeType?: T;
-  title?: T;
-  text?: T;
-  choiceLabel?: T;
-  conditionExpression?: T;
-  nextNodes?: T;
-  meta?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "story-events_select".
- */
-export interface StoryEventsSelect<T extends boolean = true> {
-  organization?: T;
-  story?: T;
-  chapter?: T;
-  npc?: T;
-  eventType?: T;
-  payload?: T;
+  artworkDescription?: T;
+  artwork?: T;
+  mockupDescription?: T;
+  mockups?: T;
+  price?: T;
+  sizes?: T;
+  colors?: T;
+  fit?: T;
+  details?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1199,8 +714,11 @@ export interface PluginAiInstructionsSelect<T extends boolean = true> {
   'schema-path'?: T;
   'field-type'?: T;
   'relation-to'?: T;
+  hasMany?: T;
   'model-id'?: T;
   disabled?: T;
+  alwaysShow?: T;
+  appendGenerated?: T;
   prompt?: T;
   images?:
     | T
@@ -1218,6 +736,7 @@ export interface PluginAiInstructionsSelect<T extends boolean = true> {
         maxTokens?: T;
         temperature?: T;
         extractAttachments?: T;
+        providerOptions?: T;
       };
   'richtext-settings'?:
     | T
@@ -1227,12 +746,14 @@ export interface PluginAiInstructionsSelect<T extends boolean = true> {
         maxTokens?: T;
         temperature?: T;
         extractAttachments?: T;
+        providerOptions?: T;
       };
   'image-settings'?:
     | T
     | {
         provider?: T;
         model?: T;
+        providerOptions?: T;
       };
   'tts-settings'?:
     | T
@@ -1240,26 +761,15 @@ export interface PluginAiInstructionsSelect<T extends boolean = true> {
         provider?: T;
         model?: T;
         voice?: T;
-        response_format?: T;
-        speed?: T;
-        stability?: T;
-        similarity_boost?: T;
-        style?: T;
-        use_speaker_boost?: T;
-        seed?: T;
-        previous_text?: T;
-        next_text?: T;
+        providerOptions?: T;
       };
-  'video-settings'?:
+  'array-settings'?:
     | T
     | {
-        mode?: T;
-        falModelId?: T;
-        width?: T;
-        height?: T;
-        durationSeconds?: T;
-        fps?: T;
-        seed?: T;
+        provider?: T;
+        model?: T;
+        count?: T;
+        providerOptions?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1281,56 +791,11 @@ export interface PluginAiAiJobsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "payload-kv_select".
  */
-export interface UsersSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-jobs_select".
- */
-export interface PayloadJobsSelect<T extends boolean = true> {
-  input?: T;
-  taskStatus?: T;
-  completedAt?: T;
-  totalTried?: T;
-  hasError?: T;
-  error?: T;
-  log?:
-    | T
-    | {
-        executedAt?: T;
-        completedAt?: T;
-        taskSlug?: T;
-        taskID?: T;
-        input?: T;
-        output?: T;
-        state?: T;
-        error?: T;
-        id?: T;
-      };
-  taskSlug?: T;
-  queue?: T;
-  waitUntil?: T;
-  processing?: T;
-  updatedAt?: T;
-  createdAt?: T;
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1365,13 +830,15 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Connect your providers and choose the default models used across your project.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ai-providers".
  */
-export interface AiSetting {
+export interface AiProvider {
   id: number;
   /**
-   * Configure which AI providers to use and their settings
+   * Add one or more providers and set their credentials and settings. You can keep multiple providers and switch defaults below.
    */
   providers: (
     | {
@@ -1403,6 +870,16 @@ export interface AiSetting {
             }[]
           | null;
         /**
+         * Available voices for Text-to-Speech models. You can add custom voices here.
+         */
+        voices?:
+          | {
+              id: string | null;
+              name: string;
+              enabled?: boolean | null;
+            }[]
+          | null;
+        /**
          * Keep this list short. Enable only the models you actually use.
          */
         models?:
@@ -1411,61 +888,9 @@ export interface AiSetting {
               name: string;
               useCase?: ('text' | 'image' | 'tts' | 'embedding') | null;
               /**
-               * Controls randomness. 0 = deterministic, 2 = very creative.
+               * Output capabilities of this model
                */
-              temperature?: number | null;
-              /**
-               * Maximum number of tokens to generate. Leave empty for model default.
-               */
-              maxTokens?: number | null;
-              /**
-               * Nucleus sampling probability threshold.
-               */
-              topP?: number | null;
-              /**
-               * Penalize tokens based on frequency in the text.
-               */
-              frequencyPenalty?: number | null;
-              /**
-               * Penalize tokens based on presence in the text.
-               */
-              presencePenalty?: number | null;
-              /**
-               * Optional. Seed for deterministic sampling.
-               */
-              seed?: number | null;
-              /**
-               * Modify likelihood of tokens (JSON object mapping token IDs to bias).
-               */
-              logitBias?:
-                | {
-                    [k: string]: unknown;
-                  }
-                | unknown[]
-                | string
-                | number
-                | boolean
-                | null;
-              /**
-               * Image dimensions.
-               */
-              size?: ('1024x1024' | '1024x1792' | '1792x1024') | null;
-              /**
-               * Image quality (DALL-E 3 only).
-               */
-              quality?: ('standard' | 'hd') | null;
-              /**
-               * Image style (DALL-E 3 only).
-               */
-              style?: ('vivid' | 'natural') | null;
-              /**
-               * Voice for text-to-speech.
-               */
-              voice?: ('alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer') | null;
-              /**
-               * Speed of speech (0.25 to 4.0).
-               */
-              speed?: number | null;
+              responseModalities?: ('TEXT' | 'IMAGE' | 'AUDIO')[] | null;
               enabled?: boolean | null;
             }[]
           | null;
@@ -1481,9 +906,13 @@ export interface AiSetting {
         apiKey: string;
         models?:
           | {
-              id: string;
+              id: string | null;
               name: string;
               useCase?: 'text' | null;
+              /**
+               * Output capabilities of this model
+               */
+              responseModalities?: ('TEXT' | 'IMAGE' | 'AUDIO')[] | null;
               enabled?: boolean | null;
             }[]
           | null;
@@ -1512,64 +941,28 @@ export interface AiSetting {
             }[]
           | null;
         /**
+         * Available voices for Gemini TTS models.
+         */
+        voices?:
+          | {
+              id: string | null;
+              name: string;
+              enabled?: boolean | null;
+            }[]
+          | null;
+        /**
          * Keep this list short. Enable only the models you actually use.
          */
         models?:
           | {
               id: string | null;
               name: string;
-              useCase?: ('text' | 'image' | 'embedding') | null;
+              useCase?: ('text' | 'image' | 'tts' | 'embedding') | null;
               /**
-               * Controls randomness. 0 = deterministic, 2 = very creative.
+               * Output capabilities of this model
                */
-              temperature?: number | null;
-              /**
-               * Optional upper limit for generated tokens. Leave empty to let the SDK decide.
-               */
-              maxTokens?: number | null;
-              /**
-               * Nucleus sampling probability threshold.
-               */
-              topP?: number | null;
-              /**
-               * Limit sampling to the K most probable tokens.
-               */
-              topK?: number | null;
-              /**
-               * Gemini models that support it can return text, images, or both. Leave empty for text only.
-               */
-              responseModalities?: ('TEXT' | 'IMAGE')[] | null;
-              /**
-               * Used as imageConfig.aspectRatio for models that support it.
-               */
-              aspectRatio?: ('1:1' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '9:16' | '16:9' | '21:9') | null;
-              /**
-               * Imagen models option. Controls whether people can be generated.
-               */
-              personGeneration?: ('allow_adult' | 'allow_all' | 'dont_allow') | null;
-              /**
-               * For Gemini 3 models. Controls depth of reasoning.
-               */
-              thinkingLevel?: ('low' | 'high') | null;
-              /**
-               * Approx token budget for thinking step. For Gemini 2.5 models.
-               */
-              thinkingBudget?: number | null;
-              /**
-               * If true, exposes high level reasoning summaries in the response metadata.
-               */
-              includeThoughts?: boolean | null;
-              safetySettings?:
-                | {
-                    category:
-                      | 'HARM_CATEGORY_HARASSMENT'
-                      | 'HARM_CATEGORY_HATE_SPEECH'
-                      | 'HARM_CATEGORY_SEXUALLY_EXPLICIT'
-                      | 'HARM_CATEGORY_DANGEROUS_CONTENT';
-                    threshold: 'BLOCK_NONE' | 'BLOCK_LOW_AND_ABOVE' | 'BLOCK_MEDIUM_AND_ABOVE' | 'BLOCK_ONLY_HIGH';
-                    id?: string | null;
-                  }[]
-                | null;
+              responseModalities?: ('TEXT' | 'IMAGE' | 'AUDIO')[] | null;
+              enabled?: boolean | null;
             }[]
           | null;
         id?: string | null;
@@ -1584,9 +977,13 @@ export interface AiSetting {
         apiKey: string;
         models?:
           | {
-              id: string;
+              id: string | null;
               name: string;
               useCase: 'text' | 'image';
+              /**
+               * Output capabilities of this model
+               */
+              responseModalities?: ('TEXT' | 'IMAGE' | 'AUDIO')[] | null;
               enabled?: boolean | null;
             }[]
           | null;
@@ -1639,46 +1036,18 @@ export interface AiSetting {
             }[]
           | null;
         /**
-         * Configure TTS models with specific voice settings and parameters.
+         * Configure TTS models. Use the Voices and Provider Options tabs for detailed settings.
          */
         models?:
           | {
               id: string | null;
               name: string;
               useCase?: 'tts' | null;
+              /**
+               * Output capabilities of this model
+               */
+              responseModalities?: ('TEXT' | 'AUDIO')[] | null;
               enabled?: boolean | null;
-              /**
-               * Voice stability (0-1). Lower = more emotional range, higher = more monotonous.
-               */
-              stability?: number | null;
-              /**
-               * How closely AI adheres to the original voice (0-1).
-               */
-              similarity_boost?: number | null;
-              /**
-               * Amplify speaker style (0-1). Values above 0 may increase latency.
-               */
-              style?: number | null;
-              /**
-               * Boost similarity to original speaker (increases latency).
-               */
-              use_speaker_boost?: boolean | null;
-              /**
-               * ISO 639-1 language code (only for Turbo v2.5 and Flash v2.5).
-               */
-              language_code?: string | null;
-              /**
-               * Seed for deterministic sampling (0-4294967295).
-               */
-              seed?: number | null;
-              /**
-               * Controls text normalization (spell out numbers, etc.)
-               */
-              apply_text_normalization?: ('auto' | 'on' | 'off') | null;
-              /**
-               * Language-specific normalization (e.g., Japanese). May increase latency.
-               */
-              apply_language_text_normalization?: boolean | null;
             }[]
           | null;
         id?: string | null;
@@ -1697,10 +1066,14 @@ export interface AiSetting {
         webhookSecret?: string | null;
         models?:
           | {
-              id: string;
+              id: string | null;
               name: string;
               useCase: 'image' | 'video';
               enabled?: boolean | null;
+              /**
+               * Output capabilities of this model
+               */
+              responseModalities?: ('TEXT' | 'IMAGE' | 'AUDIO' | 'VIDEO')[] | null;
             }[]
           | null;
         id?: string | null;
@@ -1723,10 +1096,14 @@ export interface AiSetting {
         baseURL: string;
         models?:
           | {
-              id: string;
+              id: string | null;
               name: string;
               useCase: 'text' | 'image' | 'video' | 'tts';
               enabled?: boolean | null;
+              /**
+               * Output capabilities of this model
+               */
+              responseModalities?: ('TEXT' | 'IMAGE' | 'AUDIO')[] | null;
             }[]
           | null;
         id?: string | null;
@@ -1734,28 +1111,107 @@ export interface AiSetting {
         blockType: 'openai-compatible';
       }
   )[];
+  enabledCollections?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   /**
-   * Default provider/model for each use case
+   * Pick the default provider and model for each feature. These defaults are used unless a collection or field overrides them.
    */
   defaults?: {
     text?: {
-      /**
-       * Auto-populated from blocks
-       */
       provider?: string | null;
       model?: string | null;
+      providerOptions?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+      schema?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
     };
     image?: {
       provider?: string | null;
       model?: string | null;
-    };
-    video?: {
-      provider?: string | null;
-      model?: string | null;
+      providerOptions?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+      schema?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
     };
     tts?: {
       provider?: string | null;
       model?: string | null;
+      voice?: string | null;
+      providerOptions?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+      schema?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+    };
+    video?: {
+      provider?: string | null;
+      model?: string | null;
+      providerOptions?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+      schema?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
     };
   };
   updatedAt?: string | null;
@@ -1765,7 +1221,7 @@ export interface AiSetting {
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ai-providers_select".
  */
-export interface AiSettingsSelect<T extends boolean = true> {
+export interface AiProvidersSelect<T extends boolean = true> {
   providers?:
     | T
     | {
@@ -1784,24 +1240,20 @@ export interface AiSettingsSelect<T extends boolean = true> {
                     value?: T;
                     id?: T;
                   };
+              voices?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    enabled?: T;
+                  };
               models?:
                 | T
                 | {
                     id?: T;
                     name?: T;
                     useCase?: T;
-                    temperature?: T;
-                    maxTokens?: T;
-                    topP?: T;
-                    frequencyPenalty?: T;
-                    presencePenalty?: T;
-                    seed?: T;
-                    logitBias?: T;
-                    size?: T;
-                    quality?: T;
-                    style?: T;
-                    voice?: T;
-                    speed?: T;
+                    responseModalities?: T;
                     enabled?: T;
                   };
               id?: T;
@@ -1818,6 +1270,7 @@ export interface AiSettingsSelect<T extends boolean = true> {
                     id?: T;
                     name?: T;
                     useCase?: T;
+                    responseModalities?: T;
                     enabled?: T;
                   };
               id?: T;
@@ -1836,29 +1289,21 @@ export interface AiSettingsSelect<T extends boolean = true> {
                     value?: T;
                     id?: T;
                   };
+              voices?:
+                | T
+                | {
+                    id?: T;
+                    name?: T;
+                    enabled?: T;
+                  };
               models?:
                 | T
                 | {
                     id?: T;
                     name?: T;
                     useCase?: T;
-                    temperature?: T;
-                    maxTokens?: T;
-                    topP?: T;
-                    topK?: T;
                     responseModalities?: T;
-                    aspectRatio?: T;
-                    personGeneration?: T;
-                    thinkingLevel?: T;
-                    thinkingBudget?: T;
-                    includeThoughts?: T;
-                    safetySettings?:
-                      | T
-                      | {
-                          category?: T;
-                          threshold?: T;
-                          id?: T;
-                        };
+                    enabled?: T;
                   };
               id?: T;
               blockName?: T;
@@ -1874,6 +1319,7 @@ export interface AiSettingsSelect<T extends boolean = true> {
                     id?: T;
                     name?: T;
                     useCase?: T;
+                    responseModalities?: T;
                     enabled?: T;
                   };
               id?: T;
@@ -1908,15 +1354,8 @@ export interface AiSettingsSelect<T extends boolean = true> {
                     id?: T;
                     name?: T;
                     useCase?: T;
+                    responseModalities?: T;
                     enabled?: T;
-                    stability?: T;
-                    similarity_boost?: T;
-                    style?: T;
-                    use_speaker_boost?: T;
-                    language_code?: T;
-                    seed?: T;
-                    apply_text_normalization?: T;
-                    apply_language_text_normalization?: T;
                   };
               id?: T;
               blockName?: T;
@@ -1934,6 +1373,7 @@ export interface AiSettingsSelect<T extends boolean = true> {
                     name?: T;
                     useCase?: T;
                     enabled?: T;
+                    responseModalities?: T;
                   };
               id?: T;
               blockName?: T;
@@ -1952,11 +1392,13 @@ export interface AiSettingsSelect<T extends boolean = true> {
                     name?: T;
                     useCase?: T;
                     enabled?: T;
+                    responseModalities?: T;
                   };
               id?: T;
               blockName?: T;
             };
       };
+  enabledCollections?: T;
   defaults?:
     | T
     | {
@@ -1965,46 +1407,38 @@ export interface AiSettingsSelect<T extends boolean = true> {
           | {
               provider?: T;
               model?: T;
+              providerOptions?: T;
+              schema?: T;
             };
         image?:
           | T
           | {
               provider?: T;
               model?: T;
-            };
-        video?:
-          | T
-          | {
-              provider?: T;
-              model?: T;
+              providerOptions?: T;
+              schema?: T;
             };
         tts?:
           | T
           | {
               provider?: T;
               model?: T;
+              voice?: T;
+              providerOptions?: T;
+              schema?: T;
+            };
+        video?:
+          | T
+          | {
+              provider?: T;
+              model?: T;
+              providerOptions?: T;
+              schema?: T;
             };
       };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "TaskSchedulePublish".
- */
-export interface TaskSchedulePublish {
-  input: {
-    type?: ('publish' | 'unpublish') | null;
-    locale?: string | null;
-    doc?: {
-      relationTo: 'stories';
-      value: number | Story;
-    } | null;
-    global?: string | null;
-    user?: (number | null) | User;
-  };
-  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
