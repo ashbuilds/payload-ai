@@ -11,15 +11,14 @@ export function encrypt(text: string, secret: string): string {
     throw new Error('No secret provided for encryption')
   }
 
-  // Ensure secret is 32 bytes
-  const key = crypto.createHash('sha256').update(secret).digest()
+  // Cloudflare Workers' Node compatibility can require explicit UTF-8 handling.
+  const key = crypto.createHash('sha256').update(String(secret), 'utf8').digest()
   const iv = crypto.randomBytes(ivLength)
   const cipher = crypto.createCipheriv(algorithm, key, iv)
-  let encrypted = cipher.update(text)
+  let encrypted = cipher.update(Buffer.from(String(text), 'utf8'))
   encrypted = Buffer.concat([encrypted, cipher.final()])
-  const result = iv.toString('hex') + ':' + encrypted.toString('hex')
 
-  return result
+  return `${iv.toString('hex')}:${encrypted.toString('hex')}`
 }
 
 export function decrypt(text: string, secret: string): string {
@@ -32,14 +31,24 @@ export function decrypt(text: string, secret: string): string {
 
   try {
     const textParts = text.split(':')
-    const iv = Buffer.from(textParts.shift()!, 'hex')
+    const ivHex = textParts.shift()
+    if (!ivHex) {
+      return text
+    }
+
+    const iv = Buffer.from(ivHex, 'hex')
+    if (iv.length !== ivLength) {
+      return text
+    }
+
     const encryptedText = Buffer.from(textParts.join(':'), 'hex')
-    const key = crypto.createHash('sha256').update(secret).digest()
+    const key = crypto.createHash('sha256').update(String(secret), 'utf8').digest()
     const decipher = crypto.createDecipheriv(algorithm, key, iv)
     let decrypted = decipher.update(encryptedText)
     decrypted = Buffer.concat([decrypted, decipher.final()])
-    return decrypted.toString()
-  } catch (e) {
+
+    return decrypted.toString('utf8')
+  } catch (_error) {
     // If decryption fails, return original text (might be already plain or invalid)
     return text
   }

@@ -1,8 +1,6 @@
 import type { ImagePart } from 'ai'
 import type { Field, PayloadRequest } from 'payload'
 
-import * as process from 'node:process'
-
 import type { PluginConfig } from '../types.js'
 
 import { checkAccess } from '../access/checkAccess.js'
@@ -21,6 +19,7 @@ import { extractImageData } from '../utilities/images/extractImageData.js'
 import { type FetchableImage, fetchImages } from '../utilities/images/fetchImages.js'
 import { resolveImageReferences } from '../utilities/images/resolveImageReferences.js'
 import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
+import { resolveServerURL } from '../utilities/runtime/resolveServerURL.js'
 import { sanitizeLog } from '../utilities/sanitizeLog.js'
 
 /**
@@ -31,7 +30,6 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
   try {
     // Check authentication and authorization first
     // await checkAccess(req, pluginConfig)
-
     const data = await req.json?.()
 
     const { collectionSlug, documentId, options } = data
@@ -186,8 +184,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     }
 
     // Prepare callback URL for async jobs
-    const serverURL =
-      req.payload.config?.serverURL || process.env.SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL
+    const serverURL = resolveServerURL(req)
 
     const callbackUrl = serverURL
       ? `${serverURL.replace(/\/$/, '')}/api${PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK}?instructionId=${instructionId}`

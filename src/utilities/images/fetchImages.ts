@@ -1,7 +1,7 @@
 import type { ImagePart } from 'ai'
 import type { PayloadRequest } from 'payload'
 
-import * as process from 'node:process'
+import { resolveAbsoluteURL } from '../runtime/resolveServerURL.js'
 
 export interface FetchableImage {
   image: {
@@ -18,15 +18,7 @@ async function fetchSingleImage(
   req: PayloadRequest,
   img: FetchableImage,
 ): Promise<ImagePart> {
-  const serverURL =
-    req.payload.config?.serverURL ||
-    process.env.SERVER_URL ||
-    process.env.NEXT_PUBLIC_SERVER_URL
-
-  let url = img.image.thumbnailURL || img.image.url
-  if (!url.startsWith('http')) {
-    url = `${String(serverURL)}${String(url)}`
-  }
+  const url = resolveAbsoluteURL(img.image.thumbnailURL || img.image.url, req)
 
   const response = await fetch(url, {
     headers: {

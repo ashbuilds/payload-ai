@@ -11,6 +11,9 @@ export const PLUGIN_FETCH_FIELDS_ENDPOINT = `${PLUGIN_API_ENDPOINT_BASE}/fetch-f
 export const PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK = `${PLUGIN_API_ENDPOINT_BASE}/videogen/webhook`
 export const PLUGIN_API_ENDPOINT_FETCH_VOICES = `${PLUGIN_API_ENDPOINT_BASE}/elevenlabs/fetch-voices`
 
+// Runtime URL resolution fallbacks
+export const PLUGIN_SERVER_URL_ENV_KEYS = ['SERVER_URL', 'NEXT_PUBLIC_SERVER_URL'] as const
+
 // LLM Settings
 export const PLUGIN_DEFAULT_OPENAI_MODEL = `gpt-4o-mini`
 export const PLUGIN_DEFAULT_ANTHROPIC_MODEL = `claude-3-5-sonnet-latest`
