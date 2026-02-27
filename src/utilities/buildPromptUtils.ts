@@ -3,9 +3,8 @@ import type { CollectionSlug } from 'payload'
 import type { ActionMenuItems, PluginConfig, PromptFieldGetterContext } from '../types.js'
 
 import { defaultPrompts } from '../ai/utilities/prompts.js'
-import { asyncHandlebars } from '../libraries/handlebars/asyncHandlebars.js'
-import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
-import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { templateHelpersMap } from '../libraries/templates/helpersMap.js'
+import { renderTemplate, type TemplateRuntime } from '../libraries/templates/renderTemplate.js'
 import { lexicalToPromptTemplate } from '../utilities/lexical/lexicalToPromptTemplate.js'
 
 const buildRichTextSystem = (baseSystem: string, layout: string) => {
@@ -41,6 +40,7 @@ export const assignPrompt = async (
     locale,
     pluginConfig,
     systemPrompt = '',
+    templateRuntime,
     template,
   }: {
     actionParams: Record<any, any>
@@ -51,13 +51,19 @@ export const assignPrompt = async (
     locale: string
     pluginConfig: PluginConfig
     systemPrompt: string
+    templateRuntime?: TemplateRuntime
     template: string
     type: string
   },
 ) => {
-  const extendedContext = extendContextWithPromptFields(context, { type, collection }, pluginConfig)
-  const prompt = await replacePlaceholders(template, extendedContext)
-  const toLexicalHTML = type === 'richText' ? handlebarsHelpersMap.toHTML.name : ''
+  const extendedContext = extendContextWithPromptFields(
+    context,
+    { type, collection },
+    pluginConfig,
+    templateRuntime,
+  )
+  const prompt = await renderTemplate(template, extendedContext, templateRuntime)
+  const toLexicalHTML = type === 'richText' ? templateHelpersMap.toHTML.name : ''
 
   const assignedPrompts = {
     layout: type === 'richText' ? layout : undefined,
@@ -103,7 +109,11 @@ export const assignPrompt = async (
   return {
     layout: type === 'richText' ? updatedLayout : undefined,
     // TODO: revisit this toLexicalHTML
-    prompt: await replacePlaceholders(`{{${toLexicalHTML} ${field}}}`, extendedContext),
+    prompt: await renderTemplate(
+      `{{${toLexicalHTML} ${field}}}`,
+      extendedContext,
+      templateRuntime,
+    ),
     system: type === 'richText' ? buildRichTextSystem(system, updatedLayout) : system,
   }
 }
@@ -112,6 +122,7 @@ export const extendContextWithPromptFields = (
   data: object,
   ctx: PromptFieldGetterContext,
   pluginConfig: PluginConfig,
+  templateRuntime?: TemplateRuntime,
 ) => {
   const { promptFields = [] } = pluginConfig
   const fieldsMap = new Map(
@@ -124,9 +135,9 @@ export const extendContextWithPromptFields = (
       const field = fieldsMap.get(prop)
       if (field && 'getter' in field && typeof field.getter === 'function') {
         const value = field.getter(data, ctx)
-        return Promise.resolve(value).then((v) => new asyncHandlebars.SafeString(v))
+        return Promise.resolve(value)
       }
-      // {{prop}} escapes content by default. Here we make sure it won't be escaped.
+
       const value = typeof target === 'object' ? (target as any)[prop] : undefined
 
       // If the value is a Lexical JSON object (e.g. a PromptField / richText field),
@@ -134,15 +145,13 @@ export const extendContextWithPromptFields = (
       // (like {{name}}) against the raw document data to avoid unresolved placeholders.
       if (value && typeof value === 'object' && value.root && Array.isArray(value.root.children)) {
         const template = lexicalToPromptTemplate(value)
-        // Resolve inner variables using the raw target (not the Proxy) to avoid recursion
-        return replacePlaceholders(template, target).then(
-          (resolved) => new asyncHandlebars.SafeString(resolved),
-        )
+        // Resolve inner variables using the raw target (not the Proxy) to avoid recursion.
+        return renderTemplate(template, target, templateRuntime)
       }
 
-      return typeof value === 'string' ? new asyncHandlebars.SafeString(value) : value
+      return value
     },
-    // It's used by the handlebars library to determine if the property is enumerable
+    // Keep virtual promptFields enumerable so template rendering can resolve dynamic fields.
     getOwnPropertyDescriptor: (target, prop) => {
       const field = fieldsMap.get(prop as string)
       if (field) {

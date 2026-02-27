@@ -9,8 +9,7 @@ import {
   PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK,
   PLUGIN_INSTRUCTIONS_TABLE,
 } from '../defaults.js'
-import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
-import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
+import { renderTemplate } from '../libraries/templates/renderTemplate.js'
 import { resolveEffectiveInstructionSettings } from '../utilities/ai/resolveEffectiveInstructionSettings.js'
 import { extendContextWithPromptFields } from '../utilities/buildPromptUtils.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
@@ -77,7 +76,6 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
 
     const { images: sampleImages = [] } = instructions
     const schemaPath = String(instructions['schema-path'])
-    registerEditorHelper(req.payload, schemaPath)
 
     // Smart fallback: if prompt is generic, build a contextual prompt from field metadata
     if (isGenericPrompt(promptTemplate as string)) {
@@ -99,6 +97,10 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       contextData,
       { type: String(instructions['field-type']), collection: collectionSlug },
       pluginConfig,
+      {
+        payload: req.payload,
+        schemaPath,
+      },
     )
 
     if (pluginConfig.debugging) {
@@ -113,11 +115,14 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
           ),
           promptTemplate,
         }),
-        `— AI Plugin: DEBUG upload context before replacePlaceholders`,
+        `— AI Plugin: DEBUG upload context before template rendering`,
       )
     }
 
-    const text = await replacePlaceholders(promptTemplate as string, extendedContext)
+    const text = await renderTemplate(promptTemplate as string, extendedContext, {
+      payload: req.payload,
+      schemaPath,
+    })
     const uploadCollectionSlug = instructions['relation-to']
 
     // Resolve @field:filename references from the prompt

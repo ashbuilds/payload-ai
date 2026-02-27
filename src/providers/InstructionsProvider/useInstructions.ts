@@ -2,7 +2,7 @@ import { useDocumentInfo } from '@payloadcms/ui'
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
-import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
+import { templateHelpers, templateHelpersMap } from '../../libraries/templates/helpersMap.js'
 import { InstructionsContext } from './context.js'
 
 /**
@@ -98,8 +98,8 @@ export const useInstructions = (
         return
       }
 
-      const helpers = handlebarsHelpers.filter(
-        (h) => (handlebarsHelpersMap as Record<string, { field?: string }>)[h]?.field === fieldInfo.fieldType,
+      const helpers = templateHelpers.filter(
+        (h) => (templateHelpersMap as Record<string, { field?: string }>)[h]?.field === fieldInfo.fieldType,
       )
 
       if (helpers.length) {
@@ -139,4 +139,3 @@ export const useInstructions = (
     promptEditorSuggestions,
   }
 }
-

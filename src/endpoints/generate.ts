@@ -6,7 +6,6 @@ import type { PluginConfig } from '../types.js'
 import { checkAccess } from '../access/checkAccess.js'
 import { filterEditorSchemaByNodes } from '../ai/utilities/filterEditorSchemaByNodes.js'
 import { PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../defaults.js'
-import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { resolveEffectiveInstructionSettings } from '../utilities/ai/resolveEffectiveInstructionSettings.js'
 import { assignPrompt } from '../utilities/buildPromptUtils.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
@@ -129,8 +128,6 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
     const collectionName = parts[0]
     const fieldName = parts.length > 1 ? parts[parts.length - 1] : ''
 
-    registerEditorHelper(req.payload, schemaPath)
-
     const localeData = locales.find((l) => {
       return l.code === locale
     })
@@ -156,6 +153,10 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       locale: localeInfo,
       pluginConfig,
       systemPrompt: instructions.system,
+      templateRuntime: {
+        payload: req.payload,
+        schemaPath,
+      },
       template: String(promptTemplate),
     })
 

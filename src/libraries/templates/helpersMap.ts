@@ -5,11 +5,11 @@ interface HelperFieldConfig {
   name: string
 }
 
-type HandlebarsHelpers = {
+type TemplateHelpers = {
   [K in SupportedHelpers]: HelperFieldConfig
 }
 
-export const handlebarsHelpersMap: HandlebarsHelpers = {
+export const templateHelpersMap: TemplateHelpers = {
   toHTML: {
     name: 'toHTML',
     field: 'richText',
@@ -20,4 +20,4 @@ export const handlebarsHelpersMap: HandlebarsHelpers = {
   },
 }
 
-export const handlebarsHelpers = Object.keys(handlebarsHelpersMap)
+export const templateHelpers = Object.keys(templateHelpersMap)
