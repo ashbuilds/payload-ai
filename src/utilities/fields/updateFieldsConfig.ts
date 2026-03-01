@@ -20,8 +20,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
     if (
       field.admin?.disabled ||
       field.admin?.readOnly ||
-      field.admin?.hidden ||
-      field.type === 'row'
+      field.admin?.hidden
     ) {
       return field
     }
@@ -48,6 +47,8 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
 
     // Inject AI actions, richText is not included here as it has to be explicitly defined by user
     // Array fields also get AI injection for bulk generation
+    let nextField = field
+
     if (['array', 'text', 'textarea', 'upload'].includes(field.type) && !isAiDisabledByDev) {
       let customField = {}
 
@@ -65,7 +66,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
         ? '@ai-stack/payloadcms/fields/ArrayComposeField/ArrayComposeField.js#ArrayComposeField'
         : '@ai-stack/payloadcms/fields/ComposeField/ComposeField.js#ComposeField'
 
-      return {
+      nextField = {
         ...field,
         admin: {
           ...field.admin,
@@ -84,17 +85,17 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
       }
     }
 
-    if (field.fields) {
-      return {
-        ...field,
-        fields: field.fields.map((subField: any) => updateField(subField, currentPath)),
+    if (nextField.fields) {
+      nextField = {
+        ...nextField,
+        fields: nextField.fields.map((subField: any) => updateField(subField, currentPath)),
       }
     }
 
-    if (field.tabs) {
-      return {
-        ...field,
-        tabs: field.tabs.map((tab: any) => {
+    if (nextField.tabs) {
+      nextField = {
+        ...nextField,
+        tabs: nextField.tabs.map((tab: any) => {
           return {
             ...tab,
             // Tabs are a UI construct and should not add to the schema path
@@ -104,10 +105,10 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
       }
     }
 
-    if (field.blocks) {
-      return {
-        ...field,
-        blocks: field.blocks.map((block: any) => ({
+    if (nextField.blocks) {
+      nextField = {
+        ...nextField,
+        blocks: nextField.blocks.map((block: any) => ({
           ...block,
           fields: block.fields.map((subField: any) =>
             updateField(subField, `${currentPath}.${block.slug}`),
@@ -116,7 +117,7 @@ export const updateFieldsConfig = (collectionConfig: CollectionConfig | GlobalCo
       }
     }
 
-    return field
+    return nextField
   }
 
   const updatedCollectionConfig = {

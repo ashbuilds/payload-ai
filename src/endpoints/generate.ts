@@ -153,11 +153,11 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       locale: localeInfo,
       pluginConfig,
       systemPrompt: instructions.system,
+      template: String(promptTemplate),
       templateRuntime: {
         payload: req.payload,
         schemaPath,
       },
-      template: String(promptTemplate),
     })
 
     if (pluginConfig.debugging) {
