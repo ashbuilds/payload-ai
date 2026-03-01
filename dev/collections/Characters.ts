@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { fieldToJsonSchema, aiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
+import { aiPluginLexicalEditorFeature, fieldToJsonSchema } from '@ai-stack/payloadcms'
 import {
   EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
@@ -532,15 +532,16 @@ export const Characters: CollectionConfig = {
       async ({ data, req }) => {
         if (data.description && data.visualProfile.autoApply) {
           // Find the group/collapsible field safely
-          const identityGroup = req.payload.collections.characters.config.fields.find(
-            (f) => 'label' in f && f.label === 'Identity',
+          // @ts-ignore
+          const identityGroup = req.payload.collections?.characters?.config.fields.find(
+            (f: any) => 'label' in f && f.label === 'Identity',
           )
 
           if (!identityGroup || !('fields' in identityGroup)) {
             return data
           }
           const visualProfileField = identityGroup.fields.find(
-            (f) => 'name' in f && f.name === 'visualProfile',
+            (f: any) => 'name' in f && f.name === 'visualProfile',
           )
           if (visualProfileField && 'fields' in visualProfileField) {
             // Convert group field to JSON schema
