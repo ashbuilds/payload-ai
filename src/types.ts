@@ -1,8 +1,7 @@
-import type { GenerateObjectResult, ModelMessage } from 'ai'
+import type { ModelMessage } from 'ai'
 import type { JSONSchema } from 'openai/lib/jsonschema'
 import type { ImageGenerateParams } from 'openai/resources/images'
 import type {
-  CollectionConfig,
   CollectionSlug,
   DataFromCollectionSlug,
   Endpoint,
@@ -131,6 +130,7 @@ export type GenerateTextarea<T = any> = (args: {
   collectionSlug: CollectionSlug
   doc: T
   documentId?: number | string
+  fieldPath?: string
   locale?: string
   options?: any
 }) => Promise<string> | string
@@ -229,16 +229,17 @@ export type PromptField = {
 export interface BeforeGenerateArgs<T = any> {
   doc: T
   field: Field
-  headers: Record<string, string>
+  headers: Headers | Record<string, string>
   instructions: Record<string, unknown> // The instruction document
   messages?: ModelMessage[]
   payload: PayloadRequest['payload']
   prompt: string
   req: PayloadRequest
-  system: string
+  system?: string
 }
 
 export type BeforeGenerateResult = {
+  instructions?: Record<string, unknown>
   messages?: ModelMessage[]
   prompt?: string
   system?: string
@@ -251,14 +252,33 @@ export type BeforeGenerateHook<T = any> = (
 export interface AfterGenerateArgs<T = any> {
   doc: T
   field: Field
-  headers: Record<string, string>
+  headers: Headers | Record<string, string>
   instructions: Record<string, unknown>
   payload: PayloadRequest['payload']
   req: PayloadRequest
-  result: GenerateObjectResult<any> | MediaResult | string // depends on context
+  result: unknown // depends on context
 }
 
 export type AfterGenerateHook<T = any> = (args: AfterGenerateArgs<T>) => Promise<void> | void
+
+export interface CustomGenerateArgs<T = any> {
+  context: 'text' | 'upload'
+  doc: T
+  field: Field
+  generateParams: Record<string, unknown>
+  headers: Headers | Record<string, string>
+  instructions: Record<string, unknown>
+  payload: PayloadRequest['payload']
+  prompt: string
+  req: PayloadRequest
+  system?: string
+}
+
+export type CustomGenerateResult = MediaResult | Response | void
+
+export type CustomGenerateHook<T = any> = (
+  args: CustomGenerateArgs<T>,
+) => CustomGenerateResult | Promise<CustomGenerateResult>
 
 // Add to PluginConfig or a new interface if accessed via custom.ai
 export interface AIFieldConfig {
@@ -287,6 +307,7 @@ export interface AIFieldConfig {
    * @default true (compose is auto-injected on supported field types)
    */
   enabled?: boolean
+  generate?: CustomGenerateHook | CustomGenerateHook[]
   /** Custom prompt template for this field */
   prompt?: string
   /** Custom system prompt for this field */

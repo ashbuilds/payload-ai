@@ -1,11 +1,17 @@
 import type { ImagePart } from 'ai'
 import type { Field, PayloadRequest } from 'payload'
 
-import type { PluginConfig } from '../types.js'
+import type {
+  AfterGenerateHook,
+  BeforeGenerateHook,
+  CustomGenerateHook,
+  PluginConfig,
+} from '../types.js'
 
 import { checkAccess } from '../access/checkAccess.js'
 import { filterEditorSchemaByNodes } from '../ai/utilities/filterEditorSchemaByNodes.js'
 import { PLUGIN_INSTRUCTIONS_TABLE, PLUGIN_NAME } from '../defaults.js'
+import { getFieldAIConfig, toHookArray } from '../utilities/ai/getFieldAIConfig.js'
 import { resolveEffectiveInstructionSettings } from '../utilities/ai/resolveEffectiveInstructionSettings.js'
 import { assignPrompt } from '../utilities/buildPromptUtils.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
@@ -28,7 +34,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
 
     const data = await req.json?.()
 
-    const { allowedEditorNodes = [], locale = 'en', options } = data
+    const { allowedEditorNodes = [], fieldPath = '', locale = 'en', options } = data
     const { action, actionParams, instructionId } = options
     let contextData = data.doc
 
@@ -155,6 +161,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       systemPrompt: instructions.system,
       template: String(promptTemplate),
       templateRuntime: {
+        fieldPath: String(fieldPath || ''),
         payload: req.payload,
         schemaPath,
       },
@@ -242,29 +249,41 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
 
     let promptToUse = processedPrompt
     let systemToUse = prompts.system
+    const aiConfig = getFieldAIConfig(targetField)
 
     // Execute beforeGenerate hooks
-    if (targetField && (targetField as any).custom?.ai?.beforeGenerate) {
-      const beforeHooks = (targetField as any).custom.ai.beforeGenerate as Array<
-        (args: any) => Promise<any>
-      >
-      for (const hook of beforeHooks) {
-        const result = await hook({
-          doc: contextData,
-          field: targetField,
-          headers: req.headers,
-          instructions,
-          payload: req.payload,
-          prompt: promptToUse,
-          req,
-          system: systemToUse,
-        })
+    const beforeHooks = toHookArray<BeforeGenerateHook>(aiConfig?.beforeGenerate)
+    for (const hook of beforeHooks) {
+      if (!targetField) {
+        break
+      }
 
-        if (result) {
-          if (result.prompt) {promptToUse = result.prompt}
-          if (result.system) {systemToUse = result.system}
+      const hookResult = await hook({
+        doc: contextData,
+        field: targetField,
+        headers: req.headers,
+        instructions,
+        payload: req.payload,
+        prompt: promptToUse,
+        req,
+        system: systemToUse,
+      })
+
+      if (hookResult) {
+        if (hookResult.prompt) {
+          promptToUse = hookResult.prompt
+        }
+        if (hookResult.system) {
+          systemToUse = hookResult.system
         }
       }
+    }
+
+    if (pluginConfig.debugging && beforeHooks.length > 0) {
+      req.payload.logger.info(
+        sanitizeLog({ hooks: beforeHooks.length, schemaPath }),
+        '— AI Plugin: Executed beforeGenerate hooks for text field',
+      )
     }
 
     const generateParams = {
@@ -287,27 +306,80 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       )
     }
 
-    const streamResult = await req.payload.ai.streamObject({
+    const afterHooks = toHookArray<AfterGenerateHook>(aiConfig?.afterGenerate)
+    const streamParams = {
       ...generateParams,
-      onFinish: async ({ object }) => {
-        if (targetField && (targetField as any).custom?.ai?.afterGenerate) {
-          const afterHooks = (targetField as any).custom.ai.afterGenerate as Array<
-            (args: any) => Promise<any>
-          >
-          for (const hook of afterHooks) {
-            await hook({
-              doc: contextData,
-              field: targetField,
-              headers: req.headers,
-              instructions,
-              payload: req.payload,
-              req,
-              result: object,
-            })
+      onFinish: async ({ object }: { object?: unknown }) => {
+        for (const hook of afterHooks) {
+          if (!targetField) {
+            break
           }
+
+          await hook({
+            doc: contextData,
+            field: targetField,
+            headers: req.headers,
+            instructions,
+            payload: req.payload,
+            req,
+            result: object,
+          })
         }
       },
-    })
+    }
+
+    if (pluginConfig.debugging && afterHooks.length > 0) {
+      req.payload.logger.info(
+        sanitizeLog({ hooks: afterHooks.length, schemaPath }),
+        '— AI Plugin: Registered afterGenerate hooks for text field',
+      )
+    }
+
+    const customGenerateHooks = toHookArray<CustomGenerateHook>(aiConfig?.generate)
+    let usedCustomGenerate = false
+    let streamResult: Response | undefined
+
+    for (const hook of customGenerateHooks) {
+      if (!targetField) {
+        break
+      }
+
+      const customResult = await hook({
+        context: 'text',
+        doc: contextData,
+        field: targetField,
+        generateParams: streamParams as Record<string, unknown>,
+        headers: req.headers,
+        instructions,
+        payload: req.payload,
+        prompt: promptToUse,
+        req,
+        system: systemToUse,
+      })
+
+      if (customResult === undefined) {
+        continue
+      }
+
+      if (!(customResult instanceof Response)) {
+        throw new Error('custom.ai.generate for text fields must return a Response stream.')
+      }
+
+      streamResult = customResult
+      usedCustomGenerate = true
+      break
+    }
+
+    if (!streamResult) {
+      streamResult = await req.payload.ai.streamObject(streamParams)
+    }
+
+    if (pluginConfig.debugging && customGenerateHooks.length > 0) {
+      req.payload.logger.info(
+        sanitizeLog({ hooks: customGenerateHooks.length, schemaPath, usedCustomGenerate }),
+        '— AI Plugin: Evaluated custom generate hooks for text field',
+      )
+    }
 
     return streamResult
   } catch (error) {

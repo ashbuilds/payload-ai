@@ -62,6 +62,7 @@ export const useGenerateUpload = ({ instructionIdRef }: UseGenerateUploadParams)
         collectionSlug: collectionSlug ?? '',
         doc,
         documentId,
+        fieldPath: fieldPath ?? '',
         locale: locale?.code,
         options: {
           instructionId: currentInstructionId,

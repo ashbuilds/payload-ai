@@ -1,15 +1,21 @@
 import type { ImagePart } from 'ai'
 import type { Field, PayloadRequest } from 'payload'
 
-import type { PluginConfig } from '../types.js'
+import type { MediaResult } from '../ai/core/media/types.js'
+import type {
+  AfterGenerateHook,
+  BeforeGenerateHook,
+  CustomGenerateHook,
+  PluginConfig,
+} from '../types.js'
 
-import { checkAccess } from '../access/checkAccess.js'
 import {
   PLUGIN_AI_JOBS_TABLE,
   PLUGIN_API_ENDPOINT_VIDEOGEN_WEBHOOK,
   PLUGIN_INSTRUCTIONS_TABLE,
 } from '../defaults.js'
 import { renderTemplate } from '../libraries/templates/renderTemplate.js'
+import { getFieldAIConfig, toHookArray } from '../utilities/ai/getFieldAIConfig.js'
 import { resolveEffectiveInstructionSettings } from '../utilities/ai/resolveEffectiveInstructionSettings.js'
 import { extendContextWithPromptFields } from '../utilities/buildPromptUtils.js'
 import { buildSmartPrompt, isGenericPrompt } from '../utilities/buildSmartPrompt.js'
@@ -28,10 +34,9 @@ import { sanitizeLog } from '../utilities/sanitizeLog.js'
 export const uploadHandler = (pluginConfig: PluginConfig) => async (req: PayloadRequest) => {
   try {
     // Check authentication and authorization first
-    // await checkAccess(req, pluginConfig)
     const data = await req.json?.()
 
-    const { collectionSlug, documentId, options } = data
+    const { collectionSlug, documentId, fieldPath = '', options } = data
     const { instructionId } = options
     let docData = {}
 
@@ -98,6 +103,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       { type: String(instructions['field-type']), collection: collectionSlug },
       pluginConfig,
       {
+        fieldPath: String(fieldPath || ''),
         payload: req.payload,
         schemaPath,
       },
@@ -120,6 +126,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     }
 
     const text = await renderTemplate(promptTemplate as string, extendedContext, {
+      fieldPath: String(fieldPath || ''),
       payload: req.payload,
       schemaPath,
     })
@@ -155,33 +162,42 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       req.payload.logger.error(e, '— AI Plugin: Error finding field for hooks')
     }
 
-    if (targetField && (targetField as any).custom?.ai?.beforeGenerate) {
-      const beforeHooks = (targetField as any).custom.ai.beforeGenerate as Array<
-        (args: any) => Promise<any>
-      >
-      for (const hook of beforeHooks) {
-        const result = await hook({
-          doc: contextData,
-          field: targetField,
-          headers: req.headers,
-          instructions,
-          payload: req.payload,
-          prompt: promptToUse,
-          req,
-        })
+    const aiConfig = getFieldAIConfig(targetField)
+    const beforeHooks = toHookArray<BeforeGenerateHook>(aiConfig?.beforeGenerate)
 
-        if (result) {
-          if (result.prompt) {
-            promptToUse = result.prompt
-          }
-          if (result.instructions) {
-            instructions = {
-              ...instructions,
-              ...result.instructions,
-            }
+    for (const hook of beforeHooks) {
+      if (!targetField) {
+        break
+      }
+
+      const hookResult = await hook({
+        doc: contextData,
+        field: targetField,
+        headers: req.headers,
+        instructions,
+        payload: req.payload,
+        prompt: promptToUse,
+        req,
+      })
+
+      if (hookResult) {
+        if (hookResult.prompt) {
+          promptToUse = hookResult.prompt
+        }
+        if (hookResult.instructions) {
+          instructions = {
+            ...instructions,
+            ...hookResult.instructions,
           }
         }
       }
+    }
+
+    if (pluginConfig.debugging && beforeHooks.length > 0) {
+      req.payload.logger.info(
+        sanitizeLog({ hooks: beforeHooks.length, schemaPath }),
+        '— AI Plugin: Executed beforeGenerate hooks for upload field',
+      )
     }
 
     if (pluginConfig.debugging) {
@@ -206,7 +222,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
     })
 
     if (!settingsName) {
-      throw new Error(`Unsupported model-id: ${modelId}`)
+      throw new Error(`Unsupported model-id: ${String(modelId)}`)
     }
 
     const generateParams = {
@@ -227,24 +243,77 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       )
     }
 
-    // Use payload.ai.generateMedia directly! 🎉
-    const result = await req.payload.ai.generateMedia(generateParams)
+    const customGenerateHooks = toHookArray<CustomGenerateHook>(aiConfig?.generate)
+    let usedCustomGenerate = false
+    let result: MediaResult | undefined
 
-    if (targetField && (targetField as any).custom?.ai?.afterGenerate) {
-      const afterHooks = (targetField as any).custom.ai.afterGenerate as Array<
-        (args: any) => Promise<any>
-      >
-      for (const hook of afterHooks) {
-        await hook({
-          doc: contextData,
-          field: targetField,
-          headers: req.headers,
-          instructions,
-          payload: req.payload,
-          req,
-          result,
-        })
+    for (const hook of customGenerateHooks) {
+      if (!targetField) {
+        break
       }
+
+      const customResult = await hook({
+        context: 'upload',
+        doc: contextData,
+        field: targetField,
+        generateParams: generateParams as Record<string, unknown>,
+        headers: req.headers,
+        instructions,
+        payload: req.payload,
+        prompt: promptToUse,
+        req,
+      })
+
+      if (customResult === undefined) {
+        continue
+      }
+
+      if (customResult instanceof Response) {
+        throw new Error(
+          'custom.ai.generate for upload fields must return a media result object, not Response.',
+        )
+      }
+
+      result = customResult
+      usedCustomGenerate = true
+      break
+    }
+
+    if (!result) {
+      // Use payload.ai.generateMedia directly! 🎉
+      result = await req.payload.ai.generateMedia(generateParams)
+    }
+
+    if (pluginConfig.debugging && customGenerateHooks.length > 0) {
+      req.payload.logger.info(
+        sanitizeLog({ hooks: customGenerateHooks.length, schemaPath, usedCustomGenerate }),
+        '— AI Plugin: Evaluated custom generate hooks for upload field',
+      )
+    }
+
+    const afterHooks = toHookArray<AfterGenerateHook>(aiConfig?.afterGenerate)
+
+    for (const hook of afterHooks) {
+      if (!targetField) {
+        break
+      }
+
+      await hook({
+        doc: contextData,
+        field: targetField,
+        headers: req.headers,
+        instructions,
+        payload: req.payload,
+        req,
+        result,
+      })
+    }
+
+    if (pluginConfig.debugging && afterHooks.length > 0) {
+      req.payload.logger.info(
+        sanitizeLog({ hooks: afterHooks.length, schemaPath }),
+        '— AI Plugin: Executed afterGenerate hooks for upload field',
+      )
     }
 
     // If model returned files immediately, proceed with upload
@@ -264,7 +333,11 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
             collection: uploadCollectionSlug as string,
             request: req,
           })
-          assetData = { id: uploadResult.id, alt: (uploadResult as any).alt }
+          const uploadAlt =
+            typeof (uploadResult as { alt?: unknown }).alt === 'string'
+              ? (uploadResult as { alt?: string }).alt
+              : undefined
+          assetData = { id: uploadResult.id, alt: uploadAlt }
         } else {
           const created = await req.payload.create({
             collection: uploadCollectionSlug as string,
@@ -295,7 +368,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
           targetField.type === 'upload' ||
           targetField.type === 'select'
         ) {
-          hasMany = (targetField as any).hasMany === true
+          hasMany = 'hasMany' in targetField && targetField.hasMany === true
         }
       }
 
@@ -346,15 +419,16 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
 
     throw new Error('Unexpected model response.')
   } catch (error) {
-    req.payload.logger.error(
-      // @ts-expect-error
-      error?.type || (error as Error).message,
-      '— AI Plugin: Error generating media upload:',
-    )
+    const errorType =
+      error && typeof error === 'object' && 'type' in error
+        ? String((error as { type?: unknown }).type)
+        : undefined
     const message =
       error && typeof error === 'object' && 'message' in error
-        ? (error as Error).message
+        ? String((error as { message?: unknown }).message)
         : String(error)
+
+    req.payload.logger.error(`— AI Plugin: Error generating media upload: ${errorType || message}`)
     return new Response(JSON.stringify({ error: message }), {
       headers: { 'Content-Type': 'application/json' },
       status:

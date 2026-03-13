@@ -1,20 +1,32 @@
 import type { Endpoint } from 'payload'
 
 type Suggestion = { display: string; id: string }
+type FieldSuggestion = Suggestion & { arrayPath?: string; relativeToArray?: string }
 type UploadField = { hasMany: boolean; name: string }
 
- 
 const collectFieldSuggestions = (
   fields: any[],
   prefix = '',
-  suggestions: Suggestion[] = [],
-): Suggestion[] => {
+  suggestions: FieldSuggestion[] = [],
+  activeArrayPath = '',
+): FieldSuggestion[] => {
   for (const field of fields) {
+    const fieldPath = field.name
+      ? prefix
+        ? `${prefix}.${String(field.name)}`
+        : String(field.name)
+      : prefix
+    const nextArrayPath = field.type === 'array' && field.name ? fieldPath : activeArrayPath
+
     if (field.name) {
-      const fieldPath = prefix ? `${prefix}.${String(field.name)}` : String(field.name)
       suggestions.push({
+        arrayPath: activeArrayPath || undefined,
         id: fieldPath,
         display: fieldPath,
+        relativeToArray:
+          activeArrayPath && fieldPath.startsWith(`${activeArrayPath}.`)
+            ? fieldPath.slice(activeArrayPath.length + 1)
+            : undefined,
       })
     }
 
@@ -24,13 +36,13 @@ const collectFieldSuggestions = (
           ? `${prefix}.${String(field.name)}`
           : String(field.name)
         : prefix
-      collectFieldSuggestions(field.fields, newPrefix, suggestions)
+      collectFieldSuggestions(field.fields, newPrefix, suggestions, nextArrayPath)
     }
 
     if (field.tabs && Array.isArray(field.tabs)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       field.tabs.forEach((tab: any) => {
-        collectFieldSuggestions(tab.fields, prefix, suggestions)
+        collectFieldSuggestions(tab.fields, prefix, suggestions, activeArrayPath)
       })
     }
   }
@@ -38,7 +50,6 @@ const collectFieldSuggestions = (
   return suggestions
 }
 
- 
 const collectUploadFields = (
   fields: any[],
   prefix = '',
@@ -85,11 +96,90 @@ const mentionsResponse = (items: Suggestion[]) =>
     },
   )
 
+const getRelativeSchemaPath = (schemaPath: string, collectionSlug: string): string => {
+  if (!schemaPath) {
+    return ''
+  }
+
+  return schemaPath.startsWith(`${collectionSlug}.`)
+    ? schemaPath.slice(collectionSlug.length + 1)
+    : schemaPath
+}
+
+const getCurrentArrayPath = (
+  currentSchemaPath: string,
+  collectionSlug: string,
+  fieldSuggestions: FieldSuggestion[],
+): null | string => {
+  const relativeSchemaPath = getRelativeSchemaPath(currentSchemaPath, collectionSlug)
+  let matchedArrayPath: null | string = null
+
+  for (const suggestion of fieldSuggestions) {
+    if (!suggestion.arrayPath) {
+      continue
+    }
+
+    if (
+      relativeSchemaPath === suggestion.arrayPath ||
+      relativeSchemaPath.startsWith(`${suggestion.arrayPath}.`)
+    ) {
+      if (!matchedArrayPath || suggestion.arrayPath.length > matchedArrayPath.length) {
+        matchedArrayPath = suggestion.arrayPath
+      }
+    }
+  }
+
+  return matchedArrayPath
+}
+
+const buildCurrentRowSuggestions = (
+  currentSchemaPath: string,
+  collectionSlug: string,
+  fieldSuggestions: FieldSuggestion[],
+): Suggestion[] => {
+  const currentArrayPath = getCurrentArrayPath(currentSchemaPath, collectionSlug, fieldSuggestions)
+  if (!currentArrayPath) {
+    return []
+  }
+
+  const relativeSchemaPath = getRelativeSchemaPath(currentSchemaPath, collectionSlug)
+  const currentFieldRelativePath = relativeSchemaPath.startsWith(`${currentArrayPath}.`)
+    ? relativeSchemaPath.slice(currentArrayPath.length + 1)
+    : ''
+
+  const dedupe = new Set<string>()
+  const suggestions: Suggestion[] = []
+
+  for (const fieldSuggestion of fieldSuggestions) {
+    if (
+      fieldSuggestion.arrayPath !== currentArrayPath ||
+      !fieldSuggestion.relativeToArray ||
+      fieldSuggestion.relativeToArray === currentFieldRelativePath
+    ) {
+      continue
+    }
+
+    const id = `current.${fieldSuggestion.relativeToArray}`
+    if (dedupe.has(id)) {
+      continue
+    }
+
+    dedupe.add(id)
+    suggestions.push({
+      display: id,
+      id,
+    })
+  }
+
+  return suggestions
+}
+
 export const promptMentionsEndpoint: Endpoint = {
   handler: async (req) => {
     const trigger = String(req.query.trigger ?? '@')
     const q = String(req.query.q ?? '').trim()
     const collectionSlug = String(req.query.collection ?? '')
+    const currentSchemaPath = String(req.query.schemaPath ?? '')
     const id = String(req.query.id ?? '')
 
     if (!collectionSlug) {
@@ -104,10 +194,16 @@ export const promptMentionsEndpoint: Endpoint = {
       }
 
       const fieldSuggestions = collectFieldSuggestions(collection.fields)
+      const currentRowSuggestions = buildCurrentRowSuggestions(
+        currentSchemaPath,
+        collectionSlug,
+        fieldSuggestions,
+      )
+      const combinedSuggestions = [...currentRowSuggestions, ...fieldSuggestions]
       const suggestions =
         q.length === 0
-          ? fieldSuggestions
-          : fieldSuggestions.filter((item) => item.id.toLowerCase().includes(q.toLowerCase()))
+          ? combinedSuggestions
+          : combinedSuggestions.filter((item) => item.id.toLowerCase().includes(q.toLowerCase()))
 
       return mentionsResponse(suggestions)
     }

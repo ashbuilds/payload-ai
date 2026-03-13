@@ -22,14 +22,18 @@ const MENTION_SUGGESTIONS_TTL_MS = 60_000
 const mentionSuggestionsCache = new Map<string, { expiresAt: number; items: MentionSuggestion[] }>()
 const mentionSuggestionsInFlight = new Map<string, Promise<MentionSuggestion[]>>()
 
-const getMentionCacheKey = (collectionSlug: string, trigger: string): string =>
-  `${collectionSlug}:${trigger}`
+const getMentionCacheKey = (
+  collectionSlug: string,
+  trigger: string,
+  schemaPath?: string,
+): string => `${collectionSlug}:${trigger}:${schemaPath || ''}`
 
 const fetchMentionSuggestions = async (
   collectionSlug: string,
   trigger: string,
+  schemaPath?: string,
 ): Promise<MentionSuggestion[]> => {
-  const cacheKey = getMentionCacheKey(collectionSlug, trigger)
+  const cacheKey = getMentionCacheKey(collectionSlug, trigger, schemaPath)
   const now = Date.now()
   const cached = mentionSuggestionsCache.get(cacheKey)
 
@@ -46,6 +50,7 @@ const fetchMentionSuggestions = async (
     const params = new URLSearchParams({
       collection: collectionSlug,
       q: '',
+      schemaPath: schemaPath || '',
       trigger,
     })
 
@@ -208,7 +213,7 @@ const PromptMentionsPlugin: React.FC = () => {
 
       await Promise.all(
         triggers.map(async (trigger) => {
-          newSuggestions[trigger] = await fetchMentionSuggestions(collectionSlug, trigger)
+          newSuggestions[trigger] = await fetchMentionSuggestions(collectionSlug, trigger, schemaPath)
         }),
       )
 
@@ -216,7 +221,7 @@ const PromptMentionsPlugin: React.FC = () => {
     }
 
     fetchSuggestions().catch(console.error)
-  }, [collectionSlug])
+  }, [collectionSlug, schemaPath])
 
   const queryMentions = useCallback(async (trigger: string, queryString?: null | string) => {
     const items = suggestionsRef.current[trigger] || []

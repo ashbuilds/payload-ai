@@ -121,6 +121,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
           ...doc,
           id: documentId,
         },
+        fieldPath: pathFromContext ?? '',
         locale: locale?.code,
         options,
       })

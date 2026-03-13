@@ -243,7 +243,7 @@ export const instructionsCollection = (pluginConfig: PluginConfig) =>
         tabs: [
           {
             description:
-              'Define dynamic templates using {{ fieldName }}. Type { to see available field suggestions.',
+              'Define dynamic templates using {{ fieldName }}. For fields inside array rows, use {{current.fieldName}} to read sibling values from the same row.',
             fields: [
               { // TODO: update below to use PromptField
                 name: 'prompt',
