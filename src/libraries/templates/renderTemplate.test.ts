@@ -26,13 +26,13 @@ describe('renderTemplate array row context', () => {
     ).resolves.toBe('Second voice line')
   })
 
-  it('keeps full-path array references working for the active row', async () => {
+  it('does not implicitly resolve full-path child access for the active row', async () => {
     await expect(
       renderTemplate('{{voices.primaryText}}', values, {
         fieldPath: 'voices.1.speech',
         schemaPath: 'characters.voices.speech',
       }),
-    ).resolves.toBe('Second voice line')
+    ).resolves.toBe('')
   })
 
   it('still allows iteration over the full array', async () => {
@@ -50,21 +50,6 @@ describe('renderTemplate array row context', () => {
         fieldPath: 'voices._index-1.speech',
         schemaPath: 'characters.voices.speech',
       }),
-    ).resolves.toBe('Second voice line')
-  })
-
-  it('keeps nested full paths working when the array is inside a group', async () => {
-    await expect(
-      renderTemplate(
-        '{{profile.voices.primaryText}}',
-        {
-          profile: values,
-        },
-        {
-          fieldPath: 'profile.voices.1.speech',
-          schemaPath: 'characters.profile.voices.speech',
-        },
-      ),
     ).resolves.toBe('Second voice line')
   })
 })

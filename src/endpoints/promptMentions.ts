@@ -174,6 +174,29 @@ const buildCurrentRowSuggestions = (
   return suggestions
 }
 
+const filterFieldSuggestionsForArrayContext = (
+  currentSchemaPath: string,
+  collectionSlug: string,
+  fieldSuggestions: FieldSuggestion[],
+): FieldSuggestion[] => {
+  const currentArrayPath = getCurrentArrayPath(currentSchemaPath, collectionSlug, fieldSuggestions)
+  if (!currentArrayPath) {
+    return fieldSuggestions
+  }
+
+  return fieldSuggestions.filter((fieldSuggestion) => {
+    if (fieldSuggestion.id === currentArrayPath) {
+      return true
+    }
+
+    if (!fieldSuggestion.relativeToArray) {
+      return true
+    }
+
+    return fieldSuggestion.arrayPath !== currentArrayPath
+  })
+}
+
 export const promptMentionsEndpoint: Endpoint = {
   handler: async (req) => {
     const trigger = String(req.query.trigger ?? '@')
@@ -194,12 +217,17 @@ export const promptMentionsEndpoint: Endpoint = {
       }
 
       const fieldSuggestions = collectFieldSuggestions(collection.fields)
+      const scopedFieldSuggestions = filterFieldSuggestionsForArrayContext(
+        currentSchemaPath,
+        collectionSlug,
+        fieldSuggestions,
+      )
       const currentRowSuggestions = buildCurrentRowSuggestions(
         currentSchemaPath,
         collectionSlug,
         fieldSuggestions,
       )
-      const combinedSuggestions = [...currentRowSuggestions, ...fieldSuggestions]
+      const combinedSuggestions = [...currentRowSuggestions, ...scopedFieldSuggestions]
       const suggestions =
         q.length === 0
           ? combinedSuggestions

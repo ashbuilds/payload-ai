@@ -90,8 +90,6 @@ const getNestedValue = (value: unknown, segments: string[]): unknown => {
 
 type CurrentArrayScope = {
   arrayPath: string
-  arrayPathSegments: string[]
-  arrayValue: unknown[]
   currentIndex: number
   currentItem: Record<string, unknown>
   currentItemPath: string
@@ -123,17 +121,14 @@ const getCurrentArrayScope = (
       continue
     }
 
-    const arrayValue = getNestedValue(values, arrayPathSegments)
     const currentItem = getNestedValue(values, segments.slice(0, i + 1))
 
-    if (!Array.isArray(arrayValue) || !currentItem || typeof currentItem !== 'object') {
+    if (!currentItem || typeof currentItem !== 'object') {
       continue
     }
 
     return {
       arrayPath: arrayPathSegments.join('.'),
-      arrayPathSegments,
-      arrayValue,
       currentIndex,
       currentItem: currentItem as Record<string, unknown>,
       currentItemPath: segments.slice(0, i + 1).join('.'),
@@ -141,65 +136,6 @@ const getCurrentArrayScope = (
   }
 
   return null
-}
-
-const setNestedValue = (
-  target: Record<string, unknown>,
-  segments: string[],
-  value: unknown,
-): Record<string, unknown> => {
-  if (!segments.length) {
-    return target
-  }
-
-  const nextTarget = { ...target }
-  let current: Record<string, unknown> = nextTarget
-
-  for (let i = 0; i < segments.length - 1; i++) {
-    const segment = segments[i]
-    const existing = current[segment]
-    const cloned =
-      existing && typeof existing === 'object' && !Array.isArray(existing)
-        ? { ...(existing as Record<string, unknown>) }
-        : {}
-
-    current[segment] = cloned
-    current = cloned
-  }
-
-  current[segments[segments.length - 1]] = value
-  return nextTarget
-}
-
-const createCurrentRowArrayProxy = (
-  arrayValue: unknown[],
-  currentItem: Record<string, unknown>,
-): unknown[] => {
-  return new Proxy(arrayValue, {
-    get(target, prop, receiver) {
-      if (typeof prop === 'string' && !Reflect.has(target, prop) && prop in currentItem) {
-        return currentItem[prop]
-      }
-
-      const value = Reflect.get(target, prop, receiver)
-      return typeof value === 'function' ? value.bind(target) : value
-    },
-    getOwnPropertyDescriptor(target, prop) {
-      if (typeof prop === 'string' && !(prop in target) && prop in currentItem) {
-        return {
-          configurable: true,
-          enumerable: false,
-          value: currentItem[prop],
-          writable: false,
-        }
-      }
-
-      return Object.getOwnPropertyDescriptor(target, prop)
-    },
-    has(target, prop) {
-      return Reflect.has(target, prop) || (typeof prop === 'string' && prop in currentItem)
-    },
-  })
 }
 
 const buildRenderContext = (
@@ -218,23 +154,14 @@ const buildRenderContext = (
 
   const {
     arrayPath,
-    arrayPathSegments,
-    arrayValue,
     currentIndex,
     currentItem,
     currentItemPath,
   } = currentArrayScope
-  const currentRowArrayProxy = createCurrentRowArrayProxy(arrayValue, currentItem)
-  const valuesWithCurrentArrayAlias = setNestedValue(
-    baseValues,
-    arrayPathSegments,
-    currentRowArrayProxy,
-  )
 
   // `current` is the explicit, row-scoped alias for prompts authored on array item fields.
-  // The array proxy keeps older full-path prompts like `voices.primaryText` working.
   return {
-    ...valuesWithCurrentArrayAlias,
+    ...baseValues,
     __templateRuntime: runtime,
     current: currentItem,
     currentArrayPath: arrayPath,
