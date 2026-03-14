@@ -229,6 +229,7 @@ export type PromptField = {
 export interface BeforeGenerateArgs<T = any> {
   doc: T
   field: Field
+  fieldPath?: string
   headers: Headers | Record<string, string>
   instructions: Record<string, unknown> // The instruction document
   messages?: ModelMessage[]

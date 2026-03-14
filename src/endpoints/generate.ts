@@ -261,6 +261,7 @@ export const generateHandler = (pluginConfig: PluginConfig) => async (req: Paylo
       const hookResult = await hook({
         doc: contextData,
         field: targetField,
+        fieldPath: String(fieldPath || ''),
         headers: req.headers,
         instructions,
         payload: req.payload,

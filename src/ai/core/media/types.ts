@@ -41,6 +41,7 @@ export interface VideoGenerationArgs extends MediaGenerationArgs {
  */
 export interface SpeechGenerationArgs extends MediaGenerationArgs {
   audioFormat?: string
+  language?: string
   speed?: number
   voice?: string
 }

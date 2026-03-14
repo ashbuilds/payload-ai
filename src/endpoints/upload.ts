@@ -173,6 +173,7 @@ export const uploadHandler = (pluginConfig: PluginConfig) => async (req: Payload
       const hookResult = await hook({
         doc: contextData,
         field: targetField,
+        fieldPath: String(fieldPath || ''),
         headers: req.headers,
         instructions,
         payload: req.payload,

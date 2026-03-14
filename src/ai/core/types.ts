@@ -52,6 +52,7 @@ export interface PayloadGenerateMediaArgs {
   fps?: number
   images?: ImagePart[]
   instructionId?: number | string
+  language?: string
   mode?: 'i2v' | 't2v'
   model?: string
   n?: number

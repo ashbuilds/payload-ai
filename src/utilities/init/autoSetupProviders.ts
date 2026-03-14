@@ -39,6 +39,61 @@ const findModelsDefault = (block: any): any[] => {
   return defaultModels
 }
 
+const ELEVENLABS_LEGACY_MODEL_IDS = new Set([
+  'eleven_flash_v2',
+  'eleven_multilingual_v1',
+  'eleven_monolingual_v1',
+  'eleven_turbo_v2',
+  'eleven_turbo_v2_5',
+])
+
+const normalizeElevenLabsModels = (models: any[] = []): any[] => {
+  const recommendedModels = findModelsDefault(elevenlabsBlock)
+  const recommendedModelIds = new Set(recommendedModels.map((model) => model.id))
+  const existingModelsById = new Map(
+    (models || []).map((model) => [model.id, model]),
+  )
+
+  const normalizedRecommendedModels = recommendedModels.map((defaultModel) => {
+    const existingModel = existingModelsById.get(defaultModel.id)
+
+    if (!existingModel) {
+      return defaultModel
+    }
+
+    return {
+      ...defaultModel,
+      ...existingModel,
+      id: defaultModel.id,
+      name:
+        typeof existingModel.name === 'string' && existingModel.name.trim()
+          ? existingModel.name
+          : defaultModel.name,
+      responseModalities:
+        Array.isArray(existingModel.responseModalities) && existingModel.responseModalities.length > 0
+          ? existingModel.responseModalities
+          : defaultModel.responseModalities,
+      useCase: defaultModel.useCase,
+    }
+  })
+
+  const customModels = (models || []).filter((model) => {
+    const modelId = typeof model?.id === 'string' ? model.id : ''
+
+    if (!modelId) {
+      return false
+    }
+
+    if (recommendedModelIds.has(modelId)) {
+      return false
+    }
+
+    return !ELEVENLABS_LEGACY_MODEL_IDS.has(modelId)
+  })
+
+  return [...normalizedRecommendedModels, ...customModels]
+}
+
 const providerKeys = {
   anthropic: 'ANTHROPIC_API_KEY',
   elevenlabs: 'ELEVENLABS_API_KEY',
@@ -174,7 +229,25 @@ export const autoSetupProviders = async (payload: Payload, config: PluginConfig)
     }
 
     // Setup defaults globally regardless of whether providers were newly added or not
-    const configuredProviders = [...(existing.providers || []), ...providersArray]
+    let configuredProviders = [...(existing.providers || []), ...providersArray]
+
+    configuredProviders = configuredProviders.map((provider: any) => {
+      if (provider?.blockType !== 'elevenlabs') {
+        return provider
+      }
+
+      const normalizedModels = normalizeElevenLabsModels(provider.models)
+      if (JSON.stringify(provider.models || []) === JSON.stringify(normalizedModels)) {
+        return provider
+      }
+
+      initializedAny = true
+      return {
+        ...provider,
+        models: normalizedModels,
+      }
+    })
+
     if (configuredProviders.length > 0) {
       if (!defaults.text.provider && config.generationDefaults?.text) {
         defaults.text.provider = config.generationDefaults.text.provider

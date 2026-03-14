@@ -1,6 +1,10 @@
 import type { MediaResult, SpeechGenerationArgs } from '../types.js'
 
-import { getGlobalDefaults, getTTSModel } from '../../../providers/registry.js'
+import {
+  getGlobalDefaults,
+  getTTSModel,
+  toAISDKProviderOptions,
+} from '../../../providers/registry.js'
 import { getExtensionFromMimeType } from '../utils.js'
 
 /**
@@ -20,6 +24,10 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
 
   // Get TTS model instance
   const model = await getTTSModel(payload, provider, modelId, providerOptions)
+  const aiSdkProviderOptions = toAISDKProviderOptions({
+    providerId: provider,
+    settingsOverride: providerOptions,
+  })
 
   // Dynamic import to support older SDK versions
   let generateSpeechFn
@@ -36,7 +44,10 @@ export async function generateSpeech(args: SpeechGenerationArgs): Promise<MediaR
 
   // TODO: fix with proper error handling
   const result = await generateSpeechFn({
+    language: args.language,
     model,
+    outputFormat: args.audioFormat,
+    providerOptions: aiSdkProviderOptions,
     speed: args.speed,
     text: prompt,
     voice,
