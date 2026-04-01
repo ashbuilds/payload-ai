@@ -109,7 +109,7 @@ The Voice Over Field transforms your content into audio, powered by OpenAI or El
 
 ## **5. Add custom model**
 
-The Payload Ai plugin supports model from openai, anthropic and elevenlabs but you can add your own custom model.
+The Payload Ai plugin supports model from openai, anthropic, google, minimax and elevenlabs but you can add your own custom model.
 
 ### **Setup Instructions**
 
