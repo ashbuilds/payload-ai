@@ -187,7 +187,7 @@
     "ajv": "^8.17.1",
     "elevenlabs": "0.8.2",
     "get-input-selection": "^1.1.4",
-    "handlebars": "4.7.8",
+    "handlebars": "4.7.9",
     "handlebars-async-helpers": "^1.0.6",
     "locale-codes": "^1.3.1",
     "lodash.isequal": "^4.5.0",
