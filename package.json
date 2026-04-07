@@ -112,7 +112,7 @@
     "mongodb-memory-server": "10.1.4",
     "next": "15.4.8",
     "open": "^10.1.0",
-    "payload": "^3.55.1",
+    "payload": "^3.79.1",
     "prettier": "^3.4.2",
     "qs-esm": "7.0.2",
     "react": "19.1.0",
@@ -130,7 +130,7 @@
     "@payloadcms/translations": "^3.55.1",
     "@payloadcms/ui": "^3.55.1",
     "lexical": "^0.35.0",
-    "payload": "^3.55.1"
+    "payload": "^3.79.1"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0"
