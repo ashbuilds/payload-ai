@@ -135,6 +135,7 @@ Create a `.env` file in your project root. Add the keys for the providers you wa
 OPENAI_API_KEY=your-openai-api-key           # OpenAI models (GPT-4, etc.)
 ANTHROPIC_API_KEY=your-anthropic-api-key     # Claude models
 GOOGLE_GENERATIVE_AI_API_KEY=your-google-key # Gemini models
+MINIMAX_API_KEY=your-minimax-api-key         # MiniMax M2.7 / M2.5 models
 
 # Image Generation - Choose your provider(s)
 OPENAI_API_KEY=your-openai-api-key           # DALL-E (uses same key as above)
