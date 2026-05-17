@@ -1,30 +1,17 @@
 import type { Field, File } from 'payload'
 
 import type { GenerationConfig } from '../../../types.js'
-import type { Voice } from './voices.js'
 
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateVoice } from './generateVoice.js'
-import { getAllVoices } from './voices.js'
-
-const { voices = [] }: { voices: Voice[] } = await getAllVoices()
-
-const voiceOptions = voices.map((voice) => {
-  return {
-    label: voice.name ?? '',
-    value: voice.voice_id,
-    ...voice,
-  }
-})
-
-const fieldVoiceOptions = voiceOptions.map((option) => {
-  return {
-    label: option.name ?? '',
-    value: option.voice_id,
-  }
-})
 
 const fields: Field[] = [
+  {
+    name: 'voice_id',
+    type: 'text',
+    label: 'Voice ID',
+    required: true,
+  },
   {
     type: 'collapsible',
     admin: {
@@ -86,17 +73,6 @@ const fields: Field[] = [
     ],
   },
 ]
-
-if (voiceOptions.length) {
-  fields.unshift({
-    name: 'voice_id',
-    type: 'select',
-    defaultValue: voiceOptions[0]?.voice_id,
-    label: 'Voice',
-    options: fieldVoiceOptions,
-    required: true,
-  })
-}
 
 const MODEL_KEY = '11Labs'
 
