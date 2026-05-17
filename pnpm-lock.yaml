@@ -67,6 +67,21 @@ importers:
       '@google/genai':
         specifier: ^1.30.0
         version: 1.30.0
+      '@lexical/code':
+        specifier: 0.41.0
+        version: 0.41.0
+      '@lexical/link':
+        specifier: 0.41.0
+        version: 0.41.0
+      '@lexical/list':
+        specifier: 0.41.0
+        version: 0.41.0
+      '@lexical/rich-text':
+        specifier: 0.41.0
+        version: 0.41.0
+      '@lexical/table':
+        specifier: 0.41.0
+        version: 0.41.0
       '@payloadcms/translations':
         specifier: ^3.82.1
         version: 3.82.1

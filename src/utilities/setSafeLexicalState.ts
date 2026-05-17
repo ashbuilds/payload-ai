@@ -1,12 +1,6 @@
 import type { LexicalEditor } from 'lexical'
 
-type EditorAction = 'replace' | 'update'
-
-export const setSafeLexicalState = (
-  state: unknown,
-  editorInstance: LexicalEditor,
-  action: EditorAction = 'replace',
-) => {
+export const setSafeLexicalState = (state: unknown, editorInstance: LexicalEditor) => {
   try {
     const editorState = editorInstance.parseEditorState(state as any)
     if (editorState.isEmpty()) {
