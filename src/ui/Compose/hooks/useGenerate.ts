@@ -114,6 +114,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     onFinish: (result) => {
       if (result.object && field) {
         if (field.type === 'richText') {
+          setSafeLexicalState(result.object, editor)
           setHistory(result.object)
           setValue(result.object)
         } else if ('name' in field) {
@@ -133,13 +134,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     }
 
     requestAnimationFrame(() => {
-      if (field?.type === 'richText') {
-        setSafeLexicalState(object, editor)
-      } else if (field && 'name' in field && object[field.name]) {
+      if (field && field.type !== 'richText' && 'name' in field && object[field.name]) {
         setValue(object[field.name])
       }
     })
-  }, [object, editor, field])
+  }, [object, field, setValue])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {
