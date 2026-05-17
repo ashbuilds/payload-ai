@@ -7,6 +7,9 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['@ai-stack/payloadcms'],
+  turbopack: {
+    root: path.resolve(dirname, '..'),
+  },
   webpack: (webpackConfig) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
