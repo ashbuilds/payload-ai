@@ -161,29 +161,6 @@ const payloadAiPlugin =
           path: '@ai-stack/payloadcms/client#InstructionsProvider',
         },
       ]
-      const updatedDependencies = {
-        ...dependencies,
-        ComposeField: {
-          type: 'component' as const,
-          path: '@ai-stack/payloadcms/client#ComposeField',
-        },
-        InstructionsProvider: {
-          type: 'component' as const,
-          path: '@ai-stack/payloadcms/client#InstructionsProvider',
-        },
-        LexicalEditorFeatureClient: {
-          type: 'component' as const,
-          path: '@ai-stack/payloadcms/client#LexicalEditorFeatureClient',
-        },
-        PromptEditorField: {
-          type: 'component' as const,
-          path: '@ai-stack/payloadcms/client#PromptEditorField',
-        },
-        SelectField: {
-          type: 'component' as const,
-          path: '@ai-stack/payloadcms/client#SelectField',
-        },
-      }
 
       incomingConfig.admin = {
         ...(incomingConfig.admin || {}),
@@ -191,7 +168,7 @@ const payloadAiPlugin =
           ...(incomingConfig.admin?.components ?? {}),
           providers: updatedProviders,
         },
-        dependencies: updatedDependencies,
+        dependencies,
       }
 
       const pluginEndpoints = endpoints(pluginConfig)
