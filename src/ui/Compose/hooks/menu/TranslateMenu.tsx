@@ -42,7 +42,7 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
         <div
           className={`${styles.menu} ${styles.subMenu}`}
           style={{
-            background: 'var(--popup-bg)',
+            background: 'var(--theme-input-bg)',
             // minHeight: '300px',
           }}
         >
