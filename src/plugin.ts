@@ -4,7 +4,6 @@ import { deepMerge } from 'payload/shared'
 
 import type { PluginConfig } from './types.js'
 
-import { defaultGenerationModels } from './ai/models/index.js'
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
@@ -24,7 +23,6 @@ const defaultPluginConfig: PluginConfig = {
   collections: {},
   disableSponsorMessage: false,
   generatePromptOnInit: true,
-  generationModels: defaultGenerationModels,
 }
 
 const sponsorMessage = `
@@ -156,13 +154,36 @@ const payloadAiPlugin =
       const globals = [...(incomingConfig.globals ?? [])]
       const { collections: collectionSlugs, globals: globalsSlugs } = pluginConfig
 
-      const { components: { providers = [] } = {} } = incomingConfig.admin || {}
+      const { components: { providers = [] } = {}, dependencies = {} } = incomingConfig.admin || {}
       const updatedProviders = [
         ...(providers ?? []),
         {
           path: '@ai-stack/payloadcms/client#InstructionsProvider',
         },
       ]
+      const updatedDependencies = {
+        ...dependencies,
+        ComposeField: {
+          type: 'component' as const,
+          path: '@ai-stack/payloadcms/client#ComposeField',
+        },
+        InstructionsProvider: {
+          type: 'component' as const,
+          path: '@ai-stack/payloadcms/client#InstructionsProvider',
+        },
+        LexicalEditorFeatureClient: {
+          type: 'component' as const,
+          path: '@ai-stack/payloadcms/client#LexicalEditorFeatureClient',
+        },
+        PromptEditorField: {
+          type: 'component' as const,
+          path: '@ai-stack/payloadcms/client#PromptEditorField',
+        },
+        SelectField: {
+          type: 'component' as const,
+          path: '@ai-stack/payloadcms/client#SelectField',
+        },
+      }
 
       incomingConfig.admin = {
         ...(incomingConfig.admin || {}),
@@ -170,6 +191,7 @@ const payloadAiPlugin =
           ...(incomingConfig.admin?.components ?? {}),
           providers: updatedProviders,
         },
+        dependencies: updatedDependencies,
       }
 
       const pluginEndpoints = endpoints(pluginConfig)
