@@ -11,11 +11,11 @@ const normalizeRoot = (root: Record<string, unknown>) => {
 
   return {
     ...root,
+    type: 'root',
     children: root.children,
     direction: root.direction ?? null,
     format: typeof root.format === 'string' ? root.format : '',
     indent: typeof root.indent === 'number' ? root.indent : 0,
-    type: 'root',
     version: typeof root.version === 'number' ? root.version : 1,
   }
 }
