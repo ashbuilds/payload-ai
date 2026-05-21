@@ -47,19 +47,6 @@ export const Posts: CollectionConfig = {
               required: false
             },
             {
-              name: "number",
-              type: 'number',
-              admin: {
-                description: "Any random number 1-10",
-              },
-              hasMany: true,
-            },
-            {
-              name: "select",
-              type: "select",
-              options: ["gpt-4o-mini", "gpt-4", "gpt-5"],
-            },
-            {
               name: "description",
               type: "textarea"
             }

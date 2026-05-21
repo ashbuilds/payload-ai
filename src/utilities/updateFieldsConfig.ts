@@ -78,7 +78,7 @@ export const updateFieldsConfig = (
               clientProps: {
                 schemaPath: currentSchemaPath,
               },
-              path: '@ai-stack/payloadcms/fields#ComposeField',
+              path: '@ai-stack/payloadcms/client#ComposeField',
             },
             ...customField,
           },
