@@ -40,7 +40,20 @@ const aiComposeNodes = [
   UploadNode,
 ]
 
+const getPathFromSchemaPath = (schemaPath?: string, fallback?: string) => {
+  if (!schemaPath) {
+    return fallback
+  }
+
+  const [, ...pathParts] = schemaPath.split('.')
+  const path = pathParts.join('.')
+
+  return path || fallback
+}
+
 export const LexicalEditorFeatureClient = createClientFeature((props) => {
+  const path = getPathFromSchemaPath(props.schemaPath, props.field?.name)
+
   return {
     nodes: aiComposeNodes,
     plugins: [
@@ -51,7 +64,7 @@ export const LexicalEditorFeatureClient = createClientFeature((props) => {
     ],
     sanitizedClientFeatureProps: {
       field: props.field,
-      path: props.field?.name,
+      path,
       schemaPath: props.schemaPath,
       ...props?.props,
     },

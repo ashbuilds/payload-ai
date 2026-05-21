@@ -15,7 +15,7 @@ import {
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
 import { fieldToJsonSchema } from '../../../utilities/fieldToJsonSchema.js'
-import { setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
+import { normalizeLexicalState, setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
@@ -114,9 +114,14 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     onFinish: (result) => {
       if (result.object && field) {
         if (field.type === 'richText') {
-          setSafeLexicalState(result.object, editor)
-          setHistory(result.object)
-          setValue(result.object)
+          const normalizedObject = normalizeLexicalState(result.object)
+          const didUpdateEditor = setSafeLexicalState(result.object, editor)
+          setHistory(normalizedObject ?? result.object)
+          if (didUpdateEditor && normalizedObject) {
+            setValue(normalizedObject)
+          } else {
+            toast.error('Generated rich text could not be applied to the editor.')
+          }
         } else if ('name' in field) {
           setHistory(result.object[field.name])
           setValue(result.object[field.name])
@@ -134,11 +139,17 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     }
 
     requestAnimationFrame(() => {
-      if (field && field.type !== 'richText' && 'name' in field && object[field.name]) {
+      if (field?.type === 'richText') {
+        const normalizedObject = normalizeLexicalState(object)
+        const didUpdateEditor = setSafeLexicalState(object, editor, { logErrors: false })
+        if (didUpdateEditor && normalizedObject) {
+          setValue(normalizedObject)
+        }
+      } else if (field && 'name' in field && object[field.name]) {
         setValue(object[field.name])
       }
     })
-  }, [object, field, setValue])
+  }, [object, editor, field, setValue])
 
   const streamObject = useCallback(
     ({ action = 'Compose', params }: ActionCallbackParams) => {

@@ -1,3 +1,6 @@
+export { ComposeField } from '../fields/ComposeField/ComposeField.js'
 export { LexicalEditorFeatureClient } from '../fields/LexicalEditor/feature.client.js'
+export { PromptEditorField } from '../fields/PromptEditorField/PromptEditorField.js'
+export { SelectField } from '../fields/SelectField/SelectField.js'
 export { InstructionsContext } from '../providers/InstructionsProvider/context.js'
 export { InstructionsProvider } from '../providers/InstructionsProvider/InstructionsProvider.js'

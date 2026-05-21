@@ -4,7 +4,6 @@ import { deepMerge } from 'payload/shared'
 
 import type { PluginConfig } from './types.js'
 
-import { defaultGenerationModels } from './ai/models/index.js'
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
@@ -24,7 +23,6 @@ const defaultPluginConfig: PluginConfig = {
   collections: {},
   disableSponsorMessage: false,
   generatePromptOnInit: true,
-  generationModels: defaultGenerationModels,
 }
 
 const sponsorMessage = `
@@ -156,7 +154,7 @@ const payloadAiPlugin =
       const globals = [...(incomingConfig.globals ?? [])]
       const { collections: collectionSlugs, globals: globalsSlugs } = pluginConfig
 
-      const { components: { providers = [] } = {} } = incomingConfig.admin || {}
+      const { components: { providers = [] } = {}, dependencies = {} } = incomingConfig.admin || {}
       const updatedProviders = [
         ...(providers ?? []),
         {
@@ -170,6 +168,7 @@ const payloadAiPlugin =
           ...(incomingConfig.admin?.components ?? {}),
           providers: updatedProviders,
         },
+        dependencies,
       }
 
       const pluginEndpoints = endpoints(pluginConfig)

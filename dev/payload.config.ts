@@ -13,6 +13,8 @@ import { testEmailAdapter } from './helpers/testEmailAdapter.js'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+process.loadEnvFile?.(path.resolve(dirname, '.env'))
+
 if (!process.env.ROOT_DIR) {
   process.env.ROOT_DIR = dirname
 }
