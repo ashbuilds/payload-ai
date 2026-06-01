@@ -37,35 +37,34 @@ describe('minimax provider — unit', () => {
   })
 
   describe('model list', () => {
-    it('includes M2.7 and M2.5 variants', async () => {
+    it('includes M3 and M2.7 variants', async () => {
       const { MiniMaxConfig } = await import('../index.js')
       const textModel = MiniMaxConfig.models.find((m) => m.id === 'MINIMAX-text')
       const modelField = (textModel!.settings!.fields as any[]).find(
         (f: any) => f.name === 'model',
       )
       expect(modelField).toBeDefined()
+      expect(modelField.options).toContain('MiniMax-M3')
       expect(modelField.options).toContain('MiniMax-M2.7')
       expect(modelField.options).toContain('MiniMax-M2.7-highspeed')
-      expect(modelField.options).toContain('MiniMax-M2.5')
-      expect(modelField.options).toContain('MiniMax-M2.5-highspeed')
     })
 
-    it('defaults to MiniMax-M2.7 for text model', async () => {
+    it('defaults to MiniMax-M3 for text model', async () => {
       const { MiniMaxConfig } = await import('../index.js')
       const textModel = MiniMaxConfig.models.find((m) => m.id === 'MINIMAX-text')
       const modelField = (textModel!.settings!.fields as any[]).find(
         (f: any) => f.name === 'model',
       )
-      expect(modelField?.defaultValue).toBe('MiniMax-M2.7')
+      expect(modelField?.defaultValue).toBe('MiniMax-M3')
     })
 
-    it('defaults to MiniMax-M2.7 for object model', async () => {
+    it('defaults to MiniMax-M3 for object model', async () => {
       const { MiniMaxConfig } = await import('../index.js')
       const objectModel = MiniMaxConfig.models.find((m) => m.id === 'MINIMAX-object')
       const modelField = (objectModel!.settings!.fields as any[]).find(
         (f: any) => f.name === 'model',
       )
-      expect(modelField?.defaultValue).toBe('MiniMax-M2.7')
+      expect(modelField?.defaultValue).toBe('MiniMax-M3')
     })
   })
 
@@ -96,7 +95,7 @@ describe('minimax provider — unit', () => {
 
     it('returns a language model instance for a given model id', async () => {
       const { minimax } = await import('../minimax.js')
-      const model = minimax('MiniMax-M2.7')
+      const model = minimax('MiniMax-M3')
       expect(model).toBeDefined()
       expect(typeof model).toBe('object')
     })
@@ -142,7 +141,7 @@ describe.skipIf(!runIntegration)('minimax provider — integration', () => {
     }
 
     const response = await textModel.handler!('Say hello in one word', {
-      model: 'MiniMax-M2.7',
+      model: 'MiniMax-M3',
       maxTokens: 50,
       temperature: 0.5,
       schema,
@@ -185,7 +184,7 @@ describe.skipIf(!runIntegration)('minimax provider — integration', () => {
 
     // Should not throw despite temperature=0 being invalid for MiniMax
     const response = await textModel.handler!('What is 2+2?', {
-      model: 'MiniMax-M2.5',
+      model: 'MiniMax-M3',
       maxTokens: 50,
       temperature: 0, // will be clamped to 0.001
       schema,
