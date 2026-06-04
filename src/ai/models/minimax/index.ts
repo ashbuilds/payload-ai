@@ -5,7 +5,7 @@ import { generateObject } from '../generateObject.js'
 import { minimax } from './minimax.js'
 
 const MODEL_KEY = 'MINIMAX'
-const MODELS = ['MiniMax-M2.7', 'MiniMax-M2.7-highspeed', 'MiniMax-M2.5', 'MiniMax-M2.5-highspeed']
+const MODELS = ['MiniMax-M3', 'MiniMax-M2.7', 'MiniMax-M2.7-highspeed']
 
 /**
  * MiniMax requires temperature in the range (0.0, 1.0].
@@ -57,7 +57,7 @@ export const MiniMaxConfig: GenerationConfig = {
           {
             name: 'model',
             type: 'select',
-            defaultValue: 'MiniMax-M2.7',
+            defaultValue: 'MiniMax-M3',
             label: 'Model',
             options: MODELS,
           },
@@ -114,7 +114,7 @@ export const MiniMaxConfig: GenerationConfig = {
           {
             name: 'model',
             type: 'select',
-            defaultValue: 'MiniMax-M2.7',
+            defaultValue: 'MiniMax-M3',
             label: 'Model',
             options: MODELS,
           },
