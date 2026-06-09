@@ -123,7 +123,7 @@
     "sort-package-json": "^2.10.0",
     "typescript": "5.7.3",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.1.2"
+    "vitest": "^3.2.6"
   },
   "peerDependencies": {
     "@lexical/html": "^0.41.0",
