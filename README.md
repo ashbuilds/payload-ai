@@ -28,7 +28,7 @@ The Payload AI Plugin is your secret weapon for turbocharged content creation. I
 
 ## ⚠️ Beta Notice
 
-This plugin is actively evolving. We're constantly shipping improvements and new features. Tested with Payload v3.38.0.
+This plugin is actively evolving. We're constantly shipping improvements and new features. Tested with Payload v3.84.1.
 
 **Quick Start Tip:** Try it out with [Payload's website template](https://github.com/payloadcms/payload/tree/main/templates/website) for the smoothest experience.
 
