@@ -19,7 +19,8 @@ type AnyCollectionConfig =
  * Notes:
  * - Tabs are a UI construct and are not part of schemaPath (fields inside tabs are at the same level).
  * - Blocks include the block slug as part of the path (we must consume it between the block field and its inner fields).
- * - Rows are skipped by this plugin&#39;s schema path mapping; support added defensively.
+ * - Unnamed row/group/collapsible fields are UI-only groupings and are not part of schemaPath
+ *   either (fields inside them are at the same level), matching how the plugin builds paths.
  */
 export const getFieldBySchemaPath = (
   collectionConfig: AnyCollectionConfig,
@@ -61,6 +62,15 @@ export const getFieldBySchemaPath = (
           if (foundInTab) {
             return foundInTab
           }
+        }
+      }
+
+      // Unnamed row/group/collapsible fields are UI-only groupings (like tabs) and don't
+      // contribute a path segment either - search their nested fields with the same segments.
+      if (!(field as any).name && Array.isArray((field as any).fields)) {
+        const foundInWrapper = findInFields((field as any).fields, segments)
+        if (foundInWrapper) {
+          return foundInWrapper
         }
       }
 
