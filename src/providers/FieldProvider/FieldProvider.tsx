@@ -1,6 +1,6 @@
 import type { ClientField } from 'payload'
 
-import React, { createContext, useEffect } from 'react'
+import React, { createContext } from 'react'
 
 type FieldContextType = {
   field?: ClientField
@@ -27,25 +27,16 @@ export const FieldProvider = ({
     schemaPath: unknown
   }
 }) => {
-  const [field, setField] = React.useState<ClientField | undefined>()
-  const [path, setPath] = React.useState<string>()
-  const [schemaPath, setSchemaPath] = React.useState<string>()
-
-  useEffect(() => {
-    const nextSchemaPath = String(context.schemaPath ?? '')
-    if (schemaPath !== nextSchemaPath) {
-      setField(context.field)
-      setPath(context.path)
-      setSchemaPath(nextSchemaPath)
-    }
-  }, [schemaPath, context])
-
+  // `context` is already current on every render (it's rebuilt by the caller from live
+  // field props), so there's no need to mirror it into local state - doing so previously
+  // caused `field` to get stuck at whatever value it had on the first render for a given
+  // `schemaPath`, including `undefined` if it wasn't populated yet at that point.
   return (
     <FieldContext.Provider
       value={{
-        field,
-        path,
-        schemaPath,
+        field: context.field,
+        path: context.path,
+        schemaPath: String(context.schemaPath ?? ''),
       }}
     >
       {children}
