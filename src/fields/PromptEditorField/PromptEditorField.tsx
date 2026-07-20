@@ -2,8 +2,7 @@
 
 import type { TextareaFieldClientProps } from 'payload'
 
-import { FieldDescription, FieldLabel, useField } from '@payloadcms/ui'
-import { useTranslation } from '@payloadcms/ui/providers/Translation'
+import { FieldDescription, FieldLabel, useField, useTranslation } from '@payloadcms/ui'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Mention, MentionsInput } from 'react-mentions/dist/react-mentions.cjs.js'
 

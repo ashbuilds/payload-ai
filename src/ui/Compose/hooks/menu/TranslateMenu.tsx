@@ -1,4 +1,4 @@
-import { useTranslation } from '@payloadcms/ui/providers/Translation'
+import { useTranslation } from '@payloadcms/ui'
 import locales from 'locale-codes'
 import React, { memo, useState } from 'react'
 

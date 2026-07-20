@@ -1,7 +1,14 @@
 import { experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
-import { useTranslation } from '@payloadcms/ui/providers/Translation'
+import {
+  toast,
+  useConfig,
+  useDocumentInfo,
+  useField,
+  useForm,
+  useLocale,
+  useTranslation,
+} from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 

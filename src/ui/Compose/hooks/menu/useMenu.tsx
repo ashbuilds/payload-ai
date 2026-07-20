@@ -1,7 +1,6 @@
 'use client'
 
-import { useField } from '@payloadcms/ui'
-import { useTranslation } from '@payloadcms/ui/providers/Translation'
+import { useField, useTranslation } from '@payloadcms/ui'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type {
