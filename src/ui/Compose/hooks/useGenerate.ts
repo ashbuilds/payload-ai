@@ -24,6 +24,16 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   // Create a ref to hold the current instructionId
   const instructionIdRef = useRef(instructionId)
 
+  // `setSafeLexicalState` reinserts preserved custom blocks by comparing against a snapshot of
+  // "current" editor state. Streaming generation calls `setSafeLexicalState` repeatedly (on
+  // every partial object and again on finish), each of which commits a new editor state - so
+  // deriving that snapshot from the live editor state at call time means an early call (with
+  // only a small partial object) computes and commits a block placement, and every later call
+  // in the same cycle then treats that already-shifted placement as "original", compounding.
+  // Capture the pre-generation snapshot exactly once, before submit() fires, and reuse it for
+  // every setSafeLexicalState call in that generation cycle.
+  const originalRootRef = useRef<null | Record<string, unknown>>(null)
+
   // Update the ref whenever instructionId changes
   useEffect(() => {
     instructionIdRef.current = instructionId
@@ -115,7 +125,9 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
       if (result.object && field) {
         if (field.type === 'richText') {
           const normalizedObject = normalizeLexicalState(result.object)
-          const didUpdateEditor = setSafeLexicalState(result.object, editor)
+          const didUpdateEditor = setSafeLexicalState(result.object, editor, {
+            originalRoot: originalRootRef.current,
+          })
           setHistory(normalizedObject ?? result.object)
           if (didUpdateEditor && normalizedObject) {
             setValue(normalizedObject)
@@ -141,7 +153,10 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     requestAnimationFrame(() => {
       if (field?.type === 'richText') {
         const normalizedObject = normalizeLexicalState(object)
-        const didUpdateEditor = setSafeLexicalState(object, editor, { logErrors: false })
+        const didUpdateEditor = setSafeLexicalState(object, editor, {
+          logErrors: false,
+          originalRoot: originalRootRef.current,
+        })
         if (didUpdateEditor && normalizedObject) {
           setValue(normalizedObject)
         }
@@ -163,6 +178,11 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         instructionId: currentInstructionId,
       }
 
+      // Snapshot the editor state exactly once, before any streamed updates can mutate it.
+      originalRootRef.current = editor?.getEditorState
+        ? ((editor.getEditorState().toJSON()?.root as Record<string, unknown>) ?? null)
+        : null
+
       submit({
         allowedEditorNodes: Array.from(editor?._nodes?.keys() || []),
         doc: {
@@ -173,7 +193,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         options,
       })
     },
-    [localFromContext?.code, instructionIdRef, documentId],
+    [localFromContext?.code, instructionIdRef, documentId, editor],
   )
 
   const generateUpload = useCallback(async () => {

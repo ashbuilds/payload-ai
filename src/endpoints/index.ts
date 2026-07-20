@@ -25,6 +25,7 @@ import { extractImageData } from '../utilities/extractImageData.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
+import { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from '../utilities/lexicalToHTML.js'
 
 const requireAuthentication = (req: PayloadRequest) => {
   if (!req.user) {
@@ -88,6 +89,18 @@ const extendContextWithPromptFields = (
   })
 }
 
+// Counterpart instruction for the block-placeholder substitution in lexicalToHTML.ts. Any text
+// matching this pattern stands in for a custom block the model itself cannot see or reproduce
+// (it's not part of its output schema) - it must be echoed back verbatim, on its own paragraph,
+// so setSafeLexicalState.ts can swap it back for the real block at (approximately) the right
+// position afterwards.
+const buildBlockPlaceholderInstruction = () => `
+- The text may contain one or more standalone placeholder tokens of the exact form
+  "${BLOCK_PLACEHOLDER_PREFIX}<number>${BLOCK_PLACEHOLDER_SUFFIX}" (e.g. "${BLOCK_PLACEHOLDER_PREFIX}0${BLOCK_PLACEHOLDER_SUFFIX}").
+  These represent embedded content you cannot see. Reproduce every such token EXACTLY as given,
+  completely unchanged (do not translate, reword, remove, or merge it with other text), as its
+  own paragraph, in the same relative position within the surrounding text.`
+
 const buildRichTextSystem = (baseSystem: string, layout: string) => {
   return `${baseSystem}
 
@@ -97,6 +110,7 @@ RULES:
 - Utilize the provided rich text editor tools for appropriate formatting.
 - Ensure the output follows the structure of the sample output object.
 - Produce valid JSON with no undefined or null values.
+${buildBlockPlaceholderInstruction()}
 ---
 LAYOUT INSTRUCTIONS:
 ${layout}
