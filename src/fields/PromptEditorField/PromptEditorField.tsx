@@ -3,8 +3,11 @@
 import type { TextareaFieldClientProps } from 'payload'
 
 import { FieldDescription, FieldLabel, useField } from '@payloadcms/ui'
+import { useTranslation } from '@payloadcms/ui/providers/Translation'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Mention, MentionsInput } from 'react-mentions/dist/react-mentions.cjs.js'
+
+import type { PluginAITranslationKeys, PluginAITranslations } from '../../translations/index.js'
 
 import { useInstructions } from '../../providers/InstructionsProvider/useInstructions.js'
 import { defaultStyle } from './defaultStyle.js'
@@ -14,6 +17,7 @@ export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => 
   const { setValue, value: payloadValue } = useField<string>({
     path: pathFromContext,
   })
+  const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
 
   const [localValue, setLocalValue] = useState(payloadValue || '')
   const hasInitialized = useRef(false)
@@ -52,7 +56,7 @@ export const PromptEditorField: React.FC<TextareaFieldClientProps> = (props) => 
       <MentionsInput
         onBlur={handleBlur}
         onChange={handleChange}
-        placeholder="Type your prompt using {{ fieldName }} variables..."
+        placeholder={t('ai-plugin:promptEditorPlaceholder')}
         style={defaultStyle}
         value={localValue}
       >

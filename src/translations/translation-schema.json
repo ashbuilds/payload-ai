@@ -9,7 +9,68 @@
     "ai-plugin": {
       "type": "object",
       "additionalProperties": false,
-      "properties": {}
+      "properties": {
+        "clickToStop": {
+          "type": "string"
+        },
+        "compose": {
+          "type": "string"
+        },
+        "composing": {
+          "type": "string"
+        },
+        "expand": {
+          "type": "string"
+        },
+        "expanding": {
+          "type": "string"
+        },
+        "failedToGenerate": {
+          "type": "string"
+        },
+        "promptEditorPlaceholder": {
+          "type": "string"
+        },
+        "proofread": {
+          "type": "string"
+        },
+        "proofreading": {
+          "type": "string"
+        },
+        "rephrase": {
+          "type": "string"
+        },
+        "rephrasing": {
+          "type": "string"
+        },
+        "richTextApplyFailed": {
+          "type": "string"
+        },
+        "search": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "string"
+        },
+        "simplify": {
+          "type": "string"
+        },
+        "simplifying": {
+          "type": "string"
+        },
+        "summarize": {
+          "type": "string"
+        },
+        "summarizing": {
+          "type": "string"
+        },
+        "translate": {
+          "type": "string"
+        },
+        "translating": {
+          "type": "string"
+        }
+      }
     }
   },
   "required": ["ai-plugin"]

@@ -28,14 +28,11 @@ export const Item: React.FC<BaseItemProps> = memo(
   ),
 )
 
-export const createMenuItem = (
-  IconComponent: React.ComponentType<{ size?: number }>,
-  initialText: string,
-) =>
+export const createMenuItem = (IconComponent: React.ComponentType<{ size?: number }>) =>
   memo(({ children, disabled, hideIcon, isMenu, onClick, ...rest }: BaseItemProps) => (
     <Item disabled={disabled} onClick={onClick} {...rest}>
       {hideIcon || <IconComponent size={18} />}
-      {children || <span className={styles.text}>{initialText}</span>}
+      {children}
       {isMenu && <ArrowIcon size={18} />}
     </Item>
   ))

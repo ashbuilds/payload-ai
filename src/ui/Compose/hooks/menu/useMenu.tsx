@@ -1,8 +1,13 @@
 'use client'
 
 import { useField } from '@payloadcms/ui'
-import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from '@payloadcms/ui/providers/Translation'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
+import type {
+  PluginAITranslationKeys,
+  PluginAITranslations,
+} from '../../../../translations/index.js'
 import type { ActionMenuItems, UseMenuEvents, UseMenuOptions } from '../../../../types.js'
 
 import { useFieldProps } from '../../../../providers/FieldProvider/useFieldProps.js'
@@ -24,8 +29,9 @@ const getActiveComponent = (ac: ActionMenuItems) => {
 }
 
 export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
-  const { field:{ type: fieldType } = {}, path: pathFromContext } = useFieldProps()
+  const { field: { type: fieldType } = {}, path: pathFromContext } = useFieldProps()
   const field = useField({ path: pathFromContext ?? '' })
+  const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
   const [activeComponent, setActiveComponent] = useState<ActionMenuItems>('Rephrase')
 
   const { initialValue, value } = field
@@ -48,10 +54,17 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
     }
   }, [initialValue, value, fieldType])
 
+  const renderLabel = useCallback(
+    (key: PluginAITranslationKeys) => <span className={styles.text}>{t(key)}</span>,
+    [t],
+  )
+
   const MemoizedActiveComponent = useMemo(() => {
     return ({ isLoading, stop }: { isLoading: boolean; stop: () => void }) => {
       const ActiveComponent = getActiveComponent(activeComponent)
       const activeItem = menuItemsMap.find((i) => i.name === activeComponent)!
+      const loadingKey = activeItem.loadingKey ?? activeItem.labelKey
+
       return (
         <ActiveComponent
           hideIcon
@@ -67,13 +80,13 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
               stop()
             }
           }}
-          title={isLoading ? 'Click to stop' : activeItem.name}
+          title={isLoading ? t('ai-plugin:clickToStop') : t(activeItem.labelKey)}
         >
-          {isLoading && activeItem.loadingText}
+          {isLoading ? t(loadingKey) : renderLabel(activeItem.labelKey)}
         </ActiveComponent>
       )
     }
-  }, [activeComponent, menuEvents])
+  }, [activeComponent, menuEvents, renderLabel, t])
 
   const filteredMenuItems = useMemo(
     () =>
@@ -104,13 +117,13 @@ export const useMenu = (menuEvents: UseMenuEvents, options: UseMenuOptions) => {
                 onClose()
               }}
             >
-              {isLoading && i.loadingText}
+              {isLoading && i.loadingKey ? t(i.loadingKey) : renderLabel(i.labelKey)}
             </Action>
           )
         })}
       </div>
     )
-  }, [filteredMenuItems, menuEvents])
+  }, [filteredMenuItems, menuEvents, renderLabel, t])
 
   return {
     ActiveComponent: MemoizedActiveComponent,
