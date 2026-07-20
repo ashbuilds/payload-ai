@@ -1,73 +1,41 @@
 import type { NestedKeysStripped } from '@payloadcms/translations'
 
-const englishTranslations = {
-  clickToStop: 'Click to stop',
-  compose: 'Compose',
-  composing: 'Composing',
-  expand: 'Expand',
-  expanding: 'Expanding',
-  failedToGenerate: 'Failed to generate: {{message}}',
-  promptEditorPlaceholder: 'Type your prompt using {{ fieldName }} variables...',
-  proofread: 'Proofread',
-  proofreading: 'Proofreading',
-  rephrase: 'Rephrase',
-  rephrasing: 'Rephrasing',
-  richTextApplyFailed: 'Generated rich text could not be applied to the editor.',
-  search: 'Search...',
-  settings: 'Settings',
-  simplify: 'Simplify',
-  simplifying: 'Simplifying',
-  summarize: 'Summarize',
-  summarizing: 'Summarizing',
-  translate: 'Translate',
-  translating: 'Translating',
-}
+import { createRequire } from 'node:module'
 
-const englishFallback = () => ({
-  $schema: './translation-schema.json',
-  'ai-plugin': { ...englishTranslations },
-})
+import type deTranslations from './de.json'
+import type enTranslations from './en.json'
+import type esTranslations from './es.json'
+import type faTranslations from './fa.json'
+import type frTranslations from './fr.json'
+import type nbTranslations from './nb.json'
+import type plTranslations from './pl.json'
+import type ruTranslations from './ru.json'
+import type ukTranslations from './uk.json'
 
-const en = englishFallback()
+const require = createRequire(import.meta.url)
 
-const de = {
-  $schema: './translation-schema.json',
-  'ai-plugin': {
-    clickToStop: 'Klicken zum Stoppen',
-    compose: 'Verfassen',
-    composing: 'Wird verfasst',
-    expand: 'Erweitern',
-    expanding: 'Wird erweitert',
-    failedToGenerate: 'Generierung fehlgeschlagen: {{message}}',
-    promptEditorPlaceholder: 'Prompt mit {{ fieldName }} Variablen eingeben...',
-    proofread: 'Korrekturlesen',
-    proofreading: 'Wird korrekturgelesen',
-    rephrase: 'Umformulieren',
-    rephrasing: 'Wird umformuliert',
-    richTextApplyFailed: 'Der generierte Rich Text konnte nicht auf den Editor angewendet werden.',
-    search: 'Suchen...',
-    settings: 'Einstellungen',
-    simplify: 'Vereinfachen',
-    simplifying: 'Wird vereinfacht',
-    summarize: 'Zusammenfassen',
-    summarizing: 'Wird zusammengefasst',
-    translate: 'Uebersetzen',
-    translating: 'Wird uebersetzt',
-  },
-}
+const de = require('./de.json') as typeof deTranslations
+const en = require('./en.json') as typeof enTranslations
+const es = require('./es.json') as typeof esTranslations
+const fa = require('./fa.json') as typeof faTranslations
+const fr = require('./fr.json') as typeof frTranslations
+const nb = require('./nb.json') as typeof nbTranslations
+const pl = require('./pl.json') as typeof plTranslations
+const ru = require('./ru.json') as typeof ruTranslations
+const uk = require('./uk.json') as typeof ukTranslations
+
+export type PluginAITranslations = typeof en
 
 export const translations = {
   de,
   en,
-  es: englishFallback(),
-  fa: englishFallback(),
-  fr: englishFallback(),
-  nb: englishFallback(),
-  pl: englishFallback(),
-  ru: englishFallback(),
-  uk: englishFallback(),
-}
-
-export type PluginAITranslations = typeof translations.en
+  es,
+  fa,
+  fr,
+  nb,
+  pl,
+  ru,
+  uk,
+} satisfies Record<string, PluginAITranslations>
 
 export type PluginAITranslationKeys = NestedKeysStripped<PluginAITranslations>
