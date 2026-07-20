@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     media: Media;
     posts: Post;
+    'plugin-ai-instructions': PluginAiInstruction;
     'payload-kv': PayloadKv;
     users: User;
     'payload-jobs': PayloadJob;
@@ -80,6 +81,7 @@ export interface Config {
   collectionsSelect: {
     media: MediaSelect<false> | MediaSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    'plugin-ai-instructions': PluginAiInstructionsSelect<false> | PluginAiInstructionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -90,10 +92,15 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale:
+    | ('false' | 'none' | 'null')
+    | false
+    | null
+    | ('en' | 'de' | 'es' | 'fa' | 'fr' | 'nb' | 'pl' | 'ru' | 'uk')
+    | ('en' | 'de' | 'es' | 'fa' | 'fr' | 'nb' | 'pl' | 'ru' | 'uk')[];
   globals: {};
   globalsSelect: {};
-  locale: null;
+  locale: 'en' | 'de' | 'es' | 'fa' | 'fr' | 'nb' | 'pl' | 'ru' | 'uk';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -281,6 +288,147 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-instructions".
+ */
+export interface PluginAiInstruction {
+  id: number;
+  /**
+   * Please don't change this unless you're sure of what you're doing
+   */
+  'schema-path'?: string | null;
+  /**
+   * Please don't change this unless you're sure of what you're doing
+   */
+  'field-type'?: ('text' | 'textarea' | 'upload' | 'richText') | null;
+  'relation-to'?: string | null;
+  'model-id'?:
+    | (
+        | 'Oai-text'
+        | 'dall-e'
+        | 'gpt-image-1'
+        | 'tts'
+        | 'Oai-object'
+        | 'GEMINI-text'
+        | 'GEMINI-object'
+        | 'imagen'
+        | '11Labs-m-v2'
+      )
+    | null;
+  /**
+   * Please reload your collection after applying the changes
+   */
+  disabled?: boolean | null;
+  /**
+   * Click 'Compose' to run this custom prompt and generate content
+   */
+  prompt?: string | null;
+  images?:
+    | {
+        /**
+         * Please make sure the image is publicly accessible.
+         */
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  system?: string | null;
+  layout?: string | null;
+  'Oai-text-settings'?: {
+    model?:
+      | ('gpt-5' | 'gpt-5-mini' | 'gpt-5-nano' | 'gpt-4.1' | 'gpt-4o' | 'gpt-4-turbo' | 'gpt-4o-mini' | 'gpt-3.5-turbo')
+      | null;
+    maxTokens?: number | null;
+    temperature?: number | null;
+    extractAttachments?: boolean | null;
+  };
+  'dalle-e-settings'?: {
+    version?: ('dall-e-3' | 'dall-e-2') | null;
+    size?: ('256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792') | null;
+    style?: ('vivid' | 'natural') | null;
+    'enable-prompt-optimization'?: boolean | null;
+  };
+  'gpt-image-1-settings'?: {
+    version?: 'gpt-image-1' | null;
+    size?: ('1024x1024' | '1024x1536' | '1536x1024' | 'auto') | null;
+    quality?: ('low' | 'medium' | 'high' | 'auto') | null;
+    output_format?: ('png' | 'jpeg' | 'webp') | null;
+    output_compression?: number | null;
+    background?: ('white' | 'transparent') | null;
+    moderation?: ('auto' | 'low') | null;
+  };
+  'Oai-tts-settings'?: {
+    voice?: ('alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer') | null;
+    model?: ('tts-1' | 'tts-1-hd') | null;
+    response_format?: ('mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm') | null;
+    speed?: number | null;
+  };
+  'Oai-object-settings'?: {
+    model?:
+      | ('gpt-5' | 'gpt-5-mini' | 'gpt-5-nano' | 'gpt-4.1' | 'gpt-4o' | 'gpt-4-turbo' | 'gpt-4o-mini' | 'gpt-3.5-turbo')
+      | null;
+    maxTokens?: number | null;
+    temperature?: number | null;
+    extractAttachments?: boolean | null;
+  };
+  'GEMINI-text-settings'?: {
+    model?:
+      | (
+          | 'gemini-3-pro-preview'
+          | 'gemini-2.5-pro'
+          | 'gemini-2.5-flash'
+          | 'gemini-2.5-flash-lite'
+          | 'gemini-2.0-flash'
+          | 'gemini-2.0-flash-lite'
+          | 'gemini-flash-latest'
+        )
+      | null;
+    maxTokens?: number | null;
+    temperature?: number | null;
+    extractAttachments?: boolean | null;
+  };
+  'GEMINI-object-settings'?: {
+    model?:
+      | (
+          | 'gemini-3-pro-preview'
+          | 'gemini-2.5-pro'
+          | 'gemini-2.5-flash'
+          | 'gemini-2.5-flash-lite'
+          | 'gemini-2.0-flash'
+          | 'gemini-2.0-flash-lite'
+          | 'gemini-flash-latest'
+        )
+      | null;
+    maxTokens?: number | null;
+    temperature?: number | null;
+    extractAttachments?: boolean | null;
+  };
+  'imagen-settings'?: {
+    model?:
+      | (
+          | 'imagen-4.0-fast-generate-001'
+          | 'imagen-4.0-generate-001'
+          | 'imagen-4.0-ultra-generate-001'
+          | 'imagen-3.0-generate-002'
+        )
+      | null;
+    aspectRatio?: ('1:1' | '3:4' | '4:3' | '9:16' | '16:9') | null;
+    outputMimeType?: ('image/png' | 'image/jpeg') | null;
+  };
+  '11Labs-settings'?: {
+    voice_id: string;
+    stability: number;
+    similarity_boost: number;
+    style?: number | null;
+    use_speaker_boost?: boolean | null;
+    seed?: number | null;
+    previous_text?: string | null;
+    next_text?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -427,6 +575,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'plugin-ai-instructions';
+        value: number | PluginAiInstruction;
       } | null)
     | ({
         relationTo: 'users';
@@ -601,6 +753,106 @@ export interface PostsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plugin-ai-instructions_select".
+ */
+export interface PluginAiInstructionsSelect<T extends boolean = true> {
+  'schema-path'?: T;
+  'field-type'?: T;
+  'relation-to'?: T;
+  'model-id'?: T;
+  disabled?: T;
+  prompt?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  system?: T;
+  layout?: T;
+  'Oai-text-settings'?:
+    | T
+    | {
+        model?: T;
+        maxTokens?: T;
+        temperature?: T;
+        extractAttachments?: T;
+      };
+  'dalle-e-settings'?:
+    | T
+    | {
+        version?: T;
+        size?: T;
+        style?: T;
+        'enable-prompt-optimization'?: T;
+      };
+  'gpt-image-1-settings'?:
+    | T
+    | {
+        version?: T;
+        size?: T;
+        quality?: T;
+        output_format?: T;
+        output_compression?: T;
+        background?: T;
+        moderation?: T;
+      };
+  'Oai-tts-settings'?:
+    | T
+    | {
+        voice?: T;
+        model?: T;
+        response_format?: T;
+        speed?: T;
+      };
+  'Oai-object-settings'?:
+    | T
+    | {
+        model?: T;
+        maxTokens?: T;
+        temperature?: T;
+        extractAttachments?: T;
+      };
+  'GEMINI-text-settings'?:
+    | T
+    | {
+        model?: T;
+        maxTokens?: T;
+        temperature?: T;
+        extractAttachments?: T;
+      };
+  'GEMINI-object-settings'?:
+    | T
+    | {
+        model?: T;
+        maxTokens?: T;
+        temperature?: T;
+        extractAttachments?: T;
+      };
+  'imagen-settings'?:
+    | T
+    | {
+        model?: T;
+        aspectRatio?: T;
+        outputMimeType?: T;
+      };
+  '11Labs-settings'?:
+    | T
+    | {
+        voice_id?: T;
+        stability?: T;
+        similarity_boost?: T;
+        style?: T;
+        use_speaker_boost?: T;
+        seed?: T;
+        previous_text?: T;
+        next_text?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
