@@ -1,9 +1,18 @@
 import { experimental_useObject as useObject } from '@ai-sdk/react'
 import { useEditorConfigContext } from '@payloadcms/richtext-lexical/client'
-import { toast, useConfig, useDocumentInfo, useField, useForm, useLocale } from '@payloadcms/ui'
+import {
+  toast,
+  useConfig,
+  useDocumentInfo,
+  useField,
+  useForm,
+  useLocale,
+  useTranslation,
+} from '@payloadcms/ui'
 import { jsonSchema } from 'ai'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
+import type { PluginAITranslationKeys, PluginAITranslations } from '../../../translations/index.js'
 import type { ActionMenuItems, GenerateTextarea } from '../../../types.js'
 
 import {
@@ -15,7 +24,10 @@ import {
 import { useFieldProps } from '../../../providers/FieldProvider/useFieldProps.js'
 import { editorSchemaValidator } from '../../../utilities/editorSchemaValidator.js'
 import { fieldToJsonSchema } from '../../../utilities/fieldToJsonSchema.js'
-import { normalizeLexicalState, setSafeLexicalState } from '../../../utilities/setSafeLexicalState.js'
+import {
+  normalizeLexicalState,
+  setSafeLexicalState,
+} from '../../../utilities/setSafeLexicalState.js'
 import { useHistory } from './useHistory.js'
 
 type ActionCallbackParams = { action: ActionMenuItems; params?: unknown }
@@ -40,6 +52,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   }, [instructionId])
 
   const { field, path: pathFromContext } = useFieldProps()
+  const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
   const editorConfigContext = useEditorConfigContext()
 
   const { editor } = editorConfigContext
@@ -118,7 +131,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
   } = useObject({
     api: `${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error: any) => {
-      toast.error(`Failed to generate: ${error.message}`)
+      toast.error(t('ai-plugin:failedToGenerate', { message: error.message }))
       console.error('Error generating object:', error)
     },
     onFinish: (result) => {
@@ -132,7 +145,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
           if (didUpdateEditor && normalizedObject) {
             setValue(normalizedObject)
           } else {
-            toast.error('Generated rich text could not be applied to the editor.')
+            toast.error(t('ai-plugin:richTextApplyFailed'))
           }
         } else if ('name' in field) {
           setHistory(result.object[field.name])
@@ -234,13 +247,13 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         return uploadResponse
       })
       .catch((error) => {
-        toast.error(`Failed to generate: ${error.message}`)
+        toast.error(t('ai-plugin:failedToGenerate', { message: error.message }))
         console.error(
           'Error generating or setting your upload, please set it manually if its saved in your media files.',
           error,
         )
       })
-  }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug])
+  }, [getData, localFromContext?.code, instructionIdRef, setValue, documentId, collectionSlug, t])
 
   const generate = useCallback(
     async (options?: ActionCallbackParams) => {

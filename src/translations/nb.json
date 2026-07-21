@@ -1,0 +1,25 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "clickToStop": "Klikk for å stoppe",
+    "compose": "Skriv",
+    "composing": "Skriver",
+    "expand": "Utvid",
+    "expanding": "Utvider",
+    "failedToGenerate": "Kunne ikke generere: {{message}}",
+    "promptEditorPlaceholder": "Skriv inn ledeteksten din med {{ fieldName }}-variabler...",
+    "proofread": "Korrekturles",
+    "proofreading": "Korrekturleser",
+    "rephrase": "Omformuler",
+    "rephrasing": "Omformulerer",
+    "richTextApplyFailed": "Den genererte rikteksten kunne ikke brukes i redigeringsverktøyet.",
+    "search": "Søk...",
+    "settings": "Innstillinger",
+    "simplify": "Forenkle",
+    "simplifying": "Forenkler",
+    "summarize": "Oppsummer",
+    "summarizing": "Oppsummerer",
+    "translate": "Oversett",
+    "translating": "Oversetter"
+  }
+}

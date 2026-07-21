@@ -1,4 +1,25 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "clickToStop": "برای توقف کلیک کنید",
+    "compose": "نوشتن",
+    "composing": "در حال نوشتن",
+    "expand": "گسترش",
+    "expanding": "در حال گسترش",
+    "failedToGenerate": "تولید ناموفق بود: {{message}}",
+    "promptEditorPlaceholder": "پرامپت خود را با استفاده از متغیرهای {{ fieldName }} بنویسید...",
+    "proofread": "بازبینی",
+    "proofreading": "در حال بازبینی",
+    "rephrase": "بازنویسی",
+    "rephrasing": "در حال بازنویسی",
+    "richTextApplyFailed": "متن غنی تولیدشده را نمی‌توان در ویرایشگر اعمال کرد.",
+    "search": "جستجو...",
+    "settings": "تنظیمات",
+    "simplify": "ساده‌سازی",
+    "simplifying": "در حال ساده‌سازی",
+    "summarize": "خلاصه‌سازی",
+    "summarizing": "در حال خلاصه‌سازی",
+    "translate": "ترجمه",
+    "translating": "در حال ترجمه"
+  }
 }

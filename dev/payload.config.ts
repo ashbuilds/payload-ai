@@ -1,6 +1,17 @@
+import type { Config } from 'payload'
+
 import { payloadAiPlugin } from '@ai-stack/payloadcms'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { de } from '@payloadcms/translations/languages/de'
+import { en } from '@payloadcms/translations/languages/en'
+import { es } from '@payloadcms/translations/languages/es'
+import { fa } from '@payloadcms/translations/languages/fa'
+import { fr } from '@payloadcms/translations/languages/fr'
+import { nb } from '@payloadcms/translations/languages/nb'
+import { pl } from '@payloadcms/translations/languages/pl'
+import { ru } from '@payloadcms/translations/languages/ru'
+import { uk } from '@payloadcms/translations/languages/uk'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -18,6 +29,18 @@ process.loadEnvFile?.(path.resolve(dirname, '.env'))
 if (!process.env.ROOT_DIR) {
   process.env.ROOT_DIR = dirname
 }
+
+const supportedLanguages = {
+  de,
+  en,
+  es,
+  fa,
+  fr,
+  nb,
+  pl,
+  ru,
+  uk,
+} as NonNullable<NonNullable<Config['i18n']>['supportedLanguages']>
 
 const buildConfigWithMemoryDB = async () => {
 
@@ -46,6 +69,15 @@ const buildConfigWithMemoryDB = async () => {
     }),
     editor: lexicalEditor(),
     email: testEmailAdapter,
+    i18n: {
+      fallbackLanguage: 'en',
+      supportedLanguages,
+    },
+    localization: {
+      defaultLocale: 'en',
+      fallback: true,
+      locales: ['en', 'de', 'es', 'fa', 'fr', 'nb', 'pl', 'ru', 'uk'],
+    },
     plugins: [
       payloadAiPlugin({
         collections: {

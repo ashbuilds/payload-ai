@@ -1,5 +1,11 @@
+import { useTranslation } from '@payloadcms/ui'
 import locales from 'locale-codes'
 import React, { memo, useState } from 'react'
+
+import type {
+  PluginAITranslationKeys,
+  PluginAITranslations,
+} from '../../../../translations/index.js'
 
 import { useInstructions } from '../../../../providers/InstructionsProvider/useInstructions.js'
 import { Item } from './Item.js'
@@ -8,6 +14,7 @@ import styles from './menu.module.scss'
 
 export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string }) => void }) => {
   const [show, setShow] = useState(false)
+  const { t } = useTranslation<PluginAITranslations, PluginAITranslationKeys>()
 
   const { enabledLanguages = [] } = useInstructions()
 
@@ -37,7 +44,9 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
         onClick={() => {
           setShow(!show)
         }}
-      />
+      >
+        <span className={styles.text}>{t('ai-plugin:translate')}</span>
+      </Translate>
       <div className={styles.hoverMenu} data-show={show}>
         <div
           className={`${styles.menu} ${styles.subMenu}`}
@@ -56,6 +65,7 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
             }}
           >
             <input
+              aria-label={t('ai-plugin:search')}
               className={styles.menuInput}
               onBlur={() => setInputFocus(false)}
               onChange={(event) => {
@@ -72,7 +82,7 @@ export const TranslateMenu = ({ onClick }: { onClick: (data: { locale: string })
                 )
               }}
               onFocus={() => setInputFocus(true)}
-              placeholder="Search..."
+              placeholder={t('ai-plugin:search')}
             />
           </Item>
           {languages.map((locale) => {

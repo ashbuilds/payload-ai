@@ -1,0 +1,25 @@
+{
+  "$schema": "./translation-schema.json",
+  "ai-plugin": {
+    "clickToStop": "Klicken zum Stoppen",
+    "compose": "Verfassen",
+    "composing": "Wird verfasst",
+    "expand": "Erweitern",
+    "expanding": "Wird erweitert",
+    "failedToGenerate": "Generierung fehlgeschlagen: {{message}}",
+    "promptEditorPlaceholder": "Prompt mit {{ fieldName }} Variablen eingeben...",
+    "proofread": "Korrekturlesen",
+    "proofreading": "Wird korrekturgelesen",
+    "rephrase": "Umformulieren",
+    "rephrasing": "Wird umformuliert",
+    "richTextApplyFailed": "Der generierte Rich Text konnte nicht auf den Editor angewendet werden.",
+    "search": "Suchen...",
+    "settings": "Einstellungen",
+    "simplify": "Vereinfachen",
+    "simplifying": "Wird vereinfacht",
+    "summarize": "Zusammenfassen",
+    "summarizing": "Wird zusammengefasst",
+    "translate": "Uebersetzen",
+    "translating": "Wird uebersetzt"
+  }
+}

@@ -1,4 +1,25 @@
 {
   "$schema": "./translation-schema.json",
-  "ai-plugin": {}
+  "ai-plugin": {
+    "clickToStop": "Натисніть, щоб зупинити",
+    "compose": "Написати",
+    "composing": "Написання",
+    "expand": "Розширити",
+    "expanding": "Розширення",
+    "failedToGenerate": "Не вдалося згенерувати: {{message}}",
+    "promptEditorPlaceholder": "Введіть промпт, використовуючи змінні {{ fieldName }}...",
+    "proofread": "Перевірити",
+    "proofreading": "Перевірка",
+    "rephrase": "Перефразувати",
+    "rephrasing": "Перефразування",
+    "richTextApplyFailed": "Не вдалося застосувати згенерований форматований текст до редактора.",
+    "search": "Пошук...",
+    "settings": "Налаштування",
+    "simplify": "Спростити",
+    "simplifying": "Спрощення",
+    "summarize": "Підсумувати",
+    "summarizing": "Підсумовування",
+    "translate": "Перекласти",
+    "translating": "Переклад"
+  }
 }
