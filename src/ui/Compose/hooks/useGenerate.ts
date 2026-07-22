@@ -128,7 +128,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
     object,
     stop: objectStop,
     submit,
-  } = useObject({
+  } = useObject<any, Record<string, unknown>>({
     api: `${api}${PLUGIN_API_ENDPOINT_GENERATE}`,
     onError: (error: any) => {
       toast.error(t('ai-plugin:failedToGenerate', { message: error.message }))
