@@ -24,7 +24,7 @@ jobs:
         node-version: '18'
 
     - name: Install pnpm
-      uses: pnpm/action-setup@v2
+      uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b  # v2
       with:
         version: 8
 
