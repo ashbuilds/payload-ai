@@ -166,11 +166,7 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
   }, [popupRender, isProcessing, isLoading])
 
   return (
-    <label
-      className={`payloadai-compose__actions ${styles.actions}`}
-      onClick={(e) => e.preventDefault()}
-      role="presentation"
-    >
+    <div className={`payloadai-compose__actions ${styles.actions}`}>
       <DocumentDrawer
         onSave={() => {
           closeDrawer()
@@ -184,6 +180,6 @@ export const Compose: FC<ComposeProps> = ({ descriptionProps, instructionId, isC
           setIfValueIsLexicalState(val)
         }}
       />
-    </label>
+    </div>
   )
 }
