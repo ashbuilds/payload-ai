@@ -1,7 +1,19 @@
 import { createOpenAI } from '@ai-sdk/openai'
 
-// same to default openai with optional baseurl.
-export const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1'
-})
+import type { ResolvedProviderConfig } from '../../providers/resolveProviderConfig.js'
+
+import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
+
+export const createOpenAIProvider = (providerConfig = resolveProviderConfig().openai) =>
+  createOpenAI({
+    apiKey: providerConfig.apiKey,
+    baseURL: providerConfig.baseURL,
+    headers: providerConfig.headers,
+    organization: providerConfig.organization,
+    project: providerConfig.project,
+  })
+
+// Backwards-compatible default export shape for consumers importing the internal provider.
+export const openai = createOpenAIProvider()
+
+export type OpenAIResolvedProviderConfig = ResolvedProviderConfig['openai']

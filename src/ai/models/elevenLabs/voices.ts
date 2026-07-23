@@ -5,16 +5,23 @@ export type Voice = {
 }
 
 import { ElevenLabsClient } from 'elevenlabs'
-import * as process from 'node:process'
+
+import type { ResolvedProviderConfig } from '../../providers/resolveProviderConfig.js'
+
+import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 
 let voicesState: { voices: Voice[] } = { voices: [] }
-export const getAllVoices = async (): Promise<{ voices: Voice[] }> => {
-  if (!process.env.ELEVENLABS_API_KEY) {
+export const getAllVoices = async (
+  providerConfig: ResolvedProviderConfig['elevenLabs'] = resolveProviderConfig().elevenLabs,
+): Promise<{ voices: Voice[] }> => {
+  if (!providerConfig.apiKey) {
     return voicesState
   }
 
   try {
-    const elevenLabs = new ElevenLabsClient()
+    const elevenLabs = new ElevenLabsClient({
+      apiKey: providerConfig.apiKey,
+    })
     if (!voicesState.voices.length) {
       voicesState = await elevenLabs.voices.getAll({
         timeoutInSeconds: 10000,

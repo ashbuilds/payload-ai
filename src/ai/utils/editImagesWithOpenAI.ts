@@ -1,4 +1,7 @@
 import type { ImageReference } from '../../types.js'
+import type { OpenAIResolvedProviderConfig } from '../models/openai/openai.js'
+
+import { resolveProviderConfig } from '../providers/resolveProviderConfig.js'
 
 /**
  * Send multiple images as `image[]` to OpenAI's image edit endpoint using gpt-image-1.
@@ -12,6 +15,7 @@ export async function editImagesWithOpenAI(
   images: ImageReference[],
   prompt: string,
   model: string = 'gpt-image-1',
+  providerConfig: OpenAIResolvedProviderConfig = resolveProviderConfig().openai,
 ) {
   try {
     const formData = new FormData()
@@ -24,12 +28,13 @@ export async function editImagesWithOpenAI(
     formData.append('prompt', prompt)
     formData.append('model', model)
 
-    const baseURL = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1'
+    const baseURL = providerConfig.baseURL
     const openaiRes = await fetch(`${baseURL}/images/edits`, {
       body: formData,
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        'OpenAI-Organization': process.env.OPENAI_ORG_ID || '',
+        Authorization: `Bearer ${providerConfig.apiKey}`,
+        'OpenAI-Organization': providerConfig.organization || '',
+        ...(providerConfig.headers ?? {}),
       },
       method: 'POST',
     })

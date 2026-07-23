@@ -50,6 +50,48 @@ export type PluginConfigMediaUploadFunction = (
   },
 ) => Promise<DataFromCollectionSlug<CollectionSlug>>
 
+type ProviderHeaders = Record<string, string>
+
+export interface AnthropicProviderConfig {
+  apiKey?: string
+  authToken?: string
+  baseURL?: string
+  headers?: ProviderHeaders
+}
+
+export interface ElevenLabsProviderConfig {
+  apiKey?: string
+}
+
+export interface GoogleProviderConfig {
+  apiKey?: string
+  baseURL?: string
+  headers?: ProviderHeaders
+}
+
+export interface MiniMaxProviderConfig {
+  apiKey?: string
+  baseURL?: string
+  headers?: ProviderHeaders
+}
+
+export interface OpenAIProviderConfig {
+  apiKey?: string
+  baseURL?: string
+  headers?: ProviderHeaders
+  organization?: string
+  orgId?: string
+  project?: string
+}
+
+export interface PluginConfigProviders {
+  anthropic?: AnthropicProviderConfig
+  elevenLabs?: ElevenLabsProviderConfig
+  google?: GoogleProviderConfig
+  minimax?: MiniMaxProviderConfig
+  openai?: OpenAIProviderConfig
+}
+
 export interface PluginConfig {
   /**
    * Localization configuration for Instructions collection
@@ -90,6 +132,7 @@ export interface PluginConfig {
    * You can access default prompts by importing { defaultPrompts } from '@ai-stack/payloadcms'
    */
   prompts?: ActionPrompt[]
+  providers?: PluginConfigProviders
   /**
    * Custom seed prompt function for generating field-specific prompts
    * If not provided, uses default seed prompt function

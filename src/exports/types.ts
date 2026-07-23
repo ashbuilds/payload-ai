@@ -1,13 +1,19 @@
 export type { payloadAiPlugin } from '../index.ts'
-export type { 
+export type {
   ActionMenuItems,
   ActionPrompt,
   ActionPromptOptions,
-  GenerationConfig, 
+  AnthropicProviderConfig,
+  ElevenLabsProviderConfig,
+  GenerationConfig,
   GenerationModel,
-  PluginConfig, 
+  GoogleProviderConfig,
+  MiniMaxProviderConfig,
+  OpenAIProviderConfig,
+  PluginConfig,
   PluginConfigAccess,
   PluginConfigMediaUploadFunction,
+  PluginConfigProviders,
   PluginOptions,
   PromptField,
   PromptFieldGetterContext,
