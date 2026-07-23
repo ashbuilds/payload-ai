@@ -130,6 +130,13 @@ fields: [
 
 ### Step 3: Add Your API Keys
 
+Payload AI can read provider credentials in two ways:
+
+1. Environment variables.
+2. Plugin config, useful for multi-tenant apps, external secret managers, or tests.
+
+#### Option A: Environment Variables
+
 Create a `.env` file in your project root. Add the keys for the providers you want to use:
 
 ```env
@@ -154,7 +161,9 @@ OPENAI_API_KEY=your-openai-api-key           # OpenAI TTS (uses same key as abov
 
 **You only need the keys for the providers you plan to use.** Mix and match based on your preferences!
 
-Alternatively, pass provider credentials directly through the plugin config. Config values take priority over environment variables, and omitted values still fall back to `.env`:
+#### Option B: Plugin Config
+
+If you prefer to resolve secrets yourself, pass them through `providers`. Config values take priority over environment variables, and omitted values still fall back to `.env`.
 
 ```typescript
 payloadAiPlugin({
@@ -162,26 +171,16 @@ payloadAiPlugin({
     [Posts.slug]: true,
   },
   providers: {
-    anthropic: {
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    },
-    elevenLabs: {
-      apiKey: process.env.ELEVENLABS_API_KEY,
-    },
-    google: {
-      apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-    },
-    minimax: {
-      apiKey: process.env.MINIMAX_API_KEY,
-    },
     openai: {
-      apiKey: process.env.OPENAI_API_KEY,
-      baseURL: process.env.OPENAI_BASE_URL,
-      orgId: process.env.OPENAI_ORG_ID,
+      apiKey: process.env.PAYLOAD_AI_OPENAI_API_KEY,
+      baseURL: process.env.PAYLOAD_AI_OPENAI_BASE_URL,
+      orgId: process.env.PAYLOAD_AI_OPENAI_ORG_ID,
     },
   },
 })
 ```
+
+Supported provider keys: `openai`, `anthropic`, `google`, `elevenLabs`, and `minimax`.
 
 **Important:** Restart your server after updating `.env` or plugin settings!
 

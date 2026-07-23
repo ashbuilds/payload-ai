@@ -43,7 +43,6 @@ const supportedLanguages = {
 } as NonNullable<NonNullable<Config['i18n']>['supportedLanguages']>
 
 const buildConfigWithMemoryDB = async () => {
-
   return buildConfig({
     admin: {
       dependencies: {
@@ -56,10 +55,7 @@ const buildConfigWithMemoryDB = async () => {
         baseDir: path.resolve(dirname),
       },
     },
-    collections: [
-      Media,
-      Posts,
-    ],
+    collections: [Media, Posts],
     db: sqliteAdapter({
       client: {
         url: process.env.DATABASE_URI || `file:${path.resolve(dirname, 'dev.db')}`,
@@ -92,6 +88,12 @@ const buildConfigWithMemoryDB = async () => {
             data: result.data,
             file: result.file,
           })
+        },
+        providers: {
+          openai: {
+            // Uncomment to test config-provided credentials. If omitted, the plugin falls back to standard provider env vars like OPENAI_API_KEY.
+            // apiKey: process.env.PAYLOAD_AI_TEST_OPENAI_API_KEY
+          },
         },
         uploadCollectionSlug: 'media',
       }),
