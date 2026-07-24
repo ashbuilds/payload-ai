@@ -39,6 +39,7 @@ This plugin is actively evolving. We're constantly shipping improvements and new
 ### 📝 Text & RichText Fields
 
 **Content Generation Magic:**
+
 - ✅ **Compose** - Generate content from scratch
 - ✅ **Proofread** - Polish your prose (Beta)
 - ✅ **Translate** - Break language barriers
@@ -129,7 +130,15 @@ fields: [
 
 ### Step 3: Add Your API Keys
 
+Payload AI can read provider credentials in two ways:
+
+1. Environment variables.
+2. Plugin config, useful when credentials are resolved before Payload starts, such as per-instance multi-tenant setups, external secret managers, or tests.
+
+#### Option A: Environment Variables
+
 Create a `.env` file in your project root. Add the keys for the providers you want to use:
+
 ```env
 # Text Generation - Choose your provider(s)
 OPENAI_API_KEY=your-openai-api-key           # OpenAI models (GPT-4, etc.)
@@ -152,10 +161,31 @@ OPENAI_API_KEY=your-openai-api-key           # OpenAI TTS (uses same key as abov
 
 **You only need the keys for the providers you plan to use.** Mix and match based on your preferences!
 
+#### Option B: Plugin Config
+
+If you prefer to resolve secrets yourself at startup, pass them through `providers`. Config values take priority over environment variables, and omitted values still fall back to `.env`.
+
+```typescript
+payloadAiPlugin({
+  collections: {
+    [Posts.slug]: true,
+  },
+  providers: {
+    openai: {
+      apiKey: process.env.PAYLOAD_AI_OPENAI_API_KEY,
+      baseURL: process.env.PAYLOAD_AI_OPENAI_BASE_URL,
+      orgId: process.env.PAYLOAD_AI_OPENAI_ORG_ID,
+    },
+  },
+})
+```
+
+Supported provider keys: `openai`, `anthropic`, `google`, `elevenLabs`, and `minimax`.
 
 **Important:** Restart your server after updating `.env` or plugin settings!
 
 You may also need to regenerate the import map:
+
 ```bash
 payload generate:importmap
 ```
@@ -176,7 +206,7 @@ export default buildConfig({
       collections: {
         [Posts.slug]: true,
       },
-      
+
       // Enable AI for globals too
       globals: {
         [Home.slug]: true,
@@ -188,7 +218,7 @@ export default buildConfig({
       generatePromptOnInit: process.env.NODE_ENV !== 'production',
 
       // Specify media collection for GPT-Image-1
-      uploadCollectionSlug: "media",
+      uploadCollectionSlug: 'media',
 
       // Lock down AI features
       access: {
@@ -198,7 +228,7 @@ export default buildConfig({
 
       // Customize language options
       options: {
-        enabledLanguages: ["en-US", "zh-SG", "zh-CN", "en"],
+        enabledLanguages: ['en-US', 'zh-SG', 'zh-CN', 'en'],
       },
 
       // Reference additional fields in prompts
@@ -209,19 +239,19 @@ export default buildConfig({
         },
         {
           name: 'markdown',
-          async getter(doc, {collection}) {
+          async getter(doc, { collection }) {
             return docToMarkdown(collection, doc)
-          }
-        }
+          },
+        },
       ],
 
       // Control initial prompt generation
-      seedPrompts: ({path}) => {
+      seedPrompts: ({ path }) => {
         if (path.endsWith('.meta.description')) {
           return {
             data: {
               prompt: 'Generate SEO-friendly meta description: {{markdown}}',
-            }
+            },
           }
         }
         if (path.endsWith('.slug')) return false // Disable for slugs
@@ -261,6 +291,7 @@ Custom fields don't automatically inherit AI capabilities. If your AI-enabled fi
 ## 📚 Documentation
 
 Need more details? Check out the **[Complete Setup Guide](guide.md)** for:
+
 - Custom model configuration
 - Advanced prompt engineering
 - Field-specific customization

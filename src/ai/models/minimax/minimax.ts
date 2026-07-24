@@ -1,9 +1,17 @@
-import * as process from 'node:process'
-
 import { createOpenAI } from '@ai-sdk/openai'
 
-export const minimax = createOpenAI({
-  apiKey: process.env.MINIMAX_API_KEY,
-  baseURL: 'https://api.minimax.io/v1',
-  name: 'minimax',
-})
+import type { ResolvedProviderConfig } from '../../providers/resolveProviderConfig.js'
+
+import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
+
+export const createMiniMaxProvider = (providerConfig = resolveProviderConfig().minimax) =>
+  createOpenAI({
+    name: 'minimax',
+    apiKey: providerConfig.apiKey,
+    baseURL: providerConfig.baseURL,
+    headers: providerConfig.headers,
+  })
+
+export const minimax = createMiniMaxProvider()
+
+export type MiniMaxResolvedProviderConfig = ResolvedProviderConfig['minimax']

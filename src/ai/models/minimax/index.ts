@@ -1,8 +1,10 @@
 import type { GenerationConfig } from '../../../types.js'
+import type { MiniMaxResolvedProviderConfig } from './minimax.js'
 
 import { defaultSystemPrompt } from '../../prompts.js'
+import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 import { generateObject } from '../generateObject.js'
-import { minimax } from './minimax.js'
+import { createMiniMaxProvider } from './minimax.js'
 
 const MODEL_KEY = 'MINIMAX'
 const MODELS = ['MiniMax-M3', 'MiniMax-M2.7', 'MiniMax-M2.7-highspeed']
@@ -16,133 +18,141 @@ function clampTemperature(temperature: number | undefined): number {
   return Math.max(0.001, Math.min(1.0, t))
 }
 
-export const MiniMaxConfig: GenerationConfig = {
-  models: [
-    {
-      id: `${MODEL_KEY}-text`,
-      name: 'MiniMax',
-      fields: ['text', 'textarea'],
-      handler: (
-        prompt: string,
-        options: {
-          extractAttachments?: boolean
-          locale?: string
-          maxTokens?: number
-          model: string
-          schema?: Record<string, any>
-          system?: string
-          temperature?: number
+export const createMiniMaxConfig = (
+  providerConfig: MiniMaxResolvedProviderConfig = resolveProviderConfig().minimax,
+): GenerationConfig => {
+  const minimax = createMiniMaxProvider(providerConfig)
+
+  return {
+    models: [
+      {
+        id: `${MODEL_KEY}-text`,
+        name: 'MiniMax',
+        fields: ['text', 'textarea'],
+        handler: (
+          prompt: string,
+          options: {
+            extractAttachments?: boolean
+            locale?: string
+            maxTokens?: number
+            model: string
+            schema?: Record<string, any>
+            system?: string
+            temperature?: number
+          },
+        ) => {
+          return generateObject(
+            prompt,
+            {
+              ...options,
+              system: options.system || defaultSystemPrompt,
+              temperature: clampTemperature(options.temperature),
+            },
+            minimax(options.model),
+          )
         },
-      ) => {
-        return generateObject(
-          prompt,
-          {
-            ...options,
-            system: options.system || defaultSystemPrompt,
-            temperature: clampTemperature(options.temperature),
+        output: 'text',
+        settings: {
+          name: `${MODEL_KEY}-text-settings`,
+          type: 'group',
+          admin: {
+            condition(data) {
+              return data['model-id'] === `${MODEL_KEY}-text`
+            },
           },
-          minimax(options.model),
-        )
-      },
-      output: 'text',
-      settings: {
-        name: `${MODEL_KEY}-text-settings`,
-        type: 'group',
-        admin: {
-          condition(data) {
-            return data['model-id'] === `${MODEL_KEY}-text`
-          },
+          fields: [
+            {
+              name: 'model',
+              type: 'select',
+              defaultValue: 'MiniMax-M3',
+              label: 'Model',
+              options: MODELS,
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'maxTokens',
+                  type: 'number',
+                  defaultValue: 5000,
+                },
+                {
+                  name: 'temperature',
+                  type: 'number',
+                  defaultValue: 0.7,
+                  max: 1,
+                  min: 0,
+                },
+              ],
+            },
+            {
+              name: 'extractAttachments',
+              type: 'checkbox',
+            },
+          ],
+          label: 'MiniMax Settings',
         },
-        fields: [
-          {
-            name: 'model',
-            type: 'select',
-            defaultValue: 'MiniMax-M3',
-            label: 'Model',
-            options: MODELS,
-          },
-          {
-            type: 'row',
-            fields: [
-              {
-                name: 'maxTokens',
-                type: 'number',
-                defaultValue: 5000,
-              },
-              {
-                name: 'temperature',
-                type: 'number',
-                defaultValue: 0.7,
-                max: 1,
-                min: 0,
-              },
-            ],
-          },
-          {
-            name: 'extractAttachments',
-            type: 'checkbox',
-          },
-        ],
-        label: 'MiniMax Settings',
       },
-    },
-    {
-      id: `${MODEL_KEY}-object`,
-      name: 'MiniMax',
-      fields: ['richText'],
-      handler: (text: string, options) => {
-        return generateObject(
-          text,
-          {
-            ...options,
-            system: options.system || defaultSystemPrompt,
-            temperature: clampTemperature(options.temperature),
-          },
-          minimax(options.model),
-        )
-      },
-      output: 'text',
-      settings: {
-        name: `${MODEL_KEY}-object-settings`,
-        type: 'group',
-        admin: {
-          condition(data) {
-            return data['model-id'] === `${MODEL_KEY}-object`
-          },
+      {
+        id: `${MODEL_KEY}-object`,
+        name: 'MiniMax',
+        fields: ['richText'],
+        handler: (text: string, options) => {
+          return generateObject(
+            text,
+            {
+              ...options,
+              system: options.system || defaultSystemPrompt,
+              temperature: clampTemperature(options.temperature),
+            },
+            minimax(options.model),
+          )
         },
-        fields: [
-          {
-            name: 'model',
-            type: 'select',
-            defaultValue: 'MiniMax-M3',
-            label: 'Model',
-            options: MODELS,
+        output: 'text',
+        settings: {
+          name: `${MODEL_KEY}-object-settings`,
+          type: 'group',
+          admin: {
+            condition(data) {
+              return data['model-id'] === `${MODEL_KEY}-object`
+            },
           },
-          {
-            type: 'row',
-            fields: [
-              {
-                name: 'maxTokens',
-                type: 'number',
-                defaultValue: 5000,
-              },
-              {
-                name: 'temperature',
-                type: 'number',
-                defaultValue: 0.7,
-                max: 1,
-                min: 0,
-              },
-            ],
-          },
-          {
-            name: 'extractAttachments',
-            type: 'checkbox',
-          },
-        ],
-        label: 'MiniMax Settings',
+          fields: [
+            {
+              name: 'model',
+              type: 'select',
+              defaultValue: 'MiniMax-M3',
+              label: 'Model',
+              options: MODELS,
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'maxTokens',
+                  type: 'number',
+                  defaultValue: 5000,
+                },
+                {
+                  name: 'temperature',
+                  type: 'number',
+                  defaultValue: 0.7,
+                  max: 1,
+                  min: 0,
+                },
+              ],
+            },
+            {
+              name: 'extractAttachments',
+              type: 'checkbox',
+            },
+          ],
+          label: 'MiniMax Settings',
+        },
       },
-    },
-  ],
-  provider: 'MiniMax',
+    ],
+    provider: 'MiniMax',
+  }
 }
+
+export const MiniMaxConfig: GenerationConfig = createMiniMaxConfig()

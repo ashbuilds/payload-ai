@@ -2,6 +2,7 @@ import type { Field, File } from 'payload'
 
 import type { GenerationConfig } from '../../../types.js'
 
+import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateVoice } from './generateVoice.js'
 
@@ -76,14 +77,18 @@ const fields: Field[] = [
 
 const MODEL_KEY = '11Labs'
 
-export const ElevenLabsConfig: GenerationConfig = {
+type ElevenLabsResolvedProviderConfig = ReturnType<typeof resolveProviderConfig>['elevenLabs']
+
+export const createElevenLabsConfig = (
+  providerConfig: ElevenLabsResolvedProviderConfig = resolveProviderConfig().elevenLabs,
+): GenerationConfig => ({
   models: [
     {
       id: `${MODEL_KEY}-m-v2`,
       name: 'ElevenLabs Multilingual v2',
       fields: ['upload'],
       handler: async (text: string, options) => {
-        const voiceData = await generateVoice(text, options)
+        const voiceData = await generateVoice(text, { ...options, providerConfig })
         if (!voiceData || !voiceData.buffer) {
           throw new Error('Voice data missing')
         }
@@ -114,4 +119,6 @@ export const ElevenLabsConfig: GenerationConfig = {
     },
   ],
   provider: 'ElevenLabs',
-}
+})
+
+export const ElevenLabsConfig: GenerationConfig = createElevenLabsConfig()

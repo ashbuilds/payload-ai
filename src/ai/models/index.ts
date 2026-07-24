@@ -1,19 +1,30 @@
-import * as process from 'node:process'
+import type { GenerationModel, PluginConfigProviders } from '../../types.js'
 
-import type { GenerationModel } from '../../types.js'
+import { resolveProviderConfig } from '../providers/resolveProviderConfig.js'
+import { createAnthropicConfig } from './anthropic/index.js'
+import { createElevenLabsConfig } from './elevenLabs/index.js'
+import { createGoogleConfig } from './google/index.js'
+import { createMiniMaxConfig } from './minimax/index.js'
+import { createOpenAIConfig } from './openai/index.js'
 
-import { AnthropicConfig } from './anthropic/index.js'
-import { ElevenLabsConfig } from './elevenLabs/index.js'
-import { GoogleConfig } from './google/index.js'
-import { MiniMaxConfig } from './minimax/index.js'
-import { OpenAIConfig } from './openai/index.js'
+export const getDefaultGenerationModels = (
+  providers?: PluginConfigProviders,
+): GenerationModel[] => {
+  const resolvedProviders = resolveProviderConfig(providers)
 
-export const getDefaultGenerationModels = (): GenerationModel[] => [
-  ...(process.env.OPENAI_API_KEY ? OpenAIConfig.models : []),
-  ...(process.env.ANTHROPIC_API_KEY ? AnthropicConfig.models : []),
-  ...(process.env.GOOGLE_GENERATIVE_AI_API_KEY ? GoogleConfig.models : []),
-  ...(process.env.ELEVENLABS_API_KEY ? ElevenLabsConfig.models : []),
-  ...(process.env.MINIMAX_API_KEY ? MiniMaxConfig.models : []),
-]
+  return [
+    ...(resolvedProviders.openai.apiKey ? createOpenAIConfig(resolvedProviders.openai).models : []),
+    ...(resolvedProviders.anthropic.apiKey || resolvedProviders.anthropic.authToken
+      ? createAnthropicConfig(resolvedProviders.anthropic).models
+      : []),
+    ...(resolvedProviders.google.apiKey ? createGoogleConfig(resolvedProviders.google).models : []),
+    ...(resolvedProviders.elevenLabs.apiKey
+      ? createElevenLabsConfig(resolvedProviders.elevenLabs).models
+      : []),
+    ...(resolvedProviders.minimax.apiKey
+      ? createMiniMaxConfig(resolvedProviders.minimax).models
+      : []),
+  ]
+}
 
 export const defaultGenerationModels: GenerationModel[] = getDefaultGenerationModels()

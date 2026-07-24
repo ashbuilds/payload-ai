@@ -3,19 +3,30 @@ import type { ImagesResponse } from 'openai/resources/images'
 import OpenAI from 'openai'
 
 import type { GenerateImageParams } from '../../../types.js'
+import type { OpenAIResolvedProviderConfig } from './openai.js'
 
+import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 import { editImagesWithOpenAI } from '../../utils/editImagesWithOpenAI.js'
 
 export const generateImage = async (
   prompt: string,
   {
     images = [],
+    providerConfig = resolveProviderConfig().openai,
     size = '1024x1024',
     style = 'natural',
     version = 'dall-e-3',
-  }: GenerateImageParams = {},
+  }: {
+    providerConfig?: OpenAIResolvedProviderConfig
+  } & GenerateImageParams = {},
 ) => {
-  const openaiAPI = new OpenAI()
+  const openaiAPI = new OpenAI({
+    apiKey: providerConfig.apiKey,
+    baseURL: providerConfig.baseURL,
+    defaultHeaders: providerConfig.headers,
+    organization: providerConfig.organization,
+    project: providerConfig.project,
+  })
 
   const options: Record<string, any> = {}
   if (version?.startsWith('dall')) {
@@ -26,7 +37,7 @@ export const generateImage = async (
   let response: ImagesResponse
   const safeVersion = version ?? undefined
   if (images?.length) {
-    response = await editImagesWithOpenAI(images, prompt, safeVersion)
+    response = await editImagesWithOpenAI(images, prompt, safeVersion, providerConfig)
   } else {
     response = await openaiAPI.images.generate({
       model: safeVersion,

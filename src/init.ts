@@ -89,6 +89,7 @@ export const init = async (
             system: seed.system,
           },
           model?.generateText,
+          pluginConfig.providers,
         )
       }
 

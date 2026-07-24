@@ -1,12 +1,18 @@
 import { ElevenLabsClient } from 'elevenlabs'
 
+import type { ResolvedProviderConfig } from '../../providers/resolveProviderConfig.js'
+
+import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
+
 type ElevenLabsTextToSpeechOptions = {
+  providerConfig?: ResolvedProviderConfig['elevenLabs']
   voice_id: string
 }
 
 export const generateVoice = async (text: string, options: ElevenLabsTextToSpeechOptions) => {
+  const { providerConfig = resolveProviderConfig().elevenLabs } = options
   const elevenLabs = new ElevenLabsClient({
-    apiKey: process.env.ELEVENLABS_API_KEY,
+    apiKey: providerConfig.apiKey,
   })
   const response = (await elevenLabs.textToSpeech.convertWithTimstamps(options.voice_id, {
     ...options,
