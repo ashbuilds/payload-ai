@@ -133,7 +133,7 @@ fields: [
 Payload AI can read provider credentials in two ways:
 
 1. Environment variables.
-2. Plugin config, useful for multi-tenant apps, external secret managers, or tests.
+2. Plugin config, useful when credentials are resolved before Payload starts, such as per-instance multi-tenant setups, external secret managers, or tests.
 
 #### Option A: Environment Variables
 
@@ -163,7 +163,7 @@ OPENAI_API_KEY=your-openai-api-key           # OpenAI TTS (uses same key as abov
 
 #### Option B: Plugin Config
 
-If you prefer to resolve secrets yourself, pass them through `providers`. Config values take priority over environment variables, and omitted values still fall back to `.env`.
+If you prefer to resolve secrets yourself at startup, pass them through `providers`. Config values take priority over environment variables, and omitted values still fall back to `.env`.
 
 ```typescript
 payloadAiPlugin({
