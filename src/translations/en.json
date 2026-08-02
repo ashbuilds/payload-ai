@@ -12,6 +12,8 @@
     "proofreading": "Proofreading",
     "rephrase": "Rephrase",
     "rephrasing": "Rephrasing",
+    "resultIncomplete": "The generated result is incomplete - the model stopped before the end. Please check the end of the content.",
+    "resultTokenLimit": "The generated result is incomplete: the model reached this instruction's token limit. Raise \"Max Tokens\" in the instruction settings and generate again.",
     "richTextApplyFailed": "Generated rich text could not be applied to the editor.",
     "search": "Search...",
     "settings": "Settings",

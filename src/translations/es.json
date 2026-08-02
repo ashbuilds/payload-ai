@@ -12,6 +12,8 @@
     "proofreading": "Corrigiendo",
     "rephrase": "Reformular",
     "rephrasing": "Reformulando",
+    "resultIncomplete": "El resultado generado está incompleto: el modelo se detuvo antes del final. Revisa el final del contenido.",
+    "resultTokenLimit": "El resultado generado está incompleto: el modelo alcanzó el límite de tokens de esta instrucción. Aumenta \"Max Tokens\" en los ajustes de la instrucción y vuelve a generar.",
     "richTextApplyFailed": "No se pudo aplicar el texto enriquecido generado al editor.",
     "search": "Buscar...",
     "settings": "Configuración",

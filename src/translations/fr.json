@@ -12,6 +12,8 @@
     "proofreading": "Correction",
     "rephrase": "Reformuler",
     "rephrasing": "Reformulation",
+    "resultIncomplete": "Le résultat généré est incomplet : le modèle s'est arrêté avant la fin. Veuillez vérifier la fin du contenu.",
+    "resultTokenLimit": "Le résultat généré est incomplet : le modèle a atteint la limite de jetons de cette instruction. Augmentez « Max Tokens » dans les paramètres de l'instruction et relancez la génération.",
     "richTextApplyFailed": "Le texte enrichi généré n'a pas pu être appliqué à l'éditeur.",
     "search": "Rechercher...",
     "settings": "Paramètres",
