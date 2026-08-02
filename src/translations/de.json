@@ -12,8 +12,8 @@
     "proofreading": "Wird korrekturgelesen",
     "rephrase": "Umformulieren",
     "rephrasing": "Wird umformuliert",
-    "resultIncomplete": "Das generierte Ergebnis ist unvollstaendig - das Modell hat vor dem Ende gestoppt. Bitte das Ende des Inhalts pruefen.",
-    "resultTokenLimit": "Das generierte Ergebnis ist unvollstaendig: Das Modell hat das Token-Limit dieser Instruction erreicht. \"Max Tokens\" in den Einstellungen der Instruction erhoehen und erneut generieren.",
+    "resultIncomplete": "Das generierte Ergebnis ist unvollständig - das Modell hat vor dem Ende gestoppt. Bitte das Ende des Inhalts prüfen.",
+    "resultTokenLimit": "Das generierte Ergebnis ist unvollständig: Das Modell hat das Token-Limit dieser Instruction erreicht. \"Max Tokens\" in den Einstellungen der Instruction erhöhen und erneut generieren.",
     "richTextApplyFailed": "Der generierte Rich Text konnte nicht auf den Editor angewendet werden.",
     "search": "Suchen...",
     "settings": "Einstellungen",
@@ -21,7 +21,7 @@
     "simplifying": "Wird vereinfacht",
     "summarize": "Zusammenfassen",
     "summarizing": "Wird zusammengefasst",
-    "translate": "Uebersetzen",
-    "translating": "Wird uebersetzt"
+    "translate": "Übersetzen",
+    "translating": "Wird übersetzt"
   }
 }
