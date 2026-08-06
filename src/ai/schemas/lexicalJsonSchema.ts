@@ -248,7 +248,7 @@ export const documentSchema: LexicalNodeSchema = {
         format: {
           type: 'string',
           description:
-            'Format alignment based on content. Prioritize "start", then "center", and use "right" only when appropriate.',
+            'Paragraph alignment. Use "start" by default for normal prose. Use "center" or "right" only when the layout, content type, or target language clearly calls for that alignment.',
           enum: ['start', 'center', 'right'],
         },
         indent: { type: 'number' },

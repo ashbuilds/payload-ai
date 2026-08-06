@@ -108,7 +108,8 @@ RULES:
 - Generate original and unique content based on the given topic.
 - Strictly adhere to the specified layout and formatting instructions.
 - Utilize the provided rich text editor tools for appropriate formatting.
-- Ensure the output follows the structure of the sample output object.
+- Use the exact text alignment specified by the layout when present; otherwise use normal start alignment unless the content type or target language clearly requires center or right alignment.
+- Ensure the output follows the provided rich text JSON schema exactly.
 - Produce valid JSON with no undefined or null values.
 ${buildBlockPlaceholderInstruction()}
 ---
