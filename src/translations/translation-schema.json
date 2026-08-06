@@ -43,6 +43,12 @@
         "rephrasing": {
           "type": "string"
         },
+        "resultIncomplete": {
+          "type": "string"
+        },
+        "resultTokenLimit": {
+          "type": "string"
+        },
         "richTextApplyFailed": {
           "type": "string"
         },

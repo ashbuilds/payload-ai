@@ -12,6 +12,8 @@
     "proofreading": "Korrekturleser",
     "rephrase": "Omformuler",
     "rephrasing": "Omformulerer",
+    "resultIncomplete": "Det genererte resultatet er ufullstendig – modellen stoppet før slutten. Kontroller slutten av innholdet.",
+    "resultTokenLimit": "Det genererte resultatet er ufullstendig: modellen nådde tokengrensen for denne instruksjonen. Øk «Max Tokens» i innstillingene for instruksjonen og generer på nytt.",
     "richTextApplyFailed": "Den genererte rikteksten kunne ikke brukes i redigeringsverktøyet.",
     "search": "Søk...",
     "settings": "Innstillinger",

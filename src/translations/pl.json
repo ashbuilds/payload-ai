@@ -12,6 +12,8 @@
     "proofreading": "Sprawdzanie",
     "rephrase": "Przeformułuj",
     "rephrasing": "Przeformułowywanie",
+    "resultIncomplete": "Wygenerowany wynik jest niekompletny – model zatrzymał się przed końcem. Sprawdź koniec treści.",
+    "resultTokenLimit": "Wygenerowany wynik jest niekompletny: model osiągnął limit tokenów tej instrukcji. Zwiększ „Max Tokens” w ustawieniach instrukcji i wygeneruj ponownie.",
     "richTextApplyFailed": "Nie można zastosować wygenerowanego tekstu sformatowanego w edytorze.",
     "search": "Szukaj...",
     "settings": "Ustawienia",

@@ -1,7 +1,8 @@
 import type { LanguageModel } from 'ai'
 
-import { jsonSchema, streamObject } from 'ai'
+import { createTextStreamResponse, jsonSchema, streamObject } from 'ai'
 
+import { PLUGIN_TRUNCATED_MARKER } from '../../defaults.js'
 import { extractPromptAttachments } from '../../utilities/extractPromptAttachments.js'
 
 export interface GenerateObjectOptions {
@@ -41,5 +42,27 @@ export const generateObject = (
       ...(options.providerOptions ? { providerOptions: options.providerOptions } : {}),
     })
 
-    return streamResult.toTextStreamResponse()
+    // Running into the model's output token limit is a regular finish, not an error: the response
+    // just stops mid-object, and the browser has no way to tell that apart from a complete result.
+    // The marker is that signal. Awaiting the finish reason cannot stall the response - the SDK
+    // resolves it when the finish chunk arrives, before the text stream closes.
+    const textStream = new ReadableStream<string>({
+      async start(controller) {
+        try {
+          for await (const chunk of streamResult.textStream) {
+            controller.enqueue(chunk)
+          }
+
+          if ((await streamResult.finishReason) === 'length') {
+            controller.enqueue(PLUGIN_TRUNCATED_MARKER)
+          }
+
+          controller.close()
+        } catch (error) {
+          controller.error(error)
+        }
+      },
+    })
+
+    return createTextStreamResponse({ textStream })
 }
