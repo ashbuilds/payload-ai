@@ -46,6 +46,14 @@ describe('sanitizeLexicalChildren', () => {
     expect(sanitized).toEqual([paragraph('kept')])
   })
 
+  it('drops a text node whose text has not arrived yet', () => {
+    const children = [{ type: 'text' }, { type: 'text', text: 'ready' }]
+
+    const sanitized = sanitizeLexicalChildren(children)
+
+    expect(sanitized).toEqual([{ type: 'text', text: 'ready' }])
+  })
+
   it('sanitizes nested children recursively', () => {
     const children = [
       {
@@ -57,6 +65,24 @@ describe('sanitizeLexicalChildren', () => {
     const sanitized = sanitizeLexicalChildren(children)
 
     expect(sanitized).toEqual([{ type: 'quote', children: [paragraph('kept')] }])
+  })
+
+  it('drops incomplete streamed text nodes inside a paragraph', () => {
+    const children = [
+      {
+        type: 'paragraph',
+        children: [{ type: 'text' }, { type: 'text', text: 'visible' }],
+      },
+    ]
+
+    const sanitized = sanitizeLexicalChildren(children)
+
+    expect(sanitized).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ type: 'text', text: 'visible' }],
+      },
+    ])
   })
 
   it('passes unknown node types through when no registry is available', () => {

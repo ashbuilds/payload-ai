@@ -149,6 +149,10 @@ const isRenderableNode = (node: unknown, knownTypes?: null | ReadonlySet<string>
     return false
   }
 
+  if (type === 'text' && typeof (node as LexicalNodeJSON).text !== 'string') {
+    return false
+  }
+
   return type !== 'heading' || (typeof tag === 'string' && RENDERABLE_HEADING_TAGS.has(tag))
 }
 
