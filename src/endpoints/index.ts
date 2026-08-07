@@ -258,6 +258,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           const schemaPath = instructions['schema-path'] as string
           const parts = schemaPath?.split('.') || []
           const collectionName = parts[0]
+          const fieldPath = parts.slice(1).join('.')
           const fieldName = parts.length > 1 ? parts[parts.length - 1] : ''
 
           registerEditorHelper(req.payload, schemaPath)
@@ -296,7 +297,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             actionParams,
             collection: collectionName,
             context: contextData,
-            field: fieldName || '',
+            field: fieldPath || fieldName || '',
             layout: instructions.layout,
             locale: localeInfo,
             pluginConfig,
