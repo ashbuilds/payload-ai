@@ -43,9 +43,17 @@ export const documentSchema: LexicalNodeSchema = {
       additionalProperties: false,
       properties: {
         type: { type: 'string', enum: ['tab'] },
+        detail: { type: 'number' },
+        format: { type: 'number' },
+        mode: {
+          type: 'string',
+          enum: ['normal', 'token', 'segmented'],
+        },
+        style: { type: 'string' },
+        text: { type: 'string', enum: ['\t'] },
         version: { type: 'number' },
       },
-      required: ['type', 'version'],
+      required: ['type', 'detail', 'format', 'mode', 'style', 'text', 'version'],
     },
     // Text Node (Leaf Node)
     TextNode: {
@@ -97,13 +105,21 @@ export const documentSchema: LexicalNodeSchema = {
         },
         indent: { type: 'number' },
         mode: {
-          type: 'number',
-          description: 'Text mode flags',
-          enum: [
-            0, // Normal
-            1, // Token
-            2, // Segmented
+          anyOf: [
+            {
+              type: 'number',
+              enum: [
+                0, // Normal
+                1, // Token
+                2, // Segmented
+              ],
+            },
+            {
+              type: 'string',
+              enum: ['normal', 'token', 'segmented'],
+            },
           ],
+          description: 'Text mode flags',
           examples: [
             { description: 'Normal text', value: 0 },
             { description: 'Token text', value: 1 },
@@ -135,10 +151,17 @@ export const documentSchema: LexicalNodeSchema = {
       additionalProperties: false,
       properties: {
         type: { type: 'string', enum: ['tablecell'] },
+        backgroundColor: {
+          type: ['string', 'null'],
+        },
         children: {
           type: 'array',
           items: {
-            $ref: '#/definitions/TextNode',
+            anyOf: [
+              { $ref: '#/definitions/ParagraphNode' },
+              { $ref: '#/definitions/TextNode' },
+              { $ref: '#/definitions/LineBreakNode' },
+            ],
           },
         },
         colSpan: { type: 'number' },
@@ -146,12 +169,13 @@ export const documentSchema: LexicalNodeSchema = {
           type: ['string', 'null'],
           enum: ['ltr', null],
         },
+        format: { type: 'string' },
         headerState: { type: 'number' },
         indent: { type: 'number' },
+        rowSpan: { type: 'number' },
         version: { type: 'number' },
         width: {
-          type: ['null'],
-          enum: [null],
+          type: ['number', 'null'],
         },
       },
       required: [
@@ -160,8 +184,11 @@ export const documentSchema: LexicalNodeSchema = {
         'headerState',
         'colSpan',
         'width',
+        'backgroundColor',
         'direction',
+        'format',
         'indent',
+        'rowSpan',
         'version',
       ],
     },
@@ -177,9 +204,16 @@ export const documentSchema: LexicalNodeSchema = {
             $ref: '#/definitions/TableCellNode',
           },
         },
+        direction: {
+          type: ['string', 'null'],
+          enum: ['ltr', null],
+        },
+        format: { type: 'string' },
         height: { type: 'number' },
+        indent: { type: 'number' },
+        version: { type: 'number' },
       },
-      required: ['type', 'children', 'height'],
+      required: ['type', 'children', 'height', 'direction', 'format', 'indent', 'version'],
     },
     // Styled Table Node
     TableNode: {
@@ -193,8 +227,15 @@ export const documentSchema: LexicalNodeSchema = {
             $ref: '#/definitions/TableRowNode',
           },
         },
+        direction: {
+          type: ['string', 'null'],
+          enum: ['ltr', null],
+        },
+        format: { type: 'string' },
+        indent: { type: 'number' },
+        version: { type: 'number' },
       },
-      required: ['type', 'children'],
+      required: ['type', 'children', 'direction', 'format', 'indent', 'version'],
     },
     // Heading Node
     HeadingNode: {
@@ -217,11 +258,12 @@ export const documentSchema: LexicalNodeSchema = {
           type: ['string', 'null'],
           enum: ['ltr', null],
         },
+        format: { type: 'string' },
         indent: { type: 'number' },
         tag: { type: 'string', enum: ['h1', 'h2', 'h3'] },
         version: { type: 'number' },
       },
-      required: ['type', 'tag', 'children', 'direction', 'indent', 'version'],
+      required: ['type', 'tag', 'children', 'direction', 'format', 'indent', 'version'],
     },
     // Paragraph Node
     ParagraphNode: {
@@ -249,7 +291,7 @@ export const documentSchema: LexicalNodeSchema = {
           type: 'string',
           description:
             'Paragraph alignment. Use "start" by default for normal prose. Use "center" or "right" only when the layout, content type, or target language clearly calls for that alignment.',
-          enum: ['start', 'center', 'right'],
+          enum: ['', 'start', 'center', 'right'],
         },
         indent: { type: 'number' },
         textFormat: { type: 'number' },
@@ -282,9 +324,30 @@ export const documentSchema: LexicalNodeSchema = {
             $ref: '#/definitions/TextNode',
           },
         },
+        direction: {
+          type: ['string', 'null'],
+          enum: ['ltr', null],
+        },
+        format: { type: 'string' },
+        indent: { type: 'number' },
+        rel: { type: ['string', 'null'] },
+        target: { type: ['string', 'null'] },
+        title: { type: ['string', 'null'] },
         url: { type: 'string' },
+        version: { type: 'number' },
       },
-      required: ['type', 'url', 'children'],
+      required: [
+        'type',
+        'url',
+        'children',
+        'direction',
+        'format',
+        'indent',
+        'rel',
+        'target',
+        'title',
+        'version',
+      ],
     },
     // List Item Node
     ListItemNode: {
@@ -297,18 +360,33 @@ export const documentSchema: LexicalNodeSchema = {
         indent: { type: 'number', enum: [0, 1] },
 
         type: { type: 'string', enum: ['listitem'] },
+        checked: {
+          type: ['boolean', 'null'],
+        },
         children: {
           type: 'array',
           items: {
             anyOf: [
               { $ref: '#/definitions/ParagraphNode' },
+              { $ref: '#/definitions/TextNode' },
               { $ref: '#/definitions/ListNode' },
               { $ref: '#/definitions/LineBreakNode' },
             ],
           },
         },
+        direction: {
+          type: ['string', 'null'],
+          enum: ['ltr', null],
+        },
+        format: { type: 'string' },
+        value: {
+          type: 'number',
+          description:
+            'Ordered list item value. For numbered lists, increment from the parent list start value: 1, 2, 3, etc.',
+        },
+        version: { type: 'number' },
       },
-      required: ['indent', 'type', 'children'],
+      required: ['indent', 'type', 'checked', 'children', 'direction', 'format', 'value', 'version'],
     },
     // List Node
     ListNode: {
@@ -322,9 +400,21 @@ export const documentSchema: LexicalNodeSchema = {
             $ref: '#/definitions/ListItemNode',
           },
         },
-        listType: { type: 'string', enum: ['bullet', 'number'] },
+        direction: {
+          type: ['string', 'null'],
+          enum: ['ltr', null],
+        },
+        format: { type: 'string' },
+        indent: { type: 'number' },
+        listType: { type: 'string', enum: ['bullet', 'number', 'check'] },
+        start: {
+          type: 'number',
+          description: 'Starting number for ordered lists. Use 1 unless another start is requested.',
+        },
+        tag: { type: 'string', enum: ['ul', 'ol'] },
+        version: { type: 'number' },
       },
-      required: ['type', 'listType', 'children'],
+      required: ['type', 'listType', 'children', 'direction', 'format', 'indent', 'start', 'tag', 'version'],
     },
     // Quote Node
     QuoteNode: {
@@ -343,8 +433,15 @@ export const documentSchema: LexicalNodeSchema = {
             ],
           },
         },
+        direction: {
+          type: ['string', 'null'],
+          enum: ['ltr', null],
+        },
+        format: { type: 'string' },
+        indent: { type: 'number' },
+        version: { type: 'number' },
       },
-      required: ['type', 'children'],
+      required: ['type', 'children', 'direction', 'format', 'indent', 'version'],
     },
     // Code Node
     CodeNode: {
@@ -352,10 +449,26 @@ export const documentSchema: LexicalNodeSchema = {
       additionalProperties: false,
       properties: {
         type: { type: 'string', enum: ['code'] },
-        code: { type: 'string' },
+        children: {
+          type: 'array',
+          items: {
+            anyOf: [
+              { $ref: '#/definitions/TextNode' },
+              { $ref: '#/definitions/LineBreakNode' },
+              { $ref: '#/definitions/TabNode' },
+            ],
+          },
+        },
+        direction: {
+          type: ['string', 'null'],
+          enum: ['ltr', null],
+        },
+        format: { type: 'string' },
+        indent: { type: 'number' },
         language: { type: 'string' },
+        version: { type: 'number' },
       },
-      required: ['type', 'code', 'language'],
+      required: ['type', 'children', 'direction', 'format', 'indent', 'language', 'version'],
     },
     // Horizontal Rule Node
     HorizontalRuleNode: {
@@ -410,10 +523,11 @@ export const documentSchema: LexicalNodeSchema = {
           type: ['string', 'null'],
           enum: ['ltr', null],
         },
+        format: { type: 'string' },
         indent: { type: 'number' },
         version: { type: 'number' },
       },
-      required: ['type', 'children', 'direction', 'indent', 'version'],
+      required: ['type', 'children', 'direction', 'format', 'indent', 'version'],
     },
   },
   properties: {

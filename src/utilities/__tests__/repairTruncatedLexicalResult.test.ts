@@ -73,7 +73,7 @@ describe('repairTruncatedLexicalResult', () => {
     // `additionalProperties: false` applies to the root as well - normalizing a value before
     // validating it therefore breaks every repair attempt, which is why this must never happen.
     const document = {
-      root: { type: 'root', children: [paragraph('kept'), truncatedHeading], format: '' },
+      root: { type: 'root', children: [paragraph('kept'), truncatedHeading], unknown: '' },
     }
 
     expect(repairTruncatedLexicalResult(document, validate)).toBeNull()
