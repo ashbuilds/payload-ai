@@ -1,5 +1,7 @@
 import type { LexicalEditor } from 'lexical'
 
+import { SKIP_SCROLL_INTO_VIEW_TAG } from 'lexical'
+
 import { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from './lexicalToHTML.js'
 
 type SetSafeLexicalStateOptions = {
@@ -19,6 +21,11 @@ type SetSafeLexicalStateOptions = {
    * that would otherwise compound block position errors on every call.
    */
   originalRoot?: null | Record<string, unknown>
+  /**
+   * Streaming applies are display updates, not user cursor movement. Without this, Lexical may
+   * scroll the current selection back into view on every partial commit.
+   */
+  skipScrollIntoView?: boolean
 }
 
 type LexicalNodeJSON = { children?: LexicalNodeJSON[]; type?: string } & Record<string, unknown>
@@ -149,6 +156,10 @@ const isRenderableNode = (node: unknown, knownTypes?: null | ReadonlySet<string>
     return false
   }
 
+  if (type === 'text' && typeof (node as LexicalNodeJSON).text !== 'string') {
+    return false
+  }
+
   return type !== 'heading' || (typeof tag === 'string' && RENDERABLE_HEADING_TAGS.has(tag))
 }
 
@@ -254,7 +265,7 @@ export const setSafeLexicalState = (
   editorInstance?: LexicalEditor | null,
   options: SetSafeLexicalStateOptions = {},
 ) => {
-  const { logErrors = true, onApplyError, originalRoot = null } = options
+  const { logErrors = true, onApplyError, originalRoot = null, skipScrollIntoView = false } = options
 
   if (!editorInstance) {
     if (logErrors) {
@@ -303,7 +314,10 @@ export const setSafeLexicalState = (
   }
 
   try {
-    editorInstance.setEditorState(editorState)
+    editorInstance.setEditorState(
+      editorState,
+      skipScrollIntoView ? { tag: SKIP_SCROLL_INTO_VIEW_TAG } : undefined,
+    )
     return true
   } catch (error) {
     if (logErrors) {

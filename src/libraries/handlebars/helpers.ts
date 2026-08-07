@@ -8,7 +8,6 @@ import { handlebarsHelpersMap } from './helpersMap.js'
 export const registerEditorHelper = (payload: any, schemaPath: string) => {
   //TODO: add autocomplete ability using handlebars template on PromptEditorField and include custom helpers in dropdown
 
-  let fieldInfo = getFieldInfo(payload.collections, schemaPath)
   const schemaPathChunks = schemaPath.split('.')
 
   asyncHandlebars.registerHelper(
@@ -16,11 +15,10 @@ export const registerEditorHelper = (payload: any, schemaPath: string) => {
     async function (content: SerializedEditorState, options: any) {
       const collectionSlug = schemaPathChunks[0]
       const { ids } = options
-      for (const id of ids) {
-        //TODO: Find a better way to get schemaPath of defined field in prompt editor
-        const path = `${collectionSlug}.${id}`
-        fieldInfo = getFieldInfo(payload.collections, path)
-      }
+      const requestedPath =
+        Array.isArray(ids) && ids.length > 0 ? `${collectionSlug}.${ids.join('.')}` : schemaPath
+      const fieldInfo =
+        getFieldInfo(payload.collections, requestedPath) ?? getFieldInfo(payload.collections, schemaPath)
 
       let html = ''
       if (

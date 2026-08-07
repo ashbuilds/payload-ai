@@ -215,6 +215,7 @@ export const useGenerate = ({ instructionId }: { instructionId: string }) => {
         console.error('Error setting editor state while streaming: ', error)
       },
       originalRoot: originalRootRef.current,
+      skipScrollIntoView: true,
     })
 
     if (didUpdateEditor) {
