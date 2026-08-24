@@ -5,6 +5,18 @@ import type { ResolvedProviderConfig } from '../../providers/resolveProviderConf
 
 import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 
+const SUPPORTED_OUTPUT_MIME_TYPES = ['image/png', 'image/jpeg'] as const
+
+export type ImagenOutputMimeType = (typeof SUPPORTED_OUTPUT_MIME_TYPES)[number]
+
+export const getImagenFileExtension = (outputMimeType: ImagenOutputMimeType) => {
+  return outputMimeType === 'image/jpeg' ? 'jpeg' : 'png'
+}
+
+const isSupportedOutputMimeType = (outputMimeType: string): outputMimeType is ImagenOutputMimeType => {
+  return SUPPORTED_OUTPUT_MIME_TYPES.includes(outputMimeType as ImagenOutputMimeType)
+}
+
 export const generateImage = async (
   prompt: string,
   {
@@ -15,10 +27,14 @@ export const generateImage = async (
   }: {
     aspectRatio?: '1:1' | '3:4' | '4:3' | '9:16' | '16:9'
     model?: string
-    outputMimeType?: 'image/jpeg' | 'image/png'
+    outputMimeType?: string
     providerConfig?: ResolvedProviderConfig['google']
   } & GenerateImageParams = {},
 ) => {
+  if (!isSupportedOutputMimeType(outputMimeType)) {
+    throw new Error(`Unsupported Imagen output MIME type: ${outputMimeType}`)
+  }
+
   const ai = new GoogleGenAI({
     apiKey: providerConfig.apiKey,
     httpOptions: {
@@ -48,5 +64,6 @@ export const generateImage = async (
   return {
     alt: generatedImage.enhancedPrompt || prompt,
     buffer,
+    outputMimeType,
   }
 }
