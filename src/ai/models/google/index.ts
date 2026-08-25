@@ -12,13 +12,16 @@ import { generateImage } from './generateImage.js'
 
 const MODEL_KEY = 'GEMINI'
 const MODELS = [
-  'gemini-3-pro-preview',
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-3.1-pro-preview',
+  'gemini-3-flash-preview',
   'gemini-2.5-pro',
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-lite',
-  'gemini-flash-latest',
 ]
 
 const IMAGEN_MODELS = [
@@ -79,7 +82,7 @@ export const createGoogleConfig = (
             {
               name: 'model',
               type: 'select',
-              defaultValue: 'gemini-flash-latest',
+              defaultValue: 'gemini-3.7-flash',
               label: 'Model',
               options: MODELS,
             },
@@ -135,7 +138,7 @@ export const createGoogleConfig = (
             {
               name: 'model',
               type: 'select',
-              defaultValue: 'gemini-flash-latest',
+              defaultValue: 'gemini-3.7-flash',
               label: 'Model',
               options: MODELS,
             },
