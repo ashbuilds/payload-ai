@@ -8,7 +8,7 @@ import { defaultSystemPrompt } from '../../prompts.js'
 import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.js'
 import { generateObject } from '../generateObject.js'
-import { generateImage } from './generateImage.js'
+import { generateImage, getImagenFileExtension } from './generateImage.js'
 
 const MODEL_KEY = 'GEMINI'
 const MODELS = [
@@ -173,14 +173,15 @@ export const createGoogleConfig = (
         fields: ['upload'],
         handler: async (prompt: string, options) => {
           const imageData = await generateImage(prompt, { ...options, providerConfig })
+          const extension = getImagenFileExtension(imageData.outputMimeType)
           return {
             data: {
               alt: imageData.alt,
             },
             file: {
-              name: `image_${generateFileNameByPrompt(imageData.alt || prompt)}.png`,
+              name: `image_${generateFileNameByPrompt(imageData.alt || prompt)}.${extension}`,
               data: imageData.buffer,
-              mimetype: 'image/png',
+              mimetype: imageData.outputMimeType,
               size: imageData.buffer.byteLength,
             } as File,
           }
