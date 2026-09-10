@@ -8,11 +8,13 @@ const providerConfig = {
 }
 
 vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn(() => ({
-    models: {
-      generateImages,
-    },
-  })),
+  GoogleGenAI: vi.fn(function () {
+    return {
+      models: {
+        generateImages,
+      },
+    }
+  }),
 }))
 
 describe('Google Imagen', () => {
