@@ -12,7 +12,6 @@ import { nb } from '@payloadcms/translations/languages/nb'
 import { pl } from '@payloadcms/translations/languages/pl'
 import { ru } from '@payloadcms/translations/languages/ru'
 import { uk } from '@payloadcms/translations/languages/uk'
-import { existsSync } from 'fs'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -24,11 +23,7 @@ import { testEmailAdapter } from './helpers/testEmailAdapter.js'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const envPath = path.resolve(dirname, '.env')
-
-if (existsSync(envPath)) {
-  process.loadEnvFile?.(envPath)
-}
+process.loadEnvFile?.(path.resolve(dirname, '.env'))
 
 if (!process.env.ROOT_DIR) {
   process.env.ROOT_DIR = dirname
