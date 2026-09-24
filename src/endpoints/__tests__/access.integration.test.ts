@@ -1,7 +1,7 @@
 import type { Payload, PayloadRequest } from 'payload'
 
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
-import { buildConfig, createLocalReq, getPayload } from 'payload'
+import { APIError, buildConfig, createLocalReq, getPayload } from 'payload'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PluginConfig } from '../../types.js'
@@ -124,10 +124,23 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+const captureError = (operation: unknown) =>
+  Promise.resolve(operation).then(
+    () => {
+      throw new Error('Expected a thrown Payload API error')
+    },
+    (error: unknown) => {
+      expect(error).toBeInstanceOf(APIError)
+      return error as APIError
+    },
+  )
+
 describe('generation access against the real Payload Local API', () => {
   it('blocks cross-tenant source reads before any model or image request', async () => {
-    const res = await endpoints(config).upload.handler(
-      await request({ ...body(), documentId: otherDoc.id }, uploader),
+    const res = await captureError(
+      endpoints(config).upload.handler(
+        await request({ ...body(), documentId: otherDoc.id }, uploader),
+      ),
     )
     expect([403, 404]).toContain(res.status)
     expect(model).not.toHaveBeenCalled()
@@ -135,8 +148,8 @@ describe('generation access against the real Payload Local API', () => {
   })
 
   it('fails closed on a missing source document', async () => {
-    const res = await endpoints(config).upload.handler(
-      await request({ ...body(), documentId: 999999 }, uploader),
+    const res = await captureError(
+      endpoints(config).upload.handler(await request({ ...body(), documentId: 999999 }, uploader)),
     )
     expect(res.status).toBe(404)
     expect(model).not.toHaveBeenCalled()
@@ -145,10 +158,12 @@ describe('generation access against the real Payload Local API', () => {
   it.each(['upload', 'textarea'] as const)(
     'blocks another tenant’s instruction in %s',
     async (endpoint) => {
-      const res = await endpoints(config)[endpoint].handler(
-        await request(
-          { ...body(), options: { action: 'Compose', instructionId: otherInstruction.id } },
-          uploader,
+      const res = await captureError(
+        endpoints(config)[endpoint].handler(
+          await request(
+            { ...body(), options: { action: 'Compose', instructionId: otherInstruction.id } },
+            uploader,
+          ),
         ),
       )
       expect([403, 404]).toContain(res.status)
@@ -167,7 +182,7 @@ describe('generation access against the real Payload Local API', () => {
 
   it('enforces collection create permission for generated media', async () => {
     const before = await payload.count({ collection: 'assets' })
-    const res = await endpoints(config).upload.handler(await request(body()))
+    const res = await captureError(endpoints(config).upload.handler(await request(body())))
     expect(res.status).toBe(403)
     expect((await payload.count({ collection: 'assets' })).totalDocs).toBe(before.totalDocs)
   })
@@ -188,11 +203,15 @@ describe('generation access against the real Payload Local API', () => {
   it.each(['upload', 'textarea'] as const)(
     'rejects anonymous and generation-denied callers in %s',
     async (endpoint) => {
-      const anonymous = await endpoints(config)[endpoint].handler(await request(body(), null))
+      const anonymous = await captureError(
+        endpoints(config)[endpoint].handler(await request(body(), null)),
+      )
       expect(anonymous.status).toBe(401)
-      const denied = await endpoints({ ...config, access: { generate: () => false } })[
-        endpoint
-      ].handler(await request(body()))
+      const denied = await captureError(
+        endpoints({ ...config, access: { generate: () => false } })[endpoint].handler(
+          await request(body()),
+        ),
+      )
       expect(denied.status).toBe(403)
       expect(model).not.toHaveBeenCalled()
     },
@@ -201,7 +220,7 @@ describe('generation access against the real Payload Local API', () => {
 
 describe('instruction metadata', () => {
   it('requires authentication', async () => {
-    const res = await fetchFields(config).handler(await request({}, null))
+    const res = await captureError(fetchFields(config).handler(await request({}, null)))
     expect(res.status).toBe(401)
   })
   it('only returns instructions readable by the caller', async () => {
