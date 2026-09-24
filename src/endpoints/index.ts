@@ -22,30 +22,12 @@ import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 import { extractImageData } from '../utilities/extractImageData.js'
+import { fetchReferenceImage } from '../utilities/fetchReferenceImage.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 import { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from '../utilities/lexicalToHTML.js'
-
-const requireAuthentication = (req: PayloadRequest) => {
-  if (!req.user) {
-    throw new Error('Authentication required. Please log in to use AI features.')
-  }
-  return true
-}
-
-const checkAccess = async (req: PayloadRequest, pluginConfig: PluginConfig) => {
-  requireAuthentication(req)
-
-  if (pluginConfig.access?.generate) {
-    const hasAccess = await pluginConfig.access.generate({ req })
-    if (!hasAccess) {
-      throw new Error('Insufficient permissions to use AI generation features.')
-    }
-  }
-
-  return true
-}
+import { checkGenerationAccess, endpointErrorResponse } from './access.js'
 
 const extendContextWithPromptFields = (
   data: object,
@@ -210,7 +192,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
       handler: async (req: PayloadRequest) => {
         try {
           // Check authentication and authorization first
-          await checkAccess(req, pluginConfig)
+          await checkGenerationAccess(req, pluginConfig)
 
           const data = await req.json?.()
 
@@ -234,7 +216,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
             id: instructionId,
             collection: PLUGIN_INSTRUCTIONS_TABLE,
             locale: locales.length > 0 && locale ? locale : undefined,
-            req, // Pass req to ensure access control is applied
+            overrideAccess: false,
+            req,
           })
 
           const { collections } = req.payload.config
@@ -315,14 +298,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           // Build per-field JSON schema for structured generation when applicable
           let jsonSchema = allowedEditorSchema
           try {
-            
             const targetCollection = req.payload.config.collections.find(
               (c) => c.slug === collectionName,
             )
 
-            const targetGlobal = req.payload.config.globals?.find(
-              (g) => g.slug === collectionName,
-            )
+            const targetGlobal = req.payload.config.globals?.find((g) => g.slug === collectionName)
 
             const targetConfig = targetCollection || targetGlobal
 
@@ -357,18 +337,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           })
         } catch (error) {
           req.payload.logger.error(error, 'Error generating content: ')
-          const message =
-            error && typeof error === 'object' && 'message' in error
-              ? (error as any).message
-              : String(error)
-          return new Response(JSON.stringify({ error: message }), {
-            headers: { 'Content-Type': 'application/json' },
-            status:
-              message.includes('Authentication required') ||
-              message.includes('Insufficient permissions')
-                ? 401
-                : 500,
-          })
+          return endpointErrorResponse(error)
         }
       },
       method: 'post',
@@ -378,7 +347,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
       handler: async (req: PayloadRequest) => {
         try {
           // Check authentication and authorization first
-          await checkAccess(req, pluginConfig)
+          await checkGenerationAccess(req, pluginConfig)
 
           const data = await req.json?.()
 
@@ -387,19 +356,14 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           let docData = {}
 
           if (documentId) {
-            try {
-              docData = await req.payload.findByID({
-                id: documentId,
-                collection: collectionSlug,
-                draft: true,
-                req, // Pass req to ensure access control is applied
-              })
-            } catch (e) {
-              req.payload.logger.error(
-                e,
-                '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
-              )
-            }
+            // A denied or missing source document must stop generation.
+            docData = await req.payload.findByID({
+              id: documentId,
+              collection: collectionSlug,
+              draft: true,
+              overrideAccess: false,
+              req,
+            })
           }
 
           const contextData = {
@@ -420,7 +384,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               id: instructionId,
               collection: PLUGIN_INSTRUCTIONS_TABLE,
               locale: locales.length > 0 && requestLocale ? requestLocale : undefined,
-              req, // Pass req to ensure access control is applied
+              overrideAccess: false,
+              req,
             })
           }
 
@@ -447,34 +412,15 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               process.env.SERVER_URL ||
               process.env.NEXT_PUBLIC_SERVER_URL
 
-            let url = img.image.thumbnailURL || img.image.url
-            if (!url.startsWith('http')) {
-              url = `${serverURL}${url}`
-            }
-
-            try {
-              const response = await fetch(url, {
-                headers: {
-                  //TODO: Further testing needed or so find a proper way.
-                  Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
-                },
-                method: 'GET',
-              })
-
-              const blob = await response.blob()
-              editImages.push({
-                name: img.image.name,
-                type: img.image.type,
-                data: blob,
-                size: blob.size,
-                url,
-              })
-            } catch (e) {
-              req.payload.logger.error(e, `Error fetching reference image ${url}`)
-              throw Error(
-                "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
-              )
-            }
+            const imageURL = img.image.thumbnailURL || img.image.url
+            const { blob, url } = await fetchReferenceImage(imageURL, serverURL)
+            editImages.push({
+              name: img.image.name,
+              type: img.image.type,
+              data: blob,
+              size: blob.size,
+              url,
+            })
           }
 
           const modelsUpload = getGenerationModels(pluginConfig)
@@ -519,7 +465,8 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
               collection: uploadCollectionSlug,
               data: result.data,
               file: result.file,
-              req, // Pass req to ensure access control is applied
+              overrideAccess: false,
+              req,
             })
           }
 
@@ -540,18 +487,7 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
           )
         } catch (error) {
           req.payload.logger.error(error, 'Error generating upload: ')
-          const message =
-            error && typeof error === 'object' && 'message' in error
-              ? (error as any).message
-              : String(error)
-          return new Response(JSON.stringify({ error: message }), {
-            headers: { 'Content-Type': 'application/json' },
-            status:
-              message.includes('Authentication required') ||
-              message.includes('Insufficient permissions')
-                ? 401
-                : 500,
-          })
+          return endpointErrorResponse(error)
         }
       },
       method: 'post',

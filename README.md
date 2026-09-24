@@ -197,6 +197,18 @@ payload generate:importmap
 <details>
 <summary><strong>🔐 Access Control & Multi-Tenant Setup</strong></summary>
 
+Generation requires authentication and permission from `access.generate`. Source documents,
+instructions, and built-in media creation also enforce the caller's collection, field, and
+per-document permissions. Configure `overrideInstructions.access` to restrict who can read
+or edit instructions; `access.settings` controls the settings UI and does not replace these
+collection rules. Custom `mediaUpload` callbacks must enforce their own access checks, as
+shown below. Trusted initialization and instruction seeding run separately from user requests.
+
+Reference images must be directly accessible over HTTP(S) at public IP addresses. Image
+requests do not send the caller's credentials or follow redirects. Private/loopback addresses
+(including local development URLs) are rejected; use a direct public image URL or a signed
+storage URL for protected media. Each image request is limited to 20 MiB and 30 seconds.
+
 ```typescript
 import { payloadAiPlugin } from '@ai-stack/payloadcms'
 
@@ -264,6 +276,8 @@ export default buildConfig({
           collection,
           data: result.data,
           file: result.file,
+          overrideAccess: false,
+          req: request,
         })
       },
     }),
