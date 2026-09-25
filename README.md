@@ -207,7 +207,8 @@ shown below. Trusted initialization and instruction seeding run separately from 
 ### Reference images and storage
 
 Reference images now require a server-side `resolveReferenceImage` callback. This is a
-breaking change for image editing with sample images or image URLs in prompts. Text-to-image
+breaking change for image editing with sample images or image URLs in prompts, and for
+text generation with `extractAttachments` enabled. Text-to-image
 generation without references is unchanged. The plugin does not fetch reference URLs,
 forward login credentials, or require Node DNS/HTTP APIs for reference resolution.
 
@@ -248,6 +249,9 @@ Its implementation depends on your storage adapter. The plugin validates the ret
 rejects empty files or files over 20 MiB, and stops waiting after 30 seconds. The resolver
 must enforce the limit while loading to avoid buffering oversized objects; cancellation is
 cooperative and requires honoring `signal`. MIME checks do not verify image file contents.
+Built-in text models resolve extracted attachments through the same callback and pass bytes
+to the AI SDK. Automatic SDK attachment downloads are disabled. URLs remain ordinary text
+when attachment extraction is disabled.
 Custom generation models remain responsible for any network requests they make themselves.
 
 

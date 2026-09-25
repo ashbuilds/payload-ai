@@ -1,37 +1,24 @@
 import type { ModelMessage } from 'ai'
 
-// Converts prompt into messages, extracting images in the process
-export function extractPromptAttachments(prompt: string): ModelMessage[] {
-  // Regex to match absolute HTTPS URLs with image extensions
-  const imageUrlRegex = /https:\/\/\S+\.(?:png|jpe?g|webp)/gi
-  
-  const messages: ModelMessage[] = []
-  const imageUrls: string[] = []
-  
-  // Find all image URLs in the prompt
-  let match
-  while ((match = imageUrlRegex.exec(prompt)) !== null) {
-    imageUrls.push(match[0])
+// URLs are inputs to the application's storage resolver, never SDK download targets.
+export async function extractPromptAttachments(
+  prompt: string,
+  resolveImage?: (url: string) => Promise<Blob>,
+): Promise<ModelMessage[]> {
+  const urls = [...new Set(prompt.match(/https:\/\/\S+\.(?:png|jpe?g|webp)/gi) || [])]
+  if (urls.length && !resolveImage) {
+    throw new Error('Prompt attachments require a configured reference image resolver.')
   }
-  
-  // Create image messages first
-  for (const imageUrl of imageUrls) {
+  const messages: ModelMessage[] = []
+  for (const url of urls) {
+    const blob = await resolveImage!(url)
     messages.push({
       content: [
-        {
-          type: 'image',
-          image: new URL(imageUrl)
-        }
+        { type: 'image', image: new Uint8Array(await blob.arrayBuffer()), mediaType: blob.type },
       ],
-      role: 'user'
+      role: 'user',
     })
   }
-  
-  // Add the text prompt as a regular user message if there's any text left
-  messages.push({
-    content: prompt,
-    role: 'user'
-  })
-
+  messages.push({ content: prompt, role: 'user' })
   return messages
 }

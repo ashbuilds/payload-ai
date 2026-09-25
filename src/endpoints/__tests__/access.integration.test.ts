@@ -10,7 +10,9 @@ import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { fetchFields } from '../fetchFields.js'
 import { endpoints } from '../index.js'
 
-const resolveReferenceImage = vi.fn(() => Promise.resolve(new Blob(['test-image'], { type: 'image/png' })))
+const resolveReferenceImage = vi.fn(() =>
+  Promise.resolve(new Blob(['test-image'], { type: 'image/png' })),
+)
 
 let payload: Payload
 let ownDoc: any
@@ -76,6 +78,7 @@ beforeAll(async () => {
             { name: 'field-type', type: 'text' },
             { name: 'relation-to', type: 'text' },
             { name: 'images', type: 'json' },
+            { name: 'testSettings', type: 'json' },
           ],
         },
         {
@@ -230,6 +233,50 @@ describe('generation access against the real Payload Local API', () => {
         id: ownInstruction.id,
         collection: PLUGIN_INSTRUCTIONS_TABLE,
         data: { images: [] },
+      })
+    }
+  })
+
+  it('injects a request-scoped attachment resolver instead of trusting saved settings', async () => {
+    await payload.update({
+      id: ownInstruction.id,
+      collection: PLUGIN_INSTRUCTIONS_TABLE,
+      data: { testSettings: { resolvePromptImage: 'untrusted-setting' } },
+    })
+    const handler = vi.fn(
+      async (_prompt: string, options: { resolvePromptImage: (url: string) => Promise<Blob> }) => {
+        const blob = await options.resolvePromptImage('https://untrusted.example/photo.png')
+        expect(blob).toBeInstanceOf(Blob)
+        return new Response('ok')
+      },
+    )
+    const req = await request(body())
+    try {
+      const response = await endpoints({
+        ...config,
+        generationModels: [
+          {
+            id: 'test',
+            name: 'Test',
+            fields: ['text'],
+            handler,
+            output: 'text',
+            settings: { name: 'testSettings', type: 'group', fields: [] },
+          },
+        ],
+      }).textarea.handler(req)
+      expect(await response.text()).toBe('ok')
+      expect(resolveReferenceImage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          request: req,
+          source: { kind: 'url', url: 'https://untrusted.example/photo.png' },
+        }),
+      )
+    } finally {
+      await payload.update({
+        id: ownInstruction.id,
+        collection: PLUGIN_INSTRUCTIONS_TABLE,
+        data: { testSettings: {} },
       })
     }
   })

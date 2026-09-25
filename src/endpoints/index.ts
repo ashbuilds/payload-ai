@@ -20,11 +20,11 @@ import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 import { extractImageData } from '../utilities/extractImageData.js'
-import { resolveReferenceImage } from '../utilities/resolveReferenceImage.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 import { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from '../utilities/lexicalToHTML.js'
+import { resolveReferenceImage } from '../utilities/resolveReferenceImage.js'
 import { checkGenerationAccess } from './access.js'
 
 const extendContextWithPromptFields = (
@@ -327,8 +327,11 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
 
         return model.handler?.(prompts.prompt, {
           ...modelOptions,
+          // Override any saved setting with a server-owned, permission-aware resolver.
           layout: prompts.layout,
           locale: localeInfo,
+          resolvePromptImage: async (url: string) =>
+            (await resolveReferenceImage({ kind: 'url', url }, req, pluginConfig)).data,
           schema: jsonSchema,
           system: prompts.system,
         })
