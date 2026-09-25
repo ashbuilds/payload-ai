@@ -204,10 +204,52 @@ or edit instructions; `access.settings` controls the settings UI and does not re
 collection rules. Custom `mediaUpload` callbacks must enforce their own access checks, as
 shown below. Trusted initialization and instruction seeding run separately from user requests.
 
-Reference images must be directly accessible over HTTP(S) at public IP addresses. Image
-requests do not send the caller's credentials or follow redirects. Private/loopback addresses
-(including local development URLs) are rejected; use a direct public image URL or a signed
-storage URL for protected media. Each image request is limited to 20 MiB and 30 seconds.
+### Reference images and storage
+
+Reference images now require a server-side `resolveReferenceImage` callback. This is a
+breaking change for image editing with sample images or image URLs in prompts. Text-to-image
+generation without references is unchanged. The plugin does not fetch reference URLs,
+forward login credentials, or require Node DNS/HTTP APIs for reference resolution.
+
+For selected sample images, the plugin reloads the media document from
+`uploadCollectionSlug` (default: `media`) with the caller's Payload read permissions and
+`depth: 0` before invoking the resolver. Use that document's ID to retrieve bytes from a
+fixed storage bucket or other application-controlled store. Do not use a document's URL
+or filename as an unchecked network destination or filesystem path. Fields hidden by access
+control will not be available to the resolver.
+
+The resolver receives `{ source, request, signal, maxBytes }` and must return a PNG, JPEG,
+or WebP `Blob`. `source.kind` is `media` (with `collection` and the authorized `document`)
+or `url` (with an **untrusted** URL extracted from a prompt). Reject URL sources unless your
+application can map them to an explicitly approved storage object and authorize access.
+Merely checking that a URL uses HTTPS is insufficient. Prefer storage SDKs with a fixed
+bucket/account over arbitrary URL fetching; do not forward request cookies or tokens.
+
+For example, connect your application's storage reader:
+
+```typescript
+resolveReferenceImage: async ({ source, signal, maxBytes }) => {
+  if (source.kind !== 'media') {
+    throw new Error('Only selected media can be used as reference images.')
+  }
+  // Application-owned helper: map this authorized ID to your fixed bucket/object key.
+  // Enforce maxBytes during loading and honor signal to cancel outstanding work.
+  return readReferenceBlobFromStorage({
+    collection: source.collection,
+    id: source.document.id,
+    signal,
+    maxBytes,
+  })
+},
+```
+
+`readReferenceBlobFromStorage` above is an application helper, not a Payload or plugin API.
+Its implementation depends on your storage adapter. The plugin validates the returned Blob,
+rejects empty files or files over 20 MiB, and stops waiting after 30 seconds. The resolver
+must enforce the limit while loading to avoid buffering oversized objects; cancellation is
+cooperative and requires honoring `signal`. MIME checks do not verify image file contents.
+Custom generation models remain responsible for any network requests they make themselves.
+
 
 ```typescript
 import { payloadAiPlugin } from '@ai-stack/payloadcms'

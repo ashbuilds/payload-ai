@@ -7,11 +7,10 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import type { PluginConfig } from '../../types.js'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
-import { fetchReferenceImage } from '../../utilities/fetchReferenceImage.js'
 import { fetchFields } from '../fetchFields.js'
 import { endpoints } from '../index.js'
 
-vi.mock('../../utilities/fetchReferenceImage.js', () => ({ fetchReferenceImage: vi.fn() }))
+const resolveReferenceImage = vi.fn(() => Promise.resolve(new Blob(['test-image'], { type: 'image/png' })))
 
 let payload: Payload
 let ownDoc: any
@@ -27,6 +26,8 @@ const model = vi.fn((_prompt: string, _options: unknown) =>
 )
 const config = {
   generationModels: [{ id: 'test', handler: model, settings: { name: 'testSettings' } }],
+  resolveReferenceImage,
+  uploadCollectionSlug: 'reference-media',
 } as unknown as PluginConfig
 
 const request = async (body: any, user: any = editor): Promise<PayloadRequest> => {
@@ -75,6 +76,15 @@ beforeAll(async () => {
             { name: 'field-type', type: 'text' },
             { name: 'relation-to', type: 'text' },
             { name: 'images', type: 'json' },
+          ],
+        },
+        {
+          slug: 'reference-media',
+          access: { read: ({ req }) => ({ tenant: { equals: req.user?.tenant } }) },
+          fields: [
+            { name: 'tenant', type: 'text' },
+            { name: 'filename', type: 'text' },
+            { name: 'storageSecret', type: 'text', access: { read: () => false } },
           ],
         },
         {
@@ -144,7 +154,7 @@ describe('generation access against the real Payload Local API', () => {
     )
     expect([403, 404]).toContain(res.status)
     expect(model).not.toHaveBeenCalled()
-    expect(fetchReferenceImage).not.toHaveBeenCalled()
+    expect(resolveReferenceImage).not.toHaveBeenCalled()
   })
 
   it('fails closed on a missing source document', async () => {
@@ -168,7 +178,7 @@ describe('generation access against the real Payload Local API', () => {
       )
       expect([403, 404]).toContain(res.status)
       expect(model).not.toHaveBeenCalled()
-      expect(fetchReferenceImage).not.toHaveBeenCalled()
+      expect(resolveReferenceImage).not.toHaveBeenCalled()
     },
   )
 
@@ -185,6 +195,43 @@ describe('generation access against the real Payload Local API', () => {
     const res = await captureError(endpoints(config).upload.handler(await request(body())))
     expect(res.status).toBe(403)
     expect((await payload.count({ collection: 'assets' })).totalDocs).toBe(before.totalDocs)
+  })
+
+  it.each(['a', 'b'])('enforces reference media read access for tenant %s', async (tenant) => {
+    const media = await payload.create({
+      collection: 'reference-media',
+      data: { filename: 'sample.png', storageSecret: 'HIDDEN_STORAGE_FIELD', tenant },
+    })
+    await payload.update({
+      id: ownInstruction.id,
+      collection: PLUGIN_INSTRUCTIONS_TABLE,
+      data: { images: [{ image: { id: media.id, url: 'https://untrusted.test/image.png' } }] },
+    })
+    try {
+      const operation = endpoints(config).upload.handler(await request(body(), uploader))
+      if (tenant === 'b') {
+        const error = await captureError(operation)
+        expect([403, 404]).toContain(error.status)
+        expect(resolveReferenceImage).not.toHaveBeenCalled()
+        expect(model).not.toHaveBeenCalled()
+      } else {
+        expect((await operation).status).toBe(200)
+        const args = resolveReferenceImage.mock.calls[0] as unknown as [
+          { source: { document: Record<string, unknown> } },
+        ]
+        expect(args[0].source.document.id).toBe(media.id)
+        expect(args[0].source.document).not.toHaveProperty('storageSecret')
+        expect(args[0].source.document).not.toHaveProperty('url')
+        const options = model.mock.calls[0][1] as { images: { data: Blob }[] }
+        expect(options.images[0].data).toBeInstanceOf(Blob)
+      }
+    } finally {
+      await payload.update({
+        id: ownInstruction.id,
+        collection: PLUGIN_INSTRUCTIONS_TABLE,
+        data: { images: [] },
+      })
+    }
   })
 
   it('allows authorized text generation', async () => {

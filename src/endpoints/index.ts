@@ -1,7 +1,5 @@
 import type { CollectionSlug, PayloadRequest } from 'payload'
 
-import * as process from 'node:process'
-
 import type {
   ActionMenuItems,
   Endpoints,
@@ -22,7 +20,7 @@ import { registerEditorHelper } from '../libraries/handlebars/helpers.js'
 import { handlebarsHelpersMap } from '../libraries/handlebars/helpersMap.js'
 import { replacePlaceholders } from '../libraries/handlebars/replacePlaceholders.js'
 import { extractImageData } from '../utilities/extractImageData.js'
-import { fetchReferenceImage } from '../utilities/fetchReferenceImage.js'
+import { resolveReferenceImage } from '../utilities/resolveReferenceImage.js'
 import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
@@ -397,24 +395,16 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
         const modelId = instructions['model-id']
         const uploadCollectionSlug = instructions['relation-to']
 
-        const images = [...extractImageData(text), ...sampleImages]
-
         const editImages = []
-        for (const img of images) {
-          const serverURL =
-            req.payload.config?.serverURL ||
-            process.env.SERVER_URL ||
-            process.env.NEXT_PUBLIC_SERVER_URL
-
-          const imageURL = img.image.thumbnailURL || img.image.url
-          const { blob, url } = await fetchReferenceImage(imageURL, serverURL)
-          editImages.push({
-            name: img.image.name,
-            type: img.image.type,
-            data: blob,
-            size: blob.size,
-            url,
-          })
+        for (const img of extractImageData(text)) {
+          editImages.push(
+            await resolveReferenceImage({ kind: 'url', url: img.image.url }, req, pluginConfig),
+          )
+        }
+        for (const { image } of sampleImages) {
+          // Populated relationship data is not proof that the caller may read this media.
+          const id = typeof image === 'object' && image !== null ? image.id : image
+          editImages.push(await resolveReferenceImage({ id, kind: 'media' }, req, pluginConfig))
         }
 
         const modelsUpload = getGenerationModels(pluginConfig)

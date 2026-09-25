@@ -50,6 +50,27 @@ export type PluginConfigMediaUploadFunction = (
   },
 ) => Promise<DataFromCollectionSlug<CollectionSlug>>
 
+/** Input URLs are untrusted. Media documents have already passed Payload read access. */
+export type ReferenceImageSource =
+  | {
+      collection: CollectionSlug
+      document: DataFromCollectionSlug<CollectionSlug>
+      kind: 'media'
+    }
+  | { kind: 'url'; url: string }
+
+/**
+ * Load reference bytes from storage controlled by your application.
+ * Reject unsupported sources, enforce any additional storage permissions, and honor
+ * signal/maxBytes while loading. Never fetch an arbitrary source URL or forward caller credentials.
+ */
+export type ReferenceImageResolver = (args: {
+  maxBytes: number
+  request: PayloadRequest
+  signal: AbortSignal
+  source: ReferenceImageSource
+}) => Promise<Blob>
+
 type ProviderHeaders = Record<string, string>
 
 export interface AnthropicProviderConfig {
@@ -133,6 +154,8 @@ export interface PluginConfig {
    */
   prompts?: ActionPrompt[]
   providers?: PluginConfigProviders
+  /** Required for reference images; no network requests are made by default. */
+  resolveReferenceImage?: ReferenceImageResolver
   /**
    * Custom seed prompt function for generating field-specific prompts
    * If not provided, uses default seed prompt function
