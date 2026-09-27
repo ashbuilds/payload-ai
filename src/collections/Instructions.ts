@@ -191,7 +191,8 @@ export const instructionsCollection = (pluginConfig: PluginConfig) => {
                     name: 'image',
                     type: 'upload',
                     admin: {
-                      description: 'Please make sure the image is publicly accessible.',
+                      description:
+                        'Reference images require a server-side image resolver configured by your developer.',
                     },
                     relationTo: pluginConfig.uploadCollectionSlug
                       ? pluginConfig.uploadCollectionSlug

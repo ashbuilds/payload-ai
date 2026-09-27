@@ -2,7 +2,7 @@ import type { LexicalEditor } from 'lexical'
 
 import { SKIP_SCROLL_INTO_VIEW_TAG } from 'lexical'
 
-import { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from './lexicalToHTML.js'
+import { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from './blockPlaceholders.js'
 
 type SetSafeLexicalStateOptions = {
   logErrors?: boolean

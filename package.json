@@ -1,6 +1,6 @@
 {
   "name": "@ai-stack/payloadcms",
-  "version": "3.2.32",
+  "version": "4.0.0",
   "private": false,
   "bugs": "https://github.com/ashbuilds/payload-ai/issues",
   "repository": "https://github.com/ashbuilds/payload-ai",
@@ -64,7 +64,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "!dist/**/__tests__/**",
+    "MIGRATION.md"
   ],
   "scripts": {
     "build": "pnpm copyfiles && pnpm build:types && pnpm build:swc",

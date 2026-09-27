@@ -17,6 +17,8 @@ export type {
   PluginOptions,
   PromptField,
   PromptFieldGetterContext,
+  ReferenceImageResolver,
+  ReferenceImageSource,
   SeedPromptData,
   SeedPromptFunction,
   SeedPromptOptions,

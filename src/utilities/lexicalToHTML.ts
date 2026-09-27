@@ -6,11 +6,9 @@ import {
   type SanitizedServerEditorConfig,
 } from '@payloadcms/richtext-lexical'
 
-// Marker prefix/suffix for the block-placeholder scheme - see setSafeLexicalState.ts for the
-// counterpart that swaps markers back for the real block after generation. Exported so both
-// sides share one definition.
-export const BLOCK_PLACEHOLDER_PREFIX = '[[[BLOCK_'
-export const BLOCK_PLACEHOLDER_SUFFIX = ']]]'
+import { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from './blockPlaceholders.js'
+
+export { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from './blockPlaceholders.js'
 
 /**
  * Non-Compose text actions (Translate/Simplify/Proofread/...) only ever give the model this

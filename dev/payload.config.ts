@@ -86,6 +86,8 @@ const buildConfigWithMemoryDB = async () => {
             collection,
             data: result.data,
             file: result.file,
+            overrideAccess: false,
+            req: request,
           })
         },
         providers: {

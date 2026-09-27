@@ -1,7 +1,5 @@
 import type { CollectionSlug, PayloadRequest } from 'payload'
 
-import * as process from 'node:process'
-
 import type {
   ActionMenuItems,
   Endpoints,
@@ -26,26 +24,8 @@ import { fieldToJsonSchema } from '../utilities/fieldToJsonSchema.js'
 import { getFieldBySchemaPath } from '../utilities/getFieldBySchemaPath.js'
 import { getGenerationModels } from '../utilities/getGenerationModels.js'
 import { BLOCK_PLACEHOLDER_PREFIX, BLOCK_PLACEHOLDER_SUFFIX } from '../utilities/lexicalToHTML.js'
-
-const requireAuthentication = (req: PayloadRequest) => {
-  if (!req.user) {
-    throw new Error('Authentication required. Please log in to use AI features.')
-  }
-  return true
-}
-
-const checkAccess = async (req: PayloadRequest, pluginConfig: PluginConfig) => {
-  requireAuthentication(req)
-
-  if (pluginConfig.access?.generate) {
-    const hasAccess = await pluginConfig.access.generate({ req })
-    if (!hasAccess) {
-      throw new Error('Insufficient permissions to use AI generation features.')
-    }
-  }
-
-  return true
-}
+import { resolveReferenceImage } from '../utilities/resolveReferenceImage.js'
+import { checkGenerationAccess } from './access.js'
 
 const extendContextWithPromptFields = (
   data: object,
@@ -208,351 +188,287 @@ export const endpoints: (pluginConfig: PluginConfig) => Endpoints = (pluginConfi
     textarea: {
       //TODO:  This is the main endpoint for generating content - its just needs to be renamed to 'generate' or something.
       handler: async (req: PayloadRequest) => {
+        // Check authentication and authorization first
+        await checkGenerationAccess(req, pluginConfig)
+
+        const data = await req.json?.()
+
+        const { allowedEditorNodes = [], locale = 'en', options } = data
+        const { action, actionParams, instructionId } = options
+        const contextData = data.doc
+
+        if (!instructionId) {
+          throw new Error(
+            `Instruction ID is required for "${PLUGIN_NAME}" to work, please check your configuration, or try again`,
+          )
+        }
+
+        const { defaultLocale, locales = [] } = req.payload.config.localization || {}
+        const localeData = locales.find((l) => {
+          return l.code === locale
+        })
+
+        // Verify user has access to the specific instruction
+        const instructions = await req.payload.findByID({
+          id: instructionId,
+          collection: PLUGIN_INSTRUCTIONS_TABLE,
+          locale: locales.length > 0 && locale ? locale : undefined,
+          overrideAccess: false,
+          req,
+        })
+
+        const { collections } = req.payload.config
+        const collection = collections.find(
+          (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
+        )
+
+        if (!collection) {
+          throw new Error('Collection not found')
+        }
+
+        const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
+        const { schema: editorSchema = {} } = editorConfig
+        const { prompt: promptTemplate = '' } = instructions
+
+        let allowedEditorSchema = editorSchema
+        if (allowedEditorNodes.length) {
+          allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
+        }
+
+        const schemaPath = instructions['schema-path'] as string
+        const parts = schemaPath?.split('.') || []
+        const collectionName = parts[0]
+        const fieldPath = parts.slice(1).join('.')
+        const fieldName = parts.length > 1 ? parts[parts.length - 1] : ''
+
+        registerEditorHelper(req.payload, schemaPath)
+
+        let localeInfo = locale
+        if (
+          localeData &&
+          defaultLocale &&
+          localeData.label &&
+          typeof localeData.label === 'object' &&
+          defaultLocale in localeData.label
+        ) {
+          localeInfo = localeData.label[defaultLocale]
+        }
+
+        const models = getGenerationModels(pluginConfig)
+        const model =
+          models && Array.isArray(models)
+            ? models.find((model) => model.id === instructions['model-id'])
+            : undefined
+
+        if (!model) {
+          throw new Error('Model not found')
+        }
+
+        const settingsName =
+          model.settings && 'name' in model.settings ? model.settings.name : undefined
+        if (!settingsName) {
+          req.payload.logger.error('— AI Plugin: Error fetching settings name!')
+        }
+
+        const modelOptions = settingsName ? instructions[settingsName] || {} : {}
+
+        const prompts = await assignPrompt(action, {
+          type: String(instructions['field-type']),
+          actionParams,
+          collection: collectionName,
+          context: contextData,
+          field: fieldPath || fieldName || '',
+          layout: instructions.layout,
+          locale: localeInfo,
+          pluginConfig,
+          systemPrompt: instructions.system,
+          template: String(promptTemplate),
+        })
+
+        if (pluginConfig.debugging) {
+          req.payload.logger.info(
+            { prompts },
+            `— AI Plugin: Executing text prompt on ${schemaPath} using ${model.id}`,
+          )
+        }
+
+        // Build per-field JSON schema for structured generation when applicable
+        let jsonSchema = allowedEditorSchema
         try {
-          // Check authentication and authorization first
-          await checkAccess(req, pluginConfig)
-
-          const data = await req.json?.()
-
-          const { allowedEditorNodes = [], locale = 'en', options } = data
-          const { action, actionParams, instructionId } = options
-          const contextData = data.doc
-
-          if (!instructionId) {
-            throw new Error(
-              `Instruction ID is required for "${PLUGIN_NAME}" to work, please check your configuration, or try again`,
-            )
-          }
-
-          const { defaultLocale, locales = [] } = req.payload.config.localization || {}
-          const localeData = locales.find((l) => {
-            return l.code === locale
-          })
-
-          // Verify user has access to the specific instruction
-          const instructions = await req.payload.findByID({
-            id: instructionId,
-            collection: PLUGIN_INSTRUCTIONS_TABLE,
-            locale: locales.length > 0 && locale ? locale : undefined,
-            req, // Pass req to ensure access control is applied
-          })
-
-          const { collections } = req.payload.config
-          const collection = collections.find(
-            (collection) => collection.slug === PLUGIN_INSTRUCTIONS_TABLE,
+          const targetCollection = req.payload.config.collections.find(
+            (c) => c.slug === collectionName,
           )
 
-          if (!collection) {
-            throw new Error('Collection not found')
-          }
+          const targetGlobal = req.payload.config.globals?.find((g) => g.slug === collectionName)
 
-          const { custom: { [PLUGIN_NAME]: { editorConfig = {} } = {} } = {} } = collection.admin
-          const { schema: editorSchema = {} } = editorConfig
-          const { prompt: promptTemplate = '' } = instructions
+          const targetConfig = targetCollection || targetGlobal
 
-          let allowedEditorSchema = editorSchema
-          if (allowedEditorNodes.length) {
-            allowedEditorSchema = filterEditorSchemaByNodes(editorSchema, allowedEditorNodes)
-          }
+          if (targetConfig && fieldName) {
+            const targetField = getFieldBySchemaPath(targetConfig, schemaPath)
+            const supported = [
+              'text',
+              'textarea',
+              'select',
+              'number',
+              'date',
+              'code',
+              'email',
+              'json',
+            ]
 
-          const schemaPath = instructions['schema-path'] as string
-          const parts = schemaPath?.split('.') || []
-          const collectionName = parts[0]
-          const fieldPath = parts.slice(1).join('.')
-          const fieldName = parts.length > 1 ? parts[parts.length - 1] : ''
-
-          registerEditorHelper(req.payload, schemaPath)
-
-          let localeInfo = locale
-          if (
-            localeData &&
-            defaultLocale &&
-            localeData.label &&
-            typeof localeData.label === 'object' &&
-            defaultLocale in localeData.label
-          ) {
-            localeInfo = localeData.label[defaultLocale]
-          }
-
-          const models = getGenerationModels(pluginConfig)
-          const model =
-            models && Array.isArray(models)
-              ? models.find((model) => model.id === instructions['model-id'])
-              : undefined
-
-          if (!model) {
-            throw new Error('Model not found')
-          }
-
-          const settingsName =
-            model.settings && 'name' in model.settings ? model.settings.name : undefined
-          if (!settingsName) {
-            req.payload.logger.error('— AI Plugin: Error fetching settings name!')
-          }
-
-          const modelOptions = settingsName ? instructions[settingsName] || {} : {}
-
-          const prompts = await assignPrompt(action, {
-            type: String(instructions['field-type']),
-            actionParams,
-            collection: collectionName,
-            context: contextData,
-            field: fieldPath || fieldName || '',
-            layout: instructions.layout,
-            locale: localeInfo,
-            pluginConfig,
-            systemPrompt: instructions.system,
-            template: String(promptTemplate),
-          })
-
-          if (pluginConfig.debugging) {
-            req.payload.logger.info(
-              { prompts },
-              `— AI Plugin: Executing text prompt on ${schemaPath} using ${model.id}`,
-            )
-          }
-
-          // Build per-field JSON schema for structured generation when applicable
-          let jsonSchema = allowedEditorSchema
-          try {
-            
-            const targetCollection = req.payload.config.collections.find(
-              (c) => c.slug === collectionName,
-            )
-
-            const targetGlobal = req.payload.config.globals?.find(
-              (g) => g.slug === collectionName,
-            )
-
-            const targetConfig = targetCollection || targetGlobal
-
-            if (targetConfig && fieldName) {
-              const targetField = getFieldBySchemaPath(targetConfig, schemaPath)
-              const supported = [
-                'text',
-                'textarea',
-                'select',
-                'number',
-                'date',
-                'code',
-                'email',
-                'json',
-              ]
-
-              const t = String(targetField?.type || '')
-              if (targetField && supported.includes(t)) {
-                jsonSchema = fieldToJsonSchema(targetField as any, { nameOverride: fieldName })
-              }
+            const t = String(targetField?.type || '')
+            if (targetField && supported.includes(t)) {
+              jsonSchema = fieldToJsonSchema(targetField as any, { nameOverride: fieldName })
             }
-          } catch (e) {
-            req.payload.logger.error(e, '— AI Plugin: Error building field JSON schema')
           }
-
-          return model.handler?.(prompts.prompt, {
-            ...modelOptions,
-            layout: prompts.layout,
-            locale: localeInfo,
-            schema: jsonSchema,
-            system: prompts.system,
-          })
-        } catch (error) {
-          req.payload.logger.error(error, 'Error generating content: ')
-          const message =
-            error && typeof error === 'object' && 'message' in error
-              ? (error as any).message
-              : String(error)
-          return new Response(JSON.stringify({ error: message }), {
-            headers: { 'Content-Type': 'application/json' },
-            status:
-              message.includes('Authentication required') ||
-              message.includes('Insufficient permissions')
-                ? 401
-                : 500,
-          })
+        } catch (e) {
+          req.payload.logger.error(e, '— AI Plugin: Error building field JSON schema')
         }
+
+        return model.handler?.(prompts.prompt, {
+          ...modelOptions,
+          // Override any saved setting with a server-owned, permission-aware resolver.
+          layout: prompts.layout,
+          locale: localeInfo,
+          resolvePromptImage: async (url: string) =>
+            (await resolveReferenceImage({ kind: 'url', url }, req, pluginConfig)).data,
+          schema: jsonSchema,
+          system: prompts.system,
+        })
       },
       method: 'post',
       path: PLUGIN_API_ENDPOINT_GENERATE,
     },
     upload: {
       handler: async (req: PayloadRequest) => {
-        try {
-          // Check authentication and authorization first
-          await checkAccess(req, pluginConfig)
+        // Check authentication and authorization first
+        await checkGenerationAccess(req, pluginConfig)
 
-          const data = await req.json?.()
+        const data = await req.json?.()
 
-          const { collectionSlug, documentId, options } = data
-          const { instructionId } = options
-          let docData = {}
+        const { collectionSlug, documentId, options } = data
+        const { instructionId } = options
+        let docData = {}
 
-          if (documentId) {
-            try {
-              docData = await req.payload.findByID({
-                id: documentId,
-                collection: collectionSlug,
-                draft: true,
-                req, // Pass req to ensure access control is applied
-              })
-            } catch (e) {
-              req.payload.logger.error(
-                e,
-                '— AI Plugin: Error fetching document, you should try again after enabling drafts for this collection',
-              )
-            }
-          }
-
-          const contextData = {
-            ...data.doc,
-            ...docData,
-          }
-
-          let instructions: Record<string, any> = { images: [], 'model-id': '', prompt: '' }
-
-          if (instructionId) {
-            // Get locale from request if available
-            const { locale: requestLocale } = data
-            const { locales = [] } = req.payload.config.localization || {}
-
-            // Verify user has access to the specific instruction
-            // Pass locale if localization is enabled for the Instructions collection
-            instructions = await req.payload.findByID({
-              id: instructionId,
-              collection: PLUGIN_INSTRUCTIONS_TABLE,
-              locale: locales.length > 0 && requestLocale ? requestLocale : undefined,
-              req, // Pass req to ensure access control is applied
-            })
-          }
-
-          const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
-          const schemaPath = instructions['schema-path']
-
-          registerEditorHelper(req.payload, schemaPath)
-
-          const extendedContext = extendContextWithPromptFields(
-            contextData,
-            { type: instructions['field-type'], collection: collectionSlug },
-            pluginConfig,
-          )
-          const text = await replacePlaceholders(promptTemplate, extendedContext)
-          const modelId = instructions['model-id']
-          const uploadCollectionSlug = instructions['relation-to']
-
-          const images = [...extractImageData(text), ...sampleImages]
-
-          const editImages = []
-          for (const img of images) {
-            const serverURL =
-              req.payload.config?.serverURL ||
-              process.env.SERVER_URL ||
-              process.env.NEXT_PUBLIC_SERVER_URL
-
-            let url = img.image.thumbnailURL || img.image.url
-            if (!url.startsWith('http')) {
-              url = `${serverURL}${url}`
-            }
-
-            try {
-              const response = await fetch(url, {
-                headers: {
-                  //TODO: Further testing needed or so find a proper way.
-                  Authorization: `Bearer ${req.headers.get('Authorization')?.split('Bearer ')[1] || ''}`,
-                },
-                method: 'GET',
-              })
-
-              const blob = await response.blob()
-              editImages.push({
-                name: img.image.name,
-                type: img.image.type,
-                data: blob,
-                size: blob.size,
-                url,
-              })
-            } catch (e) {
-              req.payload.logger.error(e, `Error fetching reference image ${url}`)
-              throw Error(
-                "We couldn't fetch the images. Please ensure the images are accessible and hosted publicly.",
-              )
-            }
-          }
-
-          const modelsUpload = getGenerationModels(pluginConfig)
-          const model =
-            modelsUpload && Array.isArray(modelsUpload)
-              ? modelsUpload.find((model) => model.id === modelId)
-              : undefined
-
-          if (!model) {
-            throw new Error('Model not found')
-          }
-
-          // @ts-ignore
-          const settingsName = model && model.settings ? model.settings.name : undefined
-          if (!settingsName) {
-            req.payload.logger.error('— AI Plugin: Error fetching settings name!')
-          }
-
-          let modelOptions = settingsName ? instructions[settingsName] || {} : {}
-          modelOptions = {
-            ...modelOptions,
-            images: editImages,
-          }
-
-          if (pluginConfig.debugging) {
-            req.payload.logger.info(
-              { text },
-              `— AI Plugin: Executing image prompt using ${model.id}`,
-            )
-          }
-
-          const result = await model.handler?.(text, modelOptions)
-          let assetData: { alt?: string; id: number | string }
-
-          if (typeof pluginConfig.mediaUpload === 'function') {
-            assetData = await pluginConfig.mediaUpload(result, {
-              collection: uploadCollectionSlug,
-              request: req,
-            })
-          } else {
-            assetData = await req.payload.create({
-              collection: uploadCollectionSlug,
-              data: result.data,
-              file: result.file,
-              req, // Pass req to ensure access control is applied
-            })
-          }
-
-          if (!assetData.id) {
-            req.payload.logger.error(
-              'Error uploading generated media, is your media upload function correct?',
-            )
-            throw new Error('Error uploading generated media!')
-          }
-
-          return new Response(
-            JSON.stringify({
-              result: {
-                id: assetData.id,
-                alt: assetData.alt,
-              },
-            }),
-          )
-        } catch (error) {
-          req.payload.logger.error(error, 'Error generating upload: ')
-          const message =
-            error && typeof error === 'object' && 'message' in error
-              ? (error as any).message
-              : String(error)
-          return new Response(JSON.stringify({ error: message }), {
-            headers: { 'Content-Type': 'application/json' },
-            status:
-              message.includes('Authentication required') ||
-              message.includes('Insufficient permissions')
-                ? 401
-                : 500,
+        if (documentId) {
+          // A denied or missing source document must stop generation.
+          docData = await req.payload.findByID({
+            id: documentId,
+            collection: collectionSlug,
+            draft: true,
+            overrideAccess: false,
+            req,
           })
         }
+
+        const contextData = {
+          ...data.doc,
+          ...docData,
+        }
+
+        let instructions: Record<string, any> = { images: [], 'model-id': '', prompt: '' }
+
+        if (instructionId) {
+          // Get locale from request if available
+          const { locale: requestLocale } = data
+          const { locales = [] } = req.payload.config.localization || {}
+
+          // Verify user has access to the specific instruction
+          // Pass locale if localization is enabled for the Instructions collection
+          instructions = await req.payload.findByID({
+            id: instructionId,
+            collection: PLUGIN_INSTRUCTIONS_TABLE,
+            locale: locales.length > 0 && requestLocale ? requestLocale : undefined,
+            overrideAccess: false,
+            req,
+          })
+        }
+
+        const { images: sampleImages = [], prompt: promptTemplate = '' } = instructions
+        const schemaPath = instructions['schema-path']
+
+        registerEditorHelper(req.payload, schemaPath)
+
+        const extendedContext = extendContextWithPromptFields(
+          contextData,
+          { type: instructions['field-type'], collection: collectionSlug },
+          pluginConfig,
+        )
+        const text = await replacePlaceholders(promptTemplate, extendedContext)
+        const modelId = instructions['model-id']
+        const uploadCollectionSlug = instructions['relation-to']
+
+        const editImages = []
+        for (const img of extractImageData(text)) {
+          editImages.push(
+            await resolveReferenceImage({ kind: 'url', url: img.image.url }, req, pluginConfig),
+          )
+        }
+        for (const { image } of sampleImages) {
+          // Populated relationship data is not proof that the caller may read this media.
+          const id = typeof image === 'object' && image !== null ? image.id : image
+          editImages.push(await resolveReferenceImage({ id, kind: 'media' }, req, pluginConfig))
+        }
+
+        const modelsUpload = getGenerationModels(pluginConfig)
+        const model =
+          modelsUpload && Array.isArray(modelsUpload)
+            ? modelsUpload.find((model) => model.id === modelId)
+            : undefined
+
+        if (!model) {
+          throw new Error('Model not found')
+        }
+
+        // @ts-ignore
+        const settingsName = model && model.settings ? model.settings.name : undefined
+        if (!settingsName) {
+          req.payload.logger.error('— AI Plugin: Error fetching settings name!')
+        }
+
+        let modelOptions = settingsName ? instructions[settingsName] || {} : {}
+        modelOptions = {
+          ...modelOptions,
+          images: editImages,
+        }
+
+        if (pluginConfig.debugging) {
+          req.payload.logger.info({ text }, `— AI Plugin: Executing image prompt using ${model.id}`)
+        }
+
+        const result = await model.handler?.(text, modelOptions)
+        let assetData: { alt?: string; id: number | string }
+
+        if (typeof pluginConfig.mediaUpload === 'function') {
+          assetData = await pluginConfig.mediaUpload(result, {
+            collection: uploadCollectionSlug,
+            request: req,
+          })
+        } else {
+          assetData = await req.payload.create({
+            collection: uploadCollectionSlug,
+            data: result.data,
+            file: result.file,
+            overrideAccess: false,
+            req,
+          })
+        }
+
+        if (!assetData.id) {
+          req.payload.logger.error(
+            'Error uploading generated media, is your media upload function correct?',
+          )
+          throw new Error('Error uploading generated media!')
+        }
+
+        return new Response(
+          JSON.stringify({
+            result: {
+              id: assetData.id,
+              alt: assetData.alt,
+            },
+          }),
+        )
       },
       method: 'post',
       path: PLUGIN_API_ENDPOINT_GENERATE_UPLOAD,

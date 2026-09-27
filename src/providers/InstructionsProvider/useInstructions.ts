@@ -1,9 +1,9 @@
-import { InstructionsContext } from '@ai-stack/payloadcms/client'
 import { useDocumentInfo } from '@payloadcms/ui'
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { PLUGIN_INSTRUCTIONS_TABLE } from '../../defaults.js'
 import { handlebarsHelpers, handlebarsHelpersMap } from '../../libraries/handlebars/helpersMap.js'
+import { InstructionsContext } from './context.js'
 
 const warnedOnceOnNoInstructionId = new Set<string>()
 
