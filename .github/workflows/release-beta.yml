@@ -18,8 +18,22 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           registry-url: "https://registry.npmjs.org"
+
+      - name: Verify release tag matches package version
+        env:
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const { version } = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            const tag = process.env.RELEASE_REF_NAME;
+            if (process.env.RELEASE_REF_TYPE !== "tag" || tag.replace(/^v/, "") !== version) {
+              throw new Error("Publish requires a tag matching package.json version " + version);
+            }
+          '
 
       - name: Ensure npm version supports Trusted Publishing
         run: npm i -g npm@11
@@ -31,6 +45,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm test:int
 
       - name: Build
         run: pnpm build

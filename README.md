@@ -1,5 +1,7 @@
 # Payload AI Plugin
 
+**Upgrading to 4.0.0?** Read the [migration guide](MIGRATION.md). Reference images and extracted prompt attachments now require an explicit storage resolver.
+
 <p align="center">
   <img alt="Payload AI Plugin" src="assets/payload-ai-intro.gif" width="100%" />
 </p>
