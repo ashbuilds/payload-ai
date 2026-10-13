@@ -1,21 +1,3 @@
-# Upgrading to 5.0.0
-
-Version 5 updates dependencies to address security advisories and raises the supported Payload and Lexical versions.
-
-## Required dependency updates
-
-- Upgrade Payload and your `@payloadcms/*` runtime packages together to `3.90.2` or a compatible newer version. Keep their versions aligned.
-- Update directly installed `lexical` and `@lexical/*` packages to `0.50.0` to match this release. The plugin now requires `lexical` and `@lexical/html` in the `^0.50.0` range.
-- The demo and validation use Next.js `16.3.8`. Next.js is a development dependency of this repository; update your application's Next.js dependency separately.
-
-Reinstall dependencies and check for peer dependency conflicts. Test the admin editor, saving posts, and AI generation before deploying. No plugin configuration changes are introduced by this release; the version 4 storage-resolver requirements still apply.
-
-Dependency overrides in this repository do not automatically apply to consuming applications. Audit your application's own lockfile after upgrading.
-
-If upgrading from version 3 or earlier, also follow the version 4 migration below.
-
----
-
 # Upgrading to 4.0.0
 
 Version 4 fixes permission bypasses in generation endpoints and removes automatic downloads of reference-image and prompt-attachment URLs. Existing image-editing and attachment workflows need configuration before upgrading.

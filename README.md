@@ -1,6 +1,6 @@
 # Payload AI Plugin
 
-**Upgrading to 5.0.0?** Read the [migration guide](MIGRATION.md). This release requires Payload `^3.90.2` and Lexical `^0.50.0`; the version 4 storage-resolver requirements still apply.
+**Upgrading to 4.0.0?** Read the [migration guide](MIGRATION.md). Reference images and extracted prompt attachments now require an explicit storage resolver.
 
 <p align="center">
   <img alt="Payload AI Plugin" src="assets/payload-ai-intro.gif" width="100%" />
