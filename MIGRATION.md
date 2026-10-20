@@ -1,3 +1,18 @@
+# OpenAI GPT Image model update
+
+OpenAI [retires `gpt-image-1` on October 23, 2026](https://developers.openai.com/api/docs/deprecations).
+The built-in OpenAI GPT Image option now defaults to `gpt-image-2.5-sunburst`;
+`gpt-image-2.5-flare` is also available in its Version picker. Both support image
+generation and editing through the existing Images API.
+
+Existing instructions keep their `gpt-image-1` model ID and
+`gpt-image-1-settings` group, so no database migration is required. Saved
+`version: 'gpt-image-1'` values are sent as `gpt-image-2.5-sunburst` for both
+generation and editing. Other explicitly selected versions pass through unchanged.
+Custom OpenAI-compatible endpoints using the legacy version receive the same mapping.
+Review output quality, account access, and [pricing](https://developers.openai.com/api/docs/models/gpt-image-2.5-sunburst)
+before deploying; this changes the model used by existing instructions.
+
 # Upgrading to 4.0.0
 
 Version 4 fixes permission bypasses in generation endpoints and removes automatic downloads of reference-image and prompt-attachment URLs. Existing image-editing and attachment workflows need configuration before upgrading.

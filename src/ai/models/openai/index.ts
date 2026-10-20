@@ -10,6 +10,7 @@ import { generateFileNameByPrompt } from '../../utils/generateFileNameByPrompt.j
 import { generateObject } from '../generateObject.js'
 import { generateImage } from './generateImage.js'
 import { generateVoice } from './generateVoice.js'
+import { DEFAULT_GPT_IMAGE_MODEL } from './imageModel.js'
 import { createOpenAIProvider } from './openai.js'
 
 const MODEL_KEY = 'Oai'
@@ -170,10 +171,14 @@ export const createOpenAIConfig = (
       },
       {
         id: 'gpt-image-1',
-        name: 'OpenAI GPT Image 1',
+        name: 'OpenAI GPT Image',
         fields: ['upload'],
         handler: async (prompt: string, options) => {
-          const imageData = await generateImage(prompt, { ...options, providerConfig })
+          const imageData = await generateImage(prompt, {
+            ...options,
+            providerConfig,
+            version: options.version || DEFAULT_GPT_IMAGE_MODEL,
+          })
           return {
             data: {
               alt: imageData.alt,
@@ -199,9 +204,13 @@ export const createOpenAIConfig = (
             {
               name: 'version',
               type: 'select',
-              defaultValue: 'gpt-image-1',
+              defaultValue: DEFAULT_GPT_IMAGE_MODEL,
               label: 'Version',
-              options: ['gpt-image-1'],
+              options: [
+                DEFAULT_GPT_IMAGE_MODEL,
+                'gpt-image-2.5-flare',
+                { label: 'GPT Image 1 (uses Sunburst)', value: 'gpt-image-1' },
+              ],
             },
             {
               type: 'row',

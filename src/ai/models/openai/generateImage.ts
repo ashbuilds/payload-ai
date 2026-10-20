@@ -7,6 +7,7 @@ import type { OpenAIResolvedProviderConfig } from './openai.js'
 
 import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 import { editImagesWithOpenAI } from '../../utils/editImagesWithOpenAI.js'
+import { resolveGPTImageModel } from './imageModel.js'
 
 export const generateImage = async (
   prompt: string,
@@ -35,7 +36,7 @@ export const generateImage = async (
   }
 
   let response: ImagesResponse
-  const safeVersion = version ?? undefined
+  const safeVersion = resolveGPTImageModel(version ?? undefined)
   if (images?.length) {
     response = await editImagesWithOpenAI(images, prompt, safeVersion, providerConfig)
   } else {

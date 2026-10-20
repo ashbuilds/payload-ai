@@ -1,10 +1,11 @@
 import type { ImageReference } from '../../types.js'
 import type { OpenAIResolvedProviderConfig } from '../models/openai/openai.js'
 
+import { DEFAULT_GPT_IMAGE_MODEL, resolveGPTImageModel } from '../models/openai/imageModel.js'
 import { resolveProviderConfig } from '../providers/resolveProviderConfig.js'
 
 /**
- * Send multiple images as `image[]` to OpenAI's image edit endpoint using gpt-image-1.
+ * Send multiple images as `image[]` to OpenAI's image edit endpoint.
  * @param images
  * @param prompt Prompt to guide the image edit
  * @param model
@@ -14,7 +15,7 @@ import { resolveProviderConfig } from '../providers/resolveProviderConfig.js'
 export async function editImagesWithOpenAI(
   images: ImageReference[],
   prompt: string,
-  model: string = 'gpt-image-1',
+  model: string = DEFAULT_GPT_IMAGE_MODEL,
   providerConfig: OpenAIResolvedProviderConfig = resolveProviderConfig().openai,
 ) {
   try {
@@ -26,7 +27,7 @@ export async function editImagesWithOpenAI(
     }
 
     formData.append('prompt', prompt)
-    formData.append('model', model)
+    formData.append('model', resolveGPTImageModel(model))
 
     const baseURL = providerConfig.baseURL
     const openaiRes = await fetch(`${baseURL}/images/edits`, {
