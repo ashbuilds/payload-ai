@@ -147,6 +147,7 @@ OPENAI_API_KEY=your-openai-api-key           # OpenAI models (GPT-4, etc.)
 ANTHROPIC_API_KEY=your-anthropic-api-key     # Claude models
 GOOGLE_GENERATIVE_AI_API_KEY=your-google-key # Gemini models
 MINIMAX_API_KEY=your-minimax-api-key         # MiniMax M3 / M2.7 models
+ATLASCLOUD_API_KEY=your-atlascloud-api-key   # Atlas Cloud (DeepSeek, Kimi, GLM, Qwen models)
 
 # Image Generation - Choose your provider(s)
 OPENAI_API_KEY=your-openai-api-key           # DALL-E (uses same key as above)
@@ -182,7 +183,7 @@ payloadAiPlugin({
 })
 ```
 
-Supported provider keys: `openai`, `anthropic`, `google`, `elevenLabs`, and `minimax`.
+Supported provider keys: `openai`, `anthropic`, `google`, `elevenLabs`, `minimax`, and `atlascloud`.
 
 **Important:** Restart your server after updating `.env` or plugin settings!
 

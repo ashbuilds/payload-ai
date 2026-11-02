@@ -11,6 +11,7 @@ const providerEnvKeys = [
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_AUTH_TOKEN',
   'ANTHROPIC_BASE_URL',
+  'ATLASCLOUD_API_KEY',
   'ELEVENLABS_API_KEY',
   'GOOGLE_GENERATIVE_AI_API_KEY',
   'MINIMAX_API_KEY',
@@ -74,6 +75,7 @@ describe('resolveProviderConfig', () => {
   it('registers default models from provider config without env keys', () => {
     const models = getDefaultGenerationModels({
       anthropic: { apiKey: 'anthropic-key' },
+      atlascloud: { apiKey: 'atlascloud-key' },
       elevenLabs: { apiKey: 'elevenlabs-key' },
       google: { apiKey: 'google-key' },
       minimax: { apiKey: 'minimax-key' },
@@ -82,6 +84,7 @@ describe('resolveProviderConfig', () => {
 
     expect(models.some((model) => model.id === 'Oai-text')).toBe(true)
     expect(models.some((model) => model.id === 'ANTH-C-text')).toBe(true)
+    expect(models.some((model) => model.id === 'ATLASCLOUD-text')).toBe(true)
     expect(models.some((model) => model.id === 'GEMINI-text')).toBe(true)
     expect(models.some((model) => model.id === '11Labs-m-v2')).toBe(true)
     expect(models.some((model) => model.id === 'MINIMAX-text')).toBe(true)

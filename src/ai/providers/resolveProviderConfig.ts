@@ -2,6 +2,7 @@ import * as process from 'node:process'
 
 import type { PluginConfigProviders } from '../../types.js'
 
+const DEFAULT_ATLASCLOUD_BASE_URL = 'https://api.atlascloud.ai/v1'
 const DEFAULT_MINIMAX_BASE_URL = 'https://api.minimax.io/v1'
 const DEFAULT_OPENAI_BASE_URL = 'https://api.openai.com/v1'
 
@@ -10,6 +11,7 @@ export type ResolvedProviderConfig = ReturnType<typeof resolveProviderConfig>
 export const resolveProviderConfig = (providers: PluginConfigProviders = {}) => {
   const openai = providers.openai ?? {}
   const anthropic = providers.anthropic ?? {}
+  const atlascloud = providers.atlascloud ?? {}
   const google = providers.google ?? {}
   const elevenLabs = providers.elevenLabs ?? {}
   const minimax = providers.minimax ?? {}
@@ -20,6 +22,11 @@ export const resolveProviderConfig = (providers: PluginConfigProviders = {}) => 
       authToken: anthropic.authToken ?? process.env.ANTHROPIC_AUTH_TOKEN,
       baseURL: anthropic.baseURL ?? process.env.ANTHROPIC_BASE_URL,
       headers: anthropic.headers,
+    },
+    atlascloud: {
+      apiKey: atlascloud.apiKey ?? process.env.ATLASCLOUD_API_KEY,
+      baseURL: atlascloud.baseURL ?? DEFAULT_ATLASCLOUD_BASE_URL,
+      headers: atlascloud.headers,
     },
     elevenLabs: {
       apiKey: elevenLabs.apiKey ?? process.env.ELEVENLABS_API_KEY,

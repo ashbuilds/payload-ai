@@ -80,6 +80,12 @@ export interface AnthropicProviderConfig {
   headers?: ProviderHeaders
 }
 
+export interface AtlasCloudProviderConfig {
+  apiKey?: string
+  baseURL?: string
+  headers?: ProviderHeaders
+}
+
 export interface ElevenLabsProviderConfig {
   apiKey?: string
 }
@@ -107,6 +113,7 @@ export interface OpenAIProviderConfig {
 
 export interface PluginConfigProviders {
   anthropic?: AnthropicProviderConfig
+  atlascloud?: AtlasCloudProviderConfig
   elevenLabs?: ElevenLabsProviderConfig
   google?: GoogleProviderConfig
   minimax?: MiniMaxProviderConfig

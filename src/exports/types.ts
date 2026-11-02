@@ -4,6 +4,7 @@ export type {
   ActionPrompt,
   ActionPromptOptions,
   AnthropicProviderConfig,
+  AtlasCloudProviderConfig,
   ElevenLabsProviderConfig,
   GenerationConfig,
   GenerationModel,
