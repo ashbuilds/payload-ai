@@ -1,46 +1,35 @@
 import { defineConfig, devices } from '@playwright/test'
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+const databaseDir = mkdtempSync(path.join(tmpdir(), 'payload-ai-e2e-'))
+const port = 3107
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
   testDir: './dev',
   testMatch: '**/e2e.spec.{ts,js}',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
+  retries: 0,
+  workers: 1,
+  timeout: 90_000,
+  reporter: [['list'], ['html', { open: 'never' }]],
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    baseURL: `http://localhost:${port}`,
+    trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm dev',
-    reuseExistingServer: true,
-    url: 'http://localhost:3000/admin',
+    command: `pnpm exec next dev dev --port ${port}`,
+    reuseExistingServer: false,
+    url: `http://localhost:${port}/admin`,
+    timeout: 180_000,
+    env: {
+      DATABASE_URI: `file:${path.join(databaseDir, 'test.db')}`,
+      PAYLOAD_SECRET: 'disposable-e2e-test-secret',
+      NEXT_TELEMETRY_DISABLED: '1',
+      PAYLOAD_AI_E2E: '1',
+    },
   },
 })

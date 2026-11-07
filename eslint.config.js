@@ -23,6 +23,7 @@ export const defaultESLintIgnores = [
 ]
 
 export default [
+  { ignores: [...defaultESLintIgnores, '**/playwright-report/**', '**/test-results/**'] },
   ...payloadEsLintConfig,
   {
     rules: {

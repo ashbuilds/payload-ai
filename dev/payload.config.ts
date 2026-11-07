@@ -12,6 +12,7 @@ import { nb } from '@payloadcms/translations/languages/nb'
 import { pl } from '@payloadcms/translations/languages/pl'
 import { ru } from '@payloadcms/translations/languages/ru'
 import { uk } from '@payloadcms/translations/languages/uk'
+import { existsSync } from 'node:fs'
 import path from 'path'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -23,7 +24,9 @@ import { testEmailAdapter } from './helpers/testEmailAdapter.js'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-process.loadEnvFile?.(path.resolve(dirname, '.env'))
+if (existsSync(path.resolve(dirname, '.env'))) {
+  process.loadEnvFile?.(path.resolve(dirname, '.env'))
+}
 
 if (!process.env.ROOT_DIR) {
   process.env.ROOT_DIR = dirname
@@ -80,7 +83,8 @@ const buildConfigWithMemoryDB = async () => {
         },
         debugging: process.env.NODE_ENV !== 'production',
         disableSponsorMessage: false,
-        generatePromptOnInit: process.env.NODE_ENV !== 'production',
+        generatePromptOnInit:
+          process.env.NODE_ENV !== 'production' && process.env.PAYLOAD_AI_E2E !== '1',
         mediaUpload: async (result, { collection, request }) => {
           return request.payload.create({
             collection,
@@ -92,6 +96,9 @@ const buildConfigWithMemoryDB = async () => {
         },
         providers: {
           openai: {
+            ...(process.env.PAYLOAD_AI_E2E === '1'
+              ? { apiKey: 'not-a-real-key', baseURL: 'http://127.0.0.1:1/v1' }
+              : {}),
             // Uncomment to test config-provided credentials. If omitted, the plugin falls back to standard provider env vars like OPENAI_API_KEY.
             // apiKey: process.env.PAYLOAD_AI_TEST_OPENAI_API_KEY
           },

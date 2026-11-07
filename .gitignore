@@ -29,3 +29,7 @@ dev/.next
 public/media
 dev/public/provider-icons
 .env
+
+# Browser regression artifacts
+playwright-report/
+test-results/
