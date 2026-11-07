@@ -8,6 +8,9 @@ on:
     branches:
       - main 
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,12 +24,12 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '22'
 
     - name: Install pnpm
       uses: pnpm/action-setup@eae0cfeb286e66ffb5155f1a79b90583a127a68b  # v2
       with:
-        version: 8
+        version: 10.20.0
 
     - name: Get pnpm store directory
       id: pnpm-cache
@@ -45,20 +48,14 @@ jobs:
     - name: Install dependencies
       run: pnpm install --frozen-lockfile
 
+    - name: Test
+      run: pnpm test:int
+
     - name: Build
       run: pnpm build
 
-    - name: Commit, fetch, rebase, and push if changed
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add -A
-        git add -f dist  # Force add the dist folder
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "Automated build"
-          git fetch origin ${{ github.ref_name }}
-          git rebase origin/${{ github.ref_name }}
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
-        fi
+    - name: Install Chromium
+      run: pnpm exec playwright install --with-deps chromium
+
+    - name: Browser regression tests
+      run: pnpm test:e2e

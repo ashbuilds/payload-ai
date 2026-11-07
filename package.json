@@ -109,11 +109,11 @@
     "copyfiles": "2.4.1",
     "cross-env": "^7.0.3",
     "eslint": "^9.23.0",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.1",
     "graphql": "^16.8.1",
     "lexical": "0.50.0",
     "mongodb-memory-server": "10.1.4",
-    "next": "16.3.8",
+    "next": "16.4.1",
     "open": "^10.1.0",
     "payload": "3.90.2",
     "prettier": "^3.4.2",
@@ -125,7 +125,8 @@
     "sort-package-json": "^2.10.0",
     "typescript": "5.7.3",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "4.1.11"
+    "vitest": "4.1.12",
+    "vite": "7.3.7"
   },
   "peerDependencies": {
     "@lexical/html": "^0.50.0",
@@ -173,7 +174,10 @@
       "esbuild",
       "mongodb-memory-server",
       "sharp"
-    ]
+    ],
+    "patchedDependencies": {
+      "deepmerge@4.3.1": "patches/deepmerge@4.3.1.patch"
+    }
   },
   "registry": "https://registry.npmjs.org/",
   "dependencies": {
@@ -201,7 +205,7 @@
     "react-mentions": "^4.4.10",
     "scroll-into-view-if-needed": "^3.1.0",
     "textarea-caret": "^3.0.2",
-    "zod": "^4.4.3"
+    "zod": "^4.6.6"
   },
   "resolutions": {
     "http-cache-semantics": "4.3.0",
@@ -216,9 +220,8 @@
     "ai": "6.0.233",
     "form-data": "4.0.6",
     "flatted": "3.4.2",
-    "fast-uri": "4.1.5",
+    "fast-uri": "4.2.3",
     "minimatch@3.1.2": "3.1.4",
-    "minimatch@9.0.5": "9.0.7",
     "picomatch@2.3.1": "2.3.2",
     "postcss": "8.5.28",
     "picomatch@4.0.3": "4.0.4",
@@ -229,19 +232,23 @@
     "jws": "4.0.1",
     "@babel/runtime": "7.26.10",
     "piscina": "4.9.4",
-    "qs": "6.16.0",
+    "qs": "6.16.1",
     "rollup": "4.60.1",
     "sharp": "0.35.5",
-    "follow-redirects": "1.16.0",
+    "follow-redirects": "1.16.2",
     "mongoose": "8.24.1",
-    "undici": "7.29.1",
-    "vite": "7.3.5",
+    "undici": "7.30.1",
+    "vite": "7.3.7",
     "js-yaml": "4.3.2",
     "svelte": "5.55.7",
     "uuid": "11.1.1",
     "yaml": "1.10.3",
     "yauzl": "3.2.1",
     "esbuild": "0.25.0",
-    "ws": "8.21.1"
+    "ws": "8.21.1",
+    "happy-dom": "21.0.4",
+    "zod": "^4.6.6",
+    "glob@>=9 <14.0.2": "14.0.2",
+    "minimatch@>=7 <11.0.1": "11.0.1"
   }
 }
