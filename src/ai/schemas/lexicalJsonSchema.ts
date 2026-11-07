@@ -365,10 +365,13 @@ export const documentSchema: LexicalNodeSchema = {
         },
         children: {
           type: 'array',
+          description:
+            'Inline content and nested lists. For a bold label followed by a description on a new line, insert a linebreak node between them. For same-line text, include the separating space or punctuation in the text. Do not wrap list item content in paragraph nodes: Lexical removes those wrappers.',
           items: {
             anyOf: [
-              { $ref: '#/definitions/ParagraphNode' },
               { $ref: '#/definitions/TextNode' },
+              { $ref: '#/definitions/LinkNode' },
+              { $ref: '#/definitions/TabNode' },
               { $ref: '#/definitions/ListNode' },
               { $ref: '#/definitions/LineBreakNode' },
             ],

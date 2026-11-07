@@ -163,6 +163,36 @@ const isRenderableNode = (node: unknown, knownTypes?: null | ReadonlySet<string>
   return type !== 'heading' || (typeof tag === 'string' && RENDERABLE_HEADING_TAGS.has(tag))
 }
 
+const normalizeListItemChildren = (children: LexicalNodeJSON[]): LexicalNodeJSON[] => {
+  const normalized: LexicalNodeJSON[] = []
+  let previous: LexicalNodeJSON | undefined
+
+  for (const child of children) {
+    // ListItemNode.append unwraps paragraphs without preserving their boundaries.
+    // Convert those boundaries before parsing, while their meaning is still available.
+    // Never infer a boundary from bold/normal text: those may be parts of one word.
+    const content = child.type === 'paragraph' ? (child.children ?? []) : [child]
+    if (content.length === 0) {
+      continue
+    }
+    const last = normalized[normalized.length - 1]
+    if (
+      last &&
+      (previous?.type === 'paragraph' || child.type === 'paragraph') &&
+      last.type !== 'list' &&
+      content[0].type !== 'list' &&
+      last.type !== 'linebreak' &&
+      content[0].type !== 'linebreak'
+    ) {
+      normalized.push({ type: 'linebreak', version: 1 })
+    }
+    normalized.push(...content)
+    previous = child
+  }
+
+  return normalized
+}
+
 /**
  * Recursively drops nodes Lexical cannot render (see `isRenderableNode`). Without
  * `knownTypes` - the editor's registered node types - the type check is limited to the shape.
@@ -178,11 +208,16 @@ export const sanitizeLexicalChildren = (
 ): LexicalNodeJSON[] =>
   (Array.isArray(children) ? children : [])
     .filter((node): node is LexicalNodeJSON => isRenderableNode(node, knownTypes))
-    .map((node) =>
-      Array.isArray(node.children)
-        ? { ...node, children: sanitizeLexicalChildren(node.children, knownTypes) }
-        : node,
-    )
+    .map((node) => {
+      if (!Array.isArray(node.children)) {
+        return node
+      }
+      const children = sanitizeLexicalChildren(node.children, knownTypes)
+      return {
+        ...node,
+        children: node.type === 'listitem' ? normalizeListItemChildren(children) : children,
+      }
+    })
 
 const normalizeRoot = (root: Record<string, unknown>) => {
   if (!Array.isArray(root.children)) {
@@ -265,7 +300,12 @@ export const setSafeLexicalState = (
   editorInstance?: LexicalEditor | null,
   options: SetSafeLexicalStateOptions = {},
 ) => {
-  const { logErrors = true, onApplyError, originalRoot = null, skipScrollIntoView = false } = options
+  const {
+    logErrors = true,
+    onApplyError,
+    originalRoot = null,
+    skipScrollIntoView = false,
+  } = options
 
   if (!editorInstance) {
     if (logErrors) {
@@ -298,7 +338,10 @@ export const setSafeLexicalState = (
     const currentRoot = originalRoot ?? editorInstance.getEditorState().toJSON()?.root
     // Preserved blocks come from an already committed state and are merged in after sanitizing,
     // so they are never subject to it.
-    sanitizedState.root.children = reinsertPreservedBlocks(currentRoot, sanitizedState.root.children)
+    sanitizedState.root.children = reinsertPreservedBlocks(
+      currentRoot,
+      sanitizedState.root.children,
+    )
 
     editorState = editorInstance.parseEditorState(sanitizedState as any)
   } catch (error) {
