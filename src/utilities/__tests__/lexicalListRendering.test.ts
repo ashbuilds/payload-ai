@@ -17,10 +17,10 @@ it('renders a bold list label above its description, including after a save/relo
     ['Curiosity is the gateway.', 0],
   ].map(([text, format]) => ({
     type: 'paragraph',
-    indent: 0,
-    format: '',
-    direction: null,
     children: [{ type: 'text', detail: 0, format, mode: 'normal', style: '', text, version: 1 }],
+    direction: null,
+    format: '',
+    indent: 0,
     version: 1,
   }))
   const state = {
@@ -29,20 +29,20 @@ it('renders a bold list label above its description, including after a save/relo
       children: [
         {
           type: 'list',
-          indent: 0,
-          format: '',
-          direction: null,
           children: [
             {
               type: 'listitem',
-              indent: 0,
-              format: '',
-              direction: null,
               children: paragraphs,
+              direction: null,
+              format: '',
+              indent: 0,
               value: 1,
               version: 1,
             },
           ],
+          direction: null,
+          format: '',
+          indent: 0,
           listType: 'bullet',
           start: 1,
           tag: 'ul',
