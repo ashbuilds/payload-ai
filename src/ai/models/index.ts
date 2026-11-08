@@ -2,6 +2,7 @@ import type { GenerationModel, PluginConfigProviders } from '../../types.js'
 
 import { resolveProviderConfig } from '../providers/resolveProviderConfig.js'
 import { createAnthropicConfig } from './anthropic/index.js'
+import { createAtlasCloudConfig } from './atlascloud/index.js'
 import { createElevenLabsConfig } from './elevenLabs/index.js'
 import { createGoogleConfig } from './google/index.js'
 import { createMiniMaxConfig } from './minimax/index.js'
@@ -18,6 +19,9 @@ export const getDefaultGenerationModels = (
       ? createAnthropicConfig(resolvedProviders.anthropic).models
       : []),
     ...(resolvedProviders.google.apiKey ? createGoogleConfig(resolvedProviders.google).models : []),
+    ...(resolvedProviders.atlascloud.apiKey
+      ? createAtlasCloudConfig(resolvedProviders.atlascloud).models
+      : []),
     ...(resolvedProviders.elevenLabs.apiKey
       ? createElevenLabsConfig(resolvedProviders.elevenLabs).models
       : []),
