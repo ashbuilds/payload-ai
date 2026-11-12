@@ -236,7 +236,7 @@
     "rollup": "4.60.1",
     "sharp": "0.35.5",
     "follow-redirects": "1.16.2",
-    "mongoose": "8.24.1",
+    "mongoose": "8.24.7",
     "undici": "7.30.1",
     "vite": "7.3.7",
     "js-yaml": "4.3.2",
