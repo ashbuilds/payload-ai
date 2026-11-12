@@ -1,3 +1,27 @@
+# OpenAI text model retirements
+
+The built-in text and rich-text handlers now offer GPT-5.6 Sol, Terra, and Luna.
+For the OpenAI API, saved GPT-5 / GPT-5 mini / GPT-5 nano selections (including
+2025-08-07 snapshots) resolve to Sol / Terra / Luna respectively. GPT-4 Turbo
+(and its 2024-04-09 snapshot) resolves to Sol; GPT-3.5 Turbo (and its 0125
+snapshot) resolves to Terra. These replacements follow the
+[OpenAI deprecation guide](https://developers.openai.com/api/docs/deprecations).
+The older GPT-4 Turbo and GPT-3.5 Turbo models retired October 23, 2026;
+the listed GPT-5 models retire December 11, 2026.
+
+Legacy values remain in the picker with explicit replacement labels so saved
+instructions can still be opened and validated. No database rewrite is needed;
+the replacement is applied when generating, immediately after upgrading.
+Select the replacement explicitly to update a saved instruction. Unknown model
+IDs and custom OpenAI-compatible endpoints pass through unchanged.
+
+Text and rich-text defaults remain GPT-4o mini and GPT-4o respectively. Review
+replacement model access, pricing, output quality, and reasoning/token behavior
+before deploying. The AI SDK omits temperature for the replacement reasoning
+models at their default reasoning effort. The GPT-4 series has a separate January 14, 2027 retirement;
+plan an explicit review of those defaults before that date. This update does
+not migrate image or speech models.
+
 # OpenAI GPT Image model update
 
 OpenAI [retires `gpt-image-1` on October 23, 2026](https://developers.openai.com/api/docs/deprecations).
