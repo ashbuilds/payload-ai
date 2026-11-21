@@ -18,11 +18,18 @@
 
 ## 🚀 What is this?
 
-The Payload AI Plugin is your secret weapon for turbocharged content creation. It seamlessly integrates cutting-edge AI capabilities directly into [Payload CMS](https://payloadcms.com), turning your content workflow from tedious to tremendous.
+Payload AI adds AI-assisted content workflows to [Payload CMS](https://payloadcms.com). Generate and edit text, create images and synthesize voice from the CMS, with configurable providers, field-level prompts and access control.
+
+### Engineering overview
+
+- **CMS integration:** AI controls sit alongside content fields and the rich-text editor.
+- **Extensibility:** provider and model configuration lets projects adapt generation to their requirements.
+- **Permissions:** generation and document/media access follow explicitly configured access rules; see the advanced configuration below.
+- **Contributor workflow:** the repository includes a development app, Vitest integration tests and Playwright end-to-end tests.
 
 ### 🎥 See It in Action
 
-- **[Quick Demo](https://youtu.be/qaYukeGpuu4)** - Watch the magic happen
+- **[Quick Demo](https://youtu.be/qaYukeGpuu4)** - See the plugin inside Payload CMS
 - **[Extended Demo](https://youtu.be/LEsuHbKalNY)** - Deep dive into all features
 - **[Customization Guide](guide.md)** - Make it your own
 
