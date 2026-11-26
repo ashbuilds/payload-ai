@@ -17,4 +17,4 @@ export const PLUGIN_TRUNCATED_MARKER = '\u0000'
 
 // LLM Settings
 export const PLUGIN_DEFAULT_OPENAI_MODEL = `gpt-4o-mini`
-export const PLUGIN_DEFAULT_ANTHROPIC_MODEL = `claude-3-5-sonnet-latest`
+export const PLUGIN_DEFAULT_ANTHROPIC_MODEL = `claude-sonnet-4-6`

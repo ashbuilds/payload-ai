@@ -5,17 +5,13 @@ import type { GenerationConfig } from '../../../types.js'
 import { defaultSystemPrompt } from '../../prompts.js'
 import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 import { generateObject } from '../generateObject.js'
+import {
+  DEFAULT_ANTHROPIC_TEXT_MODEL,
+  getAnthropicTextModelOptions,
+  resolveAnthropicTextModel,
+} from './textModel.js'
 
 const MODEL_KEY = 'ANTH-C'
-const MODELS = [
-  'claude-opus-4-1',
-  'claude-opus-4-0',
-  'claude-sonnet-4-0',
-  'claude-3-opus-latest',
-  'claude-3-5-haiku-latest',
-  'claude-3-5-sonnet-latest',
-  'claude-3-7-sonnet-latest',
-]
 
 type AnthropicResolvedProviderConfig = ReturnType<typeof resolveProviderConfig>['anthropic']
 
@@ -53,7 +49,7 @@ export const createAnthropicConfig = (
               ...options,
               system: options.system || defaultSystemPrompt,
             },
-            anthropic(options.model),
+            anthropic(resolveAnthropicTextModel(options.model, providerConfig.baseURL)),
           )
         },
         output: 'text',
@@ -69,9 +65,9 @@ export const createAnthropicConfig = (
             {
               name: 'model',
               type: 'select',
-              defaultValue: 'claude-3-5-sonnet-latest',
+              defaultValue: DEFAULT_ANTHROPIC_TEXT_MODEL,
               label: 'Model',
-              options: MODELS,
+              options: getAnthropicTextModelOptions(providerConfig.baseURL),
             },
             {
               type: 'row',
@@ -109,7 +105,7 @@ export const createAnthropicConfig = (
               ...options,
               system: options.system || defaultSystemPrompt,
             },
-            anthropic(options.model),
+            anthropic(resolveAnthropicTextModel(options.model, providerConfig.baseURL)),
           )
         },
         output: 'text',
@@ -125,9 +121,9 @@ export const createAnthropicConfig = (
             {
               name: 'model',
               type: 'select',
-              defaultValue: 'claude-3-5-sonnet-latest',
+              defaultValue: DEFAULT_ANTHROPIC_TEXT_MODEL,
               label: 'Model',
-              options: MODELS,
+              options: getAnthropicTextModelOptions(providerConfig.baseURL),
             },
             {
               type: 'row',
