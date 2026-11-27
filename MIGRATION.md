@@ -1,3 +1,26 @@
+# Anthropic Claude model retirements
+
+Every Claude model the built-in text and rich-text handlers offered is now
+retired by Anthropic, and the Messages API returns a 404 `not_found_error` for
+them ([model deprecations](https://platform.claude.com/docs/en/about-claude/model-deprecations)):
+Claude 3.5 Sonnet (October 28, 2025), Claude 3 Opus (January 5, 2026),
+Claude 3.5 Haiku and Claude 3.7 Sonnet (February 19, 2026), Claude Opus 4 and
+Sonnet 4 (June 15, 2026), and Claude Opus 4.1 (August 5, 2026).
+
+The picker now offers Claude Sonnet 4.6, Opus 4.6 and Haiku 4.5, and the text,
+rich-text and system-generation defaults are Claude Sonnet 4.6. For the
+Anthropic API, saved Claude 3.5 Sonnet / 3.7 Sonnet / Sonnet 4 selections resolve
+to Sonnet 4.6, Claude 3 Opus / Opus 4 / Opus 4.1 resolve to Opus 4.6, and
+Claude 3.5 Haiku resolves to Haiku 4.5.
+
+Legacy values remain in the picker with explicit replacement labels so saved
+instructions can still be opened and validated. No database rewrite is needed;
+the replacement is applied when generating. Select the replacement explicitly to
+update a saved instruction. Unknown model IDs and custom Anthropic-compatible
+endpoints (`baseURL` other than `https://api.anthropic.com`) pass through
+unchanged. The replacements accept the `temperature` setting the handlers send;
+the Claude 5 models do not, so they are not added here.
+
 # OpenAI text model retirements
 
 The built-in text and rich-text handlers now offer GPT-5.6 Sol, Terra, and Luna.
