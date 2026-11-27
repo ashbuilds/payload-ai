@@ -121,3 +121,20 @@ mediaUpload: async (result, { collection, request }) =>
 Test an allowed user and a denied user, including tenant-specific media. Check reference-image editing, text attachments if enabled, and generated-media creation. Built-in text models pass resolved image bytes to the AI SDK and disable its automatic attachment downloads. Application-defined models, resolvers, hooks, and upload callbacks remain responsible for their own behavior.
 
 Validation for this release includes real Payload Local API checks, authenticated HTTP requests with local disk storage, and storage/attachment tests on Node 20 and Node 22. Cloud object storage and hosted deployment testing were deferred; no hosting-platform certification is implied.
+
+## Live text model discovery
+
+OpenAI and Anthropic text/rich-text settings now fetch a cached model inventory through an authenticated, settings-access-controlled Payload endpoint. API keys and custom provider headers stay on the server. Official endpoints enable discovery by default; set `providers.openai.modelDiscovery` or `providers.anthropic.modelDiscovery` to `false` to disable it. Custom gateways retain bundled/manual model IDs unless explicitly opted in with `modelDiscovery: true`.
+
+The picker retains existing selections and offers manual model IDs when discovery is unavailable. Model fields now store text rather than select enums; regenerate your Payload import map and generated types. SQL installations should generate and review their usual Payload schema migration for these four fields before deploying. No instruction values are rewritten.
+
+This reduces manual model-list maintenance, but does **not** automatically support every future model or parameter:
+
+- OpenAI's Models API lists IDs, not endpoint compatibility or accepted parameters. The picker filters obvious non-text models but labels the remainder as candidates; an unrecognized or incompatible model can still be rejected by the generation API.
+- Anthropic metadata explicitly identifies structured-output support and output-token limits when available. Unsupported models are omitted from discovery. Requested output tokens are capped at the reported limit for an exact selected model after legacy-ID resolution, never increased. If metadata is unavailable, the existing token setting is preserved.
+- Sampling support is not exposed as a reliable per-model schema. Native Anthropic temperature is conservatively hidden/omitted; native OpenAI temperature remains enabled only for the bundled GPT-4o, GPT-4o-mini and GPT-4.1 choices. Unknown/reasoning models omit it rather than receiving a forced default. Custom gateways retain prior sampling behavior.
+- Discovery uses Anthropic's newer metadata API version on the official endpoint; generation keeps the SDK's existing API version. Thinking, effort, tools, image and speech controls are not inferred or automatically enabled.
+
+Custom Anthropic gateway prompt seeding retains the prior `claude-3-5-sonnet-latest` ID; direct Anthropic seeding uses the updated default. An explicit `generateText` override remains authoritative.
+
+References: [OpenAI Models API](https://platform.openai.com/docs/api-reference/models/list), [Anthropic Models API](https://platform.claude.com/docs/en/api/models/list).

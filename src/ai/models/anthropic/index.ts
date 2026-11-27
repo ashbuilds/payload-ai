@@ -3,11 +3,13 @@ import { createAnthropic } from '@ai-sdk/anthropic'
 import type { GenerationConfig } from '../../../types.js'
 
 import { defaultSystemPrompt } from '../../prompts.js'
+import { createModelInventory } from '../../providers/modelInventory.js'
 import { resolveProviderConfig } from '../../providers/resolveProviderConfig.js'
 import { generateObject } from '../generateObject.js'
 import {
   DEFAULT_ANTHROPIC_TEXT_MODEL,
   getAnthropicTextModelOptions,
+  isAnthropicEndpoint,
   resolveAnthropicTextModel,
 } from './textModel.js'
 
@@ -18,6 +20,13 @@ type AnthropicResolvedProviderConfig = ReturnType<typeof resolveProviderConfig>[
 export const createAnthropicConfig = (
   providerConfig: AnthropicResolvedProviderConfig = resolveProviderConfig().anthropic,
 ): GenerationConfig => {
+  const inventory = createModelInventory({ ...resolveProviderConfig(), anthropic: providerConfig })
+  const capTokens = async (model: string, maxTokens?: number) => {
+    const metadata = (await inventory('anthropic')).models.find((item) => item.id === model)
+    return metadata?.maxOutputTokens
+      ? Math.min(maxTokens || 5000, metadata.maxOutputTokens)
+      : maxTokens
+  }
   const anthropic = createAnthropic({
     apiKey: providerConfig.apiKey,
     authToken: providerConfig.authToken,
@@ -31,7 +40,7 @@ export const createAnthropicConfig = (
         id: `${MODEL_KEY}-text`,
         name: 'Anthropic Claude',
         fields: ['text', 'textarea'],
-        handler: (
+        handler: async (
           prompt: string,
           options: {
             extractAttachments?: boolean
@@ -47,6 +56,11 @@ export const createAnthropicConfig = (
             prompt,
             {
               ...options,
+              maxTokens: await capTokens(
+                resolveAnthropicTextModel(options.model, providerConfig.baseURL),
+                options.maxTokens,
+              ),
+              omitTemperature: isAnthropicEndpoint(providerConfig.baseURL),
               system: options.system || defaultSystemPrompt,
             },
             anthropic(resolveAnthropicTextModel(options.model, providerConfig.baseURL)),
@@ -64,10 +78,20 @@ export const createAnthropicConfig = (
           fields: [
             {
               name: 'model',
-              type: 'select',
+              type: 'text',
+              admin: {
+                components: {
+                  Field: {
+                    clientProps: {
+                      fallbackOptions: getAnthropicTextModelOptions(providerConfig.baseURL),
+                      provider: 'anthropic',
+                    },
+                    path: '@ai-stack/payloadcms/fields#ModelField',
+                  },
+                },
+              },
               defaultValue: DEFAULT_ANTHROPIC_TEXT_MODEL,
               label: 'Model',
-              options: getAnthropicTextModelOptions(providerConfig.baseURL),
             },
             {
               type: 'row',
@@ -80,6 +104,7 @@ export const createAnthropicConfig = (
                 {
                   name: 'temperature',
                   type: 'number',
+                  admin: { hidden: isAnthropicEndpoint(providerConfig.baseURL) },
                   defaultValue: 0.7,
                   max: 1,
                   min: 0,
@@ -98,11 +123,16 @@ export const createAnthropicConfig = (
         id: `${MODEL_KEY}-object`,
         name: 'Anthropic Claude',
         fields: ['richText'],
-        handler: (text: string, options) => {
+        handler: async (text: string, options) => {
           return generateObject(
             text,
             {
               ...options,
+              maxTokens: await capTokens(
+                resolveAnthropicTextModel(options.model, providerConfig.baseURL),
+                options.maxTokens,
+              ),
+              omitTemperature: isAnthropicEndpoint(providerConfig.baseURL),
               system: options.system || defaultSystemPrompt,
             },
             anthropic(resolveAnthropicTextModel(options.model, providerConfig.baseURL)),
@@ -120,10 +150,20 @@ export const createAnthropicConfig = (
           fields: [
             {
               name: 'model',
-              type: 'select',
+              type: 'text',
+              admin: {
+                components: {
+                  Field: {
+                    clientProps: {
+                      fallbackOptions: getAnthropicTextModelOptions(providerConfig.baseURL),
+                      provider: 'anthropic',
+                    },
+                    path: '@ai-stack/payloadcms/fields#ModelField',
+                  },
+                },
+              },
               defaultValue: DEFAULT_ANTHROPIC_TEXT_MODEL,
               label: 'Model',
-              options: getAnthropicTextModelOptions(providerConfig.baseURL),
             },
             {
               type: 'row',
@@ -136,6 +176,7 @@ export const createAnthropicConfig = (
                 {
                   name: 'temperature',
                   type: 'number',
+                  admin: { hidden: isAnthropicEndpoint(providerConfig.baseURL) },
                   defaultValue: 0.7,
                   max: 1,
                   min: 0,

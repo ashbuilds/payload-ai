@@ -20,6 +20,7 @@ export const resolveProviderConfig = (providers: PluginConfigProviders = {}) => 
       authToken: anthropic.authToken ?? process.env.ANTHROPIC_AUTH_TOKEN,
       baseURL: anthropic.baseURL ?? process.env.ANTHROPIC_BASE_URL,
       headers: anthropic.headers,
+      modelDiscovery: anthropic.modelDiscovery,
     },
     elevenLabs: {
       apiKey: elevenLabs.apiKey ?? process.env.ELEVENLABS_API_KEY,
@@ -38,6 +39,7 @@ export const resolveProviderConfig = (providers: PluginConfigProviders = {}) => 
       apiKey: openai.apiKey ?? process.env.OPENAI_API_KEY,
       baseURL: openai.baseURL ?? process.env.OPENAI_BASE_URL ?? DEFAULT_OPENAI_BASE_URL,
       headers: openai.headers,
+      modelDiscovery: openai.modelDiscovery,
       organization: openai.organization ?? openai.orgId ?? process.env.OPENAI_ORG_ID,
       project: openai.project ?? process.env.OPENAI_PROJECT,
     },

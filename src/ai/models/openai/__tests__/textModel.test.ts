@@ -49,16 +49,21 @@ describe('OpenAI text model migration', () => {
         expect.objectContaining({ maxTokens: 100 }),
         expect.objectContaining({ modelId: 'gpt-5.6-terra' }),
       )
-      expect(model.settings).toMatchObject({
-        fields: expect.arrayContaining([
-          expect.objectContaining({
-            name: 'model',
-            options: expect.arrayContaining([
-              'gpt-5.6-terra',
-              { label: 'gpt-5-mini (uses gpt-5.6-terra)', value: 'gpt-5-mini' },
-            ]),
-          }),
-        ]),
+      const field = model.settings?.fields.find(
+        (field) => 'name' in field && field.name === 'model',
+      )
+      expect(field).toMatchObject({
+        type: 'text',
+        admin: {
+          components: {
+            Field: {
+              clientProps: {
+                fallbackOptions: getOpenAITextModelOptions(provider.baseURL),
+                provider: 'openai',
+              },
+            },
+          },
+        },
       })
     },
   )

@@ -15,6 +15,8 @@ export const PLUGIN_FETCH_FIELDS_ENDPOINT = `${PLUGIN_API_ENDPOINT_BASE}/fetch-f
  */
 export const PLUGIN_TRUNCATED_MARKER = '\u0000'
 
+export const PLUGIN_MODELS_ENDPOINT = `${PLUGIN_API_ENDPOINT_BASE}/models`
+
 // LLM Settings
 export const PLUGIN_DEFAULT_OPENAI_MODEL = `gpt-4o-mini`
 export const PLUGIN_DEFAULT_ANTHROPIC_MODEL = `claude-sonnet-4-6`

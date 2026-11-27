@@ -90,3 +90,56 @@ test('authenticated post create, read, update and delete preserve rich text', as
     expect((await request.delete(`/api/posts/${doc.id}`)).ok()).toBe(true)
   }
 })
+
+test('Compose Settings discovers models and keeps a saved custom ID when offline', async ({
+  page,
+}) => {
+  expect((await page.request.post('/api/users/login', { data: credentials })).ok()).toBe(true)
+
+  const created = await page.request.post('/api/plugin-ai-instructions', {
+    data: {
+      'field-type': 'text',
+      'model-id': 'Oai-text',
+      'Oai-text-settings': { model: 'custom-saved-model' },
+      'schema-path': 'posts.model-discovery-test',
+    },
+  })
+  expect(created.ok(), await created.text()).toBe(true)
+  const { doc } = await created.json()
+  const inventoryRoute = /\/api\/plugin-ai\/models\?provider=openai$/
+  const modelID = page.locator('#field-Oai-text-settings__model')
+
+  try {
+    await page.route(inventoryRoute, (route) =>
+      route.fulfill({
+        json: {
+          models: [{ id: 'gpt-fixture-live', label: 'Discovered fixture model' }],
+          source: 'live',
+        },
+      }),
+    )
+    await page.goto(`/admin/collections/plugin-ai-instructions/${doc.id}`)
+    await expect(modelID).toHaveValue('custom-saved-model')
+    await expect(page.getByText(/OpenAI lists candidate models/)).toBeVisible()
+    await page.locator('#field-Oai-text-settings__model-catalog').getByRole('combobox').click()
+    await page.getByText('Discovered fixture model', { exact: true }).click()
+    await expect(modelID).toHaveValue('gpt-fixture-live')
+
+    await modelID.fill('custom-user-model')
+    const update = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'PATCH' &&
+        new URL(response.url()).pathname === `/api/plugin-ai-instructions/${doc.id}`,
+    )
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    expect((await update).ok()).toBe(true)
+
+    await page.unroute(inventoryRoute)
+    await page.route(inventoryRoute, (route) => route.abort())
+    await page.reload()
+    await expect(modelID).toHaveValue('custom-user-model')
+    await expect(page.getByText(/Live model discovery unavailable/)).toBeVisible()
+  } finally {
+    expect((await page.request.delete(`/api/plugin-ai-instructions/${doc.id}`)).ok()).toBe(true)
+  }
+})

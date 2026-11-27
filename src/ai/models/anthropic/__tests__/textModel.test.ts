@@ -42,7 +42,9 @@ describe('Anthropic text model migration', () => {
   it.each(['ANTH-C-text', 'ANTH-C-object'])(
     'migrates saved values in the %s handler and picker',
     async (id) => {
-      const provider = resolveProviderConfig({ anthropic: { apiKey: 'test' } }).anthropic
+      const provider = resolveProviderConfig({
+        anthropic: { apiKey: 'test', modelDiscovery: false },
+      }).anthropic
       const model = createAnthropicConfig(provider).models.find((model) => model.id === id)!
       await model.handler!('Example', { maxTokens: 100, model: 'claude-3-5-sonnet-latest' })
       expect(generateObject).toHaveBeenCalledWith(
@@ -50,20 +52,21 @@ describe('Anthropic text model migration', () => {
         expect.objectContaining({ maxTokens: 100 }),
         expect.objectContaining({ modelId: 'claude-sonnet-4-6' }),
       )
-      expect(model.settings).toMatchObject({
-        fields: expect.arrayContaining([
-          expect.objectContaining({
-            name: 'model',
-            defaultValue: 'claude-sonnet-4-6',
-            options: expect.arrayContaining([
-              'claude-sonnet-4-6',
-              {
-                label: 'claude-3-5-sonnet-latest (uses claude-sonnet-4-6)',
-                value: 'claude-3-5-sonnet-latest',
+      const field = model.settings?.fields.find(
+        (field) => 'name' in field && field.name === 'model',
+      )
+      expect(field).toMatchObject({
+        type: 'text',
+        admin: {
+          components: {
+            Field: {
+              clientProps: {
+                fallbackOptions: getAnthropicTextModelOptions(provider.baseURL),
+                provider: 'anthropic',
               },
-            ]),
-          }),
-        ]),
+            },
+          },
+        },
       })
     },
   )

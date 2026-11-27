@@ -7,6 +7,7 @@ import type { PluginConfig } from './types.js'
 import { lexicalJsonSchema } from './ai/schemas/lexicalJsonSchema.js'
 import { instructionsCollection } from './collections/Instructions.js'
 import { PLUGIN_NAME } from './defaults.js'
+import { modelInventoryEndpoint } from './endpoints/modelInventory.js'
 import { fetchFields } from './endpoints/fetchFields.js'
 import { endpoints } from './endpoints/index.js'
 import { init } from './init.js'
@@ -190,6 +191,7 @@ const payloadAiPlugin =
           pluginEndpoints.textarea,
           pluginEndpoints.upload,
           fetchFields(pluginConfig),
+          modelInventoryEndpoint(pluginConfig),
         ],
         globals: globals.map((global) => {
           if (globalsSlugs?.[global.slug]) {
