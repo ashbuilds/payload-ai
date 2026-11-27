@@ -11,16 +11,18 @@ export interface GenerateObjectOptions {
 
   extractAttachments?: boolean
   maxTokens?: number
+  /** Provider handlers omit sampling when model support is unknown. */
+  omitTemperature?: boolean
   // Provider-specific passthrough options (e.g., OpenAI strictJsonSchema)
   providerOptions?: Record<string, any>
   /** Injected by the endpoint; never sourced from saved model settings. */
   resolvePromptImage?: (url: string) => Promise<Blob>
+
   // Structured output schema (JSON Schema for object generation)
   schema?: Record<string, any>
 
   // Common generation options
   system?: string
-
   temperature?: number
 }
 
@@ -49,7 +51,7 @@ export const generateObject = async (
     prompt,
     schema: jsonSchema(options.schema as any),
     system: options.system,
-    temperature: options.temperature ?? 0.7,
+    ...(options.omitTemperature ? {} : { temperature: options.temperature ?? 0.7 }),
     ...(options.providerOptions ? { providerOptions: options.providerOptions } : {}),
   })
 

@@ -74,6 +74,8 @@ export type ReferenceImageResolver = (args: {
 type ProviderHeaders = Record<string, string>
 
 export interface AnthropicProviderConfig {
+  /** Discover models on the server. Defaults to true for the official endpoint, false for gateways. */
+  modelDiscovery?: boolean
   apiKey?: string
   authToken?: string
   baseURL?: string
@@ -97,6 +99,8 @@ export interface MiniMaxProviderConfig {
 }
 
 export interface OpenAIProviderConfig {
+  /** Discover models on the server. Defaults to true for the official endpoint, false for gateways. */
+  modelDiscovery?: boolean
   apiKey?: string
   baseURL?: string
   headers?: ProviderHeaders

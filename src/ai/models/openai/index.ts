@@ -12,7 +12,7 @@ import { generateImage } from './generateImage.js'
 import { generateVoice } from './generateVoice.js'
 import { DEFAULT_GPT_IMAGE_MODEL } from './imageModel.js'
 import { createOpenAIProvider } from './openai.js'
-import { getOpenAITextModelOptions, resolveOpenAITextModel } from './textModel.js'
+import { getOpenAITextModelOptions, isOpenAIEndpoint, resolveOpenAITextModel } from './textModel.js'
 
 const MODEL_KEY = 'Oai'
 
@@ -44,6 +44,9 @@ export const createOpenAIConfig = (
             prompt,
             {
               ...options,
+              omitTemperature:
+                isOpenAIEndpoint(providerConfig.baseURL) &&
+                !['gpt-4.1', 'gpt-4o', 'gpt-4o-mini'].includes(options.model),
               providerOptions: {
                 openai: {
                   strictJsonSchema: true,
@@ -67,10 +70,20 @@ export const createOpenAIConfig = (
           fields: [
             {
               name: 'model',
-              type: 'select',
+              type: 'text',
+              admin: {
+                components: {
+                  Field: {
+                    clientProps: {
+                      fallbackOptions: getOpenAITextModelOptions(providerConfig.baseURL),
+                      provider: 'openai',
+                    },
+                    path: '@ai-stack/payloadcms/fields#ModelField',
+                  },
+                },
+              },
               defaultValue: 'gpt-4o-mini',
               label: 'Model',
-              options: getOpenAITextModelOptions(providerConfig.baseURL),
             },
             {
               type: 'row',
@@ -83,6 +96,12 @@ export const createOpenAIConfig = (
                 {
                   name: 'temperature',
                   type: 'number',
+                  admin: isOpenAIEndpoint(providerConfig.baseURL)
+                    ? {
+                        condition: (_data, siblingData) =>
+                          ['gpt-4.1', 'gpt-4o', 'gpt-4o-mini'].includes(siblingData.model),
+                      }
+                    : {},
                   defaultValue: 0.7,
                   max: 1,
                   min: 0,
@@ -341,6 +360,9 @@ export const createOpenAIConfig = (
             text,
             {
               ...options,
+              omitTemperature:
+                isOpenAIEndpoint(providerConfig.baseURL) &&
+                !['gpt-4.1', 'gpt-4o', 'gpt-4o-mini'].includes(options.model),
               providerOptions: {
                 openai: {
                   strictJsonSchema: true,
@@ -364,10 +386,20 @@ export const createOpenAIConfig = (
           fields: [
             {
               name: 'model',
-              type: 'select',
+              type: 'text',
+              admin: {
+                components: {
+                  Field: {
+                    clientProps: {
+                      fallbackOptions: getOpenAITextModelOptions(providerConfig.baseURL),
+                      provider: 'openai',
+                    },
+                    path: '@ai-stack/payloadcms/fields#ModelField',
+                  },
+                },
+              },
               defaultValue: 'gpt-4o',
               label: 'Model',
-              options: getOpenAITextModelOptions(providerConfig.baseURL),
             },
             {
               type: 'row',
@@ -380,6 +412,12 @@ export const createOpenAIConfig = (
                 {
                   name: 'temperature',
                   type: 'number',
+                  admin: isOpenAIEndpoint(providerConfig.baseURL)
+                    ? {
+                        condition: (_data, siblingData) =>
+                          ['gpt-4.1', 'gpt-4o', 'gpt-4o-mini'].includes(siblingData.model),
+                      }
+                    : {},
                   defaultValue: 0.7,
                   max: 1,
                   min: 0,

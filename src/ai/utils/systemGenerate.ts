@@ -4,6 +4,7 @@ import { generateText } from 'ai'
 import type { PluginConfigProviders } from '../../types.js'
 
 import { PLUGIN_DEFAULT_ANTHROPIC_MODEL, PLUGIN_DEFAULT_OPENAI_MODEL } from '../../defaults.js'
+import { isAnthropicEndpoint } from '../models/anthropic/textModel.js'
 import { createOpenAIProvider } from '../models/openai/openai.js'
 import { resolveProviderConfig } from '../providers/resolveProviderConfig.js'
 
@@ -29,7 +30,11 @@ export const systemGenerate = async (
       authToken: resolvedProviders.anthropic.authToken,
       baseURL: resolvedProviders.anthropic.baseURL,
       headers: resolvedProviders.anthropic.headers,
-    })(PLUGIN_DEFAULT_ANTHROPIC_MODEL)
+    })(
+      isAnthropicEndpoint(resolvedProviders.anthropic.baseURL)
+        ? PLUGIN_DEFAULT_ANTHROPIC_MODEL
+        : 'claude-3-5-sonnet-latest',
+    )
   } else {
     throw new Error('- AI Plugin: Please check your provider config or environment variables!')
   }

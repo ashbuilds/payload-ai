@@ -123,3 +123,21 @@ it('leaves URLs as text when attachment extraction is disabled', async () => {
   expect(await response.text()).toContain('ok')
   expect(fetch).not.toHaveBeenCalled()
 })
+
+it.each([true, false])(
+  'only forwards sampling when allowed (omit: %s)',
+  async (omitTemperature) => {
+    const model = makeModel()
+    const response = await generateObject(
+      'test',
+      {
+        omitTemperature,
+        schema: { type: 'object', properties: { text: { type: 'string' } } },
+        temperature: 0.3,
+      },
+      model,
+    )
+    await response.text()
+    expect(model.doStreamCalls[0].temperature).toBe(omitTemperature ? undefined : 0.3)
+  },
+)
